@@ -1,5 +1,7 @@
 (ns salava.oauth.routes
-  (:require [compojure.api.sweet :refer :all]
+  (:require [clojure.pprint :refer [pprint]]
+            [clojure.string :as string]
+            [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
             [ring.util.response :refer [redirect]]
             [salava.core.layout :as layout]
@@ -16,15 +18,82 @@
 
 (defn route-def [ctx]
   (routes
-   (context "/user" []
+    (context "/user" []
              (layout/main ctx "/oauth/facebook")
              (layout/main ctx "/oauth/google")
              (layout/main ctx "/oauth/linkedin")
-             #_(layout/main ctx "/terms"))
+             #_(layout/main ctx "/terms")
+
+
+             (GET "/oauth2/authorize" req
+                  :no-doc true
+                  :summary ""
+                  :query-params [response_type  :- s/Str
+                                 client_id      :- s/Str
+                                 redirect_uri   :- s/Str
+                                 state          :- s/Str
+                                 code_challenge :- s/Str
+                                 code_challenge_method :- s/Str]
+                  :current-user current-user
+                  :flash-message flash-message
+                  (let [client (get-in ctx [:config :oauth :client client_id])
+                        redirect-to (str  "/user/oauth2/authorize?" (:query-string req))
+                        login-redirect {:value (if (:id current-user) nil redirect-to) :max-age 600 :http-only true :path "/"}]
+                    (if (and (= response_type "code") (= (:redirect_uri client) redirect_uri) (= code_challenge_method "S256"))
+                      (-> (layout/main-response ctx current-user flash-message nil)
+                          (assoc-in [:cookies "login_redirect"] login-redirect))
+                      (bad-request {:message "400 Bad Request"}))))
+
+             (POST "/oauth2/authorize" []
+                   :no-doc true
+                   :summary ""
+                   :form-params [client_id      :- s/Str
+                                 state          :- s/Str
+                                 code_challenge :- s/Str]
+                   :auth-rules access/signed
+                   :current-user current-user
+                  (if-let [client (get-in ctx [:config :oauth :client client_id])]
+                     (-> (redirect (str (:redirect_uri client)
+                                        "?code=" (d/authorization-code ctx client_id (:id current-user) code_challenge) "&state=" state))
+                         (assoc-in [:session :identity] nil))
+                     (bad-request {:message "400 Bad Request"})))
+
+             (POST "/oauth2/unauthorize" []
+                   :no-doc true
+                   :summary ""
+                   :form-params [client_id :- s/Str]
+                   :auth-rules access/signed
+                   :current-user current-user
+                   (ok (d/unauthorize-client ctx client_id (:id current-user))))
+
+             (POST "/oauth2/token" []
+                   :no-doc true
+                   :summary ""
+                   :form-params [grant_type   :- s/Str
+                                 client_id    :- s/Str
+                                 {redirect_uri  :- s/Str nil}
+                                 {code          :- s/Str nil}
+                                 {refresh_token :- s/Str nil}
+                                 {code_verifier :- s/Str nil}]
+                   (let [e400 (bad-request {:message "400 Bad Request"})
+                         client (get-in ctx [:config :oauth :client client_id])]
+                     (cond
+                       (and (= grant_type "code")
+                            (not (nil? code))
+                            (= (:redirect_uri client) redirect_uri))
+                       (if-let [out (d/new-access-token ctx client_id code code_verifier)] (ok out) e400)
+
+                       (and (= grant_type "refresh_token")
+                            (not (nil? refresh_token)))
+                       (if-let [out (d/refresh-access-token ctx client_id (string/split refresh_token #"-" 2))] (ok out) e400)
+
+                       :else e400))))
 
 
    (context "/oauth" []
+         :tags ["oauth"]
          (GET "/google" req
+                 :no-doc true
                  :query-params [{code :- s/Str nil}
                                 {state :- s/Str nil}
                                 {error :- s/Str nil}]
@@ -51,6 +120,7 @@
                              (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
 
          (GET "/google/deauthorize" []
+              :no-doc true
               :query-params [code :- s/Str]
               :return {:status (s/enum "success" "error")
                        (s/optional-key :message) s/Str}
@@ -62,6 +132,7 @@
                  (assoc (redirect (str (get-base-path ctx) "/user/oauth/google")) :flash message))))
 
          (GET "/facebook" req
+              :no-doc true
               :query-params [{code :- s/Str nil}
                              {error :- s/Str nil}]
               :current-user current-user
@@ -89,6 +160,7 @@
                     (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
 
          (GET "/facebook/deauthorize" []
+              :no-doc true
               :query-params [code :- s/Str]
               :auth-rules access/signed
               :current-user current-user
@@ -98,6 +170,7 @@
                   (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message))))
 
          (GET "/linkedin" req
+              :no-doc true
               :query-params [{code :- s/Str nil}
                              {state :- s/Str nil}
                              {error :- s/Str nil}]
@@ -128,6 +201,7 @@
 
 
          (GET "/linkedin/deauthorize" []
+              :no-doc true
               :return {:status (s/enum "success" "error")
                        (s/optional-key :message) s/Str}
               :auth-rules access/signed

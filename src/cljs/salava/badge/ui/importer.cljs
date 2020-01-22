@@ -17,8 +17,8 @@
     [:button {:type "button"
               :class "close"
               :data-dismiss "modal"
-              :aria-label "OK"
-              }
+              :aria-label "OK"}
+
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]]
    [:div.modal-body
@@ -84,10 +84,10 @@
   (let [{:keys [previous-id image_file name import-key description status message issuer_content_name issuer_content_url error]} element-data
         checked? (some #(= import-key %) (:badges-selected @state))
         invalidtype (cond
-                    (= "badge/Alreadyowned" message) "duplicate"
-                    (= "badge/Badgeisexpired" message) "expired"
-                    (= "badge/Savethisbadge" message) "ok"
-                    :else "error")
+                     (= "badge/Alreadyowned" message) "duplicate"
+                     (= "badge/Badgeisexpired" message) "expired"
+                     (= "badge/Savethisbadge" message) "ok"
+                     :else "error")
 
         badge-link (if (= invalidtype "duplicate") (path-for (str "/badge/info/" previous-id)))]
      [:div {:class (str "media grid-container " invalidtype)}
@@ -101,25 +101,25 @@
           (if badge-link
             [:a.heading-link {:href badge-link} name]
             name)]
-         [:div.media-issuer
-          [:a {:href issuer_content_url
+        [:div.media-issuer
+         [:a {:href issuer_content_url
               :target "_blank"
               :title issuer_content_name} issuer_content_name]]
         [:div.badge-description.import description]]]
       [:div {:class "media-bottom"}
        (if (= status "ok")
          [:div.checkbox
-         [:label {:for (str "checkbox-" import-key)}
-          [:input {:type "checkbox"
-                    :id (str "checkbox-" import-key)
-                    :name "checkbox"
-                    :checked checked?
-                    :on-change (fn []
-                                 (if checked?
+          [:label {:for (str "checkbox-" import-key)}
+           [:input {:type "checkbox"
+                     :id (str "checkbox-" import-key)
+                     :name "checkbox"
+                     :checked checked?
+                     :on-change (fn []
+                                  (if checked?
 
-                                   (remove-badge-selection import-key state)
-                                   (add-badge-selection import-key state)))}]
-          (t :badge/Savebadge)]]
+                                    (remove-badge-selection import-key state)
+                                    (add-badge-selection import-key state)))}]
+           (t :badge/Savebadge)]]
         (if (= invalidtype "error")
           [:div
            [:span {:id (str "err" import-key)} error]]
@@ -145,9 +145,9 @@
     [:li (t :badge/Importbadgesinstructions2) "."]
     [:li (t :badge/Importbadgesinstructions3) "."]
     [:li [:span {:dangerouslySetInnerHTML
-         {:__html (t :badge/Importbadgesinstructions4)}}] "."]
+                 {:__html (t :badge/Importbadgesinstructions4)}}] "."]
     [:li [:span {:dangerouslySetInnerHTML
-         {:__html (t :badge/Importbadgesinstructions5)}}] "."]]
+                 {:__html (t :badge/Importbadgesinstructions5)}}] "."]]
    [:p
     (t :badge/Importbadgesresults1) " "
     [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " "
@@ -156,36 +156,36 @@
     " " (t :badge/Importbadgesresults3) "."]])
 
 #_(defn mozilla-importer-block [state]
-  [:div {:class "import-badges"}
-   [:h2.uppercase-header (t :badge/Importfrom)]
-   [import-info]
-   [:div.import-button
-    (if (:ajax-message @state)
-      [:div.ajax-message
-       [:i {:class "fa fa-cog fa-spin fa-2x "}]
-       [:span (translate-text (:ajax-message @state))]])
-    (if-not (pos? (count (:badges @state)))
-      [:button {:class "btn btn-primary"
-                :on-click #(fetch-badges state)
-                :disabled (or (:ajax-message @state)
-                              (if (not-activated?) "disabled" ""))}
-       (t :badge/Importfrom)]
+   [:div {:class "import-badges"}
+    [:h2.uppercase-header (t :badge/Importfrom)]
+    [import-info]
+    [:div.import-button
+     (if (:ajax-message @state)
+       [:div.ajax-message
+        [:i {:class "fa fa-cog fa-spin fa-2x "}]
+        [:span (translate-text (:ajax-message @state))]])
+     (if-not (pos? (count (:badges @state)))
+       [:button {:class "btn btn-primary"
+                 :on-click #(fetch-badges state)
+                 :disabled (or (:ajax-message @state)
+                               (if (not-activated?) "disabled" ""))}
+        (t :badge/Importfrom)]
 
-      (if (pos? (count (:ok-badges @state)))
-        [:div
-         [:button {:class    "btn btn-primary"
-                   :on-click #(toggle-select-all state)}
-          (if (:all-selected @state)
-            (t :badge/Clearall)
-            (t :badge/Selectall))]
-         [:button {:class    "btn btn-primary"
-                   :on-click #(import-badges state)
-                   :disabled (or (:ajax-message @state)
-                                 (= (count (:badges-selected @state)) 0))}
-          (t :badge/Saveselected)]]))]
-   (if-not (nil? (:error @state))
-     [:div {:class "alert alert-warning"} (t (keyword (:error @state)))])
-   [badge-grid state]])
+       (if (pos? (count (:ok-badges @state)))
+         [:div
+          [:button {:class    "btn btn-primary"
+                    :on-click #(toggle-select-all state)}
+           (if (:all-selected @state)
+             (t :badge/Clearall)
+             (t :badge/Selectall))]
+          [:button {:class    "btn btn-primary"
+                    :on-click #(import-badges state)
+                    :disabled (or (:ajax-message @state)
+                                  (= (count (:badges-selected @state)) 0))}
+           (t :badge/Saveselected)]]))]
+    (if-not (nil? (:error @state))
+      [:div {:class "alert alert-warning"} (t (keyword (:error @state)))])
+    [badge-grid state]])
 
 
 (defn content [state]
@@ -200,12 +200,12 @@
         [:br]
         [upload/assertion-url-upload-content state]
         #_[:a {:style {:cursor "default"}
-              :on-click #(do (.preventDefault %)
-                          (if (identical? @display-atom "block") (reset! display-atom "none") (reset! display-atom "block")))}  (if (identical? @display-atom "none") (t :badge/Showmoreoptions) (str (t :admin/Showless) "..."))]
+               :on-click #(do (.preventDefault %)
+                           (if (identical? @display-atom "block") (reset! display-atom "none") (reset! display-atom "block")))}  (if (identical? @display-atom "none") (t :badge/Showmoreoptions) (str (t :admin/Showless) "..."))]
         #_[:div {:style {:display @display-atom}}
-         [upload/assertion-url-upload-content state]
-         #_[mozilla-importer-block state]
-         ]])]))
+           [upload/assertion-url-upload-content state]
+           [mozilla-importer-block state]]])]))
+
 
 
 (defn init-data [state]
@@ -226,7 +226,6 @@
     (init-data state)
     (fn []
       (cond
-        (= "initial" (:permission @state)) (layout/default site-navi [:div ])
+        (= "initial" (:permission @state)) (layout/default site-navi [:div])
         (= "success" (:permission @state))(layout/default site-navi (content state))
         :else(layout/default site-navi (err/error-content))))))
-

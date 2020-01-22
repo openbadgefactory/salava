@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.8.0
+ - Improve accessibility
+ - Public API documentation
+ - Improvements to ui
+ - Bug fixes
+
+
 ## 3.6.2
  - Migration fixes for testing
  - Optimized badge event notifications for faster loading of user badges

@@ -5,12 +5,14 @@
             [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.page.ui.helper :as ph]))
+            [salava.page.ui.helper :as ph]
+            [reagent-modals.modals :refer [modal-window]]))
 
 
 (defn content [state]
   (let [{:keys [id name]} (:page @state)]
     [:div {:id "page-preview"}
+     [modal-window]
      [ph/edit-page-header (t :page/Preview ": " name)]
      [ph/edit-page-buttons id :preview state]
      ;[ph/edit-page-buttons id :preview (fn [next-url] (navigate-to next-url)) state]

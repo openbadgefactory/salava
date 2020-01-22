@@ -19,10 +19,9 @@
   (let [map-fn (fn [[tr nv]]
                  (assoc nv :target tr :active (or (= (current-path) tr) (and (= "top" type) (= (first (re-seq #"\w+" (route-path (str tr)))) (first (re-seq #"\w+" (current-route-path))))))))
         navi-list (sort-by :weight (map map-fn (select-keys navi key-list)))]
-    (if (and (not= "sub-subnavi" type) (not= "top" type) (= 1 (+  (count (re-seq #"\w+" (current-route-path) )))))
+    (if (and (not= "sub-subnavi" type) (not= "top" type) (= 1 (+  (count (re-seq #"\w+" (current-route-path))))))
       (assoc-in (vec navi-list) [0 :active] true)
-      navi-list)
-    ))
+      navi-list)))
 
 (defn top-navi-list [navi]
   (let [key-list (filter #(get-in navi [% :top-navi]) (keys navi))]
@@ -42,13 +41,13 @@
 
 (defn logout []
   (ajax/POST
-    (path-for "/obpv1/user/logout")
-    {:handler (fn [] (js-navigate-to "/user/login"))}))
+   (path-for "/obpv1/user/logout")
+   {:handler (fn [] (js-navigate-to "/user/login"))}))
 
 (defn return-to-admin []
   (ajax/POST
-    (path-for "/obpv1/admin/return_to_admin")
-    {:handler (fn [] (js-navigate-to "/admin/userlist"))}))
+   (path-for "/obpv1/admin/return_to_admin")
+   {:handler (fn [] (js-navigate-to "/admin/userlist"))}))
 
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
@@ -59,26 +58,26 @@
   (let [subitems (sub-navi-list (navi-parent (current-path)) items "sub-subnavi")
         subitemactive  (some :active subitems)]
     [:li {:key target}
-     [:a {:class "dropdown collapsed" :data-toggle "collapse" :data-target (str "#"(hash target))}  title]
+     [:a {:class "dropdown collapsed" :data-toggle "collapse" :data-target (str "#" (hash target))}  title]
      [:ul {:id (hash target) :class (if subitemactive "collapse in side-dropdown-links" "collapse side-dropdown-links")}
       (doall (for [i subitems]
                (navi-link i)))]]))
 
 (defn logo []
-[:a {:class "logo pull-left"
-     :title (session/get :site-name)
-     :aria-label "to index"
-     :href  (if (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
-     :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url))  "")}
-    [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
+  [:a {:class "logo pull-left"
+       :title (session/get :site-name)
+       :aria-label "to index"
+       :href  (if (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
+       :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url))  "")}
+   [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
           :title "OBP logo"
           :aria-label "OBP logo"}]
-    [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]] )
+   [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]])
 
 (defn top-navi-header []
   [:div {:class "navbar-header"}
    (logo)
-  [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
+   [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse" :title "Show menu" :aria-label "Show menu"}
     [:span {:class "icon-bar"}]
     [:span {:class "icon-bar"}]
     [:span {:class "icon-bar"}]]])
@@ -92,15 +91,15 @@
           [:i {:class "fa fa-caret-right"}]
           (t :user/Myaccount)]]
     (if (session/get-in  [:user :real-id])
-     [:li [:a {:href     "#"
-              :on-click #(return-to-admin)}
-          [:i {:class "fa fa-caret-right"}]
-           (t :admin/Returntoadmin)]]
-     [:li [:a {:href     "#"
-              :on-click #(logout)}
-          [:i {:class "fa fa-caret-right"}]
-          (t :user/Logout)]])
-    ]
+      [:li [:a {:href     "#"
+                :on-click #(return-to-admin)}
+            [:i {:class "fa fa-caret-right"}]
+            (t :admin/Returntoadmin)]]
+      [:li [:a {:href     "#"
+                :on-click #(logout)}
+            [:i {:class "fa fa-caret-right"}]
+            (t :user/Logout)]])]
+
    [:div.userpic
     [:a {:href (path-for (str "/profile/" (session/get-in [:user :id])))}
      [:img {:src (profile-picture (session/get-in [:user :profile_picture]))
@@ -114,14 +113,16 @@
       (top-navi-right)
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
-       (doall (for [i items]
-          (navi-link i)))
-          [:li.usermenu [:a {:href (path-for "/user/edit")}
-                (t :user/Myaccount)]]
-          [:li.usermenu [:a {:href     "#"
-                    :on-click #(logout)}
-                (t :user/Logout)]]]
-       ]]]))
+        (doall (for [i items]
+                 (navi-link i)))
+        [:li.usermenu [:a {:href "#"
+                           :on-click #(do
+                                        (.preventDefault %)
+                                        (navigate-to "/user/edit"))}
+                       (t :user/Myaccount)]]
+        [:li.usermenu [:a {:href     "#"
+                           :on-click #(logout)}
+                       (t :user/Logout)]]]]]]))
 
 (defn top-navi-embed []
   [:nav {:class "navbar"}
@@ -141,12 +142,12 @@
       [:div {:class "navbar-header pull-left"}
        (logo)]
       [:div {:id "main-header"
-              :class "navbar-header pull-right"}
+             :class "navbar-header pull-right"}
        (when-not (:no-login site-navi)
          [:a {:id "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
           (t :user/Login)])
        (when (not-empty items)
-         [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
+         [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse" :aria-label "Show menu"}
           [:span {:class "icon-bar"}]
           [:span {:class "icon-bar"}]
           [:span {:class "icon-bar"}]])]
@@ -182,10 +183,9 @@
 (defn sidebar [site-navi]
   (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi) "subnavi")]
     [:ul {:class "side-links"}
-     (doall (for [i items](if (:dropdown i)
-                            (navi-dropdown i)
-                            (navi-link i))))]))
-
+     (doall (for [i items] (if (:dropdown i)
+                             (navi-dropdown i)
+                             (navi-link i))))]))
 
 (defn get-dropdown-breadcrumb [site-navi]
   (let [dropdowns  (filter #(:dropdown %) (vals (:navi-items site-navi)))
@@ -201,7 +201,7 @@
 
 (defn default-0 [top-items sub-items heading content]
   [:div {:role "main"}
-   [:header {:id "navbar"}
+   [:div {:id "navbar"}
     (top-navi top-items)]
    (if-not (empty? heading)
      [:div {:class "title-row"}
@@ -210,18 +210,16 @@
    [:div {:class "container main-container"}
     [:div {:class "row flip"}
      [:div {:class "col-md-3"} (sidebar sub-items)]
-     [:div {:class "col-md-9"} content]]]
-  ])
-
+     [:div {:class "col-md-9"} content]]]])
 
 (defn default [site-navi content]
   [:div {:role "main"}
    (if (session/get-in  [:user :real-id])
      (let [current-user (session/get :user)]
        [:div {:class "alert alert-warning text-center"} (str  (t :admin/Loggedas) " " (:first_name current-user) " " (:last_name current-user) ". ") [:a {:href "#" :on-click #(return-to-admin)} (t :admin/Returntoadmin)]]))
-   [:header {:id "navbar"}
+   [:div {:id "navbar"}
     (top-navi site-navi)]
-   [:img {:id "print-logo" :src "/img/logo.png"}]
+   [:img {:id "print-logo" :src "/img/logo.png" :alt "site logo"}]
    [:div {:class "title-row"}
     [:div {:class "container"}
      (breadcrumb site-navi)]]
@@ -233,7 +231,7 @@
 
 (defn default-no-sidebar [site-navi content]
   [:div {:role "main"}
-   [:header {:id "navbar"}
+   [:div {:id "navbar"}
     (top-navi site-navi)]
    [:div {:class "title-row"}
     [:div {:class "container"}
@@ -241,30 +239,36 @@
    [:div {:class "container main-container"}
     [:div {:class "row"}
      [:div {:class "col-md-12" :id "content"} content]]]
-  (footer site-navi)])
+   (footer site-navi)])
 
 (defn landing-page [site-navi content]
   [:div {:role "main"}
-   [:header {:id "navbar"}
+   [:div {:id "navbar"}
     (top-navi-landing site-navi)]
    [:div {:class "container main-container"}
     [:div {:id "content"}
      content]]
-  (footer site-navi)])
+   (footer site-navi)])
 
 (defn dashboard [site-navi content]
   [:div {:role "main"}
-   [:header {:id "navbar"}
+   [:div {:id "navbar"}
     (top-navi site-navi)]
    #_[:div {:class "title-row"}
-    [:div {:class "container"}
-     (breadcrumb site-navi)]]
+      [:div {:class "container"}
+       (breadcrumb site-navi)]]
    [:div#dashboard {:class "container-fluid main-container"}
     [:div {:class "row"}
      [:div {:class "col-md-12" :id "content"} content]]]
-  (footer site-navi)]
-  )
+   (footer site-navi)])
 
 (defn embed-page [content]
   [:div
    content])
+
+(defn embed-badge [content]
+  (js/document.body.classList.add "embed")
+  [:div {:role "main"}
+   [:div {:class "container main-container" :style {:padding "10px" :margin "auto"}}
+    [:div {:id "content"}
+     content]]])

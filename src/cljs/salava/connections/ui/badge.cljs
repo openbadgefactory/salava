@@ -12,31 +12,29 @@
 
 (defn init-issuer-connections [state]
   (ajax/GET
-    (path-for "/obpv1/connections/connections_issuer")
-    {:handler (fn [data]
-                (swap! state assoc :issuers data))}))
+   (path-for "/obpv1/connections/connections_issuer")
+   {:handler (fn [data]
+               (swap! state assoc :issuers (:issuers data)))}))
 
 (defn init-data [state]
   (ajax/GET
-    (path-for "/obpv1/connections/connections_badge" true)
-    {:handler (fn [data]
-                ; (prn data)
-                (swap! state assoc :badges data
-                       :visible-area (session/get! :visible-area nil))
-                (init-issuer-connections state))}))
-
+   (path-for "/obpv1/connections/connections_badge" true)
+   {:handler (fn [data]
+               (swap! state assoc :badges (:badges data)
+                      :visible-area (session/get! :visible-area nil))
+               (init-issuer-connections state))}))
 
 (defn unfollow [badge-id state]
   [:a {:href "#" :on-click #(ajax/POST
-                              (path-for (str "/obpv1/social/delete_connection_badge/" badge-id))
-                              {:response-format :json
-                               :keywords?       true
-                               :handler         (fn [data]
-                                                  (do
-                                                    (init-data state)))
-                               :error-handler   (fn [{:keys [status status-text]}]
-                                                  (.log js/console (str status " " status-text)))})}
-      (t :social/Unfollow)])
+                             (path-for (str "/obpv1/social/delete_connection_badge/" badge-id))
+                             {:response-format :json
+                              :keywords?       true
+                              :handler         (fn [data]
+                                                 (do
+                                                   (init-data state)))
+                              :error-handler   (fn [{:keys [status status-text]}]
+                                                 (.log js/console (str status " " status-text)))})}
+   (t :social/Unfollow)])
 
 (defn remove-issuer-from-favourites [issuer-id state]
   [:a {:href "#"
@@ -55,12 +53,17 @@
     [:div.expandable-block {:class "panel issuer-panel"}
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :issuers visible-area-atom) #_(reset! (cursor state [:visible-area]) :issuers))}
-       [:h3 (str (t :badge/Issuers) " (" (count issuers) ")")]
+       [:h2 (str (t :badge/Issuers) " (" (count issuers) ")")]
        #_[:div {:style {:margin-top "5px"}} (t :connections/Issuerblockinfo)]
        [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (when (= @(cursor state [:visible-area]) panel-identity)
        [:div.panel-body
         [:table {:class "table" :summary (t :badge/Issuers)}
+         [:thead
+          [:tr
+           [:th {:style {:display "none"}}  "Logo"]
+           [:th {:style {:display "none"}} (t :badge/Name)]
+           [:th {:style {:display "none"}} "Action"]]]
          (into [:tbody]
                (for [issuer issuers
                      :let [{:keys [id name image_file]} issuer]]
@@ -68,10 +71,9 @@
                   [:td.name [:a {:href "#"
                                  :on-click #(do
                                               (mo/open-modal [:badge :issuer] id {:hide (fn [] (init-data state))})
-                                              (.preventDefault %)) }(if image_file [:img.badge-icon {:src (str "/" image_file) :alt name}]
-                                                                      [:img.badge-icon]) name]]
+                                              (.preventDefault %))} (if image_file [:img.badge-icon {:src (str "/" image_file) :alt (str name " icon")}]
+                                                                        [:span {:style {:width "30px" :display "inline-block" :margin-right "10px"} :dangerouslySetInnerHTML {:__html "&nbsp;"}}]) name]]
                   [:td.action (remove-issuer-from-favourites id state)]]))]])]))
-
 
 (defn badge-connections [badges state]
   (let [panel-identity :badges
@@ -80,9 +82,9 @@
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :badges visible-area-atom) #_(reset! (cursor state [:visible-area]) :badges))}
-       [:h3 (str (t :badge/Badges) " (" (count badges) ")")]
+       [:h2 (str (t :badge/Badges) " (" (count badges) ")")]
        #_[:p {:style {:margin-top "5px"}} (t :connections/Badgeblockinfo)]
-         [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
+       [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (when (= @(cursor state [:visible-area]) panel-identity)
        [:div.panel-body
         [:table {:class "table" :summary (t :badge/Badgeviews)}
@@ -90,22 +92,20 @@
           [:tr
            [:th (t :badge/Badge)]
            [:th (t :badge/Name)]
-           [:th ""]]]
+           #_[:th ""]]]
 
          (into [:tbody]
                (for [badge-views badges
                      :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                  [:tr
                   [:td.icon [:img.badge-icon {:src (str "/" image_file)
-                                              :alt name}]]
+                                              :alt ""}]]
                   [:td.name [:a {:href "#"
                                  :on-click #(do
                                               (mo/open-modal [:gallery :badges] {:badge-id id} {:hide (fn [] (init-data state))})
                                               ;(b/open-modal id false init-data state)
-                                              (.preventDefault %)) } name]]
+                                              (.preventDefault %))} name]]
                   [:td.action (unfollow id state)]]))]])]))
-
-
 
 (defn content [state]
   (let [badges (:badges @state)
@@ -120,7 +120,6 @@
       (badge-connections badges state)
       (issuer-connections issuers state)]]))
      ;(user-connections)
-
 
 
 (defn handler [site-navi]

@@ -14,6 +14,8 @@
             [salava.core.helper :refer [plugin-str]]
             [salava.core.http :as http]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
+            [buddy.core.mac :as mac]
+            [buddy.core.codecs :as codecs]
             [clojure.core.async :refer [>!!]])
   (:import (java.io StringReader)
            (java.net URLEncoder)
@@ -77,6 +79,9 @@
 (defn bytes->base64 [input]
   (.encodeToString (Base64/getEncoder) input))
 
+(defn bytes->base64-url [input]
+  (.encodeToString (Base64/getUrlEncoder) input))
+
 (defn hex-digest [algo string]
   (case algo
     "sha1" (d/sha-1 string)
@@ -84,6 +89,21 @@
     "sha512" (d/sha-512 string)
     "md5" (d/md5 string)
     (throw+ (str "Unknown algorithm: " algo))))
+
+(defn digest [algo string]
+  (->> string
+    (hex-digest algo)
+    (partition 2)
+    (map (fn [[x y]] (Integer/parseInt (str x y) 16)))
+    byte-array))
+
+(defn hmac-sha256-hex [v secret]
+  (-> (mac/hash v {:key secret :alg :hmac+sha256})
+      (codecs/bytes->hex)))
+
+(defn random-token
+  ([] (random-token ""))
+  ([seed] (hex-digest "sha256" (str (System/currentTimeMillis) (java.util.UUID/randomUUID) seed))))
 
 (defn ordered-map-values
   "Returns a flat list of keys and values in a map, sorted by keys."
@@ -255,3 +275,10 @@
 (defn event [ctx subject verb object type]
   ;TODO VALIDATE DATA
   (publish ctx :event {:subject subject :verb verb :object object :type type}))
+
+(defn url? [s]
+  "Pattern Source: https://mathiasbynens.be/demo/url-regex"
+  "Pattern author: @diegoperini"
+  (let [url-pattern #"(?i)^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?$"]
+    (when-not (clojure.string/blank? s)
+      (not (clojure.string/blank? (re-matches url-pattern s))))))

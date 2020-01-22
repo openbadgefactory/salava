@@ -19,8 +19,8 @@
    (ajax/GET
      (path-for "/obpv1/badge" true)
      {:handler (fn [data]
-                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
-                        :pending (filter #(= "pending" (:status %)) data)
+                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) (:badges data))
+                        :pending (filter #(= "pending" (:status %)) (:badges data))
                         :initializing false))})))
 
 (defn visibility-select-values []
@@ -113,8 +113,8 @@
 (defn ^:export settings_tab_content [data state init-data]
   [settings-tab-content data state init-data])
 
-(defn ^:export evidence_list_badge [data]
-  [evidence-list-badge-view data])
+(defn ^:export evidence_list_badge [id]
+  [evidence-list-badge-view id])
 
 (defn ^:export evidence_block [data state init-data]
   [evidenceblock data state init-data])

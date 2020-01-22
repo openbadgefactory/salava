@@ -23,7 +23,7 @@
       [:div {:id "badge-contents"}
        [:div.row
         [:div {:class "col-md-3 badge-image modal-left"}
-         [:img {:src (str "/" image_file)}]]
+         [:img {:src (str "/" image_file) :alt name}]]
 
         [:div {:class "col-md-9 badge-info"}
          [:div.row

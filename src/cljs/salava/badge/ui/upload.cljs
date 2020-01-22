@@ -6,10 +6,12 @@
             [salava.core.ui.helper :refer [navigate-to path-for not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.error :as err]
+            [salava.core.ui.helper :refer [url?]]
             [salava.core.i18n :refer [t translate-text]]
-            [salava.user.ui.input :as input]
+            ;[salava.user.ui.input :as input]
             [salava.core.helper :refer [dump]]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [salava.core.ui.input :refer [text-field file-input]]))
 
 (defn upload-modal [{:keys [status message reason]}]
   [:div
@@ -37,29 +39,29 @@
                  .-files
                  (.item 0))
         form-data (doto
-                    (js/FormData.)
+                   (js/FormData.)
                     (.append "file" file (.-name file)))]
     (swap! state assoc :status "loading")
     (ajax/POST
-      (path-for "/obpv1/badge/upload")
-      {:body    form-data
-       :handler (fn [data]
-                  (do
-                    (swap! state assoc :status "form")
-                    (m/modal! (upload-modal data)
-                              (if (= (:status data) "success")
-                                {:hidden #(navigate-to "/badge")}))))})))
+     (path-for "/obpv1/badge/upload")
+     {:body    form-data
+      :handler (fn [data]
+                 (do
+                   (swap! state assoc :status "form")
+                   (m/modal! (upload-modal data)
+                             (if (= (:status data) "success")
+                               {:hidden #(navigate-to "/badge")}))))})))
 (defn import-badge [state]
   (let [assertion-url (:assertion-url @state)]
     (ajax/POST
-      (path-for "/obpv1/badge/import_badge_with_assertion")
-      {:params {:assertion (s/trim assertion-url)}
-       :handler (fn [data]
-                  (do
-                    (swap! state assoc :status "form")
-                    (m/modal! (upload-modal data)
-                              (if (= (:status data) "success")
-                                {:hidden #(navigate-to "/badge")}))))})))
+     (path-for "/obpv1/badge/import_badge_with_assertion")
+     {:params {:assertion (s/trim assertion-url)}
+      :handler (fn [data]
+                 (do
+                   (swap! state assoc :status "form")
+                   (m/modal! (upload-modal data)
+                             (if (= (:status data) "success")
+                               {:hidden #(navigate-to "/badge")}))))})))
 
 (defn upload-info []
   [:div
@@ -69,12 +71,12 @@
     [:li {:dangerouslySetInnerHTML
           {:__html (str (t :badge/Uploadbadgesfrominfo2) ". " (t :badge/Uploadbadgesfrominfo3))}}]
     #_[:li {:dangerouslySetInnerHTML
-          {:__html (t :badge/Uploadbadgesfrominfo3)}}]]
+            {:__html (t :badge/Uploadbadgesfrominfo3)}}]]
    [:p
     (t :badge/Uploadbagesfromresult1) " "
-    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " " (t :badge/page) ". "
+    [:a {:href "#" :on-click #(do (.preventDefault %) (navigate-to "/badge/mybadges"))} (t :badge/Mybadges)] " " (t :badge/page) ". "
     (t :badge/Uploadbagesfromresult2) "  "
-    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
+    [:a {:href "#" :on-click #(do (.preventDefault %) (navigate-to "/badge/mybadges"))} (t :badge/Mybadges)]
     " " (t :badge/Uploadbagesfromresult3) "."]])
 
 (defn assertion-upload-info []
@@ -85,9 +87,9 @@
           {:__html (str (t :badge/Importbadgeswithassertioninfo2) " " (t :badge/Importbadgeswithassertioninfo3))}}]]
    [:p
     (t :badge/Uploadbagesfromresult1) " "
-    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " " (t :badge/page) ". "
+    [:a {:href "#" :on-click #(do (.preventDefault %) (navigate-to "/badge/mybadges"))} (t :badge/Mybadges)] " " (t :badge/page) ". "
     (t :badge/Uploadbagesfromresult2) "  "
-    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
+    [:a {:href "#" :on-click #(do (.preventDefault %) (navigate-to "/badge/mybadges"))} (t :badge/Mybadges)]
     " " (t :badge/Uploadbagesfromresult3) "."]])
 
 (defn badge-file-upload-content [state]
@@ -103,7 +105,7 @@
                              [:input {:type       "file"
                                       :name       "file"
                                       :on-change  #(send-file state)
-                                      :accept     "image/png, image/svg+xml"}] (t :badge/Browse)])
+                                      :accept     "image/png, image/svg+xml, application/pdf"}] (t :badge/Browse)])
      [:br]]))
 
 (defn assertion-url-upload-content [state]
@@ -114,16 +116,15 @@
      [assertion-upload-info]
      (cond
        (= "importing" status) [:div.ajax-message
-                             [:i {:class "fa fa-cog fa-spin fa-2x "}]
-                             [:span (str (t :core/Loading) "...")]]
+                               [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                               [:span (str (t :core/Loading) "...")]]
        :else                [:div {:id "assertion-textfield" :class "form-group"}
                              [:div {:style {:margin-top "15px"}}
-                              [input/text-field {:name "input-assertion-url" :atom assertion-url :password? false}]
+                              [text-field {:name "input-assertion-url" :atom assertion-url :password? false :aria-label (t :badge/Importbadgeswithassertioninfo1)}]
+                              #_[input/text-field {:name "input-assertion-url" :atom assertion-url :password? false}]
                               [:button {:class "btn btn-primary"
                                         :on-click #(do
                                                      (swap! state assoc :status "importing")
-                                                     (import-badge state))
-                                        } (t :badge/ImportBadge)]]])
+                                                     (import-badge state))}
+                               (t :badge/ImportBadge)]]])
      [:br]]))
-
-

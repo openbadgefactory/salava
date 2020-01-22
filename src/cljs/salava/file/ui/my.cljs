@@ -176,7 +176,9 @@
       [:input {:id "grid-file-upload"
                :type "file"
                :name "file"
-               :on-change #(send-file (cursor state [:files]))}]
+               :on-change #(send-file (cursor state [:files]))
+               :aria-label "Upload new file"}]
+
       [:div {:class "media grid-container"}
        [:div.media-content
         [:div.media-body

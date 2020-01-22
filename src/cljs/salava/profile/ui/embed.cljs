@@ -19,7 +19,7 @@
     (if block [block state "embed"] [:div ""])))
 
 (defn showcase-grid [state block-atom]
- [:div#user-badges
+ [:div#profile-user-badges
   [:h3 (or (:title @block-atom) (t :page/Untitled))]
   [:div#grid {:class "row"}
    (reduce (fn [r b]
@@ -39,7 +39,7 @@
 
 (defn view-profile [state]
   (let [blocks (cursor state [:blocks])]
-    [:div#profile
+    [:div
      (if (= 0 @(cursor state [:active-index]))
       [:div#page-view
            [:div {:id (str "theme-" (or @(cursor state [:theme]) 0))
@@ -50,7 +50,7 @@
                [:div.panel-content
                 [:div.panel-body
                  [userinfoblock state]
-                 (into [:div#profile]
+                 (into [:div]
                        (for [index (range (count @blocks))]
                          (block (cursor blocks [index]) state index)))]]]]]]]
       @(cursor state [:tab-content]))]))

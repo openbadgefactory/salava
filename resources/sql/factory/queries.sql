@@ -45,4 +45,14 @@ WHERE ube.user_badge_id = :id AND ube.status = 'accepted'
 SELECT id FROM user_badge WHERE email = :email AND assertion_url = :url AND deleted = 0 AND status != 'declined'
 
 --name: delete-pending-user-badge!
-DELETE FROM user_badge WHERE id = :id AND user_id = 0 AND status = 'pending';
+DELETE FROM user_badge WHERE id = :id AND user_id = :user_id AND status = 'pending';
+
+-- name: select-badge-by-id
+SELECT * FROM user_badge WHERE id = :id;
+
+--name: select-pending-assertion-by-badge-id
+SELECT email, assertion_url FROM user_badge
+WHERE id = :id AND status = 'pending';
+
+--name: delete-pending-factory-assertion!
+DELETE FROM pending_factory_badge WHERE assertion_url = :url AND email = :e
