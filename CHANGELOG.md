@@ -1,11 +1,11 @@
 # Changelog
 
-## 3.7.2
+## 3.8.0
  - Improve accessibility
  - Public API documentation
  - Improvements to ui
  - Bug fixes
- 
+
 
 ## 3.6.2
  - Migration fixes for testing

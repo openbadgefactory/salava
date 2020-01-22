@@ -1,4 +1,4 @@
-(defproject salava "3.7.2"
+(defproject salava "3.8.0"
             :description "Salava application server"
             :url "http://salava.org"
             :license {:name "Apache 2.0"
@@ -96,7 +96,9 @@
                            [midje "1.9.8" :exclusions [org.clojure/tools.namespace clj-time]]
 
                  ; Auth
-                           [buddy "2.0.0"  :exclusions [org.bouncycastle/bcpkix-jdk15on]]] :source-paths ["src/clj" "src/cljs" "src/cljc"]
+                           [buddy "2.0.0"  :exclusions [org.bouncycastle/bcpkix-jdk15on]]]
+
+            :source-paths ["src/clj" "src/cljs" "src/cljc"]
             :java-source-paths ["src/java"]
             :test-paths ["test/clj" "test/cljs" "test/cljc"]
 
@@ -115,34 +117,40 @@
                        :uberjar {:resource-paths ["target/adv"]
                                  :main           salava.core.main
                                  :omit-source    true
-                                 :aot            :all}} :scss  {:builds
-                                                                {:dev {:source-dir "src/scss"
-                                                                       :dest-dir   "target/generated/public/css"
-                                                                       :executable "sass"
-                                                                       :args       ["--line-numbers" "-I" "src/scss" "-t" "nested"]}
-                                                                 :adv {:source-dir "src/scss"
-                                                                       :dest-dir   "target/adv/public/css"
-                                                                       :executable "sass"
-                                                                       :args       ["-I" "src/scss/" "-t" "compressed"]}}} :figwheel {:http-server-root "public"
-                                                                                                                                      :server-port      3450
-                                                                                                                                      :css-dirs         ["target/generated/public/css"]
-                                                                                                                                      :repl             false
-                                                                                                                                      :server-logfile   "target/figwheel-logfile.log"} :cljsbuild {:builds {:dev {:source-paths ["src/cljs" "src/cljc" "src/dev-cljs"]
-                                                                                                                                                                                                                  :compiler     {:main           "salava.core.ui.figwheel"
-                                                                                                                                                                                                                                 :asset-path     "/js/out"
-                                                                                                                                                                                                                                 :output-to      "target/generated/public/js/salava.js"
-                                                                                                                                                                                                                                 :output-dir     "target/generated/public/js/out"
-                                                                                                                                                                                                                                 :source-map     true
-                                                                                                                                                                                                                                 :optimizations  :none
-                                                                                                                                                                                                                                 :cache-analysis true
-                                                                                                                                                                                                                                 :pretty-print   true}}
-                                                                                                                                                                                                            :adv {:source-paths ["src/cljs" "src/cljc"]
-                                                                                                                                                                                                                  :compiler     {:main          "salava.core.ui.main"
-                                                                                                                                                                                                                                 :externs       ["resources/public/js/externs/jquery.ext.js" "resources/public/js/externs/externs.js"]
-                                                                                                                                                                                                                                 :output-to     "target/adv/public/js/salava.js"
-                                                                                                                                                                                                                                 :optimizations :advanced
-                                                                                                                                                                                                                                 :elide-asserts true
-                                                                                                                                                                                                                                 :pretty-print  false}}}}
+                                 :aot            :all}}
+
+            :scss  {:builds
+                    {:dev {:source-dir "src/scss"
+                           :dest-dir   "target/generated/public/css"
+                           :executable "sass"
+                           :args       ["--line-numbers" "-I" "src/scss" "-t" "nested"]}
+                     :adv {:source-dir "src/scss"
+                           :dest-dir   "target/adv/public/css"
+                           :executable "sass"
+                           :args       ["-I" "src/scss/" "-t" "compressed"]}}}
+
+            :figwheel {:http-server-root "public"
+                       :server-port      3450
+                       :css-dirs         ["target/generated/public/css"]
+                       :repl             false
+                       :server-logfile   "target/figwheel-logfile.log"}
+
+            :cljsbuild {:builds {:dev {:source-paths ["src/cljs" "src/cljc" "src/dev-cljs"]
+                                       :compiler     {:main           "salava.core.ui.figwheel"
+                                                      :asset-path     "/js/out"
+                                                      :output-to      "target/generated/public/js/salava.js"
+                                                      :output-dir     "target/generated/public/js/out"
+                                                      :source-map     true
+                                                      :optimizations  :none
+                                                      :cache-analysis true
+                                                      :pretty-print   true}}
+                                 :adv {:source-paths ["src/cljs" "src/cljc"]
+                                       :compiler     {:main          "salava.core.ui.main"
+                                                      :externs       ["resources/public/js/externs/jquery.ext.js" "resources/public/js/externs/externs.js"]
+                                                      :output-to     "target/adv/public/js/salava.js"
+                                                      :optimizations :advanced
+                                                      :elide-asserts true
+                                                      :pretty-print  false}}}}
 
             :auto-clean        false
             :min-lein-version  "2.7.1"
