@@ -1,17 +1,22 @@
 (ns salava.badgeIssuer.creator
   (:import [java.awt Graphics2D Color Font Polygon BasicStroke GraphicsEnvironment]
            [java.awt.image BufferedImage]
-           [javax.imageio ImageIO])
+           [javax.imageio ImageIO]
+           [java.util Base64]
+           [java.io ByteArrayOutputStream])
 
   (:require [slingshot.slingshot :refer :all]
-            [salava.core.util :refer [plugin-fun get-plugins]]))
+            [salava.core.util :as util :refer [plugin-fun get-plugins]]
+            [clojure.java.io :as io :refer [as-url]]
+            [clojure.tools.logging :as log]))
+
 
 (defn fonts []
  (let [f (GraphicsEnvironment/getLocalGraphicsEnvironment)]
    (->> f (.getAllFonts) (map #(.getFontName %)))))
 
-(def settings {:width 130
-               :height 130
+(def settings {:width 120
+               :height 120
                :base [Color/BLACK Color/WHITE]
                :fonts (fonts)
                :base-polygon-point 10
@@ -100,34 +105,35 @@
       (.setColor g (make-color))
       (.drawString g (make-name ctx user-id) 65 65)))
 
-(defn generate-image [ctx user]
-  (let [file (java.io.File/createTempFile "temp" ".png")
-        {:keys [width height base font-size font-style fonts]} settings
-        g (.createGraphics canvas)
-        r (rand-num 1 10)
-        stroke (BasicStroke. r)]
-    (doto g
-      (.setBackground (rand-nth base))
-      (.clearRect 0 0 width height)
-      (.setColor (make-color))
-      (.setStroke stroke)
-      (shape-shift)
-      #_(write-text ctx (:id user)))
-    (ImageIO/write canvas "png" file)
-    "success"))
+(defn image->base64str [canvas]
+  (let [out (ByteArrayOutputStream.)]
+    (ImageIO/write canvas "png" out)
+    (str "data:image/png;base64," (util/bytes->base64 (.toByteArray out)))))
 
-#_(defn str->img [string filename]
-    (let [file (java.io.File/createTempFile filename ".png")
-          {:keys [width height base]} settings
-          image (BufferedImage. width height BufferedImage/TYPE_INT_ARGB)
-          graphics (.createGraphics image)
-          font-size 30
-          font (Font. "TimesRoman" Font/BOLD font-size)]
-      (.setBackground graphics Color/WHITE)
-      (.clearRect graphics 0 0 width height)
-      (.setColor graphics (make-color))
-      ;(.fillOval graphics 10,16,43,17)
-      ;(.setFont graphics font)
-      (shape-shift graphics)
-      ;(.drawString graphics string 10 25)
-      (ImageIO/write image "png" file)))
+(defn generate-image [ctx user]
+  (try+
+    (let [;file (java.io.File/createTempFile "temp" ".png")
+
+          {:keys [width height base font-size font-style fonts]} settings
+          g (.createGraphics canvas)
+          r (rand-num 1 10)
+          stroke (BasicStroke. r)]
+      (doto g
+        (.setBackground (rand-nth base))
+        (.clearRect 0 0 width height)
+        (.setColor (make-color))
+        (.setStroke stroke)
+        (shape-shift)
+        (shape-shift))
+        ;(write-text ctx (:id user)))
+      ;(ImageIO/write canvas "png" file)
+      (if-let [url (image->base64str canvas)]
+        {:status "success" :url url}
+        (throw+ {:status "error" :url "" :message (log/error "Error generating image")})))
+    (catch Object _
+     (log/error "Error generating image: " (.getMessage _))
+     {:url "" :status "error" :message (str "Error generating image: " (.getMessage _))})))
+
+
+(defn initialize [ctx user]
+  {:data-url (:url (generate-image ctx user))})
