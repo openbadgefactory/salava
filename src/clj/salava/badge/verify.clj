@@ -104,7 +104,6 @@
 
                         revoked? (or (= (:status asr-response) 410) (:revoked asr-data))
                         expired? (expired? (:expires asr-data)) #_(and (:expires asr-data) (< (iso8601-to-unix-time (:expires asr-data)) (unix-time)))]
-                    (prn asr)
                     (assoc result :assertion-status 200
                            :assertion (-> asr-data (merge issuedOn expires) (dissoc :related)) #_(merge asr-data issuedOn expires)
                            :asr asr

@@ -20,7 +20,6 @@
   (ajax/GET
    (path-for "/obpv1/connections/connections_badge" true)
    {:handler (fn [data]
-                ; (prn data)
                (swap! state assoc :badges (:badges data)
                       :visible-area (session/get! :visible-area nil))
                (init-issuer-connections state))}))

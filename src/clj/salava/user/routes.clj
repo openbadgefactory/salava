@@ -142,21 +142,25 @@
                  :summary "Get user information for editing"
                  :auth-rules access/signed
                  :current-user current-user
-                 (ok {:password? (u/has-password? ctx (:id current-user))})) (POST "/edit/password" []
-                                                                                   :return {:status (s/enum "success" "error")
-                                                                                            :message (s/maybe s/Str)}
-                                                                                   :body [user-data schemas/EditUserPassword]
-                                                                                   :summary "Get user information for editing"
-                                                                                   :auth-rules access/signed
-                                                                                   :current-user current-user
-                                                                                   (ok (u/edit-user-password ctx user-data (:id current-user)))) (POST "/edit" []
-                                                                                                                                                       :return {:status (s/enum "success" "error")
-                                                                                                                                                                :message (s/maybe s/Str)}
-                                                                                                                                                       :body [user-data schemas/EditUser]
-                                                                                                                                                       :summary "Save user information"
-                                                                                                                                                       :auth-rules access/signed
-                                                                                                                                                       :current-user current-user
-                                                                                                                                                       (ok (u/edit-user ctx user-data (:id current-user))))
+                 (ok {:password? (u/has-password? ctx (:id current-user))}))
+
+            (POST "/edit/password" []
+                  :return {:status (s/enum "success" "error")
+                           :message (s/maybe s/Str)}
+                  :body [user-data schemas/EditUserPassword]
+                  :summary "Get user information for editing"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (u/edit-user-password ctx user-data (:id current-user))))
+
+            (POST "/edit" []
+                  :return {:status (s/enum "success" "error")
+                           :message (s/maybe s/Str)}
+                  :body [user-data schemas/EditUser]
+                  :summary "Save user information"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (u/edit-user ctx user-data (:id current-user))))
 
             (GET "/email-addresses" []
                  :return [schemas/EmailAddress]
