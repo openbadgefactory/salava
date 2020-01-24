@@ -1,11 +1,10 @@
 (ns salava.badgeIssuer.creator
-  (:import [java.awt Graphics2D Color Font Polygon BasicStroke GraphicsEnvironment]
+  (:import [java.awt Graphics2D Color Font Polygon BasicStroke GraphicsEnvironment GradientPaint]
            [java.awt.image BufferedImage]
-           [javax.imageio ImageIO]
-           [java.util Base64]
-           [java.io ByteArrayOutputStream])
+           [javax.imageio ImageIO])
 
   (:require [slingshot.slingshot :refer :all]
+            [salava.badgeIssuer.util :refer [image->base64str]]
             [salava.core.util :as util :refer [plugin-fun get-plugins]]
             [clojure.java.io :as io :refer [as-url]]
             [clojure.tools.logging :as log]))
@@ -49,6 +48,8 @@
 (defn- rand-num [start end]
   (+ start (rand-int (- end start))))
 
+(defn- hexagon [])
+
 (defn- draw-polygon [n]
   (let [{:keys [width height base-polygon-point]} settings
         polygon-points (if n n (-> (rand-num 2 7) inc))
@@ -73,7 +74,31 @@
         r (int (/ (+ (rand-int 255) (.getRed base)) 2))
         g (int (/ (+ (rand-int 255) (.getGreen base)) 2))
         b (int (/ (+ (rand-int 255) (.getBlue base)) 2))]
+
     (Color. r g b)))
+
+(defn- get-color []
+  (let [{:keys [width height]} settings
+        rand (rand-num 0 3)
+        gradient (GradientPaint.
+                  (rand-num 0 (/ height 2))
+                  (rand-num 0 (/ width 2))
+                  (make-color)
+                  (rand-num 0 height)
+                  (rand-num 0 width)
+                  (make-color))
+        gradient_2 (GradientPaint.
+                    (rand-num 0 height)
+                    (rand-num 0 width)
+                    (make-color)
+                    (rand-num 0 height)
+                    (rand-num 0 width)
+                    (make-color))]
+    (case rand
+      0 (make-color)
+      1 gradient
+      2 gradient_2
+      (make-color))))
 
 (defn shape-shift
   "randomly generate filled shape"
@@ -85,14 +110,11 @@
       2 (.fillOval g x1 y1 x2 y2)
       3 (.fillPolygon g (let [polygon (rand-nth (shape-coll))
                               pgon (new Polygon)]
-                         (prn polygon)
                          (doseq [p (:points polygon)]
                            (. pgon (addPoint (:x p) (:y p))))
                          pgon))
       (.drawPolygon g (let [polygon (rand-nth (shape-coll))
                             pgon (new Polygon)]
-                        (prn polygon)
-
                         (doseq [p (:points polygon)]
                           (. pgon (addPoint (:x p) (:y p))))
                         pgon)))))
@@ -105,10 +127,6 @@
       (.setColor g (make-color))
       (.drawString g (make-name ctx user-id) 65 65)))
 
-(defn image->base64str [canvas]
-  (let [out (ByteArrayOutputStream.)]
-    (ImageIO/write canvas "png" out)
-    (str "data:image/png;base64," (util/bytes->base64 (.toByteArray out)))))
 
 (defn generate-image [ctx user]
   (try+
@@ -121,9 +139,8 @@
       (doto g
         (.setBackground (rand-nth base))
         (.clearRect 0 0 width height)
-        (.setColor (make-color))
+        (.setPaint (get-color))
         (.setStroke stroke)
-        (shape-shift)
         (shape-shift))
         ;(write-text ctx (:id user)))
       ;(ImageIO/write canvas "png" file)
@@ -136,4 +153,8 @@
 
 
 (defn initialize [ctx user]
-  {:data-url (:url (generate-image ctx user))})
+  {:image (:url (generate-image ctx user))
+   :name ""
+   :criteria ""
+   :description ""
+   :tags ""})

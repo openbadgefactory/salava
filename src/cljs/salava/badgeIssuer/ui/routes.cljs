@@ -1,6 +1,7 @@
 (ns salava.badgeIssuer.ui.routes
   (:require
    [salava.badgeIssuer.ui.creator :as creator]
+   [salava.badgeIssuer.ui.modal]
    [salava.core.i18n :refer [t]]
    [salava.core.ui.helper :refer [base-path]]))
 

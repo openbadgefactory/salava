@@ -50,47 +50,48 @@
         (if @show-messages
           [:div.rowmessage
            [:h1.uppercase-header (str name " - " (t :social/Messages))]
-           [badge-message-handler badge_id reload-fn]] [:div.rowcontent
-                                                        [:h1.uppercase-header name]
-                                                        [:div
-                                                         (if (< 1 (count content))
-                                                           [:div.inline [:span._label (t :core/Languages) ": "] (content-language-selector selected-language content)])
-                                                         (bm/issuer-modal-link issuer_content_id issuer_content_name)
-                                                         (bm/creator-modal-link creator_content_id creator_name)
-                                                         [:div.row
-                                                          [:div {:class "col-md-12 description"}
-                                                           description]]
+           [badge-message-handler badge_id reload-fn]]
+          [:div.rowcontent
+           [:h1.uppercase-header name]
+           [:div
+            (if (< 1 (count content))
+              [:div.inline [:span._label (t :core/Languages) ": "] (content-language-selector selected-language content)])
+            (bm/issuer-modal-link issuer_content_id issuer_content_name)
+            (bm/creator-modal-link creator_content_id creator_name)
+            [:div.row
+             [:div {:class "col-md-12 description"}
+              description]]
 
-                                                         (when-not (empty? alignment)
-                                                           [:div.row
-                                                            [:div.col-md-12
-                                                             [:h2.uppercase-header (t :badge/Alignments)]
-                                                             (doall
-                                                              (map (fn [{:keys [name url description]}]
-                                                                     [:p {:key url}
-                                                                      [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
-                                                                   alignment))]])
+            (when-not (empty? alignment)
+              [:div.row
+               [:div.col-md-12
+                [:h2.uppercase-header (t :badge/Alignments)]
+                (doall
+                 (map (fn [{:keys [name url description]}]
+                        [:p {:key url}
+                         [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
+                      alignment))]])
 
-                                                         [:div.row
-                                                          [:div {:class "col-md-12 badge-info"}
-                                                           [:h2.uppercase-header (t :badge/Criteria)]
-                                                           [:div.row
-                                                            [:div.col-md-12
-                                                             [:a {:href   criteria_url
-                                                                  :target "_blank"} (t :badge/Opencriteriapage)]]]
-                                                           [:div.row
-                                                            [:div.col-md-12
-                                                             {:dangerouslySetInnerHTML {:__html criteria_content}}]]]]]
+            [:div.row
+             [:div {:class "col-md-12 badge-info"}
+              [:h2.uppercase-header (t :badge/Criteria)]
+              [:div.row
+               [:div.col-md-12
+                [:a {:href   criteria_url
+                     :target "_blank"} (t :badge/Opencriteriapage)]]]
+              [:div.row
+               [:div.col-md-12
+                {:dangerouslySetInnerHTML {:__html criteria_content}}]]]]]
 
-                                                        (if (not (empty? tags))
-                                                          (into [:div]
-                                                                (for [tag tags]
-                                                                  [:p {:id "tag"}
-                                                                   (str "#" tag)])))
-                                                        (if (or (> (count public_users) 0) (> private_user_count 0))
-                                                          (into [:div]
-                                                                (for [f (plugin-fun (session/get :plugins) "block" "badge_recipients")]
-                                                                  [f  {:data {:private_user_count private_user_count :public_users public_users :all_recipients_count (+ private_user_count (count public_users))}}])))])
+           (if (not (empty? tags))
+             (into [:div]
+                   (for [tag tags]
+                     [:p {:id "tag"}
+                      (str "#" tag)])))
+           (if (or (> (count public_users) 0) (> private_user_count 0))
+             (into [:div]
+                   (for [f (plugin-fun (session/get :plugins) "block" "badge_recipients")]
+                     [f  {:data {:private_user_count private_user_count :public_users public_users :all_recipients_count (+ private_user_count (count public_users))}}])))])
 
         (when (and gallery_id (not @show-messages) (session/get :user))
           (into [:div]

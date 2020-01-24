@@ -3,5 +3,79 @@
 #badge-creator {
   .image-container {
     padding: 10px;
+    background-color: darken($background-color, 2%);
+    text-align: center;
+    width: 250px;
+    height: auto;
+    display: inline-block;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    img {
+      padding: 5px;
+      max-width: 200px;
+    }
   }
+
+  .or {
+    display: block;
+  }
+
+  .uppercase-header {
+    font-size: 36px;
+  }
+  .container {
+    width: inherit;
+    margin: 40px auto;
+}
+
+.stepwizard-step p {
+    margin-top: 0px;
+    color:#666;
+    text-transform: uppercase;
+}
+.stepwizard-row {
+    display: table-row;
+}
+.stepwizard {
+    display: table;
+    width: 100%;
+    position: relative;
+}
+.stepwizard-step button[disabled] {
+    /*opacity: 1 !important;
+    filter: alpha(opacity=100) !important;*/
+}
+.stepwizard .btn.disabled, .stepwizard .btn[disabled], .stepwizard fieldset[disabled] .btn {
+    opacity:1 !important;
+    color:#bbb;
+}
+
+.stepwizard-row:before {
+    top: 14px;
+    bottom: 0;
+    position: absolute;
+    content:" ";
+    width: 100%;
+    height: 1px;
+    background-color: #ccc;
+    z-index: 0;
+}
+.stepwizard-step {
+    display: table-cell;
+    text-align: center;
+    position: relative;
+    font-family: 'Roboto', cursive;
+}
+.btn-circle {
+    margin-top: unset;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    padding: 6px 0;
+    font-size: 12px;
+    line-height: 1.428571429;
+    border-radius: 15px;
+    font-family: 'Roboto', cursive;
+}
+
 }

@@ -24,7 +24,6 @@
 
 (defn save-settings [state]
   (let [{:keys [id visibility tags rating show_recipient_name]} @(cursor state [:badge-settings])]
-    (prn @(cursor state [:badge-settings]))
     (ajax/PUT
       (path-for (str "/obpv1/badge/settings/" id))
       {:params  {;:visibility   visibility
