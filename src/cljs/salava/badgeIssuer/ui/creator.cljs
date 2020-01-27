@@ -1,9 +1,13 @@
 (ns salava.badgeIssuer.ui.creator
   (:require
+   [cemerick.url :as url]
    [clojure.string :refer [blank?]]
+   [clojure.walk :refer [keywordize-keys]]
    [reagent.core :refer [atom create-class cursor]]
    [reagent-modals.modals :as m]
    [reagent.session :as session]
+   [salava.badgeIssuer.ui.helper :refer [bottom-navigation progress-wizard]]
+   [salava.badgeIssuer.ui.util :refer [generate-image toggle-setting]]
    [salava.core.ui.ajax-utils :as ajax]
    [salava.core.ui.helper :refer [path-for navigate-to]]
    [salava.core.ui.input :refer [text-field markdown-editor]]
@@ -14,88 +18,23 @@
 
 
 (defn init-data [state]
-  (ajax/GET
-    (path-for "/obpv1/issuer")
-    {:handler (fn [data]
-                (swap! state assoc :badge data
-                                   :generating-image false))}))
+  (let [link (if-not (blank? (:id @state))
+               (path-for "/obpv1/selfie/create/" (:id @state))
+               (path-for "/obpv1/selfie/create"))]
+    (ajax/GET
+      (path-for "/obpv1/selfie/create")
+      {:param {:id (:id @state)}
+       :handler (fn [data]
+                  (swap! state assoc :badge data
+                                     :generating-image false))})))
 
-
-(defn generate-image [state]
-  (reset! (cursor state [:generating-image]) true)
-  (ajax/GET
-    (path-for "/obpv1/issuer/generate_image")
-    {:handler (fn [{:keys [status url message]}]
-                (when (= "success" status)
-                  (reset! (cursor state [:badge :image]) url)
-                  (reset! (cursor state [:generating-image]) false)))}))
-
-(defn upload-image [])
-(defn save-badge [])
-
-(defn progress-wizard [state]
-  (let [step (cursor state [:step])]
-    [:div.container
-     [:div.stepwizard
-      [:div.stepwizard-row.setup-panel
-       [:div.stepwizard-step.col-xs-4
-        [:a#step1.btn.btn-success.btn-circle
-         {:type "button"
-          :class (if (= 0 @step) "active" "")
-          :on-click #(reset! step 0)}
-          ;:disabled (not= 0 step)}
-         1]
-        [:p [:small (t :badgeIssuer/Image)]]]
-
-       [:div.stepwizard-step.col-xs-4
-        [:a#step2.btn.btn-success.btn-circle
-         {:type "button"
-          :class (if (= 1 @step) "active" "")
-          :on-click #(reset! step 1)}
-          ;:disabled (not= 1 @step)}
-         2]
-
-        [:p [:small (t :badgeIssuer/Content)]]]
-
-       [:div.stepwizard-step.col-xs-4
-        [:a#step3.btn.btn-success.btn-circle
-         {:type "button"
-          :class (if (= 2 @step) "active" "")
-          :on-click #(reset! step 2)}
-          ;:disabled (not (= 2 @step))}
-         3]
-
-        [:p [:small (t :badgeIssuer/Issue)]]]]]]))
-
-(defn bottom-navigation [state]
-  (let [step (cursor state [:step])
-        previous? (pos? @step)
-        next? (< @step 2)]
-    [:div.bottom-navigation
-     [:hr.border]
-     [:div.row
-      [:div.col-md-12
-       (when previous? [:a {:href "#"
-                            :on-click #(do
-                                         (.preventDefault %)
-                                         (reset! step (dec @step)))}
-                        [:div {:id "step-button-previous"}
-                         (t :core/Previous)]])
-       (when (= 1 @step)
-         [:a.btn.btn-danger
-          {:href "#"
-           :on-click #(do
-                        (.preventDefault %)
-                        (mo/open-modal [:badgeIssuer :preview] {:badge (:badge @state)}))}
-          (t :badgeIssuer/Preview)])
-
-       (when next?
-         [:a {:href "#"
-              :on-click #(do
-                           (.preventDefault %)
-                           (reset! step (inc @step)))}
-            [:div.pull-right {:id "step-button"}
-             (t :core/Next)]])]]]))
+(defn save-selfie-badge [state]
+  (let [badge-info (cursor state [:badge])]
+    (ajax/POST
+      (path-for "/obpv1/selfie/create")
+      {:params badge-info
+       :handler (fn [data]
+                  (prn data))})))
 
 (defn upload-modal [{:keys [status message reason]}]
   [:div
@@ -127,7 +66,7 @@
                    (.append "file" file (.-name file)))]
     (swap! state assoc :generating-image true)
     (ajax/POST
-     (path-for "/obpv1/issuer/upload_image")
+     (path-for "/obpv1/selfie/upload_image")
      {:body    form-data
       :handler (fn [data]
                  (if (= (:status data) "success")
@@ -178,11 +117,8 @@
      [:div.panel-heading
       [:div.uppercase-header.text-center  (t :badgeIssuer/Addbadgeimage)]]
      [:div.panel-body
-      ;[:p (t :badgeIssuer/Generateimageorupload)]
       [:div.col-md-12 {:style {:margin "20px 0"}}
-
        [:div.col-md-6.text-center
-        ;[:div (t :badgeIssuer/Generateimageorupload)]
         [:div.buttons {:style {:margin-bottom "20px"}}
          [:button.btn.btn-primary
           {:on-click #(do
@@ -199,18 +135,31 @@
                         :accept     "image/png"
                         :aria-label (t :badgeIssuer/Uploadbadgeimage)}]
           (t :badgeIssuer/Uploadbadgeimage)]]]
-
-
-
        [:div.col-md-6.text-center
         [:div.image-container
          (if-not @(cursor state [:generating-image])
            (when-not (blank? image)
             [:img {:src image :alt "image"}])
-            ;[:img {:src (str "/" (:path uploaded-image)) :alt (or name "File upload")}])
            [:span.fa.fa-spin.fa-cog.fa-2x])]]]]]))
 
-
+(defn issue-content [state]
+  (let [{:keys [badge]} @state
+        ifg (cursor state [:badge :issuable_from_gallery])]
+    [:div.panel.panel-success
+     [:div.panel-heading
+      [:div.uppercase-header.text-center  (t :badgeIssuer/Issue)]]
+     [:div.panel-body
+      [:div.col-md-12
+       [:div.form-group
+        [:label {:for "ifg"}
+         [:input
+           {:type "checkbox"
+            :on-change #(toggle-setting ifg)
+            :checked (pos? @ifg)
+            :id "ifg"}]]
+        (t :badgeIssuer/Issuablefromgallery)
+        [:div {:style {:margin "10px 0"}}
+         [:div (t :badgeIssuer/Issuebadge)]]]]]]))
 
 (defn content [state]
   (let [{:keys [badge generating-image]} @state
@@ -225,20 +174,23 @@
        (case @step
          0 [add-image state]
          1 [badge-content state]
+         2 [issue-content state]
          [add-image state])
-
-       [:div.badge-name]
-       [bottom-navigation state]]]]))
-
+       [bottom-navigation step state]]]]))
 
 (defn handler [site-navi]
-  (let [state (atom {:badge {:image ""
+  (let [query (as-> (-> js/window .-location .-href url/url :query keywordize-keys) $)
+        id (:id query)
+        state (atom {:badge {:image ""
                              :description ""
                              :name ""
-                             :criteria ""}
+                             :criteria ""
+                             :issuable_from_gallery 0
+                             :id ""}
                      :generating-image true
-                     :step 0})]
-
+                     :step 0
+                     :id id})]
+    (prn id)
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))

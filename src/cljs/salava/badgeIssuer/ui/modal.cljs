@@ -1,5 +1,6 @@
 (ns salava.badgeIssuer.ui.modal
   (:require
+    [clojure.string :refer [blank?]]
     [salava.core.i18n :refer [t]]))
 
 (defn preview-badge [badge]
@@ -14,10 +15,11 @@
        [:h1.uppercase-header name]
        [:div.description description]]]
 
-     [:div {:class "row criteria-html"}
-      [:div.col-md-12
-       [:h2.uppercase-header (t :badge/Criteria)]
-       [:div {:dangerouslySetInnerHTML {:__html criteria}}]]]
+     (when-not (blank? criteria)
+       [:div {:class "row criteria-html"}
+        [:div.col-md-12
+         [:h2.uppercase-header (t :badge/Criteria)]
+         [:div {:dangerouslySetInnerHTML {:__html criteria}}]]])
 
      [:div.row
       (if (not (empty? tags))

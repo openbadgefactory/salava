@@ -4,6 +4,7 @@
            [javax.imageio ImageIO])
 
   (:require [slingshot.slingshot :refer :all]
+            [salava.badgeIssuer.db :as db]
             [salava.badgeIssuer.util :refer [image->base64str]]
             [salava.core.util :as util :refer [plugin-fun get-plugins]]
             [clojure.java.io :as io :refer [as-url]]
@@ -130,9 +131,7 @@
 
 (defn generate-image [ctx user]
   (try+
-    (let [;file (java.io.File/createTempFile "temp" ".png")
-
-          {:keys [width height base font-size font-style fonts]} settings
+    (let [{:keys [width height base font-size font-style fonts]} settings
           g (.createGraphics canvas)
           r (rand-num 1 10)
           stroke (BasicStroke. r)]
@@ -142,19 +141,9 @@
         (.setPaint (get-color))
         (.setStroke stroke)
         (shape-shift))
-        ;(write-text ctx (:id user)))
-      ;(ImageIO/write canvas "png" file)
       (if-let [url (image->base64str canvas)]
         {:status "success" :url url}
         (throw+ {:status "error" :url "" :message (log/error "Error generating image")})))
     (catch Object _
      (log/error "Error generating image: " (.getMessage _))
      {:url "" :status "error" :message (str "Error generating image: " (.getMessage _))})))
-
-
-(defn initialize [ctx user]
-  {:image (:url (generate-image ctx user))
-   :name ""
-   :criteria ""
-   :description ""
-   :tags ""})

@@ -5,6 +5,9 @@
     [ring.util.http-response :refer :all]
     [ring.util.io :as io]
     [salava.badgeIssuer.creator :as bic]
+    [salava.badgeIssuer.db :as bdb]
+    [salava.badgeIssuer.schemas :as schemas]
+    [salava.badgeIssuer.main :as bm]
     [salava.badgeIssuer.upload :as biu]
     [salava.core.access :as access]
     [salava.core.layout :as layout]
@@ -14,17 +17,42 @@
 (defn route-def [ctx]
   (routes
     (context "/badge" []
-              (layout/main ctx "/issuer"))
+              (layout/main ctx "/selfie")
+              (layout/main ctx "/selfie/create")
+              (layout/main ctx "/selfie/create/:id"))
 
-    (context "/obpv1/issuer" []
-             :tags ["badge issuer"]
+    (context "/obpv1/selfie" []
+             :tags ["selfie"]
 
       (GET "/" []
+           :summary "Get user selfie badges"
+           :auth-rules access/authenticated
+           :current-user current-user
+           (ok {:badges (bdb/user-selfie-badges ctx (:id current-user))}))
+
+      (GET "/create" []
            :no-doc true
            :summary "Initialize badge creator"
            :auth-rules access/authenticated
            :current-user current-user
-           (ok (bic/initialize ctx current-user)))
+           (ok (bm/initialize ctx current-user)))
+
+      (GET "/create/:id" []
+            :summary "Edit selfie badge!"
+            :path-params [id :- s/Str]
+            :auth-rules access/authenticated
+            :current-user current-user
+            (ok (bm/initialize ctx current-user id)))
+
+      (POST "/create" []
+            :return {:status (s/enum "success" "error")
+                     :id (s/maybe s/Str)
+                     (s/optional-key :message) (s/maybe s/Str)}
+            :body [data schemas/save-selfie-badge]
+            :summary "Create new selfie badge"
+            :auth-rules access/authenticated
+            :current-user current-user
+            (ok (bdb/save-selfie-badge ctx data (:id current-user))))
 
       (GET "/generate_image" []
            :return {:status (s/enum "success" "error") :url s/Str (s/optional-key :message) (s/maybe s/Str)}
