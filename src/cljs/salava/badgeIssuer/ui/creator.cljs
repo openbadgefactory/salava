@@ -9,32 +9,31 @@
    [salava.badgeIssuer.ui.helper :refer [bottom-navigation progress-wizard]]
    [salava.badgeIssuer.ui.util :refer [generate-image toggle-setting]]
    [salava.core.ui.ajax-utils :as ajax]
-   [salava.core.ui.helper :refer [path-for navigate-to]]
-   [salava.core.ui.input :refer [text-field markdown-editor]]
+   [salava.core.ui.helper :refer [path-for navigate-to current-route-path]]
+   [salava.core.ui.input :refer [text-field markdown-editor editor]]
    [salava.core.i18n :refer [t translate-text]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]
    [salava.core.ui.tag :as tag]))
 
 
-(defn init-data [state]
-  (let [link (if-not (blank? (:id @state))
-               (path-for "/obpv1/selfie/create/" (:id @state))
-               (path-for "/obpv1/selfie/create"))]
-    (ajax/GET
-      (path-for "/obpv1/selfie/create")
-      {:param {:id (:id @state)}
-       :handler (fn [data]
-                  (swap! state assoc :badge data
-                                     :generating-image false))})))
+(defn init-data
+  ([state]
+   (ajax/GET
+     (path-for "/obpv1/selfie/create")
+     {:handler (fn [data]
+                 (swap! state assoc :badge data
+                                    :generating-image false))}))
+  ([id state]
 
-(defn save-selfie-badge [state]
-  (let [badge-info (cursor state [:badge])]
-    (ajax/POST
-      (path-for "/obpv1/selfie/create")
-      {:params badge-info
-       :handler (fn [data]
-                  (prn data))})))
+   (ajax/GET
+    (path-for (str "/obpv1/selfie/create/" id))
+    {;:param {:id (:id @state)}
+     :handler (fn [data]
+                (prn data)
+                (swap! state assoc :badge data
+                                   :generating-image false))})))
+
 
 (defn upload-modal [{:keys [status message reason]}]
   [:div
@@ -110,6 +109,7 @@
         [:span._label  (t :badge/Criteria) [:span.form-required " *"]]
         [markdown-editor (cursor state [:badge :criteria])]]]]]))
 
+
 (defn add-image [state]
   (let [{:keys [badge generating-image]} @state
         {:keys [image name]} badge]
@@ -159,7 +159,7 @@
             :id "ifg"}]]
         (t :badgeIssuer/Issuablefromgallery)
         [:div {:style {:margin "10px 0"}}
-         [:div (t :badgeIssuer/Issuebadge)]]]]]]))
+         [:div [:a {:href "#" :on-click #(mo/open-modal [:selfie :view] {:tab 2 :badge badge})}(t :badgeIssuer/Issuebadge)]]]]]]]))
 
 (defn content [state]
   (let [{:keys [badge generating-image]} @state
@@ -170,6 +170,10 @@
      [:h1.sr-only (t :badgeIssuer/Badgecreator)]
      [:div.panel
       [progress-wizard state]
+      (when (and (:error-message @state) (not (blank? (:error-message @state))))
+        [:div
+         [:div;.col-md-12
+          {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))]])
       [:div.panel-body
        (case @step
          0 [add-image state]
@@ -178,9 +182,8 @@
          [add-image state])
        [bottom-navigation step state]]]]))
 
-(defn handler [site-navi]
-  (let [query (as-> (-> js/window .-location .-href url/url :query keywordize-keys) $)
-        id (:id query)
+(defn handler [site-navi params]
+  (let [id (:id params)
         state (atom {:badge {:image ""
                              :description ""
                              :name ""
@@ -189,8 +192,10 @@
                              :id ""}
                      :generating-image true
                      :step 0
-                     :id id})]
-    (prn id)
-    (init-data state)
+                     :id id
+                     :error-message nil})]
+    (if-not (blank? id)
+      (init-data id state)
+      (init-data state))
     (fn []
       (layout/default site-navi (content state)))))

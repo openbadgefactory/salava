@@ -47,37 +47,50 @@
            [:hr.border]
            [:div.row
             [:div.col-md-12
+             ;;previous
              (when (pos? @step)[:a {:href "#"
                                     :on-click #(do
                                                  (.preventDefault %)
                                                  (reset! step (dec @step)))}
                                   [:div {:id "step-button-previous"}
                                    (t :core/Previous)]])
-             [:a.btn.btn-danger
-                {:href "#"
-                 :on-click #(do
-                              (.preventDefault %)
-                              (mo/open-modal [:badgeIssuer :preview] {:badge (:badge @state)}))}
-                (t :badgeIssuer/Preview)]
+             ;;preview
+             (when (< @step 2)
+               [:a.btn.btn-success
+                  {:href "#"
+                   :on-click #(do
+                                (.preventDefault %)
+                                (mo/open-modal [:selfie :preview] {:badge (:badge @state)}))}
+                [:span #_[:i.fa.fa-eye.fa-fw.fa-lg]  (t :badgeIssuer/Preview)]])
 
-             (when (pos? @step)
+                ;;Saveandexit
+             (when (= 2 @step)
                [:a.btn.btn-primary
                 {:href "#"
-                 :on-click #(save-selfie-badge state nil)}
-                (t :badgeIssuer/Save)])
-
-             (when (pos? @step)
-               [:a.btn.btn-warning
-                {:href "#"
-                 :on-click #(save-selfie-badge state (fn [] (navigate-to "/badge/issuer")))}
+                 :on-click #(save-selfie-badge state (fn [] (navigate-to "/badge/selfie")))}
                 (t :badgeIssuer/Saveandexit)])
 
-             (when (< @step 2)
-                [:a {:href "#"
-                     :on-click #(do
-                                  (.preventDefault %)
-                                  (prn @step)
-                                  (reset! step (inc @step)))}
-                   [:div.pull-right {:id "step-button"}
-                    (t :core/Next)]])]]])
+              ;;cancel
+             [:a.btn.btn-danger
+              {:href "#"
+               :on-click #(do
+                            (.preventDefault %)
+                            (navigate-to "/badge/selfie"))}
+              [:span #_[:i.fa.fa-fw.fa-close.fa-lg] (t :core/Cancel)]]
+
+               ;;save
+             #_(when (= 2 @step)
+                 [:a.btn.btn-primary
+                  {:href "#"
+                   :on-click #(save-selfie-badge state nil)}
+                  (t :badgeIssuer/Save)])
+
+                ;;next
+              (when (< @step 2)
+                 [:a {:href "#"
+                      :on-click #(do
+                                   (.preventDefault %)
+                                   (reset! step (inc @step)))}
+                    [:div.pull-right {:id "step-button"}
+                     (t :core/Next)]])]]])
      :component-did-mount (fn [] (reset! step 0))}))

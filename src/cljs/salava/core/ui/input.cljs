@@ -57,7 +57,6 @@
   (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor)))))
 
 (defn markdown-editor [value]
-  (prn @value)
   (create-class
    {:component-did-mount
     (fn []

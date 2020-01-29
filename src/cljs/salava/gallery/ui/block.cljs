@@ -185,45 +185,45 @@
                          :user_badge_id user_badge_id
                          :context context
                          :url (str "/obpv1/gallery/profiles/" user_badge_id "/" context)
-                         :sent-requests []})] (create-class {:reagent-render (fn []
-                                                                               [:div
-                                                                                [:div {:id "social-tab"}
-                                                                                 [profiles/profile-gallery-grid-form data-atom true]
-                                                                                 (if (:ajax-message @data-atom)
-                                                                                   [:div.ajax-message
-                                                                                    [:i {:class "fa fa-cog fa-spin fa-2x "}]
-                                                                                    [:span (:ajax-message @data-atom)]]
-                                                                                   [:div#endorsebadge
-                                                                                    (conj
-                                                                                     [:div
-                                                                                      (reduce (fn [r user]
-                                                                                                (conj r [profile-grid-element user selected-users-atom type]))
-                                                                                              [:div.col-md-12.profilescontainer
-                                                                                               (when (= "endorsement" context)
-                                                                                                 [:div.col-md-12 {:style {:font-weight "bold"}}
-                                                                                                  [:hr.line]
-                                                                                                  [:p (t :badge/Requestendorsementmodalinfo)]
-                                                                                                  [:hr.line]])]
-                                                                                              (->> @(cursor data-atom [:users])
-                                                                                                   (remove #(= (:id %) (session/get-in [:user :id])))
-                                                                                                   (filter #(every? nil? (-> % :endorsement vals)))))]
+                         :sent-requests []})]
+    (create-class {:reagent-render (fn []
+                                     [:div
+                                      [:div {:id "social-tab"}
+                                       [profiles/profile-gallery-grid-form data-atom true]
+                                       (if (:ajax-message @data-atom)
+                                         [:div.ajax-message
+                                          [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                                          [:span (:ajax-message @data-atom)]]
+                                         [:div#endorsebadge
+                                          (conj
+                                           [:div
+                                            (reduce (fn [r user]
+                                                      (conj r [profile-grid-element user selected-users-atom type]))
+                                                    [:div.col-md-12.profilescontainer
+                                                     (when (= "endorsement" context)
+                                                       [:div.col-md-12 {:style {:font-weight "bold"}}
+                                                        [:hr.line]
+                                                        [:p (t :badge/Requestendorsementmodalinfo)]
+                                                        [:hr.line]])]
+                                                    (->> @(cursor data-atom [:users])
+                                                         (remove #(= (:id %) (session/get-in [:user :id])))
+                                                         (filter #(every? nil? (-> % :endorsement vals)))))]
 
-                                                                                     [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
-                                                                                      [:button.btn.btn-primary {:on-click #(mo/previous-view) #_(do (.preventDefault %)
-                                                                                                                                                    (mo/previous-view))
-                                                                                                                :disabled (empty? @selected-users-atom)}
-                                                                                       (t :core/Continue)]])])]])
-                                                             :component-will-mount (fn []
-                                                                                     (ajax/POST
-                                                                                      (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
-                                                                                      {:params {:country (session/get-in [:filter-options :country] country)
-                                                                                                :name ""
-                                                                                                :common_badges common-badges?
-                                                                                                :order_by "ctime"}
-                                                                                       :handler (fn [{:keys [users countries]} data]
-                                                                                                  (swap! data-atom assoc :users users
-                                                                                                         :countries countries
-                                                                                                         :country-selected (session/get-in [:filter-options :country] country)))
-                                                                                       :finally (fn []
-                                                        ;(when (= "endorsement" context) )
-                                                                                                  (swap! data-atom assoc :ajax-message nil))}))})))
+                                           [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
+                                            [:button.btn.btn-primary {:on-click #(mo/previous-view) #_(do (.preventDefault %)
+                                                                                                          (mo/previous-view))
+                                                                      :disabled (empty? @selected-users-atom)}
+                                             (t :core/Continue)]])])]])
+                   :component-will-mount (fn []
+                                           (ajax/POST
+                                            (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
+                                            {:params {:country (session/get-in [:filter-options :country] country)
+                                                      :name ""
+                                                      :common_badges common-badges?
+                                                      :order_by "ctime"}
+                                             :handler (fn [{:keys [users countries]} data]
+                                                        (swap! data-atom assoc :users users
+                                                               :countries countries
+                                                               :country-selected (session/get-in [:filter-options :country] country)))
+                                             :finally (fn []
+                                                        (swap! data-atom assoc :ajax-message nil))}))})))

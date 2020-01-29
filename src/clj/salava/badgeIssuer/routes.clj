@@ -30,6 +30,11 @@
            :current-user current-user
            (ok {:badges (bdb/user-selfie-badges ctx (:id current-user))}))
 
+      (GET "/assertion/:id" []
+           :summary "Get hosted badge assertion"
+           :path-params [id :- s/Int]
+           (ok (bdb/badge-assertion ctx id)))
+
       (GET "/create" []
            :no-doc true
            :summary "Initialize badge creator"
@@ -42,6 +47,7 @@
             :path-params [id :- s/Str]
             :auth-rules access/authenticated
             :current-user current-user
+            ;(bm/issue-badge ctx)
             (ok (bm/initialize ctx current-user id)))
 
       (POST "/create" []
@@ -53,6 +59,14 @@
             :auth-rules access/authenticated
             :current-user current-user
             (ok (bdb/save-selfie-badge ctx data (:id current-user))))
+
+      (DELETE "/:id" []
+              :return {:status (s/enum "success" "error")}
+              :path-params [id :- s/Str]
+              :summary "Delete selfie badge"
+              :auth-rules access/authenticated
+              :current-user current-user
+              (ok (bdb/delete-selfie-badge-soft ctx (:id current-user) id)))
 
       (GET "/generate_image" []
            :return {:status (s/enum "success" "error") :url s/Str (s/optional-key :message) (s/maybe s/Str)}

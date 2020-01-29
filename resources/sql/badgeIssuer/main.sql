@@ -21,3 +21,10 @@ SELECT * FROM selfie_badge WHERE id = :id
 
 --name: get-selfie-badge-creator
 SELECT creator_id FROM selfie_badge WHERE id = :id
+
+--name: update-user-badge-assertions!
+UPDATE user_badge SET assertion_url = :assertion_url AND assertion_json = :assertion_json
+WHERE user_id = :id
+
+--name: get-assertion-json 
+SELECT assertion_json FROM user_badge WHERE id = :id AND deleted = 0
