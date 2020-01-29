@@ -174,7 +174,7 @@
         filter-options (session/get :filter-options nil)
 
         common-badges? (if filter-options (:common-badges filter-options) true)
-        {:keys [type selected-users-atom context user_badge_id]} params
+        {:keys [type selected-users-atom context user_badge_id selfie]} params
         data-atom (atom {:users []
                          :selected []
                          :ajax-message nil
@@ -184,7 +184,9 @@
                          :country-selected (session/get-in [:filter-options :country] country)
                          :user_badge_id user_badge_id
                          :context context
-                         :url (str "/obpv1/gallery/profiles/" user_badge_id "/" context)
+                         :url (if (= context "endorsement")
+                               (str "/obpv1/gallery/profiles/" user_badge_id "/" context)
+                               (str "/obpv1/gallery/profiles"))
                          :sent-requests []})]
     (create-class {:reagent-render (fn []
                                      [:div
@@ -204,19 +206,37 @@
                                                        [:div.col-md-12 {:style {:font-weight "bold"}}
                                                         [:hr.line]
                                                         [:p (t :badge/Requestendorsementmodalinfo)]
+                                                        [:hr.line]])
+
+                                                     (when (= "selfie_issue" context)
+                                                       [:div.col-md-12 {:style {:font-weight "bold"}}
+                                                        [:hr.line]
+                                                        [:p (t :badgeIssuer/Issueselfiebadgeinfo)]
                                                         [:hr.line]])]
-                                                    (->> @(cursor data-atom [:users])
-                                                         (remove #(= (:id %) (session/get-in [:user :id])))
-                                                         (filter #(every? nil? (-> % :endorsement vals)))))]
+                                                    (if (= context "endorsement")
+                                                     (->> @(cursor data-atom [:users])
+                                                           (remove #(= (:id %) (session/get-in [:user :id])))
+                                                           (filter #(every? nil? (-> % :endorsement vals))))
+                                                     @(cursor data-atom [:users])))]
 
                                            [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
-                                            [:button.btn.btn-primary {:on-click #(mo/previous-view) #_(do (.preventDefault %)
-                                                                                                          (mo/previous-view))
-                                                                      :disabled (empty? @selected-users-atom)}
-                                             (t :core/Continue)]])])]])
+                                            (when (= context "endorsement")
+                                             [:button.btn.btn-primary {:on-click #(mo/previous-view)
+                                                                       :disabled (empty? @selected-users-atom)}
+                                                 (t :core/Continue)])
+                                            (when (= context "selfie_issue")
+                                             [:button.btn.btn-primary
+                                              {:on-click #()
+                                               :disabled (empty? @selected-users-atom)}
+                                              (t :badgeIssuer/Issuebadge)])])])]])
+
+
+
                    :component-will-mount (fn []
                                            (ajax/POST
-                                            (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
+                                            (if (= context "endorsement")
+                                              (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
+                                              (path-for (str "/obpv1/gallery/profiles")))
                                             {:params {:country (session/get-in [:filter-options :country] country)
                                                       :name ""
                                                       :common_badges common-badges?

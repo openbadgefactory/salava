@@ -37,7 +37,7 @@
           :on-click #(reset! step 2)}
          3]
 
-        [:p [:small (t :badgeIssuer/Issue)]]]]]]))
+        [:p [:small (t :badgeIssuer/Settings)]]]]]]))
 
 (defn bottom-navigation [step state]
   (create-class
@@ -90,7 +90,9 @@
                  [:a {:href "#"
                       :on-click #(do
                                    (.preventDefault %)
-                                   (reset! step (inc @step)))}
+                                   (if (pos? @step)
+                                     (save-selfie-badge state (fn [](reset! step (inc @step))))
+                                     (reset! step (inc @step))))}
                     [:div.pull-right {:id "step-button"}
                      (t :core/Next)]])]]])
      :component-did-mount (fn [] (reset! step 0))}))

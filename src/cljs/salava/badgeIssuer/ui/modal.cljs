@@ -3,7 +3,8 @@
     [clojure.string :refer [blank?]]
     [reagent.core :refer [atom cursor]]
     [salava.badgeIssuer.ui.util :refer [delete-selfie-badge]]
-    [salava.core.i18n :refer [t]]))
+    [salava.core.i18n :refer [t]]
+    [salava.core.ui.modal :as mo]))
 
 (defn badge-content [badge]
   (let [{:keys [name description tags criteria image]} badge]
@@ -44,7 +45,7 @@
      [:div.badge-image
       [:img {:src image :alt name}]]]
     [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
-     [:div {:class "alert alert-warning"}
+     [:div {:class "alert alert-warning" :style {:margin "20px 0"}}
       (t :badge/Confirmdelete)]
      [:div
       [:button {:type     "button"
@@ -60,7 +61,8 @@
 
 (defn issue-selfie [state]
   (let [badge (:badge @state)
-        {:keys [name image]} badge]
+        {:keys [id name image]} badge
+        selected-users (cursor state [:selected-users])]
    [:div {:id "badge-info" :class "row flip"}
     [:div {:class "col-md-3"}
      [:div.badge-image
@@ -68,9 +70,14 @@
     [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
      [badge-content badge]
      [:hr.border]
-     [:div.editor
+     [:div
+      [:p [:b (t :badgeIssuer/Setbadgedetails)]]
       [:div.form-group
-       [:span._label]]]]]))
+       [:label {:for "date"} (t :badge/Expireson)]
+       [:input.form-control {:type "date" :id "date"}]]
+      [:button.btn.btn-primary
+       {:on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :context "selfie_issue" :selected-users-atom selected-users :id id :selfie badge})}
+       (t :badgeIssuer/Selectrecipients)]]]]))
 
 
 (defn selfie-navi [state]
@@ -82,9 +89,9 @@
       [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 1 (:tab-no @state))) "active")}
        [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [preview-selfie badge] #_[required-badge-tab metabadge] :tab-no 1)}
         [:div  [:i.nav-icon.fa.fa-info-circle.fa-lg] (t :metabadge/Info)]]]
-      [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 2 (:tab-no @state))) "active")}
-       [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [issue-selfie state]  :tab-no 2)}
-        [:div  [:i.nav-icon.fa.fa-certificate.fa-lg.fa-fw] (t :badgeIssuer/Issue)]]]
+      #_[:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 2 (:tab-no @state))) "active")}
+         [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [issue-selfie state]  :tab-no 2)}
+          [:div  [:i.nav-icon.fa.fa-certificate.fa-lg.fa-fw] (t :badgeIssuer/Issue)]]]
       [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 3 (:tab-no @state))) "active")}
        [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [delete-selfie state] :tab-no 3)}
         [:div  [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]]]))

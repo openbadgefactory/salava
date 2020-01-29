@@ -78,7 +78,7 @@
   (fn []
     [:div.panel.panel-success
      [:div.panel-heading
-      [:div.uppercase-header.text-center (t :badgeIssuer/Addbadgecontent)]]
+      [:div.uppercase-header.text-center (t :badgeIssuer/Content)]]
      [:div.panel-body
       [:div.col-md-12
        [:div]
@@ -90,6 +90,7 @@
           {:name "name"
            :atom (cursor state [:badge :name])
            :placeholder (t :badgeIssuer/Inputbadgename)}]]
+           
         [:div.form-group
          [:label {:for "input-description"} (t :page/Description) [:span.form-required " *"]]
          [text-field
@@ -115,7 +116,7 @@
         {:keys [image name]} badge]
     [:div.panel.panel-success
      [:div.panel-heading
-      [:div.uppercase-header.text-center  (t :badgeIssuer/Addbadgeimage)]]
+      [:div.uppercase-header.text-center  (t :badgeIssuer/Image)]]
      [:div.panel-body
       [:div.col-md-12 {:style {:margin "20px 0"}}
        [:div.col-md-6.text-center
@@ -147,7 +148,7 @@
         ifg (cursor state [:badge :issuable_from_gallery])]
     [:div.panel.panel-success
      [:div.panel-heading
-      [:div.uppercase-header.text-center  (t :badgeIssuer/Issue)]]
+      [:div.uppercase-header.text-center  (t :badgeIssuer/Settings)]]
      [:div.panel-body
       [:div.col-md-12
        [:div.form-group
@@ -157,9 +158,9 @@
             :on-change #(toggle-setting ifg)
             :checked (pos? @ifg)
             :id "ifg"}]]
-        (t :badgeIssuer/Issuablefromgallery)
-        [:div {:style {:margin "10px 0"}}
-         [:div [:a {:href "#" :on-click #(mo/open-modal [:selfie :view] {:tab 2 :badge badge})}(t :badgeIssuer/Issuebadge)]]]]]]]))
+        [:span " " (t :badgeIssuer/Issuablefromgallery)]
+        #_[:div {:style {:margin "10px 0"}}
+           [:div [:a {:href "#" :on-click #(mo/open-modal [:selfie :view] {:tab 2 :badge badge})}(t :badgeIssuer/Issuebadge)]]]]]]]))
 
 (defn content [state]
   (let [{:keys [badge generating-image]} @state

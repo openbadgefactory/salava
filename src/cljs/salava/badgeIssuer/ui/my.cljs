@@ -40,7 +40,8 @@
    [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]])
 
 (defn grid-element [element-data state]
-  (let [{:keys [id name image creator_name]} element-data]
+  (let [{:keys [id name image creator_name]} element-data
+        selected-users (cursor state [:selected-users])]
     [:div.media.grid-container
      [:div.media-content
       [:a {:href "#"
@@ -52,12 +53,19 @@
          [:p.heading-link name]]
         [:div.media-issuer
           [:p creator_name]]]]
-      [:div.pull-right
-       [:a {:href "#"
-            :on-click #(navigate-to (str "/badge/selfie/create/" id))
-            :alt (t :badgeIssuer/Editbadge)}
-        [:i.fa.fa-edit.fa-lg]]]]]))
-
+      [:div
+       [:div.pull-right
+        [:a {:href "#"
+             :on-click #(navigate-to (str "/badge/selfie/create/" id))
+             :aria-label (t :badgeIssuer/Editbadge)
+             :title (t :badgeIssuer/Editbadge)}
+         [:i.fa.fa-edit.fa-lg]]]
+       [:div.pull-left
+        [:a {:href "#"
+             :on-click #(mo/open-modal [:selfie :issue] {:badge element-data})
+             :aria-label (t :badge/Issuebadge)
+             :title (t :badge/Issuebadge)}
+         [:i.fa.fa-edit.fa-paper-plane]]]]]]))
 
 (defn grid [state]
   (let [badges @(cursor state [:badges])
