@@ -67,7 +67,10 @@
              (when (= 2 @step)
                [:a.btn.btn-primary
                 {:href "#"
-                 :on-click #(save-selfie-badge state (fn [] (navigate-to "/badge/selfie")))}
+                 :on-click #(save-selfie-badge state (if @(cursor state [:in-modal])
+                                                       (fn [] (reset! (cursor state [:tab-no]) 1))
+                                                       (fn [] (navigate-to "/badge/selfie"))))}
+
                 (t :badgeIssuer/Saveandexit)])
 
               ;;cancel
@@ -95,4 +98,5 @@
                                      (reset! step (inc @step))))}
                     [:div.pull-right {:id "step-button"}
                      (t :core/Next)]])]]])
-     :component-did-mount (fn [] (reset! step 0))}))
+     :component-did-mount (fn [] (reset! step 0)
+                                 (prn (:in-modal @state)))}))

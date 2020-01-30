@@ -34,7 +34,6 @@
     :issuable_from_gallery 0
     :id nil})
   ([ctx user id]
-   (recipient ctx "ogunlolui@gmail3333.com")
    (let [selfie-badge (first (db/user-selfie-badge ctx (:id user) id))]
      (-> selfie-badge
          (assoc :issuable_from_gallery (if (:issuable_from_gallery selfie-badge) 1 0))
@@ -105,7 +104,7 @@
                  :expires_on nil
                  :assertion_jws nil}
         user-badge-id (save-user-badge! ctx (parse-badge ctx user-id id badge initial))
-        assertion_url (str base-url "/obpv1/selfie/assertion/" user-badge-id)
+        assertion_url (str (get-full-path ctx) "/obpv1/selfie/assertion/" user-badge-id)
         assertion_json (json/write-str
                         {:id assertion_url
                          :recipient (recipient ctx (:email recipient))
@@ -133,6 +132,6 @@
           :let [email (primary-email ctx r)
                 recipient {:id r :email email}]]
     (log/info "Creating assertion for " recipient)
-    (create-assertion ctx selfie-id user-id r))
+    (create-assertion ctx selfie-id user-id recipient))
   (log/info "Finished issuing badges"))
   ;(create-assertion ctx "5ea11b20-c470-4f43-937b-7b2371a85cb9" 12 {:id 12 :email "isaac.ogunlolu@discendum.com"}))

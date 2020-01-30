@@ -11,6 +11,7 @@
 (defqueries "sql/badgeIssuer/main.sql")
 
 (defn save-selfie-badge [ctx data user-id]
+  (prn (:issuable_from_gallery data))
   (try+
     (let [id (if-not (blank? (:id data))
                (:id data)
@@ -39,5 +40,5 @@
   (update-user-badge-assertions! data (get-db ctx)))
 
 (defn badge-assertion [ctx id]
-  (-> (get-assertion-json {:id id} (into {:result-set-fn first :row-fn :assertion_url} (get-db ctx)))
+  (some-> (get-assertion-json {:id id} (into {:result-set-fn first :row-fn :assertion_json} (get-db ctx)))
       (json/read-str :key-fn keyword)))

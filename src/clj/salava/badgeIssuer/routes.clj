@@ -47,7 +47,7 @@
             :path-params [id :- s/Str]
             :auth-rules access/authenticated
             :current-user current-user
-            ;(bm/issue-badge ctx)
+            ;(bm/issue-selfie-badge ctx id (:id current-user) [12])
             (ok (bm/initialize ctx current-user id)))
 
       (POST "/create" []

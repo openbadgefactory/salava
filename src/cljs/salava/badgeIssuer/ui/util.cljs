@@ -21,6 +21,7 @@
   (reset! (cursor state [:error-message]) nil)
   (let [badge-info (-> @(cursor state [:badge])
                        (select-keys [:id :name :criteria :description :image :issuable_from_gallery]))
+                       ;(assoc :issuable_from_gallery (if (:issuable_from_gallery @state) 1 0)))
         validate-info (validate-inputs schemas/save-selfie-badge badge-info)]
     (if (some false? validate-info)
       (reset! (cursor state [:error-message])
@@ -54,6 +55,6 @@
                   (reset! (cursor state [:generating-image]) false)))}))
 
 (defn toggle-setting [setting]
-  (if (pos? @setting)
+  (if (pos? @setting) 
     (reset! setting 0)
     (reset! setting 1)))

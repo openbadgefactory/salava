@@ -30,7 +30,6 @@
     (path-for (str "/obpv1/selfie/create/" id))
     {;:param {:id (:id @state)}
      :handler (fn [data]
-                (prn data)
                 (swap! state assoc :badge data
                                    :generating-image false))})))
 
@@ -90,7 +89,7 @@
           {:name "name"
            :atom (cursor state [:badge :name])
            :placeholder (t :badgeIssuer/Inputbadgename)}]]
-           
+
         [:div.form-group
          [:label {:for "input-description"} (t :page/Description) [:span.form-required " *"]]
          [text-field
@@ -143,7 +142,7 @@
             [:img {:src image :alt "image"}])
            [:span.fa.fa-spin.fa-cog.fa-2x])]]]]]))
 
-(defn issue-content [state]
+(defn settings-content [state]
   (let [{:keys [badge]} @state
         ifg (cursor state [:badge :issuable_from_gallery])]
     [:div.panel.panel-success
@@ -151,20 +150,40 @@
       [:div.uppercase-header.text-center  (t :badgeIssuer/Settings)]]
      [:div.panel-body
       [:div.col-md-12
-       [:div.form-group
+       [:div.checkbox
         [:label {:for "ifg"}
          [:input
            {:type "checkbox"
             :on-change #(toggle-setting ifg)
-            :checked (pos? @ifg)
+            :checked  (pos? @ifg)
             :id "ifg"}]]
-        [:span " " (t :badgeIssuer/Issuablefromgallery)]
-        #_[:div {:style {:margin "10px 0"}}
-           [:div [:a {:href "#" :on-click #(mo/open-modal [:selfie :view] {:tab 2 :badge badge})}(t :badgeIssuer/Issuebadge)]]]]]]]))
+        [:span " " (t :badgeIssuer/Issuablefromgallery)]]]]]))
+
+
+(defn modal-content [state]
+ (let [{:keys [badge generating-image]} @state
+       step (cursor state [:step])]
+   (init-data (:id badge) state)
+   (fn []
+     [:div#badge-creator
+        [:h1.sr-only (t :badgeIssuer/Badgecreator)]
+        [:div.panel
+         [progress-wizard state]
+         (when (and (:error-message @state) (not (blank? (:error-message @state))))
+           [:div
+            [:div;.col-md-12
+             {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))]])
+         [:div.panel-body
+          (case @step
+            0 [add-image state]
+            1 [badge-content state]
+            2 [settings-content state]
+            [add-image state])
+          [bottom-navigation step state]]]])))
+
 
 (defn content [state]
   (let [{:keys [badge generating-image]} @state
-        {:keys [uploaded-image data-url name]} badge
         step (cursor state [:step])]
     [:div#badge-creator
      [m/modal-window]
@@ -179,7 +198,7 @@
        (case @step
          0 [add-image state]
          1 [badge-content state]
-         2 [issue-content state]
+         2 [settings-content state]
          [add-image state])
        [bottom-navigation step state]]]]))
 
