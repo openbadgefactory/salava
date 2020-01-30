@@ -17,7 +17,7 @@
                            (s/optional-key :assertion_url)       (s/maybe s/Str)
                            (s/optional-key :assertion-jws)       (s/maybe s/Str)
                            :revoked                              (either  s/Bool s/Int)
-                           :issued_on                            s/Int
+                           :issued_on                            (s/maybe s/Int)
                            :expires_on                           (s/maybe s/Int)
                            :mtime                                s/Int
                            :visibility                           (describe (s/maybe (s/enum "private" "internal" "public")) "internal user-badge visibility")
