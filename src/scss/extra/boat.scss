@@ -95,7 +95,7 @@ body {
 body.anon {
   background-color: #CCE4F3 !important; //$background-color !important;
   background-size: contain;
-  background-position: center -10px;
+  background-position: center -5px;
   background-repeat: no-repeat;
   background-image: url("/img/extra/boat/background.jpg");
 
@@ -163,7 +163,11 @@ footer.footer,div.footer .footer-container {
 #login-page, #registration-page, #reset-password {
   #narrow-panel {
     border: 1px solid $light-blue;
-    margin: 8px auto 0 auto;
+    margin: 5px auto 0 auto;
+    .panel-body {
+      padding: 14px;
+    }
+
   }
 }
 
