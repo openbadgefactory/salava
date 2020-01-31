@@ -30,10 +30,20 @@
            :current-user current-user
            (ok {:badges (bdb/user-selfie-badges ctx (:id current-user))}))
 
-      (GET "/assertion/:id" []
+      (GET "/_/assertion/:user-badge-id" []
            :summary "Get hosted badge assertion"
-           :path-params [id :- s/Int]
+           :path-params [user-badge-id :- s/Int]
            (ok (bdb/badge-assertion ctx id)))
+
+      (GET "/_/criteria/" []
+            :summary "Get criteria information"
+            :path-params [user-badge-id :- s/Int]
+            (ok (bdb/badge-criteria ctx user-badge-id)))
+
+      (GET "/_/issuer/" []
+            :summary "Get criteria information"
+            :path-params [id :- s/Int]
+            (ok (bdb/badge-issuer ctx id)))
 
       (GET "/create" []
            :no-doc true

@@ -17,27 +17,53 @@
      (input-valid? (:image s) (:image b))
      (input-valid? (:issuable_from_gallery s) (:issuable_from_gallery b))]))
 
+(defn error-msg [state]
+  [:div
+   [:div.modal-header
+    [:button {:type "button"
+              :class "close"
+              :data-dismiss "modal"
+              :aria-label "OK"}
+     [:span {:aria-hidden "true"
+             :dangerouslySetInnerHTML {:__html "&times;"}}]]]
+    ;[:h4.modal-title (translate-text message)]]
+   [:div.modal-body
+    [:div.alert.alert-warning
+     @(cursor state [:error-message])]]
+   [:div.modal-footer
+    [:button {:type "button"
+              :class "btn btn-primary"
+              :data-dismiss "modal"}
+     "OK"]]])
+
+
 (defn save-selfie-badge [state reload-fn]
   (reset! (cursor state [:error-message]) nil)
   (let [badge-info (-> @(cursor state [:badge])
-                       (select-keys [:id :name :criteria :description :image :issuable_from_gallery]))
+                       (select-keys [:id :name :criteria :description :image :tags :issuable_from_gallery]))
                        ;(assoc :issuable_from_gallery (if (:issuable_from_gallery @state) 1 0)))
         validate-info (validate-inputs schemas/save-selfie-badge badge-info)]
     (if (some false? validate-info)
-      (reset! (cursor state [:error-message])
-        (case (.indexOf validate-info false)
-          0 (t :badgeIssuer/Namefieldempty)
-          1 (t :badgeIssuer/Descriptionfieldempty)
-          2 (t :badgeIssuer/Criteriafieldempty)
-          (t :badgeIssuer/Errormessage)))
+      (do
+        (reset! (cursor state [:error-message])
+          (case (.indexOf validate-info false)
+            0 (t :badgeIssuer/Namefieldempty)
+            1 (t :badgeIssuer/Descriptionfieldempty)
+            2 (t :badgeIssuer/Criteriafieldempty)
+            (t :badgeIssuer/Errormessage)))
+        (m/modal! (error-msg state) {}))
 
       (ajax/POST
         (path-for "/obpv1/selfie/create")
         {:params badge-info
          :handler (fn [data]
+                    (when (= "error" (:status data))
+                      (reset! (cursor state [:error-message]) (t :badgeIssuer/Errormessage))
+                      (m/modal! (error-msg state) {}))
                     (when (= "success" (:status data))
-                      (reset! (cursor state [:badge :id]) (:id data))))
-         :finally (fn [] (when reload-fn (reload-fn)))}))))
+                     (reset! (cursor state [:badge :id]) (:id data))
+                     (when reload-fn (reload-fn))))}))))
+         ;:finally (fn [] (when reload-fn (reload-fn)))}))))
 
 (defn delete-selfie-badge [state]
   (let [id @(cursor state [:badge :id])]
@@ -55,6 +81,6 @@
                   (reset! (cursor state [:generating-image]) false)))}))
 
 (defn toggle-setting [setting]
-  (if (pos? @setting) 
+  (if (pos? @setting)
     (reset! setting 0)
     (reset! setting 1)))

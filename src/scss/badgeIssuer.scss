@@ -1,6 +1,12 @@
 @import 'variables';
 
 #badge-creator {
+  .bottom-navigation {
+    .btn {
+      color: #FFF !important;
+      padding: 8px;
+    }
+  }
   .image-container {
     padding: 10px;
     background-color: darken($background-color, 2%);
@@ -76,6 +82,15 @@
     line-height: 1.428571429;
     border-radius: 15px;
     font-family: 'Roboto', cursive;
+    color: $background-color!important;
 }
 
+}
+
+.btn-bulky {
+  padding: 8px;
+  border-radius: 2px;
+  .fa {
+    color: #FFF !important;
+  }
 }

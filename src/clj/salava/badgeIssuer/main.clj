@@ -24,6 +24,18 @@
      :hashed true
      :type "email"}))
 
+(defn badge-issuer [ctx id]
+ (let [{:keys [first_name last_name]}]
+   {:id (str (get-full-path ctx) "/obpv1/selfie/_/issuer/" id)
+    :name (str first_name " " last_name)
+    :type "Profile"
+    :url (str (get-full-path ctx) "/profile/" id)
+    :email "no-reply@openbadgepassport.com"}))
+
+(defn get-criteria [ctx user-badge-id]
+  {:id (str (get-full-path ctx) "/obpv1/selfie/criteria/" user-badge-id)
+   :type "Criteria"})
+
 (defn initialize
   ([ctx user]
    {:image (:url (generate-image ctx user))
@@ -36,7 +48,8 @@
   ([ctx user id]
    (let [selfie-badge (first (db/user-selfie-badge ctx (:id user) id))]
      (-> selfie-badge
-         (assoc :issuable_from_gallery (if (:issuable_from_gallery selfie-badge) 1 0))
+         (assoc :issuable_from_gallery (if (:issuable_from_gallery selfie-badge) 1 0)
+                :tags (if (clojure.string/blank? (:tags selfie-badge)) nil (json/read-str (:tags selfie-badge))))
          (dissoc :deleted :ctime :mtime :creator_id)))))
 
 (defn parse-badge [ctx user-id id badge initial-assertion]
@@ -104,7 +117,7 @@
                  :expires_on nil
                  :assertion_jws nil}
         user-badge-id (save-user-badge! ctx (parse-badge ctx user-id id badge initial))
-        assertion_url (str (get-full-path ctx) "/obpv1/selfie/assertion/" user-badge-id)
+        assertion_url (str (get-full-path ctx) "/obpv1/selfie/_/assertion/" user-badge-id)
         assertion_json (json/write-str
                         {:id assertion_url
                          :recipient (recipient ctx (:email recipient))
@@ -119,7 +132,7 @@
                                  :description description
                                  :criteria {:id ""
                                             :narrative criteria}
-                                 :issuer (str (get-full-path ctx) "/profile/" user-id)}
+                                 :issuer (str (get-full-path ctx) "/obpv1/selfie/_/issuer/" id)} ;(str (get-full-path ctx) "/profile/" user-id)}
                          (keyword "@context") "https://w3id.org/openbadges/v2"})]
     (db/update-assertions-info! ctx {:id user-badge-id
                                      :assertion_url assertion_url

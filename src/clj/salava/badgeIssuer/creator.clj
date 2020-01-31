@@ -1,5 +1,5 @@
 (ns salava.badgeIssuer.creator
-  (:import [java.awt Graphics2D Color Font Polygon BasicStroke GraphicsEnvironment GradientPaint]
+  (:import [java.awt Graphics2D Color Font Polygon BasicStroke GraphicsEnvironment GradientPaint RenderingHints]
            [java.awt.image BufferedImage]
            [javax.imageio ImageIO])
 
@@ -9,7 +9,6 @@
             [salava.core.util :as util :refer [plugin-fun get-plugins]]
             [clojure.java.io :as io :refer [as-url]]
             [clojure.tools.logging :as log]))
-
 
 (defn fonts []
  (let [f (GraphicsEnvironment/getLocalGraphicsEnvironment)]
@@ -44,7 +43,6 @@
               last_name
               (clojure.string/capitalize last_name)]]
   (if (seq names) (rand-nth names) "")))
-
 
 (defn- rand-num [start end]
   (+ start (rand-int (- end start))))
@@ -128,6 +126,18 @@
       (.setColor g (make-color))
       (.drawString g (make-name ctx user-id) 65 65)))
 
+(defn rendering-hints [g]
+  (doall
+    [(.setRenderingHint g
+       (RenderingHints/KEY_ANTIALIASING)
+       (RenderingHints/VALUE_ANTIALIAS_ON))
+     (.setRenderingHint g
+       (RenderingHints/KEY_INTERPOLATION)
+       (RenderingHints/VALUE_INTERPOLATION_BICUBIC))
+     (.setRenderingHint g
+       (RenderingHints/KEY_RENDERING)
+       (RenderingHints/VALUE_RENDER_QUALITY))]))
+
 
 (defn generate-image [ctx user]
   (try+
@@ -136,6 +146,7 @@
           r (rand-num 1 10)
           stroke (BasicStroke. r)]
       (doto g
+        (rendering-hints)
         (.setBackground (rand-nth base))
         (.clearRect 0 0 width height)
         (.setPaint (get-color))

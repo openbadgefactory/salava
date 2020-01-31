@@ -1,11 +1,11 @@
-CREATE TABLE `selfie_badge`(
+CREATE TABLE IF NOT EXISTS `selfie_badge` (
   `id` varchar(255) NOT NULL,
   `creator_id`  bigint(20) unsigned NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `description` varchar(500) NOT NULL,
-  `criteria` longtext NOT NULL,
-  `image` longtext NOT NULL,
-  `tags` varchar(500),
+  `name` text,
+  `description` text,
+  `criteria` mediumtext,
+  `image` varchar(255) DEFAULT NULL,
+  `tags` text,
   `issuable_from_gallery` boolean DEFAULT 0,
   `deleted` boolean DEFAULT 0 ,
   `ctime` bigint(20) unsigned NOT NULL,

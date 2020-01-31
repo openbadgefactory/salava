@@ -120,26 +120,29 @@
       [:div.col-md-12 {:style {:margin "20px 0"}}
        [:div.col-md-6.text-center
         [:div.buttons {:style {:margin-bottom "20px"}}
-         [:button.btn.btn-primary
+         [:button.btn.btn-primary.btn-bulky
           {:on-click #(do
                        (.preventDefault %)
                        (generate-image state))
            :aria-label (t :badgeIssuer/Generaterandomimage)}
-          (t :badgeIssuer/Generaterandomimage)]
+          [:span [:i.fa.fa-random.fa-lg]" "(t :badgeIssuer/Generaterandomimage)]]
 
          [:div.or (t :user/or)]
-         [:span {:class "btn btn-primary btn-file"}
+         [:span {:class "btn btn-primary btn-file btn-bulky"}
                [:input {:type       "file"
                         :name       "file"
                         :on-change  #(send-file state)
                         :accept     "image/png"
                         :aria-label (t :badgeIssuer/Uploadbadgeimage)}]
-          (t :badgeIssuer/Uploadbadgeimage)]]]
+          [:span [:i.fa.fa-upload.fa-lg.fa-fw](t :badgeIssuer/Uploadbadgeimage)]]]]
        [:div.col-md-6.text-center
         [:div.image-container
          (if-not @(cursor state [:generating-image])
            (when-not (blank? image)
-            [:img {:src image :alt "image"}])
+            [:img {:src (if (re-find #"^data:image" image)
+                          image
+                          (str "/" image))
+                   :alt "image"}])
            [:span.fa.fa-spin.fa-cog.fa-2x])]]]]]))
 
 (defn settings-content [state]
@@ -159,7 +162,6 @@
             :id "ifg"}]]
         [:span " " (t :badgeIssuer/Issuablefromgallery)]]]]]))
 
-
 (defn modal-content [state]
  (let [{:keys [badge generating-image]} @state
        step (cursor state [:step])]
@@ -171,8 +173,7 @@
          [progress-wizard state]
          (when (and (:error-message @state) (not (blank? (:error-message @state))))
            [:div
-            [:div;.col-md-12
-             {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))]])
+             {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))])
          [:div.panel-body
           (case @step
             0 [add-image state]
@@ -190,11 +191,17 @@
      [:h1.sr-only (t :badgeIssuer/Badgecreator)]
      [:div.panel
       [progress-wizard state]
-      (when (and (:error-message @state) (not (blank? (:error-message @state))))
-        [:div
-         [:div;.col-md-12
-          {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))]])
+      #_(when (and (:error-message @state) (not (blank? (:error-message @state))))
+          [:div
+           [:div;.col-md-12
+            {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))]])
+      #_(when (and (:error-message @state) (not (blank? (:error-message @state))))
+          (m/modal! (error-msg state)
+           #_[:div
+              [:div;.col-md-12
+               {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))]] {}))
       [:div.panel-body
+
        (case @step
          0 [add-image state]
          1 [badge-content state]

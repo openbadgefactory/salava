@@ -792,7 +792,9 @@ button {
     position: absolute;
   }
 
-  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on, .fa-toggle-off, .fa-remove, .fa-search, .fa-users{
+  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt,
+  .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on,
+  .fa-toggle-off, .fa-remove, .fa-search, .fa-users, .fa-edit, .fa-paper-plane, .fa-random{
     font-size: 20px;
     margin-right: 10px;
     color: $link-color;

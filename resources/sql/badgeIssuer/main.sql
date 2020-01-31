@@ -1,9 +1,9 @@
 --name: insert-selfie-badge<!
-REPLACE INTO selfie_badge (id, creator_id, name, description, criteria, image, issuable_from_gallery, deleted, ctime, mtime)
-VALUES (:id, :creator_id, :name, :description, :criteria, :image, :issuable_from_gallery, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+REPLACE INTO selfie_badge (id, creator_id, name, description, criteria, image, tags, issuable_from_gallery, deleted, ctime, mtime)
+VALUES (:id, :creator_id, :name, :description, :criteria, :image, :tags, :issuable_from_gallery, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
 --name: update-selfie-badge!
-UPDATE selfie_badge SET name = :name, description = :description, criteria = :criteria, image = :image, issuable_from_gallery= :issuable_from_gallery, mtime = UNIX_TIMESTAMP()
+UPDATE selfie_badge SET name = :name, description = :description, criteria = :criteria, image = :image, tags = :tags, issuable_from_gallery= :issuable_from_gallery, mtime = UNIX_TIMESTAMP()
 WHERE id = :id AND creator_id = :creator_id
 
 --name: soft-delete-selfie-badge!
