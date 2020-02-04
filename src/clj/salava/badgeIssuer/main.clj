@@ -25,7 +25,7 @@
      :type "email"}))
 
 (defn badge-issuer [ctx id]
- (let [{:keys [first_name last_name]}]
+ (let [{:keys [first_name last_name]} ()]
    {:id (str (get-full-path ctx) "/obpv1/selfie/_/issuer/" id)
     :name (str first_name " " last_name)
     :type "Profile"

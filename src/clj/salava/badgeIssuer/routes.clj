@@ -33,17 +33,17 @@
       (GET "/_/assertion/:user-badge-id" []
            :summary "Get hosted badge assertion"
            :path-params [user-badge-id :- s/Int]
-           (ok (bdb/badge-assertion ctx id)))
+           (ok (bdb/badge-assertion ctx user-badge-id)))
 
       (GET "/_/criteria/" []
             :summary "Get criteria information"
             :path-params [user-badge-id :- s/Int]
             (ok (bdb/badge-criteria ctx user-badge-id)))
 
-      (GET "/_/issuer/" []
+      (GET "/_/issuer/:id" []
             :summary "Get criteria information"
             :path-params [id :- s/Int]
-            (ok (bdb/badge-issuer ctx id)))
+            (ok (bm/badge-issuer ctx id)))
 
       (GET "/create" []
            :no-doc true
