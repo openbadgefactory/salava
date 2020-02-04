@@ -123,7 +123,7 @@
         format (:format @block-atom)]
     [:div#badge-showcase
      [:div
-      [:h3 {:style {:padding-bottom "10px"}} (t :page/Badgeshowcase)]
+      [:h3.sectiontitle {:style {:padding-bottom "10px"}} (t :page/Badgeshowcase)]
       [:div
        [:div
         [:label {:for "showcase-title-input"} (t :page/Title)]

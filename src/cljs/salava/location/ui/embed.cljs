@@ -112,7 +112,10 @@
              lat (get-in @state [:query-params :lat] 40)
              long (get-in @state [:query-params :long] -20)
              lat-lng (js/L.latLng. lat long)
-             my-map (-> (js/L.map. "map-view" lu/map-opt)
+             my-map (-> (js/L.map. "map-view" (-> (js->cls lu/map-opt :keywordize-keys true)
+                                                  (assoc :scrollWheelZoom false)
+                                                  (clj->js)))
+
                         (.setView lat-lng (if (and (clojure.string/blank? (get-in @state [:query-params :lat])) (clojure.string/blank? (get-in @state [:query-params :long]))) 3 5.7))
                         (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))
              redraw-map! (fn []
