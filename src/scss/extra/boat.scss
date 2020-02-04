@@ -37,8 +37,8 @@
 }
 
 body {
-  font-family: "Comfortaa", 'Open Sans';
-  //font-family: 'Open Sans', sans-serif;
+  //font-family: "Comfortaa", 'Open Sans';
+  font-family: 'Open Sans', sans-serif;
 }
 
 
@@ -124,6 +124,7 @@ footer.footer, div.footer {
 
 .title-row {
   background-color: $main-color;
+  font-family: "Comfortaa", 'Open Sans';
   //background-image: linear-gradient(to right, #385fd6, #6773d7, #8789d7, #a2a0d7, #bab7d7, #bab7d7, #bab7d7, #bab7d7, #a2a0d7, #8789d7, #6773d7, #385fd6);
   h1{
     font-weight: 600;
@@ -150,6 +151,8 @@ body {
 ul.navbar-nav {
   li a {
     color: $text-color;
+    font-size: 16px;
+    font-family: "Comfortaa", 'Open Sans';
   }
   li.active a{
       color: $menu-active;
@@ -556,7 +559,7 @@ nav a#login-button{
         display: initial;
       }
     }
-    #grid .grid-container {
+    #grid .grid-container, #badges-grid .grid-container  {
       .move-left i, .move-right i {
         color: $light-blue;
       }
@@ -574,6 +577,9 @@ nav a#login-button{
 
 /*DASHBOARD*/
 #dashboard {
+  .profile-block .name {
+   //font-family: "Comfortaa", 'Open Sans';
+  }
   .profile-block .profile-visibility a{
     color:$link-color;
     &:active, &:hover, &:focus {
@@ -582,8 +588,9 @@ nav a#login-button{
   }
   .connections-block, .badge-block .connections-block {
     .info-block {
-      .text p.num {
+      .text p.num, span.num {
         color: $third-color;
+        font-family: "Comfortaa", 'Open Sans';
       }
     }
   }
@@ -602,6 +609,7 @@ nav a#login-button{
       color: white;
       .welcome-message {
         font-weight: 600;
+        font-family: "Comfortaa", 'Open Sans';
       }
     }
 
@@ -637,6 +645,7 @@ nav a#login-button{
     }
 
     .title {
+     font-family: "Comfortaa", 'Open Sans';
       color: $button-hover !important;
 
     }
@@ -708,6 +717,7 @@ nav a#login-button{
 
 .block .content p.header {
   font-weight: 400;
+  font-family: "Comfortaa", 'Open Sans';
   }
 }
 
@@ -778,4 +788,7 @@ p.help-block {
 
 .progress-bar-success {
   color: $text-color;
+}
+.badge-modal-navi, .sectiontitle, .block-title, ul.side-links, #secondary-menu-links {
+ font-family: "Comfortaa", 'Open Sans';
 }
