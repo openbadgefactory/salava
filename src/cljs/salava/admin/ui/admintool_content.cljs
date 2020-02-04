@@ -213,21 +213,22 @@
        [:div.col-xs-12.row
         [:div {:class "form-group col-sm-8 col-xs-12"}
          (email-select (:emails info) email-atom)]
-        [:button {:type         "button"
-                  :class        "btn btn-primary"
-                  :data-dismiss "modal"
-                  :on-click     #(ajax/POST
-                                  (path-for (str "/obpv1/user/reset/"))
-                                  {:response-format :json
-                                   :keywords?       true
-                                   :params          {:email @email-atom}
-                                   :handler         (fn [data]
-                                                      (if init-data
-                                                        (init-data gallery-state)
-                                                        (navigate-to "/admin")))
-                                   :error-handler   (fn [{:keys [status status-text]}]
-                                                      (.log js/console (str status " " status-text)))})}
-         [:span (t :admin/Sendresetlink)]]])]))
+        [:div.col-sm-8.col-xs-12
+         [:button {:type         "button"
+                   :class        "btn btn-primary"
+                   :data-dismiss "modal"
+                   :on-click     #(ajax/POST
+                                   (path-for (str "/obpv1/user/reset/"))
+                                   {:response-format :json
+                                    :keywords?       true
+                                    :params          {:email @email-atom}
+                                    :handler         (fn [data]
+                                                       (if init-data
+                                                         (init-data gallery-state)
+                                                         (navigate-to "/admin")))
+                                    :error-handler   (fn [{:keys [status status-text]}]
+                                                       (.log js/console (str status " " status-text)))})}
+          [:span (t :admin/Sendresetlink)]]]])]))
 
 (defn delete-no-verified-email [state visible_area item_owner]
   (let [{:keys [item_type item_owner_id gallery-state init-data name info]} @state
