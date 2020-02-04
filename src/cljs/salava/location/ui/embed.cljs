@@ -112,7 +112,7 @@
              lat (get-in @state [:query-params :lat] 40)
              long (get-in @state [:query-params :long] -20)
              lat-lng (js/L.latLng. lat long)
-             my-map (-> (js/L.map. "map-view" (-> (js->cls lu/map-opt :keywordize-keys true)
+             my-map (-> (js/L.map. "map-view" (-> (js->clj lu/map-opt :keywordize-keys true)
                                                   (assoc :scrollWheelZoom false)
                                                   (clj->js)))
 
