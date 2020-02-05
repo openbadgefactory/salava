@@ -174,7 +174,7 @@
         filter-options (session/get :filter-options nil)
 
         common-badges? (if filter-options (:common-badges filter-options) true)
-        {:keys [type selected-users-atom context user_badge_id selfie]} params
+        {:keys [type selected-users-atom context user_badge_id selfie func]} params
         data-atom (atom {:users []
                          :selected []
                          :ajax-message nil
@@ -226,7 +226,7 @@
                                                  (t :core/Continue)])
                                             (when (= context "selfie_issue")
                                              [:button.btn.btn-primary
-                                              {:on-click #()
+                                              {:on-click #(func)
                                                :disabled (empty? @selected-users-atom)}
                                               (t :badgeIssuer/Issuebadge)])])])]])
 

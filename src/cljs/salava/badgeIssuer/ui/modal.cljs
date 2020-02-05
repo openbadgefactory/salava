@@ -3,7 +3,7 @@
     [clojure.string :refer [blank?]]
     [reagent.core :refer [atom cursor]]
     [salava.badgeIssuer.ui.creator :as creator]
-    [salava.badgeIssuer.ui.util :refer [delete-selfie-badge]]
+    [salava.badgeIssuer.ui.util :refer [toggle-setting delete-selfie-badge issue-selfie-badge]]
     [salava.core.i18n :refer [t]]
     [salava.core.ui.modal :as mo]))
 
@@ -68,7 +68,8 @@
 (defn issue-selfie [state]
   (let [badge (:badge @state)
         {:keys [id name image]} badge
-        selected-users (cursor state [:selected-users])]
+        selected-users (cursor state [:selected-users])
+        its (cursor state [:issue_to_self])]
    [:div {:id "badge-info" :class "row flip" :style {:margin "10px 0"}}
     [badge-image badge]
     [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
@@ -76,15 +77,29 @@
      [:hr.border]
      [:div {:style {:margin "15px 0"}}
       [:p [:b (t :badgeIssuer/Setbadgedetails)]]
-      [:div.form-group {:style {:margin "15px 0"}}
-       [:label {:for "date"} (t :badge/Expireson)]
-       [:input.form-control {:type "date"
-                             :id "date"
-                             :on-change #(do
-                                            (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]
-      [:button.btn.btn-primary.btn-bulky
-       {:on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :context "selfie_issue" :selected-users-atom selected-users :id id :selfie badge})}
-       [:span [:i.fa.fa-users.fa-lg](t :badgeIssuer/Selectrecipients)]]]]]))
+      [:div.form-horizontal
+       [:div.form-group {:style {:margin "15px 0"}}
+        [:label {:for "date"} (t :badge/Expireson)]
+        [:input.form-control {:type "date"
+                              :id "date"
+                              :on-change #(do
+                                             (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]
+
+
+       [:div.form-group
+        [:fieldset {:class "col-md-9 checkbox"}
+         [:legend.col-md-9 ""]
+         [:div.col-md-12 [:label {:for "its"}
+                          [:input {:type      "checkbox"
+                                   :id        "its"
+                                   :on-change #(toggle-setting its)
+                                   :checked   @its}]
+                          (str (t :badgeIssuer/Issuetoself))]]]]
+
+
+       [:button.btn.btn-primary.btn-bulky
+        {:on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :context "selfie_issue" :selected-users-atom selected-users :id id :selfie badge :func (fn [] (issue-selfie-badge state))})}
+        [:span [:i.fa.fa-users.fa-lg](t :badgeIssuer/Selectrecipients)]]]]]]))
 
 (defn edit-selfie [state]
   (let [badge (:badge @state)]

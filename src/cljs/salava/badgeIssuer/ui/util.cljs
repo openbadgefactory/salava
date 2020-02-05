@@ -5,6 +5,7 @@
     [reagent.session :as session]
     [salava.badgeIssuer.schemas :as schemas]
     [salava.core.i18n :refer [t]]
+    [salava.core.time :refer [iso8601-to-unix-time]]
     [salava.core.ui.ajax-utils :as ajax]
     [salava.core.ui.helper :refer [path-for input-valid? navigate-to]]
     [salava.core.ui.modal :as mo]))
@@ -64,6 +65,20 @@
                      (reset! (cursor state [:badge :id]) (:id data))
                      (when reload-fn (reload-fn))))}))))
          ;:finally (fn [] (when reload-fn (reload-fn)))}))))
+
+(defn issue-selfie-badge [state]
+  (let [id @(cursor state [:badge :id])
+        recipients (mapv :id @(cursor state [:selected-users]))
+        its (if @(cursor state [:issue_to_self]) @(cursor state [:issue_to_self]) 0)
+        expires_on (if (nil? @(cursor state [:badge :expires_on])) nil (iso8601-to-unix-time @(cursor state [:badge :expires_on])))]
+    (ajax/POST
+      (path-for (str "/obpv1/selfie/issue"))
+      {:params {:selfie_id id
+                :recipients recipients
+                :issue_to_self its
+                :expires_on expires_on}
+       :handler (fn [data]
+                  (prn data))})))
 
 (defn delete-selfie-badge [state]
   (let [id @(cursor state [:badge :id])]

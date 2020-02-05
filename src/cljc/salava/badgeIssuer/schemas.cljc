@@ -23,3 +23,8 @@
 (s/defschema save-selfie-badge  (-> selfie_badge
                                     (assoc (s/optional-key :tags) [(s/maybe s/Str)])
                                     (dissoc :ctime :mtime :deleted :creator_id)))
+
+(s/defschema issue-selfie-badge {:selfie_id s/Str
+                                 :recipients [s/Int]
+                                 :expires_on (s/maybe s/Int)
+                                 :issue_to_self s/Int})

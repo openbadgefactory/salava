@@ -4,7 +4,7 @@
   [clojure.string :refer [blank?]]
   [clojure.tools.logging :as log]
   [salava.badgeIssuer.util :refer [selfie-id]]
-  [salava.core.util :refer [get-db file-from-url-fix]]
+  [salava.core.util :refer [get-db file-from-url-fix get-full-path]]
   [slingshot.slingshot :refer :all]
   [yesql.core :refer [defqueries]]))
 
@@ -40,6 +40,9 @@
 (defn user-selfie-badge [ctx user-id id]
   (get-selfie-badge {:id id} (get-db ctx)))
 
+(defn selfie-badge [ctx id]
+ (get-selfie-badge {:id id} (get-db ctx)))
+
 (defn delete-selfie-badge-soft [ctx user-id id]
   (try+
     (hard-delete-selfie-badge! {:id id :creator_id user-id} (get-db ctx))
@@ -50,8 +53,8 @@
 (defn update-assertions-info! [ctx data]
   (update-user-badge-assertions! data (get-db ctx)))
 
-(defn badge-assertion [ctx id]
-  (some-> (get-assertion-json {:id id} (into {:result-set-fn first :row-fn :assertion_json} (get-db ctx)))
-      (json/read-str :key-fn keyword)))
-
-(defn badge-criteria [ctx id])
+(defn update-criteria-url! [ctx user-badge-id]
+  (let [badge-id ((select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :key-fn keyword} (get-db ctx))))
+        criteria_content_id (select-criteria-content-id-by-badge-id {:badge_id badge-id} (into {:result-set-fn first :key-fn keyword} (get-db ctx)))
+        url (str (get-full-path ctx) "/selfie/criteria/" criteria_content_id)]
+    (update-badge-criteria-url! {:id criteria_content_id :url url} (get-db ctx))))

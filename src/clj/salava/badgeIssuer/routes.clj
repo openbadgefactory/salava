@@ -33,15 +33,20 @@
       (GET "/_/assertion/:user-badge-id" []
            :summary "Get hosted badge assertion"
            :path-params [user-badge-id :- s/Int]
-           (ok (bdb/badge-assertion ctx user-badge-id)))
+           (ok (bm/badge-assertion ctx user-badge-id)))
 
-      (GET "/_/criteria/" []
+      (GET "/_/badge/:user-badge-id" []
+            :summary "Get hosted badge information"
+            :path-params [user-badge-id :- s/Int]
+            (ok (bm/get-badge ctx user-badge-id)))             
+
+      (GET "/_/criteria/:user-badge-id" []
             :summary "Get criteria information"
             :path-params [user-badge-id :- s/Int]
-            (ok (bdb/badge-criteria ctx user-badge-id)))
+            (ok (bm/badge-criteria ctx user-badge-id)))
 
       (GET "/_/issuer/:id" []
-            :summary "Get criteria information"
+            :summary "Get issuer information"
             :path-params [id :- s/Int]
             (ok (bm/badge-issuer ctx id)))
 
@@ -69,6 +74,14 @@
             :auth-rules access/authenticated
             :current-user current-user
             (ok (bdb/save-selfie-badge ctx data (:id current-user))))
+
+      (POST "/issue" []
+             :return {:status (s/enum "success" "error")}
+             :body [data schemas/issue-selfie-badge]
+             :summary "Issue selfie badge"
+             :auth-rules access/authenticated
+             :current-user current-user
+             (ok (bm/issue-selfie-badge ctx data (:id current-user))))
 
       (DELETE "/:id" []
               :return {:status (s/enum "success" "error")}
