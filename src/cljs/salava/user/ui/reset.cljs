@@ -24,7 +24,7 @@
     [:div {:id "reset-password"}
      [:div {:id "narrow-panel"
             :class "panel"}
-      [:div.panel-heading [:h1 {:style {:padding "0 20px" :font-size "24px"}} (t :user/Requestnewpassword)]]
+      [:div.panel-heading [:h1.sectiontitle {:style {:padding "0 20px" :font-size "24px"}} (t :user/Requestnewpassword)]]
       [:div.panel-body
        (cond
          (= "in-progress" (:reset-status @state)) [:div.text-center
