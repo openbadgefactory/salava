@@ -16,10 +16,13 @@
 
 (defn route-def [ctx]
   (routes
-    (context "/badge" []
-              (layout/main ctx "/selfie")
-              (layout/main ctx "/selfie/create")
-              (layout/main ctx "/selfie/create/:id"))
+    (context "/selfie" []
+              (layout/main ctx "/criteria/:id"))
+    (context "/badge/selfie" []
+              (layout/main ctx "/")
+              (layout/main ctx "/criteria/:id")
+              (layout/main ctx "/create")
+              (layout/main ctx "/create/:id"))
 
     (context "/obpv1/selfie" []
              :tags ["selfie"]
@@ -38,16 +41,16 @@
       (GET "/_/badge/:user-badge-id" []
             :summary "Get hosted badge information"
             :path-params [user-badge-id :- s/Int]
-            (ok (bm/get-badge ctx user-badge-id)))             
+            (ok (bm/get-badge ctx user-badge-id)))
 
-      (GET "/_/criteria/:user-badge-id" []
+      (GET "/criteria/:id" []
             :summary "Get criteria information"
-            :path-params [user-badge-id :- s/Int]
-            (ok (bm/badge-criteria ctx user-badge-id)))
+            :path-params [id :- s/Str]
+            (ok (bm/badge-criteria ctx id)))
 
       (GET "/_/issuer/:id" []
             :summary "Get issuer information"
-            :path-params [id :- s/Int]
+            :path-params [id :- s/Str]
             (ok (bm/badge-issuer ctx id)))
 
       (GET "/create" []
@@ -73,7 +76,7 @@
             :summary "Create new selfie badge"
             :auth-rules access/authenticated
             :current-user current-user
-            (ok (bdb/save-selfie-badge ctx data (:id current-user))))
+            (ok (bm/save-selfie-badge ctx data (:id current-user))))
 
       (POST "/issue" []
              :return {:status (s/enum "success" "error")}

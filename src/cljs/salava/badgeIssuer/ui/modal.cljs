@@ -2,6 +2,7 @@
   (:require
     [clojure.string :refer [blank?]]
     [reagent.core :refer [atom cursor]]
+    [reagent.session :as session]
     [salava.badgeIssuer.ui.creator :as creator]
     [salava.badgeIssuer.ui.util :refer [toggle-setting delete-selfie-badge issue-selfie-badge]]
     [salava.core.i18n :refer [t]]
@@ -69,7 +70,8 @@
   (let [badge (:badge @state)
         {:keys [id name image]} badge
         selected-users (cursor state [:selected-users])
-        its (cursor state [:issue_to_self])]
+        its (cursor state [:issue_to_self])
+        current-user {:id (session/get-in [:user :id])}]
    [:div {:id "badge-info" :class "row flip" :style {:margin "10px 0"}}
     [badge-image badge]
     [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
@@ -83,20 +85,30 @@
         [:input.form-control {:type "date"
                               :id "date"
                               :on-change #(do
-                                             (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]
+                                             (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]]
 
-
+      [:div.col-md-12.its_block
        [:div.form-group
-        [:fieldset {:class "col-md-9 checkbox"}
+        [:fieldset {:class "checkbox"}
          [:legend.col-md-9 ""]
-         [:div.col-md-12 [:label {:for "its"}
-                          [:input {:type      "checkbox"
-                                   :id        "its"
-                                   :on-change #(toggle-setting its)
-                                   :checked   @its}]
-                          (str (t :badgeIssuer/Issuetoself))]]]]
+         [:div;.col-md-12.its_block
+           [:label {:for "its"}
+            [:input {:type      "checkbox"
+                     :id        "its"
+                     :on-change #(do
+                                   (toggle-setting its)
+                                   (reset! selected-users (conj @selected-users current-user)))
+                     :checked   @its}]
+            (str (t :badgeIssuer/Issuetoself))]]]]
 
 
+       (when (pos? @its)
+        [:button.btn.btn-primary.btn-bulky
+         {:on-click #(do
+                       (.preventDefault %)
+                       (issue-selfie-badge state))
+          :data-dismiss "modal"}
+         [:span [:i.fa.fa-paper-plane.fa-lg](t :badgeIssuer/Issuenow)]])
        [:button.btn.btn-primary.btn-bulky
         {:on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :context "selfie_issue" :selected-users-atom selected-users :id id :selfie badge :func (fn [] (issue-selfie-badge state))})}
         [:span [:i.fa.fa-users.fa-lg](t :badgeIssuer/Selectrecipients)]]]]]]))
@@ -162,7 +174,8 @@
                      :id (:id badge)
                      :error-message nil
                      :step 0
-                     :in-modal true})]
+                     :in-modal true
+                     :selected-users []})]
 
 
     (fn []

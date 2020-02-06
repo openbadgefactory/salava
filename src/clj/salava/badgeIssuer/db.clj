@@ -3,33 +3,12 @@
   [clojure.data.json :as json]
   [clojure.string :refer [blank?]]
   [clojure.tools.logging :as log]
-  [salava.badgeIssuer.util :refer [selfie-id]]
+  ;[salava.badgeIssuer.util :refer [selfie-id]]
   [salava.core.util :refer [get-db file-from-url-fix get-full-path]]
   [slingshot.slingshot :refer :all]
   [yesql.core :refer [defqueries]]))
 
 (defqueries "sql/badgeIssuer/main.sql")
-
-(defn save-selfie-badge [ctx data user-id]
-  (try+
-    (let [id (if-not (blank? (:id data))
-               (:id data)
-               (selfie-id))
-          image (if (re-find #"^data:image" (:image data))
-                    (file-from-url-fix ctx (:image data))
-                    (:image data))
-          tags (if (seq (:tags data)) (json/write-str (:tags data)) "")]
-
-      (insert-selfie-badge<! (assoc data
-                                    :id id
-                                    :creator_id user-id
-                                    :image image
-                                    :tags tags)
-                             (get-db ctx))
-      {:status "success" :id id})
-    (catch Object _
-      (log/error (.getMessage _))
-      {:status "error" :id "-1"})))
 
 (defn user-selfie-badges [ctx user-id]
   (mapv
@@ -51,10 +30,10 @@
       {:status "error"})))
 
 (defn update-assertions-info! [ctx data]
-  (update-user-badge-assertions! data (get-db ctx)))
+  (update-user-badge-assertions! data (get-db ctx))) 
 
 (defn update-criteria-url! [ctx user-badge-id]
-  (let [badge-id ((select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :key-fn keyword} (get-db ctx))))
-        criteria_content_id (select-criteria-content-id-by-badge-id {:badge_id badge-id} (into {:result-set-fn first :key-fn keyword} (get-db ctx)))
+  (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (get-db ctx)))
+        criteria_content_id (select-criteria-content-id-by-badge-id {:badge_id badge-id} (into {:result-set-fn first :row-fn :criteria_content_id} (get-db ctx)))
         url (str (get-full-path ctx) "/selfie/criteria/" criteria_content_id)]
-    (update-badge-criteria-url! {:id criteria_content_id :url url} (get-db ctx))))
+   (update-badge-criteria-url! {:id criteria_content_id :url url} (get-db ctx))))

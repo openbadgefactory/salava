@@ -17,6 +17,7 @@
      (input-valid? (:criteria s) (:criteria b))
      (input-valid? (:image s) (:image b))
      (input-valid? (:issuable_from_gallery s) (:issuable_from_gallery b))]))
+     ;(input-valid? (:issue_to_self s) (:issue_to_self b))]))
 
 (defn error-msg [state]
   [:div
@@ -40,9 +41,10 @@
 
 (defn save-selfie-badge [state reload-fn]
   (reset! (cursor state [:error-message]) nil)
-  (let [badge-info (-> @(cursor state [:badge])
-                       (select-keys [:id :name :criteria :description :image :tags :issuable_from_gallery]))
-                       ;(assoc :issuable_from_gallery (if (:issuable_from_gallery @state) 1 0)))
+  (let [its (if @(cursor state [:badge :issue_to_self]) @(cursor state [:badge :issue_to_self]) 0)
+        badge-info (-> @(cursor state [:badge])
+                       (assoc :issue_to_self its)
+                       (select-keys [:id :name :criteria :description :image :tags :issuable_from_gallery :issue_to_self]))
         validate-info (validate-inputs schemas/save-selfie-badge badge-info)]
     (if (some false? validate-info)
       (do
@@ -77,8 +79,7 @@
                 :recipients recipients
                 :issue_to_self its
                 :expires_on expires_on}
-       :handler (fn [data]
-                  (prn data))})))
+       :handler (fn [data])})))
 
 (defn delete-selfie-badge [state]
   (let [id @(cursor state [:badge :id])]

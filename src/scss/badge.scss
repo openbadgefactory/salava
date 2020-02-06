@@ -932,8 +932,8 @@ button {
 }
 
 /* BADGE GRID */
-#badge-gallery #badges, #my-badges, #export-badges, .import-badges, #user-badges, #profile-user-badges, .showcase_badges {
-  #grid .grid-container, #badges-grid .grid-container {
+#badge-gallery #badges, #my-badges, #export-badges, .import-badges, #user-badges, #profile-user-badges, .showcase_badges, .my-selfie-badges{
+  #grid .grid-container, #badges-grid .grid-container{
     background-color: #ffffff;
     border: 1px solid #d2d2d2;
     box-shadow: 0px 4px 0px #dcdcdc;
@@ -1153,7 +1153,7 @@ button {
 }
 
 //import new badge
-#my-badges #grid #import-badge {
+#my-badges #grid #import-badge, .my-selfie-badges #grid #import-badge {
   text-align: center;
   position: relative;
 

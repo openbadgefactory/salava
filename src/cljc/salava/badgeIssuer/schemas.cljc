@@ -21,7 +21,9 @@
                            :creator_id (s/maybe s/Int)})
 
 (s/defschema save-selfie-badge  (-> selfie_badge
-                                    (assoc (s/optional-key :tags) [(s/maybe s/Str)])
+                                    (assoc
+                                     (s/optional-key :issue_to_self) (s/enum 0 1) 
+                                     (s/optional-key :tags) [(s/maybe s/Str)])
                                     (dissoc :ctime :mtime :deleted :creator_id)))
 
 (s/defschema issue-selfie-badge {:selfie_id s/Str

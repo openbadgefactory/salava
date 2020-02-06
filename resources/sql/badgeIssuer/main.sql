@@ -39,7 +39,22 @@ SELECT tag FROM badge_content_tag WHERE badge_content_id = :id
 SELECT criteria_content_id FROM badge_criteria_content WHERE badge_id = :badge_id
 
 --name: update-badge-criteria-url!
-UPDATE criteria_content SET url = :url WHERE badge_id = :badge_id
+UPDATE criteria_content SET url = :url WHERE id = :id
+
+--name: get-issuer-information
+SELECT * FROM issuer_content WHERE id = :id
+
+--name: select-badge-id-by-criteria-content-id
+SELECT badge_id FROM badge_criteria_content WHERE criteria_content_id = :id
+
+--name: get-criteria-page-information
+SELECT bc.name, bc.image_file, bc.description, cc.id AS id, cc.markdown_text AS criteria_content
+FROM badge AS badge
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id)
+WHERE badge.id = :badge_id
 
 --name: select-multi-language-badge-content
 --get badge by id

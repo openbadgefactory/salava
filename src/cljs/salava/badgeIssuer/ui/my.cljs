@@ -103,7 +103,7 @@
 
 
 (defn content [state]
-  [:div#my-badges
+  [:div.my-selfie-badges
    [m/modal-window]
    (if (:initializing @state)
      [:div.ajax-message

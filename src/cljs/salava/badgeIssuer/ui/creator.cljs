@@ -147,7 +147,8 @@
 
 (defn settings-content [state]
   (let [{:keys [badge]} @state
-        ifg (cursor state [:badge :issuable_from_gallery])]
+        ifg (cursor state [:badge :issuable_from_gallery])
+        its (cursor state [:badge :issue_to_self])]
     [:div.panel.panel-success
      [:div.panel-heading
       [:div.uppercase-header.text-center  (t :badgeIssuer/Settings)]]
@@ -160,7 +161,17 @@
             :on-change #(toggle-setting ifg)
             :checked  (pos? @ifg)
             :id "ifg"}]]
-        [:span " " (t :badgeIssuer/Issuablefromgallery)]]]]]))
+        [:span " " (t :badgeIssuer/Issuablefromgallery)]]]
+
+      [:div.form-group
+       [:fieldset {:class "col-md-9 checkbox"}
+        [:legend.col-md-9 ""]
+        [:div.col-md-12 [:label {:for "its"}
+                         [:input {:type      "checkbox"
+                                  :id        "its"
+                                  :on-change #(toggle-setting its)
+                                  :checked   @its}]
+                         (str (t :badgeIssuer/Issuetoself))]]]]]]))
 
 (defn modal-content [state]
  (let [{:keys [badge generating-image]} @state

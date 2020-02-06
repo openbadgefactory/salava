@@ -94,3 +94,35 @@
     color: #FFF !important;
   }
 }
+
+#selfie_criteria {
+  .criteria-background {
+    padding: 15px;
+    border-radius: 3px;
+    white-space: normal;
+    word-break: break-all;
+    margin: 20px auto;
+    background-color: darken($background-color, 0.1%);
+    min-height: 80px;
+
+  }
+}
+
+.its_block {
+  background-color: darken($background-color, 0.2%);
+  //padding: 5px;
+  border-radius: 2px;
+}
+
+.my-selfie-badges {
+  .grid-container {
+    height: 230px !important;
+    border-radius: 3px;
+  }
+
+  #grid #import-badge {
+    #add-element-icon {
+      margin-top: 35px;
+    }
+  }
+}
