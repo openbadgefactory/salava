@@ -100,3 +100,11 @@
   (if (pos? @setting)
     (reset! setting 0)
     (reset! setting 1)))
+
+(defn issuing-history [state]
+  (reset! (cursor state [:history :Initializing]) true)
+  (ajax/GET
+    (path-for (str "/obpv1/selfie/history/" (get-in @state [:badge :id])))
+    {:handler (fn [data]
+                (reset! (cursor state [:history :data]) data)
+                (reset! (cursor state [:history :Initializing]) false))}))

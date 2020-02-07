@@ -23,8 +23,8 @@ SELECT * FROM selfie_badge WHERE id = :id
 SELECT creator_id FROM selfie_badge WHERE id = :id
 
 --name: update-user-badge-assertions!
-UPDATE user_badge SET assertion_url = :assertion_url, assertion_json = :assertion_json
-WHERE id = :id
+--UPDATE user_badge SET assertion_url = :assertion_url, assertion_json = :assertion_json
+--WHERE id = :id
 
 --name: get-assertion-json
 SELECT assertion_json FROM user_badge WHERE id = :id AND deleted = 0
@@ -41,6 +41,14 @@ SELECT criteria_content_id FROM badge_criteria_content WHERE badge_id = :badge_i
 --name: update-badge-criteria-url!
 UPDATE criteria_content SET url = :url WHERE id = :id
 
+--name: finalise-issued-user-badge!
+UPDATE user_badge SET
+issuer_id = :issuer_id,
+assertion_url = :assertion_url,
+assertion_json = :assertion_json,
+selfie_id = :selfie_id
+WHERE id = :id
+
 --name: get-issuer-information
 SELECT * FROM issuer_content WHERE id = :id
 
@@ -56,6 +64,17 @@ JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id)
 WHERE badge.id = :badge_id
 
+--name: update-user-badge-issuer-id!
+--UPDATE user_badge SET issuer_id = :issuer_id WHERE id = :id
+
+--name: select-selfie-badge-issuing-history
+SELECT ub.id, ub.user_id, ub.issued_on, ub.expires_on, ub.status, ub.revoked, u.first_name, u.last_name, u.profile_picture
+FROM user_badge ub
+JOIN user u ON (u.id=ub.user_id)
+WHERE ub.selfie_id = :selfie_id AND ub.issuer_id = :issuer_id
+ORDER BY ub.issued_on DESC
+--GROUP BY ub.id
+
 --name: select-multi-language-badge-content
 --get badge by id
 SELECT
@@ -67,13 +86,11 @@ bc.image_file AS image,
 ic.id AS issuer_content_id,
 ic.url AS issuer_url,
 cc.id AS criteria_content_id, cc.url AS criteria_url, cc.markdown_text AS criteria_content
---(SELECT tag FROM badge_content_tag WHERE badge_content_id = bbc.badge_content_id) AS tags
 FROM badge AS badge
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id)
---LEFT JOIN badge_content_tag AS bct ON (bc.id = bct.badge_content_id)
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code)
 WHERE badge.id = :id

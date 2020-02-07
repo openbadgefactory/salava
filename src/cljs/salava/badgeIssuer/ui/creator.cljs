@@ -7,7 +7,7 @@
    [reagent-modals.modals :as m]
    [reagent.session :as session]
    [salava.badgeIssuer.ui.helper :refer [bottom-navigation progress-wizard]]
-   [salava.badgeIssuer.ui.util :refer [generate-image toggle-setting]]
+   [salava.badgeIssuer.ui.util :refer [generate-image toggle-setting issuing-history]]
    [salava.core.ui.ajax-utils :as ajax]
    [salava.core.ui.helper :refer [path-for navigate-to current-route-path]]
    [salava.core.ui.input :refer [text-field markdown-editor editor]]
@@ -25,14 +25,12 @@
                  (swap! state assoc :badge data
                                     :generating-image false))}))
   ([id state]
-
    (ajax/GET
     (path-for (str "/obpv1/selfie/create/" id))
-    {;:param {:id (:id @state)}
-     :handler (fn [data]
-                (swap! state assoc :badge data
-                                   :generating-image false))})))
-
+    {:handler (fn [data]
+               (swap! state assoc :badge data
+                                  :generating-image false)
+               #_(issuing-history state))})))
 
 (defn upload-modal [{:keys [status message reason]}]
   [:div

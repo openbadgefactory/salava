@@ -4,7 +4,7 @@
    [buddy.core.codecs :as codecs]
    [buddy.core.hash :as hash]
    [buddy.core.nonce :as nonce]
-   [clj-time.local :as l]
+   [clj-time.coerce :as c]
    [clojure.data.json :as json]
    [clojure.string :refer [blank?]]
    [clojure.tools.logging :as log]
@@ -13,7 +13,7 @@
    [salava.badgeIssuer.creator :refer [generate-image]]
    [salava.badgeIssuer.db :as db]
    [salava.badgeIssuer.util :refer [selfie-id]]
-   [salava.core.util :refer [get-site-url bytes->base64 hex-digest now get-full-path get-db file-from-url-fix md->html]]
+   [salava.core.util :refer [get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html]]
    [salava.profile.db :refer [user-information]]
    [salava.user.db :refer [primary-email]]
    [slingshot.slingshot :refer :all]))
@@ -31,14 +31,15 @@
      :hashed true
      :type "email"}))
 
-(defn badge-issuer [ctx id]
-  (let [{:keys [name description]} (db/get-issuer-information {:id id} (into {:result-set-fn first} (get-db ctx)))]
-    {:id (str (get-full-path ctx) "/obpv1/selfie/_/issuer/" id)
+(defn badge-issuer [ctx cid uid]
+  (let [{:keys [name description image_file]} (db/get-issuer-information {:id cid} (into {:result-set-fn first} (get-db ctx)))]
+    {:id (str (get-full-path ctx) "/obpv1/selfie/_/issuer?cid="cid "&uid="uid)
      :name name
      :description description
      :type "Profile"
-     :url (str (get-full-path ctx) "/profile/" id)
+     :url (str (get-full-path ctx) "/profile/" uid)
      :email "no-reply@openbadgepassport.com"
+     :image (str (get-site-url ctx) "/" image_file)
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
 (defn badge-criteria [ctx id]
@@ -46,19 +47,19 @@
         criteria-content (db/get-criteria-page-information {:badge_id badge_id} (into  {:result-set-fn first} (get-db ctx)))]
    (-> criteria-content (update :criteria_content md->html))))
 
-(defn get-badge [ctx user-badge-id]
+(defn get-badge [ctx user-badge-id uid]
   (let [badge_id (db/select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (get-db ctx)))
         badge (db/select-multi-language-badge-content {:id badge_id} (into {:result-set-fn first} (get-db ctx)))
         {:keys [id badge_id name badge_content_id description image criteria_url criteria_content_id criteria_content issuer_content_id issuer_url]} badge
         tags (vec (db/select-badge-tags {:id badge_content_id} (into {:row-fn :tag} (get-db ctx))))]
-    {:id (str (get-full-path ctx) "/obpv1/selfie/_/badge/" user-badge-id)
+    {:id (str (get-full-path ctx) "/obpv1/selfie/_/badge/" user-badge-id"?i="uid)
      :type "BadgeClass"
      :name name
      :image (str (get-site-url ctx) "/" image)
      :description description
      :criteria {:id (str (get-full-path ctx) "/selfie/criteria/" criteria_content_id)
                 :narrative criteria_content}
-     :issuer (str (get-full-path ctx) "/obpv1/selfie/_/issuer/" issuer_content_id)
+     :issuer (str (get-full-path ctx) "/obpv1/selfie/_/issuer?cid="issuer_content_id "&uid="uid)
      :tags (if (seq tags) tags [])
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
@@ -76,7 +77,7 @@
 
                 :criteria [{:id ""
                             :language_code ""
-                            :url "" ;(str (get-full-path ctx) "/selfie/criteria/") ;user-badge-id)
+                            :url ""
                             :markdown_text criteria}]
                 :issuer   [{:id ""
                             :name (str (:first_name issuer) " " (:last_name issuer))
@@ -134,19 +135,32 @@
          assertion_json (-> {:id assertion_url
                              :recipient r ;(recipient ctx (:email (badge-criteria ctx user-badge-id)recipient))
                              :expires (if expires_on
-                                        (str (l/to-local-date-time (long (* expires_on 1000))))
+                                        (str (c/from-long (long (* expires_on 1000))))
                                         nil)
-                             :issuedOn (str (l/to-local-date-time (long (* (now) 1000))))
+                             :issuedOn (str (c/from-long (long (* (now) 1000))))
                              :verification {:type "HostedBadge"}
                              :type  "Assertion"
-                             :badge (str (get-full-path ctx) "/obpv1/selfie/_/badge/" user-badge-id)
+                             :badge (str (get-full-path ctx) "/obpv1/selfie/_/badge/" user-badge-id"?i="user-id)
                              (keyword "@context") "https://w3id.org/openbadges/v2"}
                             (json/write-str))]
-     (db/update-assertions-info! ctx {:id user-badge-id
-                                      :assertion_url assertion_url
-                                      :assertion_json assertion_json})
 
-     (db/update-criteria-url! ctx user-badge-id))
+     ;(log/info "Updating assetion url and assertion json!")
+     #_(db/update-assertions-info! ctx {:id user-badge-id
+                                        :assertion_url assertion_url
+                                        :assertion_json assertion_json})
+
+     (log/info "Updating criteria url!")
+     (db/update-criteria-url! ctx user-badge-id)
+
+     (log/info "Finalising user badge!")
+     (db/finalise-user-badge! ctx {:id user-badge-id
+                                   :selfie_id id
+                                   :assertion_url assertion_url
+                                   :assertion_json assertion_json
+                                   :issuer_id user-id})
+     ;(db/update-user-badge-issuer-id! {:issuer_id user-id :id user-badge-id} (get-db ctx))
+     (log/info "Finished saving user badge!"))
+
    (catch Object _
      (log/error "error: " _))))
 
@@ -189,6 +203,10 @@
    (catch Object _
      (log/error (.getMessage _))
      {:status "error" :id "-1"})))
+
+
+(defn issuing-history [ctx selfie-id user-id]
+  (db/select-selfie-badge-issuing-history {:selfie_id selfie-id :issuer_id user-id} (get-db ctx)))
 
 (defn initialize
   ([ctx user]

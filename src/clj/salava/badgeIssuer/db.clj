@@ -29,11 +29,17 @@
     (catch Object _
       {:status "error"})))
 
-(defn update-assertions-info! [ctx data]
-  (update-user-badge-assertions! data (get-db ctx))) 
+#_(defn update-assertions-info! [ctx data]
+    (update-user-badge-assertions! data (get-db ctx)))
 
 (defn update-criteria-url! [ctx user-badge-id]
   (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (get-db ctx)))
         criteria_content_id (select-criteria-content-id-by-badge-id {:badge_id badge-id} (into {:result-set-fn first :row-fn :criteria_content_id} (get-db ctx)))
         url (str (get-full-path ctx) "/selfie/criteria/" criteria_content_id)]
    (update-badge-criteria-url! {:id criteria_content_id :url url} (get-db ctx))))
+
+(defn finalise-user-badge! [ctx data]
+  (finalise-issued-user-badge! data (get-db ctx)))
+
+
+ 

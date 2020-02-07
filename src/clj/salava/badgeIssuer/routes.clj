@@ -18,14 +18,39 @@
   (routes
     (context "/selfie" []
               (layout/main ctx "/criteria/:id"))
+
     (context "/badge/selfie" []
               (layout/main ctx "/")
               (layout/main ctx "/criteria/:id")
               (layout/main ctx "/create")
               (layout/main ctx "/create/:id"))
 
+    (context "/obpv1/selfie/_" []
+             :tags ["hosted_badge"]
+
+      (GET "/assertion/:user-badge-id" []
+           :return schemas/assertion
+           :summary "Get hosted badge assertion"
+           :path-params [user-badge-id :- s/Int]
+           (ok (bm/badge-assertion ctx user-badge-id)))
+
+      (GET "/badge/:user-badge-id" [i]
+            :return schemas/badge
+            :summary "Get hosted badge information"
+            :path-params [user-badge-id :- s/Int]
+            :query-params [i :- s/Int]
+            (ok (bm/get-badge ctx user-badge-id i)))
+
+      (GET "/issuer" []
+            :return schemas/issuer
+            :summary "Get issuer information"
+            :query-params [cid :- s/Str
+                           uid :- s/Int]
+            (ok (bm/badge-issuer ctx cid uid))))
+
     (context "/obpv1/selfie" []
              :tags ["selfie"]
+             ;:no-doc true
 
       (GET "/" []
            :summary "Get user selfie badges"
@@ -33,39 +58,25 @@
            :current-user current-user
            (ok {:badges (bdb/user-selfie-badges ctx (:id current-user))}))
 
-      (GET "/_/assertion/:user-badge-id" []
-           :summary "Get hosted badge assertion"
-           :path-params [user-badge-id :- s/Int]
-           (ok (bm/badge-assertion ctx user-badge-id)))
-
-      (GET "/_/badge/:user-badge-id" []
-            :summary "Get hosted badge information"
-            :path-params [user-badge-id :- s/Int]
-            (ok (bm/get-badge ctx user-badge-id)))
-
       (GET "/criteria/:id" []
             :summary "Get criteria information"
             :path-params [id :- s/Str]
             (ok (bm/badge-criteria ctx id)))
 
-      (GET "/_/issuer/:id" []
-            :summary "Get issuer information"
-            :path-params [id :- s/Str]
-            (ok (bm/badge-issuer ctx id)))
-
       (GET "/create" []
            :no-doc true
+           ;:return schemas/initialize-badge
            :summary "Initialize badge creator"
            :auth-rules access/authenticated
            :current-user current-user
            (ok (bm/initialize ctx current-user)))
 
       (GET "/create/:id" []
+            :return schemas/initialize-badge
             :summary "Edit selfie badge!"
             :path-params [id :- s/Str]
             :auth-rules access/authenticated
             :current-user current-user
-            ;(bm/issue-selfie-badge ctx id (:id current-user) [12])
             (ok (bm/initialize ctx current-user id)))
 
       (POST "/create" []
@@ -85,6 +96,13 @@
              :auth-rules access/authenticated
              :current-user current-user
              (ok (bm/issue-selfie-badge ctx data (:id current-user))))
+
+      (GET "/history/:id" []
+             :summary "Get selfie badge issuing history"
+             :path-params [id :- s/Str]
+             :auth-rules access/authenticated
+             :current-user current-user
+             (ok (bm/issuing-history ctx id (:id current-user))))
 
       (DELETE "/:id" []
               :return {:status (s/enum "success" "error")}
