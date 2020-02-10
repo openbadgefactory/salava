@@ -1,6 +1,6 @@
 (ns salava.badgeIssuer.util
   (:require
-   [salava.core.util :refer [bytes->base64 get-db-1]]
+   [salava.core.util :refer [bytes->base64 get-db-1 get-db]]
    [yesql.core :refer [defqueries]])
   (:import
     [java.io ByteArrayOutputStream]
@@ -11,6 +11,14 @@
 (defn is-badge-creator? [ctx id user-id]
   (let [creator-id (-> (get-selfie-badge-creator {:id id} (get-db-1 ctx)) :creator_id)]
     (= user-id creator-id)))
+
+(defn is-badge-issuer? [ctx user-badge-id issuer-id]
+  (= issuer-id (select-selfie-issuer-by-badge-id {:id user-badge-id} (into {:result-set-fn first :row-fn :issuer_id} (get-db ctx)))))
+
+(defn badge-valid?
+  "Check is badge exists, has been deleted by owner or is revoked"
+  [ctx user-badge-id]
+  (some-> (select-issued-badge-validity-status {:id user-badge-id} (into {:result-set-fn first} (get-db ctx)))))
 
 (defn selfie-id []
   (str (java.util.UUID/randomUUID)))

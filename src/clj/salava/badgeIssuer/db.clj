@@ -25,7 +25,7 @@
 (defn delete-selfie-badge-soft [ctx user-id id]
   (try+
     (hard-delete-selfie-badge! {:id id :creator_id user-id} (get-db ctx))
-    {:status "success"}
+    {:status "success"} 
     (catch Object _
       {:status "error"})))
 
@@ -40,6 +40,3 @@
 
 (defn finalise-user-badge! [ctx data]
   (finalise-issued-user-badge! data (get-db ctx)))
-
-
- 

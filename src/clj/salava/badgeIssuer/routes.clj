@@ -97,6 +97,14 @@
              :current-user current-user
              (ok (bm/issue-selfie-badge ctx data (:id current-user))))
 
+      (POST "/revoke/:user-badge-id" []
+             :return {:status (s/enum "success" "error") (s/optional-key :message) (s/maybe s/Str)}
+             :summary "Revoke issued selfie badge"
+             :path-params [user-badge-id :- s/Int]
+             :auth-rules access/authenticated
+             :current-user current-user
+             (ok (bm/revoke-selfie-badge! ctx user-badge-id (:id current-user))))
+
       (GET "/history/:id" []
              :summary "Get selfie badge issuing history"
              :path-params [id :- s/Str]

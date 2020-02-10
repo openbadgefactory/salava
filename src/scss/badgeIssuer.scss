@@ -114,10 +114,27 @@
   border-radius: 2px;
 }
 
-.my-selfie-badges {
+#selfie-badges.my-selfie-badges {
   .grid-container {
-    height: 230px !important;
+    height: 230px; //!important;
     border-radius: 3px;
+  }
+
+  .issued-badge-row {
+    padding: 7px;
+    line-height: 2.5;
+    .image-container {
+      //padding: 3px;
+      text-align: left;
+    }
+    img {
+      width: 40px;
+      height: auto;
+      margin-right: 5px;
+      vertical-align: bottom;
+      //padding: 2px;
+      float: left;
+    }
   }
 
   #grid #import-badge {

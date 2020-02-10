@@ -95,3 +95,12 @@ JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code)
 WHERE badge.id = :id
 GROUP BY badge.id, bc.language_code, cc.language_code, ic.language_code, bbc.badge_content_id
+
+--name: revoke-issued-selfie-badge!
+UPDATE user_badge SET revoked = 1, mtime = UNIX_TIMESTAMP() WHERE id= :id AND issuer_id = :issuer_id
+
+--name: select-selfie-issuer-by-badge-id
+SELECT issuer_id FROM user_badge WHERE id=:id
+
+--name: select-issued-badge-validity-status
+SELECT id, revoked, deleted, assertion_url FROM user_badge WHERE id=:id

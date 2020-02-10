@@ -8,7 +8,7 @@
 
 (defn either [s1 s2]
   #? (:clj (s/either s1 s2)
-           :cljs (s/cond-pre s1 s2)))
+      :cljs (s/cond-pre s1 s2)))
 
 (s/defschema user-badge-p {:id                                   (describe s/Int "internal user-badge id")
                            :name                                 s/Str

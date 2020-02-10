@@ -8,19 +8,30 @@
    [clojure.data.json :as json]
    [clojure.string :refer [blank?]]
    [clojure.tools.logging :as log]
+   [ring.util.response :refer [not-found]]
    [salava.badge.db :refer [save-user-badge!]]
    [salava.badge.main :refer [fetch-badge-p]]
    [salava.badgeIssuer.creator :refer [generate-image]]
    [salava.badgeIssuer.db :as db]
-   [salava.badgeIssuer.util :refer [selfie-id]]
+   [salava.badgeIssuer.util :refer [selfie-id is-badge-issuer? badge-valid?]]
    [salava.core.util :refer [get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html]]
    [salava.profile.db :refer [user-information]]
    [salava.user.db :refer [primary-email]]
    [slingshot.slingshot :refer :all]))
 
-(defn badge-assertion [ctx user-badge-id]
-  (some-> (db/get-assertion-json {:id user-badge-id} (into {:result-set-fn first :row-fn :assertion_json} (get-db ctx)))
-          (json/read-str :key-fn keyword)))
+(defn badge-assertion
+  "Return map containing badge status code and response
+   1 -> valid badge
+   2 -> deleted badge
+   3 -> revoked badge"
+  [ctx user-badge-id]
+  (let [{:keys [id deleted revoked assertion_url]} (badge-valid? ctx user-badge-id)]
+   (cond
+     (and id (zero? deleted) (zero? revoked)) (some-> (db/get-assertion-json {:id user-badge-id} (into {:result-set-fn first
+                                                                                                        :row-fn :assertion_json} (get-db ctx)))
+                                                      (json/read-str :key-fn keyword))
+     (or (nil? id) (pos? deleted))            (not-found "Badge assertion not found")
+     (pos? revoked)                           {:revoked true :id assertion_url})))
 
 (defn badge-recipient [ctx email]
   (let [salt (bytes->base64 (nonce/random-bytes 8))
@@ -133,7 +144,7 @@
          user-badge-id (save-user-badge! ctx (parse-badge ctx user-id id badge initial))
          assertion_url (str (get-full-path ctx) "/obpv1/selfie/_/assertion/" user-badge-id)
          assertion_json (-> {:id assertion_url
-                             :recipient r ;(recipient ctx (:email (badge-criteria ctx user-badge-id)recipient))
+                             :recipient r 
                              :expires (if expires_on
                                         (str (c/from-long (long (* expires_on 1000))))
                                         nil)
@@ -144,11 +155,6 @@
                              (keyword "@context") "https://w3id.org/openbadges/v2"}
                             (json/write-str))]
 
-     ;(log/info "Updating assetion url and assertion json!")
-     #_(db/update-assertions-info! ctx {:id user-badge-id
-                                        :assertion_url assertion_url
-                                        :assertion_json assertion_json})
-
      (log/info "Updating criteria url!")
      (db/update-criteria-url! ctx user-badge-id)
 
@@ -158,7 +164,6 @@
                                    :assertion_url assertion_url
                                    :assertion_json assertion_json
                                    :issuer_id user-id})
-     ;(db/update-user-badge-issuer-id! {:issuer_id user-id :id user-badge-id} (get-db ctx))
      (log/info "Finished saving user badge!"))
 
    (catch Object _
@@ -204,9 +209,20 @@
      (log/error (.getMessage _))
      {:status "error" :id "-1"})))
 
-
 (defn issuing-history [ctx selfie-id user-id]
   (db/select-selfie-badge-issuing-history {:selfie_id selfie-id :issuer_id user-id} (get-db ctx)))
+
+(defn revoke-selfie-badge! [ctx user-badge-id user-id]
+  (log/error "Got revoke request for user-badge-id: " user-badge-id)
+  (try+
+    (if (is-badge-issuer? ctx user-badge-id user-id)
+      (db/revoke-issued-selfie-badge! {:issuer_id user-id :id user-badge-id} (get-db ctx))
+      (throw+ "Error! user trying to revoke badge they have not issued"))
+    (log/info "Badge revoked!")
+    {:status "success"}
+    (catch Object _
+      (log/error _)
+      {:status "error" :message _})))
 
 (defn initialize
   ([ctx user]

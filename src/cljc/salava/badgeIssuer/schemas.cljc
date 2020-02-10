@@ -10,6 +10,11 @@
 
 #? (:cljs (defn describe [v _] v))
 
+(defn either [s1 s2 s3]
+  #? (:clj (s/either s1 s2 s3)
+      :cljs (s/cond-pre s1 s2 s3)))
+
+
 (s/defschema selfie_badge
   {:id                    (s/maybe s/Str)
    :name                  (s/conditional #(not (blank? %)) s/Str)
@@ -47,7 +52,11 @@
    :hashed   s/Bool
    :salt     s/Str})
 
-(s/defschema assertion
+(s/defschema revoked-assertion
+  {:id s/Str
+   :revoked (s/eq true)})
+
+(s/defschema valid-assertion
   {:id s/Str
    :issuedOn s/Str
    :recipient recipient
@@ -56,6 +65,14 @@
    :verification  {:type (s/eq "HostedBadge")}
    :type (s/eq "Assertion")
    (keyword "@context") (s/eq "https://w3id.org/openbadges/v2")})
+
+(s/defschema not-found
+  {:status (s/eq 404)
+   :headers (s/eq {})
+   :body (s/eq "Badge assertion not found")})
+
+(s/defschema assertion
+  (either valid-assertion revoked-assertion not-found))
 
 (s/defschema badge
   {:id s/Str

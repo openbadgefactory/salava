@@ -108,3 +108,10 @@
     {:handler (fn [data]
                 (reset! (cursor state [:history :data]) data)
                 (reset! (cursor state [:history :Initializing]) false))}))
+
+(defn revoke-selfie-badge [user-badge-id state]
+  (ajax/POST
+    (path-for (str "/obpv1/selfie/revoke/" user-badge-id))
+    {:handler (fn [data]
+                (when (= "success" (:status data))
+                  (issuing-history state)))}))
