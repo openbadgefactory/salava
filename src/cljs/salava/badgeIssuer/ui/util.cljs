@@ -39,6 +39,13 @@
      "OK"]]])
 
 
+
+#_(defn get-selfie-badge [id state]
+    (ajax/GET
+      (path-for (str "/obpv1/selfie/" id))
+      {:handler (fn [data]
+                 (reset! (cursor state [:badge]) data))}))
+
 (defn save-selfie-badge [state reload-fn]
   (reset! (cursor state [:error-message]) nil)
   (let [its (if @(cursor state [:badge :issue_to_self]) @(cursor state [:badge :issue_to_self]) 0)
@@ -54,7 +61,9 @@
             1 (t :badgeIssuer/Descriptionfieldempty)
             2 (t :badgeIssuer/Criteriafieldempty)
             (t :badgeIssuer/Errormessage)))
-        (m/modal! (error-msg state) {}))
+        (when-not @(cursor state [:in-modal])
+          (m/modal! (error-msg state) {})))
+
 
       (ajax/POST
         (path-for "/obpv1/selfie/create")
@@ -68,7 +77,7 @@
                      (when reload-fn (reload-fn))))}))))
          ;:finally (fn [] (when reload-fn (reload-fn)))}))))
 
-(defn issue-selfie-badge [state]
+(defn issue-selfie-badge [state reload-fn]
   (let [id @(cursor state [:badge :id])
         recipients (mapv :id @(cursor state [:selected-users]))
         its (if @(cursor state [:issue_to_self]) @(cursor state [:issue_to_self]) 0)
@@ -79,7 +88,9 @@
                 :recipients recipients
                 :issue_to_self its
                 :expires_on expires_on}
-       :handler (fn [data])})))
+       :handler (fn [data]
+                  (when (= "success" (:status data))
+                    (when reload-fn (reload-fn))))})))
 
 (defn delete-selfie-badge [state]
   (let [id @(cursor state [:badge :id])]
@@ -89,7 +100,7 @@
 
 (defn generate-image [state]
   (reset! (cursor state [:generating-image]) true)
-  (ajax/GET
+  (ajax/POST
     (path-for "/obpv1/selfie/generate_image")
     {:handler (fn [{:keys [status url message]}]
                 (when (= "success" status)
@@ -102,16 +113,60 @@
     (reset! setting 1)))
 
 (defn issuing-history [state]
-  (reset! (cursor state [:history :Initializing]) true)
-  (ajax/GET
-    (path-for (str "/obpv1/selfie/history/" (get-in @state [:badge :id])))
-    {:handler (fn [data]
-                (reset! (cursor state [:history :data]) data)
-                (reset! (cursor state [:history :Initializing]) false))}))
+ (reset! (cursor state [:history :Initializing]) true)
+ (ajax/GET
+   (path-for (str "/obpv1/selfie/history/" (get-in @state [:badge :id])))
+   {:handler (fn [data]
+               (reset! (cursor state [:history :data]) data)
+               (reset! (cursor state [:history :Initializing]) false))}))
 
 (defn revoke-selfie-badge [user-badge-id state]
   (ajax/POST
     (path-for (str "/obpv1/selfie/revoke/" user-badge-id))
     {:handler (fn [data]
                 (when (= "success" (:status data))
+                  (reset! (cursor state [:revocation-request]) false)
                   (issuing-history state)))}))
+
+(defn revoke-badge-content [user-badge-id state]
+  (when (and @(cursor state [:revocation-request]) (= user-badge-id @(cursor state [:revoke-id])))
+  ;  [:div.row ;{:style {:text-align "left"}}
+     [:div.col-md-12
+      [:div.panel.thumbnail
+        [:div.alert.alert-warning
+         [:p (t :badgeIssuer/Confirmbadgerevocation)]]
+        [:div
+         [:button {:type "button"
+                   :class "btn btn-danger btn-bulky"
+                   ;:data-dismiss "modal"
+                   :on-click #(do (.preventDefault %)
+                                  (revoke-selfie-badge user-badge-id state))}
+          (t :badgeIssuer/Revoke)]
+         [:button.btn.btn-primary.btn-bulky {:type "button"
+                                             :on-click #(reset! (cursor state [:revocation-request]) false)}
+                                             ;:data-dismiss "modal"}
+          (t :core/Cancel)]]]]))
+
+#_(defn revoke-selfie-badge-modal [user-badge-id state]
+    [:div
+     [:div.modal-header
+      [:button {:type "button"
+                :class "close"
+                :data-dismiss "modal"
+                :aria-label "OK"}
+       [:span {:aria-hidden "true"
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]]
+      ;[:h4.modal-title (translate-text message)]]
+     [:div.modal-body
+      [:div.alert.alert-warning
+       [:p (t :badgeIssuer/Confirmbadgerevocation)]]]
+     [:div.modal-footer
+      [:button {:type "button"
+                :class "btn btn-danger btn-bulky"
+                :data-dismiss "modal"
+                :on-click #(do (.preventDefault %)
+                               (revoke-selfie-badge state))}
+       (t :badgeIssuer/Revoke)]
+      [:button.btn.btn-primary.btn-bulky {:type "button"
+                                          :data-dismiss "modal"}
+       (t :core/Cancel)]]])

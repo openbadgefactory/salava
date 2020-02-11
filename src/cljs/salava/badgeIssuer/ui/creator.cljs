@@ -19,8 +19,8 @@
 
 (defn init-data
   ([state]
-   (ajax/GET
-     (path-for "/obpv1/selfie/create")
+   (ajax/POST
+     (path-for "/obpv1/selfie/new")
      {:handler (fn [data]
                  (swap! state assoc :badge data
                                     :generating-image false))}))
@@ -29,8 +29,8 @@
     (path-for (str "/obpv1/selfie/create/" id))
     {:handler (fn [data]
                (swap! state assoc :badge data
-                                  :generating-image false)
-               #_(issuing-history state))})))
+                                  :generating-image false
+                                  :error-message nil))})))
 
 (defn upload-modal [{:keys [status message reason]}]
   [:div
@@ -229,6 +229,7 @@
                      :generating-image true
                      :step 0
                      :id id
+                     :in-modal false
                      :error-message nil})]
     (if-not (blank? id)
       (init-data id state)

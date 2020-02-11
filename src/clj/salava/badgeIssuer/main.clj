@@ -8,7 +8,7 @@
    [clojure.data.json :as json]
    [clojure.string :refer [blank?]]
    [clojure.tools.logging :as log]
-   [ring.util.response :refer [not-found]]
+   [ring.util.http-response :refer [not-found gone ok internal-server-error]]
    [salava.badge.db :refer [save-user-badge!]]
    [salava.badge.main :refer [fetch-badge-p]]
    [salava.badgeIssuer.creator :refer [generate-image]]
@@ -20,18 +20,24 @@
    [slingshot.slingshot :refer :all]))
 
 (defn badge-assertion
-  "Return map containing badge status code and response
-   1 -> valid badge
-   2 -> deleted badge
-   3 -> revoked badge"
+  "Return response with appropriate status codes
+   200 -> valid badge
+   404 -> deleted badge
+   410 -> revoked badge
+   500 -> server error"
   [ctx user-badge-id]
-  (let [{:keys [id deleted revoked assertion_url]} (badge-valid? ctx user-badge-id)]
-   (cond
-     (and id (zero? deleted) (zero? revoked)) (some-> (db/get-assertion-json {:id user-badge-id} (into {:result-set-fn first
-                                                                                                        :row-fn :assertion_json} (get-db ctx)))
-                                                      (json/read-str :key-fn keyword))
-     (or (nil? id) (pos? deleted))            (not-found "Badge assertion not found")
-     (pos? revoked)                           {:revoked true :id assertion_url})))
+  (try+
+    (let [{:keys [id deleted revoked assertion_url]} (badge-valid? ctx user-badge-id)]
+     (prn revoked)
+     (cond
+       (and id (zero? deleted) (zero? revoked)) (ok (some-> (db/get-assertion-json {:id user-badge-id} (into {:result-set-fn first
+                                                                                                              :row-fn :assertion_json} (get-db ctx)))
+                                                            (json/read-str :key-fn keyword)))
+       (or (nil? id) (pos? deleted))            (not-found "Badge assertion not found")
+       (pos? revoked)                           (gone {:revoked true :id assertion_url})))
+    (catch Object _
+      (log/error (.getMessage _))
+      (internal-server-error))))
 
 (defn badge-recipient [ctx email]
   (let [salt (bytes->base64 (nonce/random-bytes 8))
@@ -144,7 +150,7 @@
          user-badge-id (save-user-badge! ctx (parse-badge ctx user-id id badge initial))
          assertion_url (str (get-full-path ctx) "/obpv1/selfie/_/assertion/" user-badge-id)
          assertion_json (-> {:id assertion_url
-                             :recipient r 
+                             :recipient r
                              :expires (if expires_on
                                         (str (c/from-long (long (* expires_on 1000))))
                                         nil)
@@ -238,4 +244,9 @@
      (-> selfie-badge
          (assoc :issuable_from_gallery (if (:issuable_from_gallery selfie-badge) 1 0)
                 :tags (if (blank? (:tags selfie-badge)) nil (json/read-str (:tags selfie-badge))))
-         (dissoc :deleted :ctime :mtime :creator_id)))))
+         (dissoc :deleted :ctime :mtime :creator_id))))
+  ([ctx user id md?]
+   (if md?
+     (-> (initialize ctx user id)
+         (update :criteria md->html))
+     (initialize ctx user id))))

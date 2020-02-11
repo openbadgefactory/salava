@@ -53,8 +53,10 @@
    :salt     s/Str})
 
 (s/defschema revoked-assertion
-  {:id s/Str
-   :revoked (s/eq true)})
+  {:status (s/eq 410)
+   :headers {}
+   :body {:id s/Str
+          :revoked (s/eq true)}})
 
 (s/defschema valid-assertion
   {:id s/Str

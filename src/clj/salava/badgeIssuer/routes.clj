@@ -32,9 +32,9 @@
            :return schemas/assertion
            :summary "Get hosted badge assertion"
            :path-params [user-badge-id :- s/Int]
-           (ok (bm/badge-assertion ctx user-badge-id)))
+           (bm/badge-assertion ctx user-badge-id))
 
-      (GET "/badge/:user-badge-id" [i]
+      (GET "/badge/:user-badge-id" []
             :return schemas/badge
             :summary "Get hosted badge information"
             :path-params [user-badge-id :- s/Int]
@@ -58,12 +58,20 @@
            :current-user current-user
            (ok {:badges (bdb/user-selfie-badges ctx (:id current-user))}))
 
+      (GET "/:id" []
+            :return schemas/initialize-badge
+            :summary "Get selfie badge!"
+            :path-params [id :- s/Str]
+            :auth-rules access/authenticated
+            :current-user current-user
+            (ok (bm/initialize ctx current-user id true)))
+
       (GET "/criteria/:id" []
             :summary "Get criteria information"
             :path-params [id :- s/Str]
             (ok (bm/badge-criteria ctx id)))
 
-      (GET "/create" []
+      (POST "/new" []
            :no-doc true
            ;:return schemas/initialize-badge
            :summary "Initialize badge creator"
@@ -120,7 +128,7 @@
               :current-user current-user
               (ok (bdb/delete-selfie-badge-soft ctx (:id current-user) id)))
 
-      (GET "/generate_image" []
+      (POST "/generate_image" []
            :return {:status (s/enum "success" "error") :url s/Str (s/optional-key :message) (s/maybe s/Str)}
            :summary "Generate random badge image"
            :auth-rules access/signed

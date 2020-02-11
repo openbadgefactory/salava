@@ -225,7 +225,7 @@
                                                                        :disabled (empty? @selected-users-atom)}
                                                  (t :core/Continue)])
                                             (when (= context "selfie_issue")
-                                             [:button.btn.btn-primary
+                                             [:button.btn.btn-primary.btn-bulky
                                               {:on-click #(func)
                                                :disabled (empty? @selected-users-atom)}
                                               (t :badgeIssuer/Issuebadge)])])])]])
