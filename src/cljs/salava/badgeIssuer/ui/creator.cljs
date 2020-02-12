@@ -165,7 +165,8 @@
        [:fieldset {:class "col-md-9 checkbox"}
         [:legend.col-md-9 ""]
         [:div.col-md-12 [:label {:for "its"}
-                         [:input {:type      "checkbox"
+                         [:input {:name "issuetoself"
+                                  :type      "checkbox"
                                   :id        "its"
                                   :on-change #(toggle-setting its)
                                   :checked   @its}]

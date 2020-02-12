@@ -52,9 +52,6 @@ WHERE id = :id
 --name: get-issuer-information
 SELECT * FROM issuer_content WHERE id = :id
 
---name: select-badge-id-by-criteria-content-id
-SELECT badge_id FROM badge_criteria_content WHERE criteria_content_id = :id
-
 --name: get-criteria-page-information
 SELECT bc.name, bc.image_file, bc.description, cc.id AS id, cc.markdown_text AS criteria_content
 FROM badge AS badge
@@ -62,10 +59,7 @@ JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id)
-WHERE badge.id = :badge_id
-
---name: update-user-badge-issuer-id!
---UPDATE user_badge SET issuer_id = :issuer_id WHERE id = :id
+WHERE badge.id = (SELECT badge_id FROM badge_criteria_content WHERE criteria_content_id = :id)
 
 --name: select-selfie-badge-issuing-history
 SELECT ub.id, ub.user_id, ub.issued_on, ub.expires_on, ub.status, ub.revoked, u.first_name, u.last_name, u.profile_picture
@@ -104,3 +98,9 @@ SELECT issuer_id FROM user_badge WHERE id=:id
 
 --name: select-issued-badge-validity-status
 SELECT id, revoked, deleted, assertion_url FROM user_badge WHERE id=:id
+
+--name:check-badge-issuable
+SELECT sb.issuable_from_gallery FROM user_badge ub
+JOIN selfie_badge sb ON sb.id = ub.selfie_id
+WHERE ub.badge_id = :id AND ub.deleted = 0
+ORDER BY ub.ctime DESC

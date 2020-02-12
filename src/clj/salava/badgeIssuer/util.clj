@@ -15,6 +15,9 @@
 (defn is-badge-issuer? [ctx user-badge-id issuer-id]
   (= issuer-id (select-selfie-issuer-by-badge-id {:id user-badge-id} (into {:result-set-fn first :row-fn :issuer_id} (get-db ctx)))))
 
+(defn issuable-from-gallery? [ctx badge_id]
+  (check-badge-issuable {:id badge_id} (into {:result-set-fn first :row-fn :issuable_from_gallery} (get-db ctx))))
+
 (defn badge-valid?
   "Check is badge exists, has been deleted by owner or is revoked"
   [ctx user-badge-id]

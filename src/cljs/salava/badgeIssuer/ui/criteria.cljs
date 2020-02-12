@@ -20,7 +20,6 @@
    #_[:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]])
 
 (defn content [state]
-
    (create-class
     {:reagent-render
      (fn []

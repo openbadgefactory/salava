@@ -38,3 +38,5 @@
 
 (defn finalise-user-badge! [ctx data]
   (finalise-issued-user-badge! data (get-db ctx)))
+
+ 
