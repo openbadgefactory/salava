@@ -1,5 +1,6 @@
 (ns salava.user.ui.cancel
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [input-valid? js-navigate-to path-for]]
             [salava.core.ui.layout :as layout]
@@ -10,16 +11,15 @@
 (defn password-valid? [password]
   (input-valid? (:password schemas/User) password))
 
-
-
 (defn cancel-account [state]
-  (ajax/POST
-    (path-for "/obpv1/user/delete")
-    {:params  {:password (:password @state)}
-     :handler (fn [data]
-                (if (= (:status data) "error")
-                  (swap! state assoc :error-message (t :user/Erroroccuredduringaccountcancellation))
-                  (js-navigate-to "/user/delete-user")))}))
+  (let [lng (session/get-in [:user :language] "en")]
+    (ajax/POST
+      (path-for "/obpv1/user/delete")
+      {:params  {:password (:password @state)}
+       :handler (fn [data]
+                  (if (= (:status data) "error")
+                    (swap! state assoc :error-message (t :user/Erroroccuredduringaccountcancellation))
+                    (js-navigate-to (str "/user/delete-user/" lng))))})))
 
 (defn cancel-account-modal [state]
   [:div

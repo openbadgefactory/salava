@@ -41,7 +41,7 @@
                                       ["/edit/profile" edit-profile/handler]
                                       ["/cancel" cancel/handler]
                                       ["/terms" terms/handler]
-                                      ["/delete-user" delete-user/handler]
+                                      [["/delete-user/" :lang] delete-user/handler]
                                       [["/data/" [#"\d+" :user-id]] data/handler]
                                       ["/registration-complete" rc/handler]]})
 

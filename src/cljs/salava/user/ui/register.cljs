@@ -141,22 +141,24 @@
          (t :user/Lastname)
          [:span.form-required " *"]]
         [:div {:class (str "form-bar " (if (input/last-name-valid? @last-name-atom) "form-bar-success" "form-bar-error"))}
-         [input/text-field {:name "last-name" :atom last-name-atom}]]]] [:div.row
-                                                                         [:div.form-group.margin-0.col-sm-6
-                                                                          [:label {:class ""
-                                                                                   :for   "input-language"}
-                                                                           (t :user/Language)
-                                                                           [:span.form-required " *"]]
-                                                                          [:div {:class (str "form-bar " (if (input/language-valid? @language-atom) "form-bar-success" "form-bar-error"))}
-                                                                           [input/select-selector languages language-atom (t :user/Chooselanguage)]]]
+         [input/text-field {:name "last-name" :atom last-name-atom}]]]]
 
-                                                                         [:div.form-group.margin-0.col-sm-6
-                                                                          [:label {:class ""
-                                                                                   :for   "input-country"}
-                                                                           (t :user/Country)
-                                                                           [:span.form-required " *"]]
-                                                                          [:div {:class (str "form-bar " (if (input/country-valid? @country-atom) "form-bar-success" "form-bar-error"))}
-                                                                           [input/country-selector country-atom]]]]]
+      [:div.row
+       [:div.form-group.margin-0.col-sm-6
+        [:label {:class ""
+                 :for   "input-language"}
+         (t :user/Language)
+         [:span.form-required " *"]]
+        [:div {:class (str "form-bar " (if (input/language-valid? @language-atom) "form-bar-success" "form-bar-error"))}
+         [input/select-selector languages language-atom (t :user/Chooselanguage)]]]
+
+       [:div.form-group.margin-0.col-sm-6
+        [:label {:class ""
+                 :for   "input-country"}
+         (t :user/Country)
+         [:span.form-required " *"]]
+        [:div {:class (str "form-bar " (if (input/country-valid? @country-atom) "form-bar-success" "form-bar-error"))}
+         [input/country-selector country-atom]]]]]
 
      [:button {:class "btn btn-primary col-sm-4 col-sm-offset-4 col-xs-8 col-xs-offset-2 management-links"
                :on-click #(do
