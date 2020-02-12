@@ -1,11 +1,26 @@
 # Changelog
 
+## 3.8.3
+ - Ui improvements to account deleted page
+ - Translation fixes
+ 
+## 3.8.2
+ - Disabled mouse wheel zooming in embedded map
+ - Fixed typo
+
+## 3.8.1
+ - Fixed badge schema
+
+## 3.8.1
+ - Added direct badge acceptance in badge receive page when user in session
+ - Fixed admin login issue
+ - Ui changes to badge receive page
+
 ## 3.8.0
  - Improve accessibility
  - Public API documentation
  - Improvements to ui
  - Bug fixes
-
 
 ## 3.6.2
  - Migration fixes for testing
