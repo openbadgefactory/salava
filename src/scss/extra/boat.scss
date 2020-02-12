@@ -792,3 +792,11 @@ p.help-block {
 .badge-modal-navi, .sectiontitle, .block-title, ul.side-links, #secondary-menu-links {
  font-family: "Comfortaa", 'Open Sans';
 }
+
+.terms-container {
+  padding: 35px;
+ .blue-text {
+   color: $main-color;
+   font-weight: bold;
+ }
+}
