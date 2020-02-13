@@ -3,7 +3,6 @@
   [clojure.data.json :as json]
   [clojure.string :refer [blank?]]
   [clojure.tools.logging :as log]
-  ;[salava.badgeIssuer.util :refer [selfie-id]]
   [salava.core.util :refer [get-db file-from-url-fix get-full-path md->html]]
   [slingshot.slingshot :refer :all]
   [yesql.core :refer [defqueries]]))
@@ -38,5 +37,4 @@
 
 (defn finalise-user-badge! [ctx data]
   (finalise-issued-user-badge! data (get-db ctx)))
-
  

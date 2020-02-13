@@ -38,14 +38,6 @@
               :data-dismiss "modal"}
      "OK"]]])
 
-
-
-#_(defn get-selfie-badge [id state]
-    (ajax/GET
-      (path-for (str "/obpv1/selfie/" id))
-      {:handler (fn [data]
-                 (reset! (cursor state [:badge]) data))}))
-
 (defn save-selfie-badge [state reload-fn]
   (reset! (cursor state [:error-message]) nil)
   (let [its (if @(cursor state [:badge :issue_to_self]) @(cursor state [:badge :issue_to_self]) 0)
@@ -80,14 +72,15 @@
 (defn issue-selfie-badge [state reload-fn]
   (let [id @(cursor state [:badge :id])
         recipients (mapv :id @(cursor state [:selected-users]))
-        its (if @(cursor state [:issue_to_self]) @(cursor state [:issue_to_self]) 0)
+        ;its (if @(cursor state [:issue_to_self]) @(cursor state [:issue_to_self]) 0)
         expires_on (if (nil? @(cursor state [:badge :expires_on])) nil (iso8601-to-unix-time @(cursor state [:badge :expires_on])))]
     (ajax/POST
       (path-for (str "/obpv1/selfie/issue"))
       {:params {:selfie_id id
                 :recipients recipients
-                :issue_to_self its
-                :expires_on expires_on}
+                ;:issue_to_self its
+                :expires_on expires_on
+                :issued_from_gallery @(cursor state [:issued_from_gallery])}
        :handler (fn [data]
                   (when (= "success" (:status data))
                     (when reload-fn (reload-fn))))})))

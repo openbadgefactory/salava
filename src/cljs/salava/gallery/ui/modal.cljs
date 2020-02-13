@@ -41,10 +41,11 @@
            [:div (if (= rating_count 1)
                    (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                    (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])
-        #_[:div
-           (when (and (session/get :user) (not hide-info-link)) [gallery-modal-message-info-link show-messages badge_id])]
 
-        (when-not @show-messages (bm/badge-endorsement-modal-link badge_id endorsement_count))]
+        (when-not @show-messages (bm/badge-endorsement-modal-link badge_id endorsement_count))
+        (into [:div]
+            (for [f (plugin-fun (session/get :plugins) "block" "issue_badge_link")]
+              [f gallery_id]))]
 
        [:div {:class "col-md-9 badge-info"}
         (if @show-messages

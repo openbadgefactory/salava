@@ -7,11 +7,14 @@
    [clojure.tools.logging :as log]
    [salava.badge.db :refer [save-user-badge!]]
    [salava.badgeIssuer.db :as db]
-   [salava.core.util :refer [bytes->base64 hex-digest get-site-url get-full-path now]]
+   [salava.core.util :refer [bytes->base64 hex-digest get-site-url get-full-path now get-site-name get-plugins]]
    [salava.profile.db :refer [user-information]]
    [slingshot.slingshot :refer :all]))
 
-(defn badge-recipient [ctx email]
+(defn- badge-recipient
+  "Create a IdentityObject from recipient email.
+   -> https://www.imsglobal.org/sites/default/files/Badges/OBv2p0Final/index.html#IdentityObject"
+  [ctx email]
   (let [salt (bytes->base64 (nonce/random-bytes 8))
         identity  (hex-digest "sha256" (str email salt))]
 
@@ -20,10 +23,11 @@
      :hashed true
      :type "email"}))
 
-(defn parse-badge [ctx user-id id badge initial-assertion]
+(defn- parse-badge [ctx user-id id badge initial-assertion]
   (let [{:keys [name image criteria description tags]} badge
-        issuer (user-information ctx user-id)
+        issuer (if (pos? user-id) (user-information ctx user-id) nil)
         creator (user-information ctx (:creator_id badge))
+        header-path (if (zero? user-id) (first (mapcat #(get-in ctx [:config % :favicon] []) (get-plugins ctx))) nil)
         parser {:content [{:id ""
                            :name name
                            :description description
@@ -36,19 +40,28 @@
                             :language_code ""
                             :url ""
                             :markdown_text criteria}]
-                :issuer   [{:id ""
-                            :name (str (:first_name issuer) " " (:last_name issuer))
-                            :description (:about issuer)
-                            :url (str (get-full-path ctx) "/profile/" user-id)
-                            :image_file (str (get-site-url ctx) "/" (:profile_picture issuer))
-                            :email "no-reply@openbadgepassport.com"
-                            :language_code ""
-                            :revocation_list_url nil}]
+                :issuer   [(if (zero? user-id)
+                             {:id ""
+                              :name (get-site-name ctx)
+                              :description ""
+                              :url (get-site-url ctx)
+                              :image_file (str (get-site-url ctx) (if-not (blank? header-path) header-path "/img/favicon.png"))
+                              :email (str "no-reply@" (get-site-name ctx))
+                              :language_code ""
+                              :revocation_list_url nil}
+                             {:id ""
+                              :name (str (:first_name issuer) " " (:last_name issuer))
+                              :description (:about issuer)
+                              :url (str (get-full-path ctx) "/profile/" user-id)
+                              :image_file (if (blank? (:profile_picture issuer)) nil (str (get-site-url ctx) "/" (:profile_picture issuer)))
+                              :email (str "no-reply@" (get-site-name ctx))
+                              :language_code ""
+                              :revocation_list_url nil})]
                 :creator  [{:id ""
                             :name (str (:first_name creator) " " (:last_name creator))
                             :description (:about creator)
                             :url (str (get-full-path ctx) "/profile/" (:id creator))
-                            :image_file (str (get-site-url ctx) "/" (:profile_picture creator))
+                            :image_file (if (blank? (:profile_picture creator)) nil (str (get-site-url ctx) "/" (:profile_picture creator)))
                             :email nil
                             :language_code ""
                             :json_url (str (get-full-path ctx) "/profile/" (:creator_id creator))}]}]
@@ -64,7 +77,9 @@
                           :recipient_count 0}
                          parser))))
 
-(defn bake-assertion [ctx data]
+(defn bake-assertion
+  "Create Assertion and save badge to db"
+  [ctx data]
   (try+
    (let [{:keys [id user-id recipient expires_on]} data
          base-url (get-site-url ctx)

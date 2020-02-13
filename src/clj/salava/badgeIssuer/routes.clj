@@ -8,7 +8,6 @@
    [salava.badgeIssuer.db :as bdb]
    [salava.badgeIssuer.schemas :as schemas]
    [salava.badgeIssuer.main :as bm]
-   [salava.badgeIssuer.upload :as biu]
    [salava.badgeIssuer.util :as util]
    [salava.core.access :as access]
    [salava.core.layout :as layout]
@@ -64,7 +63,7 @@
                  :path-params [id :- s/Str]
                  :auth-rules access/authenticated
                  :current-user current-user
-                 (ok (bm/initialize ctx current-user id true)))
+                 (ok (bm/initialize ctx current-user id)))
 
             (GET "/criteria/:id" []
                  :summary "Get criteria information"
@@ -134,13 +133,13 @@
                   :current-user current-user
                   (ok (bic/generate-image ctx current-user)))
 
-            (POST "/is_issuable/:badge_id" []
-                  :return s/Bool
+            (POST "/is_issuable/:gallery_id" []
+                  :return (s/maybe {:selfie_id s/Str :issuable_from_gallery s/Bool})
                   :summary "check if selfie badge can be issued from gallery"
-                  :path-params [badge_id :- s/Str]
+                  :path-params [gallery_id :- s/Int]
                   :auth-rules access/signed
                   :current-user current-user
-                  (ok (util/issuable-from-gallery? ctx badge_id)))
+                  (ok (util/issuable-from-gallery? ctx gallery_id)))
 
             (POST "/upload_image" []
                   :return {:status (s/enum "success" "error") :url s/Str (s/optional-key :message) (s/maybe s/Str)}
@@ -149,4 +148,4 @@
                   :summary "Upload badge image (PNG)"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (biu/upload-image ctx current-user file))))))
+                  (ok (util/upload-image ctx current-user file))))))

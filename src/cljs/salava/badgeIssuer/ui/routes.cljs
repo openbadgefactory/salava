@@ -1,5 +1,6 @@
 (ns salava.badgeIssuer.ui.routes
   (:require
+   [salava.badgeIssuer.ui.block]
    [salava.badgeIssuer.ui.creator :as creator]
    [salava.badgeIssuer.ui.criteria :as criteria]
    [salava.badgeIssuer.ui.helper :as h]

@@ -14,57 +14,64 @@
    [slingshot.slingshot :refer :all]))
 
 (defn badge-assertion
-  "Return response with appropriate status codes
+  "Return Assertion as response body with appropriate status codes
+   https://www.imsglobal.org/sites/default/files/Badges/OBv2p0Final/index.html#Assertion
    200 -> valid badge
    404 -> deleted badge
    410 -> revoked badge
    500 -> server error"
   [ctx user-badge-id]
   (try+
-    (let [{:keys [id deleted revoked assertion_url]} (badge-valid? ctx user-badge-id)]
+   (let [{:keys [id deleted revoked assertion_url]} (badge-valid? ctx user-badge-id)]
      (cond
        (and id (zero? deleted) (zero? revoked)) (ok (some-> (db/get-assertion-json {:id user-badge-id} (into {:result-set-fn first
                                                                                                               :row-fn :assertion_json} (get-db ctx)))
                                                             (json/read-str :key-fn keyword)))
        (or (nil? id) (pos? deleted))            (not-found "Badge assertion not found")
        (pos? revoked)                           (gone {:revoked true :id assertion_url})))
-    (catch Object _
-      (log/error (.getMessage _))
-      (internal-server-error))))
+   (catch Object _
+     (log/error (.getMessage _))
+     (internal-server-error))))
 
-(defn badge-issuer [ctx cid uid]
+(defn badge-issuer
+  "Return Profile -> https://www.imsglobal.org/sites/default/files/Badges/OBv2p0Final/index.html#Profile"
+  [ctx cid uid]
   (let [{:keys [name description image_file]} (db/get-issuer-information {:id cid} (into {:result-set-fn first} (get-db ctx)))]
-    {:id (str (get-full-path ctx) "/obpv1/selfie/_/issuer?cid="cid "&uid="uid)
+    {:id (str (get-full-path ctx) "/obpv1/selfie/_/issuer?cid=" cid "&uid=" uid)
      :name name
      :description description
      :type "Profile"
-     :url (str (get-full-path ctx) "/profile/" uid)
+     :url (if (pos? uid) (str (get-full-path ctx) "/profile/" uid) (get-site-url ctx))
      :email "no-reply@openbadgepassport.com"
      :image (str (get-site-url ctx) "/" image_file)
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
-(defn badge-criteria [ctx id]
+(defn badge-criteria
+  [ctx id]
   (some-> (db/get-criteria-page-information {:id id} (into  {:result-set-fn first} (get-db ctx)))
           (update :criteria_content md->html)))
 
-(defn get-badge [ctx user-badge-id uid]
+(defn get-badge
+  "Return BadgeClass -> https://www.imsglobal.org/sites/default/files/Badges/OBv2p0Final/index.html#BadgeClass"
+  [ctx user-badge-id uid]
   (let [badge_id (db/select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (get-db ctx)))
         badge (db/select-multi-language-badge-content {:id badge_id} (into {:result-set-fn first} (get-db ctx)))
         {:keys [id badge_id name badge_content_id description image criteria_url criteria_content_id criteria_content issuer_content_id issuer_url]} badge
         tags (vec (db/select-badge-tags {:id badge_content_id} (into {:row-fn :tag} (get-db ctx))))]
-    {:id (str (get-full-path ctx) "/obpv1/selfie/_/badge/" user-badge-id"?i="uid)
+    {:id (str (get-full-path ctx) "/obpv1/selfie/_/badge/" user-badge-id "?i=" uid)
      :type "BadgeClass"
      :name name
      :image (str (get-site-url ctx) "/" image)
      :description description
      :criteria {:id (str (get-full-path ctx) "/selfie/criteria/" criteria_content_id)
                 :narrative criteria_content}
-     :issuer (str (get-full-path ctx) "/obpv1/selfie/_/issuer?cid="issuer_content_id "&uid="uid)
+     :issuer (str (get-full-path ctx) "/obpv1/selfie/_/issuer?cid=" issuer_content_id "&uid=" uid)
      :tags (if (seq tags) tags [])
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
 (defn issue-selfie-badge [ctx data user-id]
-  (let [{:keys [selfie_id recipients issuer_to_self expires_on]} data]
+  (let [{:keys [selfie_id recipients expires_on issued_from_gallery]} data
+        user-id (if issued_from_gallery 0 user-id)]
     (log/info "Got badge issue request for id" recipients)
     (try+
      (doseq [r recipients
@@ -96,9 +103,9 @@
                                     :tags tags)
                                    (dissoc :issue_to_self))
                                (get-db ctx))
-    (when (pos? (:issue_to_self data))
-      (issue-selfie-badge ctx {:selfie_id id :recipients [user-id]} user-id))
-    {:status "success" :id id})
+     (when (pos? (:issue_to_self data))
+       (issue-selfie-badge ctx {:selfie_id id :recipients [user-id]} user-id))
+     {:status "success" :id id})
    (catch Object _
      (log/error (.getMessage _))
      {:status "error" :id "-1"})))
@@ -109,14 +116,14 @@
 (defn revoke-selfie-badge! [ctx user-badge-id user-id]
   (log/error "Got revoke request for user-badge-id: " user-badge-id)
   (try+
-    (if (is-badge-issuer? ctx user-badge-id user-id)
-      (db/revoke-issued-selfie-badge! {:issuer_id user-id :id user-badge-id} (get-db ctx))
-      (throw+ "Error! user trying to revoke badge they have not issued"))
-    (log/info "Badge revoked!")
-    {:status "success"}
-    (catch Object _
-      (log/error _)
-      {:status "error" :message _})))
+   (if (is-badge-issuer? ctx user-badge-id user-id)
+     (db/revoke-issued-selfie-badge! {:issuer_id user-id :id user-badge-id} (get-db ctx))
+     (throw+ "Error! user trying to revoke badge they have not issued"))
+   (log/info "Badge revoked!")
+   {:status "success"}
+   (catch Object _
+     (log/error _)
+     {:status "error" :message _})))
 
 (defn initialize
   ([ctx user]

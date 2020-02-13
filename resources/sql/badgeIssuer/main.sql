@@ -22,10 +22,6 @@ SELECT * FROM selfie_badge WHERE id = :id
 --name: get-selfie-badge-creator
 SELECT creator_id FROM selfie_badge WHERE id = :id
 
---name: update-user-badge-assertions!
---UPDATE user_badge SET assertion_url = :assertion_url, assertion_json = :assertion_json
---WHERE id = :id
-
 --name: get-assertion-json
 SELECT assertion_json FROM user_badge WHERE id = :id AND deleted = 0
 
@@ -100,7 +96,7 @@ SELECT issuer_id FROM user_badge WHERE id=:id
 SELECT id, revoked, deleted, assertion_url FROM user_badge WHERE id=:id
 
 --name:check-badge-issuable
-SELECT sb.issuable_from_gallery FROM user_badge ub
+SELECT sb.issuable_from_gallery, ub.selfie_id FROM user_badge ub
 JOIN selfie_badge sb ON sb.id = ub.selfie_id
-WHERE ub.badge_id = :id AND ub.deleted = 0
+WHERE ub.gallery_id = :id AND ub.deleted = 0
 ORDER BY ub.ctime DESC

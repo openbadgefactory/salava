@@ -4,6 +4,7 @@
    [reagent.core :refer [atom cursor create-class]]
    [reagent-modals.modals :as m]
    [reagent.session :as session]
+   [salava.badgeIssuer.ui.block :as block]
    [salava.badgeIssuer.ui.creator :as creator]
    [salava.badgeIssuer.ui.helper :refer [badge-content badge-image profile-link-inline]]
    [salava.badgeIssuer.ui.util :refer [toggle-setting delete-selfie-badge issue-selfie-badge issuing-history revoke-badge-content]]
@@ -55,12 +56,13 @@
        [:div.form-horizontal
         [:div.form-group {:style {:margin "15px 0"}}
          [:label {:for "date"} (t :badge/Expireson)]
-         [:input.form-control {:type "date"
-                               :id "date"
-                               :on-change #(do
-                                             (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]]
+         [:input.form-control
+          {:type "date"
+           :id "date"
+           :on-change #(do
+                         (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]]
 
-       [:div.its_block;.col-md-12.its_block
+       [:div.its_block
         [:div.form-group
          [:fieldset {:class "checkbox"}
           [:legend.sr-only ""]
@@ -82,7 +84,7 @@
            {:data-dismiss "modal"
             :on-click #(do
                          (.preventDefault %)
-                         (m/close-modal!)
+                         ;(m/close-modal!)
                          (issue-selfie-badge state (fn [] (js-navigate-to "/badge"))))}
 
            [:span [:i.fa.fa-paper-plane.fa-lg] (t :badgeIssuer/Issuenow)]])
@@ -225,4 +227,4 @@
 (def ^:export modalroutes
   {:selfie {:preview preview-badge-handler
             :view view-handler
-            :issue issue-handler}})
+            :issue block/issue-badge-content}})

@@ -44,7 +44,8 @@
   {:selfie_id     s/Str
    :recipients    [s/Int]
    :expires_on    (s/maybe s/Int)
-   :issue_to_self s/Int})
+   ;:issue_to_self s/Int
+   (s/optional-key :issued_from_gallery) s/Bool})
 
 (s/defschema recipient
   {:type    (s/eq "email")

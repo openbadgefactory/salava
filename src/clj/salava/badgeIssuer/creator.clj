@@ -5,12 +5,12 @@
 
   (:require [slingshot.slingshot :refer :all]
             [salava.badgeIssuer.db :as db]
-            [salava.badgeIssuer.util :refer [image->base64str]]
+            [salava.badgeIssuer.util :refer [image->base64str rand-num]]
             [salava.core.util :as util :refer [plugin-fun get-plugins]]
             [clojure.java.io :as io :refer [as-url]]
             [clojure.tools.logging :as log]))
 
-(defn fonts []
+(defn- fonts []
  (let [f (GraphicsEnvironment/getLocalGraphicsEnvironment)]
    (->> f (.getAllFonts) (map #(.getFontName %)))))
 
@@ -31,21 +31,18 @@
 
 (def canvas (BufferedImage. (:width settings) (:height settings) BufferedImage/TYPE_INT_ARGB))
 
-(defn make-name [ctx user-id]
- (let [user-info (as-> (first (plugin-fun (get-plugins ctx) "db" "user-information")) f (if f (f ctx user-id) {}))
-       {:keys [first_name last_name ]} user-info
-       initials (str (first first_name) (first last_name))
-       names [initials
-              (clojure.string/upper-case initials)
-              (clojure.string/lower-case initials)
-              first_name
-              (clojure.string/capitalize first_name)
-              last_name
-              (clojure.string/capitalize last_name)]]
-  (if (seq names) (rand-nth names) "")))
-
-(defn- rand-num [start end]
-  (+ start (rand-int (- end start))))
+#_(defn make-name [ctx user-id]
+   (let [user-info (as-> (first (plugin-fun (get-plugins ctx) "db" "user-information")) f (if f (f ctx user-id) {}))
+         {:keys [first_name last_name ]} user-info
+         initials (str (first first_name) (first last_name))
+         names [initials
+                (clojure.string/upper-case initials)
+                (clojure.string/lower-case initials)
+                first_name
+                (clojure.string/capitalize first_name)
+                last_name
+                (clojure.string/capitalize last_name)]]
+    (if (seq names) (rand-nth names) "")))
 
 (defn- hexagon [])
 
@@ -57,7 +54,7 @@
     {:points
      (mapv #(assoc {} :x %1 :y %2) xpoints ypoints)}))
 
-(defn shape-coll []
+(defn- shape-coll []
  (let [{:keys [width height]} settings
        n (rand-num 0 10)
        height (- height n)]
@@ -99,7 +96,7 @@
       2 gradient_2
       (make-color))))
 
-(defn shape-shift
+(defn- shape-shift
   "randomly generate filled shape"
   [g]
   (let [_ (rand-num 0 5)
@@ -118,15 +115,15 @@
                           (. pgon (addPoint (:x p) (:y p))))
                         pgon)))))
 
-(defn write-text [g ctx user-id]
-  (let [{:keys [width height base font-size font-style fonts]} settings
-        add-font? (= (rand-num 0 20) 15)
-        font (when add-font? (Font. (rand-nth fonts) (rand-nth font-style) (rand-nth font-size)))]
-      (.setFont g font)
-      (.setColor g (make-color))
-      (.drawString g (make-name ctx user-id) 65 65)))
+#_(defn- write-text [g ctx user-id]
+    (let [{:keys [width height base font-size font-style fonts]} settings
+          add-font? (= (rand-num 0 20) 15)
+          font (when add-font? (Font. (rand-nth fonts) (rand-nth font-style) (rand-nth font-size)))]
+        (.setFont g font)
+        (.setColor g (make-color))
+        (.drawString g (make-name ctx user-id) 65 65)))
 
-(defn rendering-hints [g]
+(defn- rendering-hints [g]
   (doall
     [(.setRenderingHint g
        (RenderingHints/KEY_ANTIALIASING)
@@ -137,7 +134,6 @@
      (.setRenderingHint g
        (RenderingHints/KEY_RENDERING)
        (RenderingHints/VALUE_RENDER_QUALITY))]))
-
 
 (defn generate-image [ctx user]
   (try+
