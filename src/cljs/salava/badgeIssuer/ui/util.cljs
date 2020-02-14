@@ -17,7 +17,6 @@
      (input-valid? (:criteria s) (:criteria b))
      (input-valid? (:image s) (:image b))
      (input-valid? (:issuable_from_gallery s) (:issuable_from_gallery b))]))
-     ;(input-valid? (:issue_to_self s) (:issue_to_self b))]))
 
 (defn error-msg [state]
   [:div
@@ -56,7 +55,6 @@
         (when-not @(cursor state [:in-modal])
           (m/modal! (error-msg state) {})))
 
-
       (ajax/POST
         (path-for "/obpv1/selfie/create")
         {:params badge-info
@@ -67,20 +65,17 @@
                     (when (= "success" (:status data))
                      (reset! (cursor state [:badge :id]) (:id data))
                      (when reload-fn (reload-fn))))}))))
-         ;:finally (fn [] (when reload-fn (reload-fn)))}))))
 
 (defn issue-selfie-badge [state reload-fn]
   (let [id @(cursor state [:badge :id])
         recipients (mapv :id @(cursor state [:selected-users]))
-        ;its (if @(cursor state [:issue_to_self]) @(cursor state [:issue_to_self]) 0)
         expires_on (if (nil? @(cursor state [:badge :expires_on])) nil (iso8601-to-unix-time @(cursor state [:badge :expires_on])))]
     (ajax/POST
       (path-for (str "/obpv1/selfie/issue"))
       {:params {:selfie_id id
                 :recipients recipients
-                ;:issue_to_self its
                 :expires_on expires_on
-                :issued_from_gallery @(cursor state [:issued_from_gallery])}
+                :issued_from_gallery (or @(cursor state [:issued_from_gallery]) false)}
        :handler (fn [data]
                   (when (= "success" (:status data))
                     (when reload-fn (reload-fn))))})))
@@ -139,27 +134,3 @@
                                              :on-click #(reset! (cursor state [:revocation-request]) false)}
                                              ;:data-dismiss "modal"}
           (t :core/Cancel)]]]]))
-
-#_(defn revoke-selfie-badge-modal [user-badge-id state]
-    [:div
-     [:div.modal-header
-      [:button {:type "button"
-                :class "close"
-                :data-dismiss "modal"
-                :aria-label "OK"}
-       [:span {:aria-hidden "true"
-               :dangerouslySetInnerHTML {:__html "&times;"}}]]]
-      ;[:h4.modal-title (translate-text message)]]
-     [:div.modal-body
-      [:div.alert.alert-warning
-       [:p (t :badgeIssuer/Confirmbadgerevocation)]]]
-     [:div.modal-footer
-      [:button {:type "button"
-                :class "btn btn-danger btn-bulky"
-                :data-dismiss "modal"
-                :on-click #(do (.preventDefault %)
-                               (revoke-selfie-badge state))}
-       (t :badgeIssuer/Revoke)]
-      [:button.btn.btn-primary.btn-bulky {:type "button"
-                                          :data-dismiss "modal"}
-       (t :core/Cancel)]]])

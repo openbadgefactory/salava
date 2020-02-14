@@ -10,11 +10,11 @@
 (defqueries "sql/badgeIssuer/main.sql")
 
 (defn user-selfie-badges [ctx user-id]
-  (mapv
-   (fn [s]
-     (-> s (assoc :tags (if (blank? (:tags s)) nil (json/read-str (:tags s))))
-           (update :criteria md->html)))
-   (get-user-selfie-badges {:creator_id user-id} (get-db ctx))))
+  (let [selfies (get-user-selfie-badges {:creator_id user-id} (get-db ctx))]
+   (->> selfies (reduce (fn [r s]
+                         (conj r (-> s (assoc :tags (if (blank? (:tags s)) nil (json/read-str (:tags s)))
+                                              :criteria_html (md->html (:criteria s))))))
+                  []))))
 
 (defn user-selfie-badge [ctx user-id id]
   (get-selfie-badge {:id id} (get-db ctx)))
@@ -32,9 +32,8 @@
 (defn update-criteria-url! [ctx user-badge-id]
   (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (get-db ctx)))
         criteria_content_id (select-criteria-content-id-by-badge-id {:badge_id badge-id} (into {:result-set-fn first :row-fn :criteria_content_id} (get-db ctx)))
-        url (str (get-full-path ctx) "/selfie/criteria/" criteria_content_id)]
+        url (str (get-full-path ctx) "/selfie/criteria/" criteria_content_id"?bid="badge-id)]
    (update-badge-criteria-url! {:id criteria_content_id :url url} (get-db ctx))))
 
 (defn finalise-user-badge! [ctx data]
   (finalise-issued-user-badge! data (get-db ctx)))
- 

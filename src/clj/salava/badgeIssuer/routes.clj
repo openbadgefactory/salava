@@ -63,12 +63,13 @@
                  :path-params [id :- s/Str]
                  :auth-rules access/authenticated
                  :current-user current-user
-                 (ok (bm/initialize ctx current-user id)))
+                 (ok (bm/initialize ctx current-user id true)))
 
             (GET "/criteria/:id" []
                  :summary "Get criteria information"
                  :path-params [id :- s/Str]
-                 (ok (bm/badge-criteria ctx id)))
+                 :query-params [bid :- s/Str]
+                 (ok (bm/badge-criteria ctx id bid)))
 
             (POST "/new" []
                   :no-doc true

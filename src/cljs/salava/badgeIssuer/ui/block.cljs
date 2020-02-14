@@ -39,7 +39,7 @@
                  :id "date"
                  :on-change #(do
                                (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]]]
-            [:div.its_block;.text-center
+            [:div.its_block.text-center
              [:button.btn.btn-bulky.btn-primary
               {:role "button"
                :on-click #(do

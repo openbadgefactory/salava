@@ -16,6 +16,7 @@
     display: inline-block;
     border: 1px solid transparent;
     border-radius: 5px;
+    min-height: 165px;
     img {
       padding: 5px;
       max-width: 200px;
@@ -38,7 +39,14 @@
     margin-top: 0px;
     color:#666;
     text-transform: uppercase;
+
 }
+
+.stepwizard-step p.active {
+    color: $titlebar-color;
+    font-weight: bold;
+  }
+
 .stepwizard-row {
     display: table-row;
 }
@@ -142,4 +150,29 @@
       margin-top: 35px;
     }
   }
+}
+
+.revoke-link {
+  cursor: pointer;
+}
+#selfie-badges #badge-stats > .panel .issuing-history-panel{
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  @media (max-width: 520px) {
+    max-height: 500px;
+  }
+  @media (max-width: 768px) {
+    max-height: 500px;
+  }
+
+  @media only screen and (min-width: 1024px) {
+    max-height: 700px;
+  }
+
+  @media only screen and (min-width: 2000px ) {
+    max-height: 970px;
+    overflow-y: auto;
+  }
+
 }

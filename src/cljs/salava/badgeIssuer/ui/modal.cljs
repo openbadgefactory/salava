@@ -107,7 +107,7 @@
                                                                   "pending"  [:span.label.label-info status]
                                                                   [:span.label.label-danger status]))]
       [:div.col-md-2 {:style {:padding "unset"}} (when-not (pos? revoked)
-                                                   [:a
+                                                   [:a.revoke-link
                                                     {:on-click #(do
                                                                   (.preventDefault %)
                                                                   (reset! (cursor state [:revoke-id]) id)
@@ -128,22 +128,25 @@
          [:span [:i.fa.fa-cog.fa-2x.fa-spin]]
          (if (seq @(cursor state [:history :data]))
            [:div#badge-stats;.user-item
-            [:div.panel.thumbnail.panel-default
+            [:div.panel.panel-default;.issuing-history-panel
              ;[:div.panel-heading]
 
-             [:div.panel-body ;{:style {:padding "8px"}}
-              [:div.row.header.panel-heading
-               [:div.col-md-12
+             [:div.panel-heading ;{:style {:padding "5px"}}
+              [:div.row
+               [:div.col-md-12 ;.panel-heading {:style {:padding "5px"}}
                 [:div.col-md-4]
                 [:div.col-md-2 (t :badge/Issuedon)]
                 [:div.col-md-2 (t :badge/Expireson)]
                 [:div.col-md-2 (t :user/Status)]
-                [:div.col-md-2 ""]]]
-              (reduce
-               (fn [r e]
-                 (conj r [issued-badge-element e state]))
-               [:div.row.body {:style {:margin "15px 0"}}]
-               @(cursor state [:history :data]))]]] [:div.alert.alert-info (t :badgeIssuer/Yettoissue)]))])
+                [:div.col-md-2 ""]]]]
+             [:div.issuing-history-panel
+              [:div.panel-body
+               (reduce
+                (fn [r e]
+                  (conj r [issued-badge-element e state]))
+                [:div.row.body {:style {:margin "15px 0"}}]
+                @(cursor state [:history :data]))]]]]
+           [:div.alert.alert-info (t :badgeIssuer/Yettoissue)]))])
     :component-will-mount
     (fn []
       (issuing-history state))}))

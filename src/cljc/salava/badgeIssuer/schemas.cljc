@@ -20,6 +20,7 @@
    :name                  (s/conditional #(not (blank? %)) s/Str)
    :description           (s/conditional #(not (blank? %)) s/Str)
    :criteria              (s/conditional #(not (blank? %)) s/Str)
+   (s/optional-key :criteria_html) (s/maybe s/Str)
    :image                 (s/conditional #(not (blank? %)) s/Str)
    :deleted               (s/enum 0 1)
    :issuable_from_gallery (s/enum 0 1)

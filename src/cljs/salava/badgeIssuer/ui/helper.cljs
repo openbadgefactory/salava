@@ -23,7 +23,7 @@
           :class (if (= 0 @step) "active" "")
           :on-click #(reset! step 0)}
          1]
-        [:p [:small (t :badgeIssuer/Image)]]]
+        [:p {:class (if (= 0 @step) "active" "")} [:small (t :badgeIssuer/Image)]]]
 
        [:div.stepwizard-step.col-xs-4
         [:a#step2.btn.btn-success.btn-circle
@@ -32,7 +32,7 @@
           :on-click #(reset! step 1)}
          2]
 
-        [:p [:small (t :badgeIssuer/Content)]]]
+        [:p {:class (if (= 1 @step) "active" "")} [:small (t :badgeIssuer/Content)]]]
 
        [:div.stepwizard-step.col-xs-4
         [:a#step3.btn.btn-success.btn-circle
@@ -41,7 +41,7 @@
           :on-click #(reset! step 2)}
          3]
 
-        [:p [:small (t :badgeIssuer/Settings)]]]]]]))
+        [:p {:class (if (= 2 @step) "active" "") } [:small (t :badgeIssuer/Settings)]]]]]]))
 
 (defn init-selfie-badge [id state]
   (ajax/GET
@@ -136,26 +136,28 @@
              :alt name}]]]))
 
 (defn badge-content [badge]
-  (let [{:keys [name description tags criteria image]} badge]
-    [:div ;{:class "col-md-9 badge-info view-tab" :style {:display "block"}}
-     [:div.row
-      [:div {:class "col-md-12"}
-       [:h1.uppercase-header name]
-       [:div.description description]]]
+ (let [{:keys [name description tags criteria_html image]} badge]
+  [:div
+   [:div.row
+    [:div {:class "col-md-12"}
+     [:h1.uppercase-header name]
+     [:div.description description]]]
 
-     (when-not (blank? criteria)
-       [:div {:class "row criteria-html"}
-        [:div.col-md-12
-         [:h2.uppercase-header (t :badge/Criteria)]
-         [:div {:dangerouslySetInnerHTML {:__html criteria}}]]])
+   (when-not (blank? criteria_html)
+     [:div {:class "row criteria-html"}
+      [:div.col-md-12
+       [:h2.uppercase-header (t :badge/Criteria)]
+       [:div {:dangerouslySetInnerHTML {:__html criteria_html}}]]])
 
-     [:div.row
-      (if (not (empty? tags))
-        (into [:div.col-md-12 {:style {:margin "10px 0"}}]
-              (for [tag tags]
-                [:span {:id "tag"
-                        :style {:font-weight "bold" :padding "0 2px"}}
-                 (str "#" tag)])))]]))
+   [:div.row
+    (if (not (empty? tags))
+      (into [:div.col-md-12 {:style {:margin "10px 0"}}]
+            (for [tag tags]
+              [:span {:id "tag"
+                      :style {:font-weight "bold" :padding "0 2px"}}
+               (str "#" tag)])))]]))
+
+
 
 (defn profile-link-inline [id first_name last_name picture]
   [:div [:a {:href "#"

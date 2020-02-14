@@ -1,11 +1,14 @@
 (ns salava.badge.ui.issuer
-  (:require [reagent.core :refer [atom cursor]]
-            [salava.core.i18n :refer [t]]
-            [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [path-for private?]]
-            [salava.badge.ui.endorsement :as endr]
-            [reagent.session :as session]
-            [salava.translator.ui.helper :refer [translate]]))
+  (:require
+   [clojure.string :refer [blank? split includes?]]
+   [reagent.core :refer [atom cursor]]
+   [salava.core.i18n :refer [t]]
+   [salava.core.ui.ajax-utils :as ajax]
+   [salava.core.ui.helper :refer [path-for private?]]
+   [salava.core.ui.modal :as mo]
+   [salava.badge.ui.endorsement :as endr]
+   [reagent.session :as session]
+   [salava.translator.ui.helper :refer [translate]]))
 
 (defn init-issuer-connection [issuer-id state]
   (ajax/GET
@@ -51,10 +54,14 @@
   (let [issuer-id (if (map? param) (:id param) param)
         lang (if (map? param) (-> (:lang param)) nil)
         state (atom {:issuer nil :endorsement []})
-        connected? (cursor state [:connected])]
+        connected? (cursor state [:connected])
+        base-url (str (session/get :site-url) (session/get :base-path))]
+
     (init-issuer-content state issuer-id)
     (fn []
-      (let [{:keys [name description email url image_file]} @state]
+      (let [{:keys [name description email url image_file]} @state
+            is-user? (when-not (blank? url) (includes? url (str base-url "/profile/")))
+            user-id (when is-user? 12 #_(->> (split url #"/profile/") last int))]
         [:div.row {:id "badge-contents"}
          [:div.col-xs-12
           [:div.row
@@ -70,10 +77,18 @@
 
           [:div.row.flip
            [:div {:class "col-md-9 col-sm-9 col-xs-12"}
-            (if (not-empty url)
+            (when-not (blank? url)
               [:div {:class "row"}
                [:div.col-xs-12
-                [:a {:target "_blank" :rel "noopener noreferrer" :href url} url]]])
+                (if is-user?
+                  [:div
+                   [:a {:href "#"
+                        :on-click #(do
+                                     (.preventDefault %)
+                                     (mo/open-modal [:profile :view] {:user-id user-id}))}
+                    (t :user/Viewprofile)]]
+
+                  [:a {:target "_blank" :rel "noopener noreferrer" :href url} url])]])
 
             (if (not-empty email)
               [:div {:class "row"}
@@ -95,10 +110,14 @@
 
 ;;TODO
 (defn creator-content [creator-id]
-  (let [state (atom {})]
+  (let [state (atom {})
+        base-url (str (session/get :site-url) (session/get :base-path))]
     (init-creator-content state creator-id)
     (fn []
-      (let [{:keys [name description email url image_file]} @state]
+      (let [{:keys [name description email url image_file]} @state
+            is-user? (when-not (blank? url) (includes? url (str base-url "/profile/")))
+            user-id (when is-user? 12 #_(->> (split url #"/profile/") last int))]
+
         [:div.row {:id "badge-contents"}
          [:div.col-xs-12
           [:h2.uppercase-header
@@ -108,10 +127,18 @@
 
           [:div.row.flip
            [:div {:class "col-md-9 col-sm-9 col-xs-12"}
-            (if (not-empty url)
+            (when-not (blank? url)
               [:div {:class "row"}
                [:div.col-xs-12
-                [:a {:target "_blank" :rel "noopener noreferrer" :href url} url]]])
+                (if is-user?
+                  [:div
+                   [:a {:href "#"
+                        :on-click #(do
+                                     (.preventDefault %)
+                                     (mo/open-modal [:profile :view] {:user-id user-id}))}
+                    (t :user/Viewprofile)]]
+
+                  [:a {:target "_blank" :rel "noopener noreferrer" :href url} url])]])
 
             (if (not-empty email)
               [:div {:class "row"}

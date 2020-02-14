@@ -55,7 +55,8 @@ JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id)
-WHERE badge.id = (SELECT badge_id FROM badge_criteria_content WHERE criteria_content_id = :id)
+--WHERE badge.id = (SELECT badge_id FROM badge_criteria_content WHERE criteria_content_id = :id LIMIT 1 )
+WHERE badge.id = :bid AND cc.id = :cid
 
 --name: select-selfie-badge-issuing-history
 SELECT ub.id, ub.user_id, ub.issued_on, ub.expires_on, ub.status, ub.revoked, u.first_name, u.last_name, u.profile_picture

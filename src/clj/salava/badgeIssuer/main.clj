@@ -47,8 +47,8 @@
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
 (defn badge-criteria
-  [ctx id]
-  (some-> (db/get-criteria-page-information {:id id} (into  {:result-set-fn first} (get-db ctx)))
+  [ctx id badge_id]
+  (some-> (db/get-criteria-page-information {:bid badge_id :cid id} (into {:result-set-fn first} (get-db ctx)))
           (update :criteria_content md->html)))
 
 (defn get-badge
@@ -94,17 +94,15 @@
          image (if (re-find #"^data:image" (:image data))
                  (file-from-url-fix ctx (:image data))
                  (:image data))
-         tags (if (seq (:tags data)) (json/write-str (:tags data)) nil)]
-     (db/insert-selfie-badge<! (-> data
-                                   (assoc
-                                    :id id
-                                    :creator_id user-id
-                                    :image image
-                                    :tags tags)
-                                   (dissoc :issue_to_self))
-                               (get-db ctx))
+         tags (if (seq (:tags data)) (json/write-str (:tags data)) nil)
+         selfie (-> data (assoc :id id :creator_id user-id :image image :tags tags)
+                         (dissoc :issue_to_self))]
+
+     (db/insert-selfie-badge<! selfie (get-db ctx))
+
      (when (pos? (:issue_to_self data))
        (issue-selfie-badge ctx {:selfie_id id :recipients [user-id]} user-id))
+
      {:status "success" :id id})
    (catch Object _
      (log/error (.getMessage _))
@@ -135,10 +133,13 @@
     :issuable_from_gallery 0
     :id nil})
   ([ctx user id]
-   (let [selfie-badge (first (db/user-selfie-badge ctx (:id user) id))]
+   (let [selfie-badge (first (db/user-selfie-badge ctx (:id user) id))
+         ifg (if (:issuable_from_gallery selfie-badge) 1 0)
+         tags (if (blank? (:tags selfie-badge)) nil (json/read-str (:tags selfie-badge)))]
      (-> selfie-badge
-         (assoc :issuable_from_gallery (if (:issuable_from_gallery selfie-badge) 1 0)
-                :tags (if (blank? (:tags selfie-badge)) nil (json/read-str (:tags selfie-badge))))
+         (assoc :issuable_from_gallery ifg
+                :tags tags
+                :criteria_html (md->html (:criteria selfie-badge)))
          (dissoc :deleted :ctime :mtime :creator_id))))
   ([ctx user id md?]
    (if md?

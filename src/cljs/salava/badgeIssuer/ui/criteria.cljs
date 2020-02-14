@@ -1,5 +1,7 @@
 (ns salava.badgeIssuer.ui.criteria
   (:require
+   [cemerick.url :as url]
+   [clojure.walk :refer [keywordize-keys]]
    [reagent.core :refer [atom cursor create-class]]
    [reagent.session :as session]
    [salava.core.ui.ajax-utils :as ajax]
@@ -7,10 +9,12 @@
    [salava.core.ui.layout :as layout]))
 
 (defn init-data [id state]
- (ajax/GET
-  (path-for (str "/obpv1/selfie/criteria/" id))
-  {:handler (fn [data]
-              (reset! state data))}))
+ (let [bid @(cursor state [:bid])]
+   (ajax/GET
+    (path-for (str "/obpv1/selfie/criteria/" id))
+    {:url-params {:bid bid}
+     :handler (fn [data]
+                (swap! state merge data))})))
 
 (defn logo []
   [:div.col-md-8.col-md-offset-2 {:style {:margin "40px 0"}}
@@ -42,7 +46,7 @@
                   [:div.col-md-9
                     [:div.col-md-12
                      [:h1.uppercase-header name]
-                     [:div.description.col description]
+                     [:div.description {:style {:font-weight "bold"}} description]
                      [:hr.border]
                      [:div.criteria-background
                       {:dangerouslySetInnerHTML {:__html criteria_content}}]]]]]]]]]]]]
@@ -50,11 +54,11 @@
      :component-will-mount
      (fn [] (disable-background-image))}))
 
-
-
 (defn handler [site-navi params]
   (let [id (:id params)
-        state (atom {:id id})]
+        badge_id (-> js/window .-location .-href url/url :query keywordize-keys :bid)
+        state (atom {:id id :bid badge_id})]
+
     (init-data id state)
     (fn []
       (layout/embed-page [content state]))))

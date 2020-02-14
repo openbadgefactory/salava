@@ -14,7 +14,6 @@
   {(str (base-path context) "/badge/selfie") [["" my/handler]
                                               ["/create" creator/handler]
                                               [["/create/" :id] creator/handler]]
-                                              ;[["/criteria/" :id] criteria/handler]]
    (str (base-path context) "/selfie") [[["/criteria/" :id] criteria/handler]]})
 
 (defn ^:export navi [context]
