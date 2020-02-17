@@ -68,8 +68,7 @@
             (GET "/criteria/:id" []
                  :summary "Get criteria information"
                  :path-params [id :- s/Str]
-                 :query-params [bid :- s/Str]
-                 (ok (bm/badge-criteria ctx id bid)))
+                 (ok (bm/badge-criteria ctx id))) ;bid)))
 
             (POST "/new" []
                   :no-doc true
@@ -125,7 +124,7 @@
                     :summary "Delete selfie badge"
                     :auth-rules access/authenticated
                     :current-user current-user
-                    (ok (bdb/delete-selfie-badge-soft ctx (:id current-user) id)))
+                    (ok (bdb/delete-selfie-badge ctx (:id current-user) id)))
 
             (POST "/generate_image" []
                   :return {:status (s/enum "success" "error") :url s/Str (s/optional-key :message) (s/maybe s/Str)}

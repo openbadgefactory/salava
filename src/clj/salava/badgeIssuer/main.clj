@@ -47,8 +47,8 @@
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
 (defn badge-criteria
-  [ctx id badge_id]
-  (some-> (db/get-criteria-page-information {:bid badge_id :cid id} (into {:result-set-fn first} (get-db ctx)))
+  [ctx id]
+  (some-> (db/get-criteria-page-information {:url (str (get-full-path ctx) "/selfie/criteria/" id)} #_{:bid badge_id :url id} (into {:result-set-fn first} (get-db ctx)))
           (update :criteria_content md->html)))
 
 (defn get-badge
@@ -58,12 +58,13 @@
         badge (db/select-multi-language-badge-content {:id badge_id} (into {:result-set-fn first} (get-db ctx)))
         {:keys [id badge_id name badge_content_id description image criteria_url criteria_content_id criteria_content issuer_content_id issuer_url]} badge
         tags (vec (db/select-badge-tags {:id badge_content_id} (into {:row-fn :tag} (get-db ctx))))]
+
     {:id (str (get-full-path ctx) "/obpv1/selfie/_/badge/" user-badge-id "?i=" uid)
      :type "BadgeClass"
      :name name
      :image (str (get-site-url ctx) "/" image)
      :description description
-     :criteria {:id (str (get-full-path ctx) "/selfie/criteria/" criteria_content_id)
+     :criteria {:id criteria_url ;(str (get-full-path ctx) "/selfie/criteria/" criteria_content_id)
                 :narrative criteria_content}
      :issuer (str (get-full-path ctx) "/obpv1/selfie/_/issuer?cid=" issuer_content_id "&uid=" uid)
      :tags (if (seq tags) tags [])

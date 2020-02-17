@@ -7,7 +7,7 @@
    [clojure.tools.logging :as log]
    [salava.badge.db :refer [save-user-badge!]]
    [salava.badgeIssuer.db :as db]
-   [salava.core.util :refer [bytes->base64 hex-digest get-site-url get-full-path now get-site-name get-plugins]]
+   [salava.core.util :refer [bytes->base64 hex-digest get-site-url get-full-path now get-site-name get-plugins map-sha256]]
    [salava.profile.db :refer [user-information]]
    [slingshot.slingshot :refer :all]))
 
@@ -38,7 +38,7 @@
 
                 :criteria [{:id ""
                             :language_code ""
-                            :url ""
+                            :url (str (get-full-path ctx) "/selfie/criteria/" (map-sha256 [name image criteria description tags]))
                             :markdown_text criteria}]
                 :issuer   [(if (zero? user-id)
                              {:id ""
@@ -116,8 +116,8 @@
                              (keyword "@context") "https://w3id.org/openbadges/v2"}
                             (json/write-str))]
 
-     (log/info "Updating criteria url!")
-     (db/update-criteria-url! ctx user-badge-id)
+     #_(log/info "Updating criteria url!")
+     #_(db/update-criteria-url! ctx user-badge-id)
 
      (log/info "Finalising user badge!")
      (db/finalise-user-badge! ctx {:id user-badge-id

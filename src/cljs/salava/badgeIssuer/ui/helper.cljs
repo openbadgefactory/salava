@@ -73,8 +73,8 @@
              :on-click #(do
                           (.preventDefault %)
                           (mo/open-modal [:selfie :preview] {:badge (assoc (:badge @state) :criteria (if @editor
-                                                                                                       (.previewRender (.-options @editor) (get-in @state [:badge :criteria] ""))
-                                                                                                       (get-in @state [:badge :criteria] "")))}))}
+                                                                                                      (.previewRender (.-options @editor) (get-in @state [:badge :criteria] ""))
+                                                                                                      (get-in @state [:badge :criteria] "")))}))}
             [:span  (t :badgeIssuer/Preview)]])
 
                 ;;Saveandexit
@@ -136,18 +136,19 @@
              :alt name}]]]))
 
 (defn badge-content [badge]
- (let [{:keys [name description tags criteria_html image]} badge]
+ (let [{:keys [name description tags criteria_html image criteria]} badge
+       criteria (or criteria_html criteria)]
   [:div
    [:div.row
     [:div {:class "col-md-12"}
      [:h1.uppercase-header name]
      [:div.description description]]]
 
-   (when-not (blank? criteria_html)
+   (when-not (blank? criteria)
      [:div {:class "row criteria-html"}
       [:div.col-md-12
        [:h2.uppercase-header (t :badge/Criteria)]
-       [:div {:dangerouslySetInnerHTML {:__html criteria_html}}]]])
+       [:div {:dangerouslySetInnerHTML {:__html criteria #_(or criteria_html criteria)}}]]])
 
    [:div.row
     (if (not (empty? tags))

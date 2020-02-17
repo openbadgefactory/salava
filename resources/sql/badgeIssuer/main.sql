@@ -31,8 +31,11 @@ SELECT badge_id FROM user_badge WHERE id = :user_badge_id
 --name: select-badge-tags
 SELECT tag FROM badge_content_tag WHERE badge_content_id = :id
 
---name: select-criteria-content-id-by-badge-id
-SELECT criteria_content_id FROM badge_criteria_content WHERE badge_id = :badge_id
+--name: select-criteria-content-by-badge-id
+SELECT cc.id, cc.language_code, cc.markdown_text, cc.url
+FROM criteria_content AS cc
+LEFT JOIN badge_criteria_content AS bcc ON cc.id = bcc.criteria_content_id
+WHERE bcc.badge_id = :badge_id
 
 --name: update-badge-criteria-url!
 UPDATE criteria_content SET url = :url WHERE id = :id
@@ -55,8 +58,9 @@ JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id)
+WHERE cc.url = :url
 --WHERE badge.id = (SELECT badge_id FROM badge_criteria_content WHERE criteria_content_id = :id LIMIT 1 )
-WHERE badge.id = :bid AND cc.id = :cid
+--WHERE badge.id = :bid AND cc.url = :cid
 
 --name: select-selfie-badge-issuing-history
 SELECT ub.id, ub.user_id, ub.issued_on, ub.expires_on, ub.status, ub.revoked, u.first_name, u.last_name, u.profile_picture
@@ -101,3 +105,6 @@ SELECT sb.issuable_from_gallery, ub.selfie_id FROM user_badge ub
 JOIN selfie_badge sb ON sb.id = ub.selfie_id
 WHERE ub.gallery_id = :id AND ub.deleted = 0
 ORDER BY ub.ctime DESC
+
+--name: delete-selfie-badges-all!
+DELETE FROM selfie_badge WHERE creator_id = :user-id

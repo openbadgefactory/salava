@@ -228,7 +228,7 @@
                                              [:button.btn.btn-primary.btn-bulky
                                               {:on-click #(func)
                                                :disabled (empty? @selected-users-atom)}
-                                              (t :badgeIssuer/Issuebadge)])])])]])
+                                              [:span [:i.fa.fa-lg.fa-paper-plane] (t :badgeIssuer/Issuebadge)]])])])]])
 
 
 

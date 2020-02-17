@@ -16,6 +16,7 @@
             [salava.core.time :refer [unix-time]]
             [salava.mail.mail :as m]
             [salava.badge.endorsement :as end]
+            [salava.badgeIssuer.db :as selfie]
             [salava.social.db :as so]
             [salava.profile.db :as up]))
 
@@ -375,6 +376,8 @@
        #_(update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
        (delete-user-profile! {:user_id user-id} {:connection tr-cn})
        (delete-user-terms! {:user_id user-id} {:connection tr-cn})
+       ;;remove selfie-badges
+       (selfie/delete-user-selfie-badges! ctx user-id)
 
        #_(if activated
            (doall (map #(update-user-email-set-deleted! {:user_id user-id :email (:email %) :deletedemail (str "deleted-" (:email %) ".so.deleted")} {:connection tr-cn}) emails))

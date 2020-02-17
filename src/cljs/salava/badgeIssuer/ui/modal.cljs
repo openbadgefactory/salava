@@ -89,7 +89,11 @@
 
            [:span [:i.fa.fa-paper-plane.fa-lg] (t :badgeIssuer/Issuenow)]])
         [:button.btn.btn-primary.btn-bulky
-         {:on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :context "selfie_issue" :selected-users-atom selected-users :id id :selfie badge :func (fn [] (issue-selfie-badge state (fn [] (js-navigate-to "/badge"))))})}
+         {:on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :context "selfie_issue" :selected-users-atom selected-users :id id :selfie badge :func (fn [] (issue-selfie-badge state (fn []
+                                                                                                                                                                                                     (if (some (fn [u] (= u (session/get-in [:user :id]))) (map :id @selected-users))
+                                                                                                                                                                                                       (js-navigate-to "/badge")
+                                                                                                                                                                                                       (mo/previous-view)))))})}
+
          [:span [:i.fa.fa-users.fa-lg] (t :badgeIssuer/Selectrecipients)]]]]]]))
 
 (defn issued-badge-element [element-data state]
@@ -214,9 +218,9 @@
       (selfie-content state))))
 
 (defn issue-handler [params]
-  (let [selected-users-atom (:container params)
+  (let [;selected-users-atom (:container params)
         badge (:badge params)
-        state (atom {:selected selected-users-atom
+        state (atom {;:selected selected-users-atom
                      :badge badge
                      :generating-image false
                      :id (:id badge)

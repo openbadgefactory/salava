@@ -6,20 +6,20 @@
    [reagent-modals.modals :as m]
    [reagent.session :as session]
    [salava.core.ui.ajax-utils :as ajax]
-   [salava.core.ui.helper :refer [path-for navigate-to private? unique-values]]
+   [salava.core.ui.helper :refer [path-for navigate-to private? unique-values not-activated?]]
    [salava.core.ui.grid :as g]
+   [salava.core.ui.notactivated :refer [not-activated-banner]]
    [salava.core.i18n :refer [t translate-text]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]))
 
 (defn init-data [state]
   (ajax/GET
-   (path-for "/obpv1/selfie/")
+   (path-for "/obpv1/selfie" true)
    {:handler (fn [data]
-               ;(when (= (:status data) "success")
-                 (swap! state assoc :badges (:badges data)
-                                    :initializing false
-                                    :order "mtime"))}))
+               (swap! state assoc :badges (:badges data)
+                      :initializing false
+                      :order "mtime"))}))
 
 (defn element-visible? [element state]
   (if (and
@@ -36,7 +36,6 @@
                   (.toLowerCase (:search @state)))
                  -1)))
     true false))
-
 
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
@@ -55,14 +54,16 @@
     [:div.media.grid-container
      [:div.media-content
       [:a {:href "#"
-           :on-click #(mo/open-modal [:selfie :view]{:badge element-data} {:hidden (fn [] (init-data state))})}
+           :on-click #(do
+                        (.preventDefault %)
+                        (mo/open-modal [:selfie :view] {:badge element-data} {:hidden (fn [] (init-data state))}))}
        [:div.media-left
-        [:img.badge-img {:src (str "/" image ):alt ""}]]
+        [:img.badge-img {:src (str "/" image) :alt ""}]]
        [:div.media-body
         [:div.media-heading
          [:p.heading-link name]]
         [:div.media-issuer
-          [:p creator_name]]]]
+         [:p creator_name]]]]
       #_[:div
          [:div.pull-right
           [:a {:href "#"
@@ -100,8 +101,6 @@
              (if (element-visible? element-data state)
                (grid-element element-data state)))))))
 
-
-
 (defn content [state]
   [:div#selfie-badges.my-selfie-badges
    [m/modal-window]
@@ -109,9 +108,11 @@
      [:div.ajax-message
       [:i {:class "fa fa-cog fa-spin fa-2x "}]
       [:span (str (t :core/Loading) "...")]]
-     [:div
-      [grid-form state]
-      [grid state]])])
+     (if (not-activated?)
+       [not-activated-banner]
+       [:div
+        [grid-form state]
+        [grid state]]))])
 
 (defn handler [site-navi]
   (let [state (atom {:badges []
@@ -120,4 +121,4 @@
                      :tags-selected []})]
     (init-data state)
     (fn []
-      (layout/default site-navi (content state)))))
+      (layout/default site-navi [content state]))))

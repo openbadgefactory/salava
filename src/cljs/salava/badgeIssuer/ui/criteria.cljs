@@ -8,13 +8,18 @@
    [salava.core.ui.helper :refer [path-for disable-background-image]]
    [salava.core.ui.layout :as layout]))
 
+#_(defn init-data [id state]
+   (let [bid @(cursor state [:bid])]
+     (ajax/GET
+      (path-for (str "/obpv1/selfie/criteria/" id))
+      {:url-params {:bid bid}
+       :handler (fn [data]
+                  (swap! state merge data))})))
 (defn init-data [id state]
- (let [bid @(cursor state [:bid])]
-   (ajax/GET
-    (path-for (str "/obpv1/selfie/criteria/" id))
-    {:url-params {:bid bid}
-     :handler (fn [data]
-                (swap! state merge data))})))
+  (ajax/GET
+   (path-for (str "/obpv1/selfie/criteria/" id))
+   {:handler (fn [data]
+               (swap! state merge data))}))
 
 (defn logo []
   [:div.col-md-8.col-md-offset-2 {:style {:margin "40px 0"}}
@@ -56,8 +61,8 @@
 
 (defn handler [site-navi params]
   (let [id (:id params)
-        badge_id (-> js/window .-location .-href url/url :query keywordize-keys :bid)
-        state (atom {:id id :bid badge_id})]
+        ;badge_id (-> js/window .-location .-href url/url :query keywordize-keys :bid)
+        state (atom {:id id})] ;:bid badge_id})]
 
     (init-data id state)
     (fn []
