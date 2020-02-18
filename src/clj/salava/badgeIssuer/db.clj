@@ -40,3 +40,9 @@
 
 (defn delete-user-selfie-badges! [ctx user-id]
   (delete-selfie-badges-all! {:user-id user-id} (get-db ctx)))
+
+(defn map-badges-issuable [ctx gallery_ids badges]
+  (let [_ (select-issuable-gallery-badges {:gallery_ids gallery_ids} (get-db ctx))]
+    (->> badges
+         (map #(assoc % :selfie_id (some (fn [b] (when (= (:gallery_id %) (:gallery_id b))
+                                                   (:selfie_id b))) _))))))

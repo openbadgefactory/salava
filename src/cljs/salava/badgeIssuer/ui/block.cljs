@@ -85,5 +85,30 @@
                       (swap! state assoc :visible issuable_from_gallery
                                          :selfie_id selfie_id))}))})))
 
+(defn latestgettablebadges [state]
+  (create-class
+   {:reagent-render
+    (fn []
+      (when (seq @(cursor state [:badges]))
+       [:div.badges {:style {:display "inline-block"}}
+        [:p.header (t :badgeIssuer/Latestissuablebadges)]
+        (reduce (fn [r selfie]
+                  (let [{:keys [badge_id gallery_id]} selfie]
+                    (conj r [:a {:href "#" :on-click #(do
+                                                        (.preventDefault %)
+                                                        (mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id gallery_id}))}
+                             [:img {:src (str "/" (:image_file selfie)) :alt (:name selfie)}]])))
+                [:div {:style {:padding "5px 0"}}] (:badges @state))]))
+    :component-will-mount
+    (fn []
+      (ajax/POST
+       (path-for (str "/obpv1/selfie/latest_gettable"))
+       {:handler (fn [data]
+                   (reset! state {:badges data}))}))}))
+
 (defn ^:export issue_badge_link [gallery_id]
   (issue-badge gallery_id))
+
+(defn ^:export latest_gettable_badges []
+  (let [state (atom {:badges []})]
+    (latestgettablebadges state)))

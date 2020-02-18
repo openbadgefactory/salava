@@ -67,7 +67,7 @@
                [f meta_badge meta_badge_req]))]]]))
 
 (defn badge-grid-element [element-data state badge-type init-data]
-  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id gallery_id assertion_url meta_badge meta_badge_req endorsement_count user_endorsement_count pending_endorsements_count new_message_count]} element-data
+  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id gallery_id assertion_url meta_badge meta_badge_req endorsement_count user_endorsement_count pending_endorsements_count new_message_count selfie_id]} element-data
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))
         obf_url (session/get :factory-url)
@@ -134,6 +134,8 @@
                                      [:div.media-heading name]
                                      [:div.media-issuer [:p issuer_content_name]]]]]]]
        (= "gallery" badge-type) [:div
+                                 (when-not (clojure.string/blank? selfie_id)
+                                   [:span.inline-block.pull-right {:title (t :badgeIssuer/Issuableselfiebadge) :aria-label (t :badgeIssuer/Issuableselfiebadge)} [:i.fa.fa-paper-plane]])
                                  [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id gallery_id})
                                       :title name}
                                   [:div.media-content

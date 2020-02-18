@@ -118,6 +118,12 @@
                  :current-user current-user
                  (ok (bm/issuing-history ctx id (:id current-user))))
 
+            (POST "/latest_gettable" []
+                 :summary "Get latest selfie badges that are gettable from the gallery"
+                 :auth-rules access/authenticated
+                 :current-user current-user
+                 (ok (bm/latest-selfie-badges ctx (:id current-user))))
+
             (DELETE "/:id" []
                     :return {:status (s/enum "success" "error")}
                     :path-params [id :- s/Str]

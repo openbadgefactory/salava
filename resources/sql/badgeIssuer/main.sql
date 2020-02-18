@@ -108,3 +108,31 @@ ORDER BY ub.ctime DESC
 
 --name: delete-selfie-badges-all!
 DELETE FROM selfie_badge WHERE creator_id = :user-id
+
+--name: select-latest-selfie-badges-REMOVE
+SELECT sb.id, sb.name, sb.image, g.id AS gallery_id FROM selfie_badge sb
+LEFT JOIN user_badge ub ON ub.selfie_id = sb.id
+LEFT JOIN gallery g ON g.id = ub.gallery_id
+WHERE sb.issuable_from_gallery = 1 AND sb.deleted = 0 AND sb.creator_id != :user_id AND ub.user_id != :user_id AND ub.revoked = 1 AND ub.visibility !="private" AND ub.status = "accepted"
+--WHERE sb.issuable_from_gallery = 1 AND sb.deleted = 0 AND sb.creator_id != :user_id AND (ub.id IS NULL OR ub.revoked = 1)
+GROUP BY g.id
+ORDER BY sb.mtime DESC LIMIT 5
+
+--name: select-latest-selfie-badges
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, sb.id AS selfie_id, ub.user_id
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN selfie_badge sb ON ub.selfie_id = sb.id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+      AND ub.visibility != 'private' AND ub.selfie_id IS NOT NULL AND sb.issuable_from_gallery = 1 AND sb.deleted = 0 AND sb.creator_id != :user_id
+GROUP BY ub.gallery_id
+ORDER BY sb.mtime DESC
+LIMIT 1000
+
+--name: select-user-gallery-ids
+SELECT gallery_id, selfie_id FROM user_badge WHERE user_id = :user_id AND status != "declined" AND revoked = 0 AND selfie_id IS NOT NULL
+
+--name: select-issuable-gallery-badges
+SELECT ub.gallery_id, ub.selfie_id FROM user_badge ub
+LEFT JOIN selfie_badge sb ON sb.id = ub.selfie_id
+WHERE ub.gallery_id IN (:gallery_ids) AND selfie_id IS NOT NULL AND sb.issuable_from_gallery = 1

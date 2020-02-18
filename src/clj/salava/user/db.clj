@@ -446,6 +446,7 @@
   (let [badges (->> (b/user-badges-all ctx user-id)
                     (:badges)
                     (filter #(= "accepted" (:status %)))
+                    (remove :revoked)
                     (sort-by :mtime >)
                     (take 5))
         public-badges-count (->> (b/user-badges-all ctx user-id)
@@ -458,6 +459,7 @@
         user-info (user-information-with-registered-and-last-login ctx user-id)
         user-profile (-> (user-information-and-profile ctx user-id nil)
                          (dissoc :badges :pages :owner?))]
+
     {:badges badges
      :stats stats
      :endorsing (->> (end/endorsements-given ctx user-id) count)

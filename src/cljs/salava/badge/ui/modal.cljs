@@ -158,7 +158,7 @@
 ;;;TODO creator endorsements
 (defn creator-modal-link
   ([creator-id name]
-   (when (and creator-id name)
+   (when (and creator-id (not (blank? name)))
      [:div {:class "issuer-data clearfix"}
       [:span._label.pull-left (t :badge/Createdby) ":"]
       [:div {:class "issuer-links pull-label-left inline"}
@@ -166,7 +166,7 @@
             :on-click #(do (.preventDefault %)
                            (mo/open-modal [:badge :creator] creator-id))} name]]]))
   ([creator-id name lang]
-   (when (and creator-id name)
+   (when (and creator-id (not (blank? name)))
      [:div {:class "issuer-data clearfix"}
       [:span._label.pull-left (translate lang :badge/Createdby) ":"]
       [:div {:class "issuer-links pull-label-left inline"}
@@ -297,10 +297,6 @@
         [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
       ;;evidence list
-      #_(into [:div]
-              (for [f (plugin-fun (session/get :plugins) "block" "evidence_list_badge")]
-                [f evidences]))
-
       (into [:div]
             (for [f (plugin-fun (session/get :plugins) "block" "evidence_list_badge")]
               [f id]))
