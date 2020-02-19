@@ -7,7 +7,7 @@
    [clojure.tools.logging :as log]
    [salava.badge.db :refer [save-user-badge!]]
    [salava.badgeIssuer.db :as db]
-   [salava.core.util :refer [bytes->base64 hex-digest get-site-url get-full-path now get-site-name get-plugins map-sha256]]
+   [salava.core.util :refer [publish bytes->base64 hex-digest get-site-url get-full-path now get-site-name get-plugins map-sha256]]
    [salava.profile.db :refer [user-information]]
    [slingshot.slingshot :refer :all]))
 
@@ -125,7 +125,8 @@
                                    :assertion_url assertion_url
                                    :assertion_json assertion_json
                                    :issuer_id user-id})
-     (log/info "Finished saving user badge!"))
+     (log/info "Finished saving user badge!")
+     (publish ctx :issue {:subject user-id :object user-badge-id}))
 
    (catch Object _
      (log/error "error: " _))))

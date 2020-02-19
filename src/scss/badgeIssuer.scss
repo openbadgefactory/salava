@@ -127,10 +127,19 @@
     height: 230px; //!important;
     border-radius: 3px;
   }
-
+  .issuing-history {
+    @media (max-width: 992px) {
+      .hidden-header {
+        display: none;
+      }
+    }
+  }
   .issued-badge-row {
     padding: 7px;
     line-height: 2.5;
+    .col-md-2, .col-md-4 {
+      margin-top: 15px;
+    }
     .image-container {
       //padding: 3px;
       text-align: left;

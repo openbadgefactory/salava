@@ -84,7 +84,6 @@
            {:data-dismiss "modal"
             :on-click #(do
                          (.preventDefault %)
-                         ;(m/close-modal!)
                          (issue-selfie-badge state (fn [] (js-navigate-to "/badge"))))}
 
            [:span [:i.fa.fa-paper-plane.fa-lg] (t :badgeIssuer/Issuenow)]])
@@ -110,17 +109,17 @@
                                                                   "accepted" [:span.label-success.label status]
                                                                   "pending"  [:span.label.label-info status]
                                                                   [:span.label.label-danger status]))]
-      [:div.col-md-2 {:style {:padding "unset"}} (when-not (pos? revoked)
-                                                   [:a.revoke-link
-                                                    {:on-click #(do
-                                                                  (.preventDefault %)
-                                                                  (reset! (cursor state [:revoke-id]) id)
-                                                                  (if @revocation
-                                                                    (reset! revocation false)
-                                                                    (reset! revocation true))
-                                                                  ;(m/modal! (revoke-selfie-badge-modal id state) {})
-                                                                  #_(revoke-selfie-badge id state))}
-                                                    [:span [:i.fa.fa-close.fa-remove {:style {:vertical-align "text-bottom"}}] (t :badgeIssuer/Revoke)]])]]
+      [:div.col-md-2 #_{:style {:padding "unset"}} (when-not (pos? revoked)
+                                                     [:a.revoke-link
+                                                      {:on-click #(do
+                                                                    (.preventDefault %)
+                                                                    (reset! (cursor state [:revoke-id]) id)
+                                                                    (if @revocation
+                                                                      (reset! revocation false)
+                                                                      (reset! revocation true))
+                                                                    ;(m/modal! (revoke-selfie-badge-modal id state) {})
+                                                                    #_(revoke-selfie-badge id state))}
+                                                      [:span [:i.fa.fa-close.fa-remove {:style {:vertical-align "text-bottom"}}] (t :badgeIssuer/Revoke)]])]]
      (revoke-badge-content id state)]))
 
 (defn selfie-issueing-history [state]
@@ -130,8 +129,10 @@
       [:div.col-md-9;.badge-info
        (if @(cursor state [:history :Initializing])
          [:span [:i.fa.fa-cog.fa-2x.fa-spin]]
+
          (if (seq @(cursor state [:history :data]))
-           [:div#badge-stats;.user-item
+           [:div#badge-stats.issuing-history
+            [:h2.uppercase-header (t :badgeIssuer/Issuinghistory)]
             [:div.panel.panel-default;.issuing-history-panel
              ;[:div.panel-heading]
 
@@ -139,9 +140,9 @@
               [:div.row
                [:div.col-md-12 ;.panel-heading {:style {:padding "5px"}}
                 [:div.col-md-4]
-                [:div.col-md-2 (t :badge/Issuedon)]
-                [:div.col-md-2 (t :badge/Expireson)]
-                [:div.col-md-2 (t :user/Status)]
+                [:div.col-md-2.hidden-header (t :badge/Issuedon)]
+                [:div.col-md-2.hidden-header (t :badge/Expireson)]
+                [:div.col-md-2.hidden-header (t :user/Status)]
                 [:div.col-md-2 ""]]]]
              [:div.issuing-history-panel
               [:div.panel-body
@@ -163,6 +164,8 @@
 (defn edit-selfie-content [state]
   (let [badge (:badge @state)]
     [:div#badge-info.row.flip
+     #_[:div.col-md-12
+        [:h2.uppercase-header (t :badgeIssuer/Editbadge)]]
      #_[badge-image badge]
      [:div.col-md-12.view-tab
       [creator/modal-content state]]]))
@@ -217,19 +220,19 @@
     (fn []
       (selfie-content state))))
 
-(defn issue-handler [params]
-  (let [;selected-users-atom (:container params)
-        badge (:badge params)
-        state (atom {;:selected selected-users-atom
-                     :badge badge
-                     :generating-image false
-                     :id (:id badge)
-                     :error-message nil
-                     :step 0
-                     :in-modal true
-                     :selected-users []})]
-    (fn []
-      (issue-selfie-content state))))
+#_(defn issue-handler [params]
+    (let [;selected-users-atom (:container params)
+          badge (:badge params)
+          state (atom {;:selected selected-users-atom
+                       :badge badge
+                       :generating-image false
+                       :id (:id badge)
+                       :error-message nil
+                       :step 0
+                       :in-modal true
+                       :selected-users []})]
+      (fn []
+        (issue-selfie-content state))))
 
 (def ^:export modalroutes
   {:selfie {:preview preview-badge-handler

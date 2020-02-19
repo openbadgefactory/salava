@@ -6,7 +6,7 @@
    [salava.badgeIssuer.ui.util :refer [issue-selfie-badge]]
    [salava.core.i18n :refer [t]]
    [salava.core.ui.ajax-utils :as ajax]
-   [salava.core.ui.helper :refer [path-for js-navigate-to]]
+   [salava.core.ui.helper :refer [path-for js-navigate-to not-activated?]]
    [salava.core.ui.modal :as mo]))
 
 (defn get-selfie-badge [id state]
@@ -25,7 +25,7 @@
           [:span [:i.fa.fa-cog.fa-lg.fa-spin] " " (t :core/Loading) "..."]
           [:div#badge-info.row.flip
            [badge-image (:badge @state)]
-           [:div.col-md-9.badge-info
+           [:div.col-md-9
             [badge-content (:badge @state)]
             [:hr.border]
             [:div {:style {:margin "15px 0"}}
@@ -67,6 +67,7 @@
 (defn issue-badge [gallery_id]
   (let [state (atom {:visible false})
         visible (cursor state [:visible])]
+
     (create-class
      {:reagent-render
       (fn []
@@ -77,12 +78,12 @@
                             (.preventDefault %)
                             (mo/open-modal [:selfie :issue] {:id (:selfie_id @state)}))}
            [:span [:i.fa.fa-paper-plane.fa-lg] (t :badgeIssuer/Issuetoself)]]]))
-      :component-did-mount
+      :component-will-mount
       (fn []
         (ajax/POST
           (path-for (str "/obpv1/selfie/is_issuable/" gallery_id))
           {:handler (fn [{:keys [issuable_from_gallery selfie_id]}]
-                      (swap! state assoc :visible issuable_from_gallery
+                      (swap! state assoc :visible (and issuable_from_gallery (false? (not-activated?)))
                                          :selfie_id selfie_id))}))})))
 
 (defn latestgettablebadges [state]

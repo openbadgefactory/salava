@@ -9,6 +9,7 @@
    [salava.core.ui.helper :refer [path-for navigate-to private? unique-values not-activated?]]
    [salava.core.ui.grid :as g]
    [salava.core.ui.notactivated :refer [not-activated-banner]]
+   [salava.core.ui.popover :refer [about-page]]
    [salava.core.i18n :refer [t translate-text]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]))
@@ -108,11 +109,12 @@
      [:div.ajax-message
       [:i {:class "fa fa-cog fa-spin fa-2x "}]
       [:span (str (t :core/Loading) "...")]]
-     (if (not-activated?)
-       [not-activated-banner]
-       [:div
-        [grid-form state]
-        [grid state]]))])
+     [:div
+      [about-page {:heading (t :badgeIssuer/Selfiebadges) :content (t :badgeIssuer/Aboutselfiebadges)}]
+      [grid-form state]
+      (if (not-activated?)
+        [not-activated-banner]
+        [grid state])])])
 
 (defn handler [site-navi]
   (let [state (atom {:badges []

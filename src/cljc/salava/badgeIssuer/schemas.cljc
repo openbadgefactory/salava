@@ -25,6 +25,7 @@
    :deleted               (s/enum 0 1)
    :issuable_from_gallery (s/enum 0 1)
    (s/optional-key :tags) (s/maybe s/Str)
+   (s/optional-key :issue_to_self) (s/enum 0 1)
    :ctime                 s/Int
    :mtime                 s/Int
    :creator_id            (s/maybe s/Int)})

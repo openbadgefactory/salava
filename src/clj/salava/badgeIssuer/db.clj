@@ -29,20 +29,26 @@
     (catch Object _
       {:status "error"})))
 
-#_(defn update-criteria-url! [ctx user-badge-id]
-    (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (get-db ctx)))
-          criteria_content_id (select-criteria-content-id-by-badge-id {:badge_id badge-id} (into {:result-set-fn first :row-fn :criteria_content_id} (get-db ctx)))
-          url (str (get-full-path ctx) "/selfie/criteria/" criteria_content_id"?bid="badge-id)]
-     (update-badge-criteria-url! {:id criteria_content_id :url url} (get-db ctx))))
-
 (defn finalise-user-badge! [ctx data]
   (finalise-issued-user-badge! data (get-db ctx)))
 
 (defn delete-user-selfie-badges! [ctx user-id]
-  (delete-selfie-badges-all! {:user-id user-id} (get-db ctx)))
+  (try+
+    (delete-selfie-badges-all! {:user_id user-id} (get-db ctx))
+    (catch Object _
+      (log/error _))))
 
 (defn map-badges-issuable [ctx gallery_ids badges]
   (let [_ (select-issuable-gallery-badges {:gallery_ids gallery_ids} (get-db ctx))]
     (->> badges
          (map #(assoc % :selfie_id (some (fn [b] (when (= (:gallery_id %) (:gallery_id b))
                                                    (:selfie_id b))) _))))))
+(defn insert-create-event! [ctx data]
+  (insert-selfie-create-event<! data (get-db ctx)))
+
+(defn insert-issue-event! [ctx data]
+  (insert-selfie-issue-event<! data (get-db ctx)))
+
+(defn insert-issue-event-owner! [ctx data]
+  (let [owner-id (select-selfie-badge-receiver {:id (:id data)} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
+    (insert-selfie-event-owner! (-> data (assoc :owner owner-id)) (get-db ctx))))

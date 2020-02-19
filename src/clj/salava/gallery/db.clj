@@ -80,10 +80,10 @@
 
 (defn selfie-checker [ctx gallery-ids badges]
  (let [f (first (plugin-fun (get-plugins ctx) "db" "map-badges-issuable"))
-       gallery-ids (if (nil? gallery-ids )(map :gallery_id badges) gallery-ids)]
-   (if-not f
+       gallery-ids (if (seq? gallery-ids) gallery-ids (map :gallery_id badges))]
+   (if (every? empty? [badges gallery-ids])
      badges
-     (f ctx gallery-ids badges))))
+     (if-not (ifn? f) badges (f ctx gallery-ids badges)))))
 
 (defn gallery-badges
   "Get badges for gallery grid"

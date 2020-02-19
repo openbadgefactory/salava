@@ -161,16 +161,17 @@
             :id "ifg"}]]
         [:span " " (t :badgeIssuer/Issuablefromgallery)]]]
 
-      [:div.form-group
-       [:fieldset {:class "col-md-9 checkbox"}
-        [:legend.col-md-9 ""]
-        [:div.col-md-12 [:label {:for "its"}
-                         [:input {:name "issuetoself"
-                                  :type      "checkbox"
-                                  :id        "its"
-                                  :on-change #(toggle-setting its)
-                                  :checked   @its}]
-                         (str (t :badgeIssuer/Issuetoself))]]]]]]))
+      (when-not @(cursor state [:in-modal])
+        [:div.form-group
+         [:fieldset {:class "col-md-9 checkbox"}
+          [:legend.col-md-9 ""]
+          [:div.col-md-12 [:label {:for "its"}
+                           [:input {;:name "issuetoself"
+                                    :type      "checkbox"
+                                    :id        "its"
+                                    :on-change #(toggle-setting its)
+                                    :checked   @its}]
+                           (str (t :badgeIssuer/Issuetoself))]]]])]]))
 
 (defn modal-content [state]
  (let [{:keys [badge generating-image]} @state
@@ -178,7 +179,7 @@
    (init-data (:id badge) state)
    (fn []
      [:div#badge-creator
-        [:h1.sr-only (t :badgeIssuer/Badgecreator)]
+        [:h1.sr-only (t :badgeIssuer/Editbadge)]
         [:div.panel
          [progress-wizard state]
          (when (and (:error-message @state) (not (blank? (:error-message @state))))
@@ -198,7 +199,8 @@
         step (cursor state [:step])]
     [:div#badge-creator
      [m/modal-window]
-     [:h1.sr-only (t :badgeIssuer/Badgecreator)]
+     [:h1.uppercase-header (t :badgeIssuer/Createselfiebadge)]
+     [:p (t :badgeIssuer/Aboutselfiebadges2)]
      [:div.panel
       [progress-wizard state]
       #_(when (and (:error-message @state) (not (blank? (:error-message @state))))
@@ -226,7 +228,8 @@
                              :name ""
                              :criteria ""
                              :issuable_from_gallery 0
-                             :id ""}
+                             :id ""
+                             :issue_to_self 0}
                      :generating-image true
                      :step 0
                      :id id

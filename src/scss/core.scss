@@ -897,3 +897,7 @@ body.embed {
 .label-info {
   color: #000;
 }
+
+.page-info-box {
+  background-color: lighten($titlebar-color, 20%);
+}

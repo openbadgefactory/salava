@@ -8,7 +8,7 @@
    [salava.badgeIssuer.creator :refer [generate-image]]
    [salava.badgeIssuer.db :as db]
    [salava.badgeIssuer.util :refer [selfie-id is-badge-issuer? badge-valid?]]
-   [salava.core.util :refer [get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col]]
+   [salava.core.util :refer [publish get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col]]
    [salava.profile.db :refer [user-information]]
    [salava.user.db :refer [primary-email]]
    [slingshot.slingshot :refer :all]))
@@ -132,13 +132,15 @@
     :description nil
     :tags nil
     :issuable_from_gallery 0
-    :id nil})
+    :id nil
+    :issue_to_self 0})
   ([ctx user id]
    (let [selfie-badge (first (db/user-selfie-badge ctx (:id user) id))
          ifg (if (:issuable_from_gallery selfie-badge) 1 0)
          tags (if (blank? (:tags selfie-badge)) nil (json/read-str (:tags selfie-badge)))]
      (-> selfie-badge
          (assoc :issuable_from_gallery ifg
+                :issue_to_self 0
                 :tags tags
                 :criteria_html (md->html (:criteria selfie-badge)))
          (dissoc :deleted :ctime :mtime :creator_id))))
@@ -153,7 +155,8 @@
   [ctx user-id]
   (let [gallery_ids (db/select-user-gallery-ids {:user_id user-id} (get-db ctx))
         selfies (db/select-latest-selfie-badges {:user_id user-id} (get-db ctx))]
-    (some->> selfies 
+    (some->> selfies
              (remove #(some (fn [b] (or (= (:gallery_id %) (:gallery_id b))
                                         (= (:selfie_id %) (:selfie_id b))))
-                          gallery_ids)))))
+                          gallery_ids))
+             (take 5))))
