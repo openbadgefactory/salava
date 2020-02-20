@@ -4,7 +4,8 @@
    [reagent.core :refer [atom cursor create-class]]
    [reagent-modals.modals :as m]
    [reagent.session :as session]
-   [salava.badgeIssuer.ui.util :refer [save-selfie-badge]]
+   [salava.badgeIssuer.schemas :as schemas]
+   [salava.badgeIssuer.ui.util :refer [save-selfie-badge validate-inputs]]
    [salava.core.ui.ajax-utils :as ajax]
    [salava.core.ui.helper :refer [navigate-to path-for]]
    [salava.core.ui.input :refer [editor]]
@@ -78,7 +79,7 @@
             [:span  (t :badgeIssuer/Preview)]])
 
                 ;;Saveandexit
-         (when (= 2 @step)
+         (when (>= @step 1)
            [:a.btn.btn-primary.btn-bulky
             {:href "#"
              :on-click #(save-selfie-badge state (if @(cursor state [:in-modal])
@@ -119,9 +120,10 @@
            [:a {:href "#"
                 :on-click #(do
                              (.preventDefault %)
-                             (if (pos? @step)
-                               (save-selfie-badge state (fn [] (reset! step (inc @step))))
-                               (reset! step (inc @step))))}
+                             (reset! step (inc @step))
+                             #_(if (pos? @step)
+                                 (save-selfie-badge state (fn [] (reset! step (inc @step))))
+                                 (reset! step (inc @step))))}
             [:div.pull-right {:id "step-button"}
              (t :core/Next)]])]]])
     :component-did-mount (fn [] (reset! step 0))}))

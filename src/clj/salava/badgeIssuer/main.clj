@@ -101,6 +101,11 @@
 
      (db/insert-selfie-badge<! selfie (get-db ctx))
 
+     (publish ctx :create {:type "selfie"
+                           :verb (if-not (blank? (:id data)) "modify" "create")
+                           :subject user-id
+                           :object id})
+
      (when (pos? (:issue_to_self data))
        (issue-selfie-badge ctx {:selfie_id id :recipients [user-id]} user-id))
 

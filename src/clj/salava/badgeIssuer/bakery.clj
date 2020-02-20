@@ -126,7 +126,7 @@
                                    :assertion_json assertion_json
                                    :issuer_id user-id})
      (log/info "Finished saving user badge!")
-     (publish ctx :issue {:subject user-id :object user-badge-id}))
+     (publish ctx :issue {:type "selfie" :verb "issue" :subject user-id :object user-badge-id}))
 
    (catch Object _
      (log/error "error: " _))))

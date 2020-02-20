@@ -53,6 +53,7 @@
             2 (t :badgeIssuer/Criteriafieldempty)
             (t :badgeIssuer/Errormessage)))
         (when-not @(cursor state [:in-modal])
+          (reset! (cursor state [:step]) 1)
           (m/modal! (error-msg state) {})))
 
       (ajax/POST

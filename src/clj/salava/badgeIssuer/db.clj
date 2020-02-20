@@ -44,11 +44,16 @@
          (map #(assoc % :selfie_id (some (fn [b] (when (= (:gallery_id %) (:gallery_id b))
                                                    (:selfie_id b))) _))))))
 (defn insert-create-event! [ctx data]
-  (insert-selfie-create-event<! data (get-db ctx)))
+  (insert-selfie-event<! data (get-db ctx)))
 
 (defn insert-issue-event! [ctx data]
-  (insert-selfie-issue-event<! data (get-db ctx)))
+  (insert-selfie-event<! data (get-db ctx)))
 
 (defn insert-issue-event-owner! [ctx data]
-  (let [owner-id (select-selfie-badge-receiver {:id (:id data)} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
-    (insert-selfie-event-owner! (-> data (assoc :owner owner-id)) (get-db ctx))))
+  (let [owner-id (select-selfie-badge-receiver {:id (:object data)} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))
+        data {:event_id (:event_id data) :owner owner-id}]
+    (insert-selfie-event-owner! data (get-db ctx))))
+
+(defn get-selfie-events [ctx user-id]
+  (some->> (select-issue-selfie-events {:user_id user-id} (get-db ctx))
+           (take 25)))

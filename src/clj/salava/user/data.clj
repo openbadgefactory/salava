@@ -46,6 +46,7 @@
         page-info (p/page-with-blocks ctx (:object event))
         request-info (when (= "request_endorsement" (:verb event)) (request-event-map ctx (:object event) user-id md?))
         endorsement-info (when (= "endorse_badge" (:verb event)) (endorsement-event-map ctx (:object event) user-id md?))]
+
     (cond
       (and (= (:verb event) "follow") (= (:type event) "badge")) {:object_name (:name (first badge-info)) :badge_id (:id badge-id)}
       (and (= (:verb event) "follow") (= (:type event) "user")) {:object_name (str (:first_name user-info) " " (:last_name user-info)) :id (:object event)}
@@ -57,6 +58,8 @@
       (and (= (:verb event) "unpublish") (= (:type event) "page")) {:object_name (:name page-info) :page_id (:id page-info)}
       (and (= (:verb event) "request_endorsement") (= (:type event) "badge")) request-info
       (and (= (:verb event) "endorse_badge") (= (:type event) "badge")) endorsement-info
+      (and (= (:verb event) "issue") (= (:type event) "selfie")) {:object_name (:name (first (:content user-badge-info))) :badge_id (:object event)}
+      (and (= (:verb event) "create") (= (:type event) "selfie")) {:object_name (:name (first (:content user-badge-info))) :badge_id (:object event)}
       :else nil)))
 
 

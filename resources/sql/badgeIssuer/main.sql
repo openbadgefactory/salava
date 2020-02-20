@@ -132,7 +132,21 @@ WHERE ub.gallery_id IN (:gallery_ids) AND selfie_id IS NOT NULL AND sb.issuable_
 INSERT INTO social_event (subject, verb, object, type, ctime, mtime) VALUES (:subject, :verb, :object, 'selfie', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
 --name: insert-selfie-event-owner!
-INSERT INTO social_event_owners (owner, event_id) VALUES (:object, :event_id)
+INSERT INTO social_event_owners (owner, event_id) VALUES (:owner, :event_id)
 
 --name: select-selfie-badge-receiver
 SELECT user_id FROM user_badge WHERE id = :id
+
+--name: select-issue-selfie-events
+SELECT se.subject, se.verb, se.object, se.ctime, se.type, seo.event_id, seo.last_checked, u.first_name, u.last_name, u.profile_picture, u.profile_visibility,
+    bc.name, bc.image_file, seo.hidden, ub.badge_id
+FROM social_event_owners AS seo
+INNER JOIN social_event AS se ON seo.event_id = se.id
+INNER JOIN user_badge AS ub ON (ub.id = se.object)
+INNER JOIN user AS u ON (ub.issuer_id = u.id)
+INNER JOIN badge AS badge ON (badge.id = ub.badge_id)
+INNER JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+INNER JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_code = badge.default_language_code)
+WHERE seo.owner = :user_id AND se.type = 'selfie' AND se.verb = 'issue' AND se.subject != :user_id
+ORDER BY se.ctime DESC
+LIMIT 1000
