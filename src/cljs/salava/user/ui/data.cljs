@@ -58,7 +58,7 @@
                      [:p (t :user/Loginaddress) ": " [:i {:class "fa fa-check"}]])]]))]])
 
 (defn content [state]
-  (let [{location :location user_followers :user_followers user_following :user_following pending_badges :pending_badges connections :connections events :events user_files :user_files user_badges :user_badges endorsements :endorsements
+  (let [{selfies :selfies location :location user_followers :user_followers user_following :user_following pending_badges :pending_badges connections :connections events :events user_files :user_files user_badges :user_badges endorsements :endorsements
          user_pages :user_pages owner? :owner? {id :id first_name :first_name last_name :last_name profile_picture :profile_picture about :about role :role language :language
                                                 private :private activated? :activated country :country
                                                 email_notifications :email_notifications
@@ -146,7 +146,8 @@
           (email-address-table-mobile email)]
 
          [:div {:class "row col-md-12 col-sm-12 col-xs-12" :style {:margin-bottom "20px"}}
-          [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")} (str (t :badge/Mybadges) ": ") (count user_badges)]]
+          [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")}
+                                            (str (t :badge/Mybadges) ": " (count user_badges)) (when (seq pending_badges) (str  ", " (t :social/Pending) ": " (count pending_badges)))]]
           (when (seq user_badges)
             (doall
              (for [b user_badges]
@@ -155,15 +156,28 @@
                                                            (.preventDefault %)
                                                            (mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)}))}
                                           (:name b)]])))]
-         [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
-          (when (seq pending_badges)
-            [:div
-             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")} (str (t :badge/Pendingbadges) ": ") (count pending_badges)]]
-             (doall
-              (for [p pending_badges]
-                ^{:key p} [:div
-                           [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
-                           [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]]))])]
+         #_[:div {:class "row col-md-12 col-sm-12 col-xs-12"}
+            (when (seq pending_badges)
+              [:div
+               [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")} (str (t :badge/Pendingbadges) ": ") (count pending_badges)]]
+               (doall
+                (for [p pending_badges]
+                  ^{:key p} [:div {:style {:margin "10px 0"}}
+                             [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
+                             [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]]))])]
+         (when (seq selfies)
+           [:div.row.col-md-12.col-sm-12.col-xs-12
+            [:h2.uppercase-header
+             [:a {:href (path-for "/badge/selfie")}
+              (str (t :badgeIssuer/Selfiebadges) ": ") (count selfies)]]
+            (reduce (fn [r s]
+                      (conj r ^{:key s}[:div.col-xs-12 [:a {:href "#"
+                                                            :on-click #(do
+                                                                         (.preventDefault %)
+                                                                         (mo/open-modal [:selfie :preview] {:badge s}))}
+                                                          (:name s)]]))
+
+                  [:div] selfies)])
 
          (when (seq user_pages)
            [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
@@ -266,6 +280,8 @@
                                                                 [:br] [:br]
                                                                 [:div {:dangerouslySetInnerHTML {:__html (or (get-in e [:info :content]) "-")}  :style {:font-style "italic"}}]]
                                           "issueselfie" (or (get-in e [:info :object_name]) "-")
+                                          "createselfie" (or (get-in e [:info :object_name]) "-")
+                                          "modifyselfie" (or (get-in e [:info :object_name]) "-")
                                           "-")]]
                              [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]))]]])]]])]))
 
