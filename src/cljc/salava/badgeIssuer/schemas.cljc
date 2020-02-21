@@ -10,11 +10,6 @@
 
 #? (:cljs (defn describe [v _] v))
 
-(defn either [s1 s2 s3]
-  #? (:clj (s/either s1 s2 s3)
-      :cljs (s/cond-pre s1 s2 s3)))
-
-
 (s/defschema selfie_badge
   {:id                    (s/maybe s/Str)
    :name                  (s/conditional #(not (blank? %)) s/Str)
@@ -57,27 +52,34 @@
 
 (s/defschema revoked-assertion
   {:status (s/eq 410)
-   :headers {}
    :body {:id s/Str
-          :revoked (s/eq true)}})
+          :revoked (s/eq false)}})
 
 (s/defschema valid-assertion
-  {:id s/Str
-   :issuedOn s/Str
-   :recipient recipient
-   :badge s/Str
-   :expires (s/maybe s/Str)
-   :verification  {:type (s/eq "HostedBadge")}
-   :type (s/eq "Assertion")
-   (keyword "@context") (s/eq "https://w3id.org/openbadges/v2")})
+  {:status (s/eq 200)
+   ;:headers (s/eq {"Content-Type" "application/json"})
+   :body {:id s/Str
+          :issuedOn s/Str
+          :recipient recipient
+          :badge s/Str
+          :expires (s/maybe s/Str)
+          :verification  {:type (s/eq "HostedBadge")}
+          :type (s/eq "Assertion")
+          (keyword "@context") (s/eq "https://w3id.org/openbadges/v2")}})
 
 (s/defschema not-found
   {:status (s/eq 404)
-   :headers (s/eq {})
    :body (s/eq "Badge assertion not found")})
 
-(s/defschema assertion
-  (either valid-assertion revoked-assertion not-found))
+(s/defschema server-error
+  {:status (s/eq 500)
+   :body (s/eq nil)})
+
+(s/defschema assertion-response
+  (s/conditional #(= (:status %) 500) server-error
+                #(= (:status %) 404) not-found
+                #(= (:status %) 410) revoked-assertion
+                #(= (:status %) 200) valid-assertion))
 
 (s/defschema badge
   {:id s/Str

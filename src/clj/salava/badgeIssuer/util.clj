@@ -2,6 +2,7 @@
   (:require
    [clojure.tools.logging :as log]
    [salava.core.util :refer [bytes->base64 get-db-1 get-db]]
+   [salava.core.i18n :refer [t]]
    [slingshot.slingshot :refer :all]
    [yesql.core :refer [defqueries]])
   (:import
@@ -19,6 +20,10 @@
 
 (defn is-badge-issuer? [ctx user-badge-id issuer-id]
   (= issuer-id (select-selfie-issuer-by-badge-id {:id user-badge-id} (into {:result-set-fn first :row-fn :issuer_id} (get-db ctx)))))
+
+(defn already-issued? [ctx id]
+  (if-let [id (check-badge-issued {:id id} (into {:result-set-fn first :row-fn :id} (get-db ctx)))]
+    true false))
 
 (defn issuable-from-gallery? [ctx gallery_id]
   (check-badge-issuable {:id gallery_id} (get-db-1 ctx)))
@@ -40,12 +45,12 @@
   (let [{:keys [tempfile content-type]} file]
     (try+
      (when-not (= "image/png" content-type)
-       (throw+ {:status "error" :message "File is not a PNG image"}))
-     (let [image (ImageIO/read tempfile) ;;NB Reading image strips metadata -> https://stackoverflow.com/questions/31075444/how-to-remove-exif-content-from-a-image-file-of-tiff-png-using-a-java-api
+       (throw+ {:status "error" :message (t :badgeIssuer/FilenotPNG)}))
+     (let [image (ImageIO/read tempfile) ;;NB Reading image with ImageIO/read strips metadata -> https://stackoverflow.com/questions/31075444/how-to-remove-exif-content-from-a-image-file-of-tiff-png-using-a-java-api
            width (.getWidth image)
            height (.getHeight image)]
        (when-not (= width height)
-         (throw+ {:status "error" :message "Image must be square e.g. (60 * 60)"}))
+         (throw+ {:status "error" :message (t :badgeIssuer/Imagemustbesquare)}))
        {:status "success" :url (image->base64str image)})
      (catch Object _
        (log/error _)

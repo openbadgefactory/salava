@@ -7,7 +7,7 @@
    [salava.badgeIssuer.bakery :as bakery]
    [salava.badgeIssuer.creator :refer [generate-image]]
    [salava.badgeIssuer.db :as db]
-   [salava.badgeIssuer.util :refer [selfie-id is-badge-issuer? badge-valid?]]
+   [salava.badgeIssuer.util :refer [selfie-id is-badge-issuer? badge-valid? already-issued?]]
    [salava.core.util :refer [publish get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col]]
    [salava.profile.db :refer [user-information]]
    [salava.user.db :refer [primary-email]]
@@ -87,11 +87,21 @@
        (log/error _)
        {:status "error"}))))
 
-(defn save-selfie-badge [ctx data user-id]
+(defn- get-selfie-id [ctx data user-id]
+  (if (blank? (:id data))
+      (selfie-id)
+      (let [we-have (-> (db/get-selfie-badge {:id (:id data)} (into {:result-set-fn first} (get-db ctx)))
+                        (select-keys [:name :image :description :criteria :tags]))
+            we-got (-> data (select-keys [:name :image :description :criteria :tags]))]
+       (if (= (-> we-have (assoc :tags (json/read-str (:tags we-have)))) we-got)
+           (:id data)
+           (selfie-id)))))
+
+(defn save-selfie-badge
+  "Create new/edit selfie badge. Editing already issued badge clones badge content and creates new badge "
+  [ctx data user-id]
   (try+
-   (let [id (if-not (blank? (:id data))
-              (:id data)
-              (selfie-id))
+   (let [id (get-selfie-id ctx data user-id)
          image (if (re-find #"^data:image" (:image data))
                  (file-from-url-fix ctx (:image data))
                  (:image data))
@@ -100,7 +110,6 @@
                          (dissoc :issue_to_self))]
 
      (db/insert-selfie-badge<! selfie (get-db ctx))
-
      (publish ctx :create {:type "selfie"
                            :verb (if-not (blank? (:id data)) "modify" "create")
                            :subject user-id

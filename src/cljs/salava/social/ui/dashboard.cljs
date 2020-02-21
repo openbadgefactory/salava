@@ -338,15 +338,15 @@
                 [:span.desc (t :gallery/Sharedbadges)]]]]]]
 
            (when (seq (:pending-badges @state)) [:div.pending
-                                                 [:p.header (t :badge/Pendingbadges)
+                                                 [:p.header (t :badge/Pendingbadges)]
                                                  ;(if (seq (:pending-badges @state))
-                                                   (conj
-                                                    (reduce (fn [r badge]
-                                                              (conj r [:a {:href "#" :on-click #(navigate-to "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (str (t :badge/Badge) " " (:name badge)) :title (:name badge)}]]))
-                                                            [:div] (take 5 (->> (:pending-badges @state)
-                                                                                (sort-by :mtime >))))
-                                                    (when (> (count (:pending-badges @state)) 5)
-                                                      [:span " + " (- (count (:pending-badges @state)) 5)]))]])
+                                                 (conj
+                                                  (reduce (fn [r badge]
+                                                            (conj r [:a {:href "#" :on-click #(navigate-to "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (str (t :badge/Badge) " " (:name badge)) :title (:name badge)}]]))
+                                                          [:div] (take 5 (->> (:pending-badges @state)
+                                                                              (sort-by :mtime >))))
+                                                  (when (> (count (:pending-badges @state)) 5)
+                                                    [:span " + " (- (count (:pending-badges @state)) 5)]))])
 
            (when welcome-tip
              [:div.pending {:style {:padding "10px 0"}} [:p.header (str (t :social/Youdonthaveanyanybadgesyet) ".")]])

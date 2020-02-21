@@ -37,7 +37,7 @@
     (delete-selfie-badges-all! {:user_id user-id} (get-db ctx))
     (catch Object _
       (log/error _))))
-
+ 
 (defn map-badges-issuable [ctx gallery_ids badges]
   (let [_ (select-issuable-gallery-badges {:gallery_ids gallery_ids} (get-db ctx))]
     (->> badges

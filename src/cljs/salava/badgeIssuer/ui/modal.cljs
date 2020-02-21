@@ -216,7 +216,8 @@
         tab-no (:tab params)
         state (atom {:badge badge
                      :tab-no (or tab-no 1)
-                     :in-modal true})]
+                     :in-modal true
+                     :issue_to_self 0})]
     (fn []
       (selfie-content state))))
 

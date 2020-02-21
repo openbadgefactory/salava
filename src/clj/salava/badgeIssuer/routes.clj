@@ -29,7 +29,7 @@
             :tags ["hosted_badge"]
 
             (GET "/assertion/:user-badge-id" []
-                 ;:return schemas/assertion
+                 ;:return schemas/assertion-response
                  :summary "Get hosted badge assertion"
                  :path-params [user-badge-id :- s/Int]
                  (bm/badge-assertion ctx user-badge-id))
