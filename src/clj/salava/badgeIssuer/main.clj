@@ -3,7 +3,7 @@
    [clojure.data.json :as json]
    [clojure.string :refer [blank?]]
    [clojure.tools.logging :as log]
-   [ring.util.http-response :refer [not-found gone ok internal-server-error]]
+   [ring.util.http-response :refer [not-found gone ok internal-server-error content-type]]
    [salava.badgeIssuer.bakery :as bakery]
    [salava.badgeIssuer.creator :refer [generate-image]]
    [salava.badgeIssuer.db :as db]
@@ -24,13 +24,14 @@
   (try+
    (let [{:keys [id deleted revoked assertion_url]} (badge-valid? ctx user-badge-id)]
      (cond
-       (and id (zero? deleted) (zero? revoked)) (ok (some-> (db/get-assertion-json {:id user-badge-id} (into {:result-set-fn first
-                                                                                                              :row-fn :assertion_json} (get-db ctx)))
-                                                            (json/read-str :key-fn keyword)))
+       (and id (zero? deleted) (zero? revoked)) (-> (ok (some-> (db/get-assertion-json {:id user-badge-id} (into {:result-set-fn first
+                                                                                                                  :row-fn :assertion_json} (get-db ctx)))
+                                                                (json/read-str :key-fn keyword)))
+                                                    (content-type "application/json"))
        (or (nil? id) (pos? deleted))            (not-found "Badge assertion not found")
        (pos? revoked)                           (gone {:revoked true :id assertion_url})))
    (catch Object _
-     (log/error (.getMessage _))
+     (log/error _)
      (internal-server-error))))
 
 (defn badge-issuer
@@ -93,7 +94,10 @@
       (let [we-have (-> (db/get-selfie-badge {:id (:id data)} (into {:result-set-fn first} (get-db ctx)))
                         (select-keys [:name :image :description :criteria :tags]))
             we-got (-> data (select-keys [:name :image :description :criteria :tags]))]
-       (if (= (-> we-have (assoc :tags (json/read-str (:tags we-have)))) we-got)
+       (if (= (-> we-have (assoc :tags (if-not (blank? (:tags we-have))
+                                         (json/read-str (:tags we-have))
+                                         [])))
+              we-got)
            (:id data)
            (selfie-id)))))
 
@@ -121,6 +125,7 @@
      {:status "success" :id id})
    (catch Object _
      (log/error (.getMessage _))
+     (log/error _)
      {:status "error" :id "-1"})))
 
 (defn issuing-history [ctx selfie-id user-id]

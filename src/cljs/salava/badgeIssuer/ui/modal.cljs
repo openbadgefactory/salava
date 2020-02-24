@@ -46,54 +46,62 @@
         selected-users (cursor state [:selected-users])
         its (cursor state [:issue_to_self])
         current-user {:id (session/get-in [:user :id])}]
-    [:div {:id "badge-info" :class "row flip" :style {:margin "10px 0"}}
-     [badge-image badge]
-     [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
-      [badge-content badge]
-      [:hr.border]
-      [:div {:style {:margin "15px 0"}}
-       [:p [:b (t :badgeIssuer/Setbadgedetails)]]
-       [:div.form-horizontal
-        [:div.form-group {:style {:margin "15px 0"}}
-         [:label {:for "date"} (t :badge/Expireson)]
-         [:input.form-control
-          {:type "date"
-           :id "date"
-           :on-change #(do
-                         (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]]
+   [:div {:id "badge-info" :class "row flip" :style {:margin "10px 0"}}
+    [badge-image badge]
+    [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
+     (when @(cursor state [:success-alert])
+       [:div.alert.alert-success
+        (t :badgeIssuer/Badgesuccessfullyissued)])
+     [badge-content badge]
+     [:hr.border]
+     [:div {:style {:margin "15px 0"}}
+      [:p [:b (t :badgeIssuer/Setbadgedetails)]]
+      [:div.form-horizontal
+       [:div.form-group {:style {:margin "15px 0"}}
+        [:label {:for "date"} (t :badge/Expireson)]
+        [:input.form-control
+         {:type "date"
+          :id "date"
+          :on-change #(do
+                        (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]]
 
-       [:div.its_block
-        [:div.form-group
-         [:fieldset {:class "checkbox"}
-          [:legend.sr-only ""]
-          [:div;.col-md-12.its_block
-           [:label {:for "its"}
-            [:input {:name "its_checkbox"
-                     :type      "checkbox"
-                     :id        "its"
-                     :on-change #(do
-                                   (toggle-setting its)
-                                   (if (some (fn [u] (= (:id current-user) u)) (map :id @selected-users))
-                                     (reset! selected-users (remove (fn [u] (= (:id current-user) (:id u))) @selected-users))
-                                     (reset! selected-users (conj @selected-users current-user))))
-                     :checked   @its}]
-            (str (t :badgeIssuer/Issuetoself))]]]]
+      [:div.its_block
+       [:div.form-group
+        [:fieldset {:class "checkbox"}
+         [:legend.sr-only ""]
+         [:div;.col-md-12.its_block
+          [:label {:for "its"}
+           [:input {:name "its_checkbox"
+                    :type      "checkbox"
+                    :id        "its"
+                    :on-change #(do
+                                  (toggle-setting its)
+                                  (if (some (fn [u] (= (:id current-user) u)) (map :id @selected-users))
+                                    (reset! selected-users (remove (fn [u] (= (:id current-user) (:id u))) @selected-users))
+                                    (reset! selected-users (conj @selected-users current-user))))
+                    :checked   @its}]
+           (str (t :badgeIssuer/Issuetoself))]]]]
 
-        (when (pos? @its)
-          [:button.btn.btn-primary.btn-bulky
-           {:data-dismiss "modal"
-            :on-click #(do
-                         (.preventDefault %)
-                         (issue-selfie-badge state (fn [] (js-navigate-to "/badge"))))}
+       (when (pos? @its)
+         [:button.btn.btn-primary.btn-bulky
+          {:data-dismiss "modal"
+           :on-click #(do
+                        (.preventDefault %)
+                        (issue-selfie-badge state (fn [] (js-navigate-to "/badge"))))}
 
-           [:span [:i.fa.fa-paper-plane.fa-lg] (t :badgeIssuer/Issuenow)]])
-        [:button.btn.btn-primary.btn-bulky
-         {:on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :context "selfie_issue" :selected-users-atom selected-users :id id :selfie badge :func (fn [] (issue-selfie-badge state (fn []
-                                                                                                                                                                                                     (if (some (fn [u] (= u (session/get-in [:user :id]))) (map :id @selected-users))
-                                                                                                                                                                                                       (js-navigate-to "/badge")
-                                                                                                                                                                                                       (mo/previous-view)))))})}
+          [:span [:i.fa.fa-paper-plane.fa-lg] (t :badgeIssuer/Issuenow)]])
+       [:button.btn.btn-primary.btn-bulky
+        {:on-click #(mo/open-modal [:gallery :profiles] {:type "pickable"
+                                                         :context "selfie_issue"
+                                                         :selected-users-atom selected-users
+                                                         :id id
+                                                         :selfie badge
+                                                         :func (fn [] (issue-selfie-badge state (fn []
+                                                                                                  (if (some (fn [u] (= u (session/get-in [:user :id]))) (map :id @selected-users))
+                                                                                                    (js-navigate-to "/badge")
+                                                                                                    (mo/previous-view)))))})}
 
-         [:span [:i.fa.fa-users.fa-lg] (t :badgeIssuer/Selectrecipients)]]]]]]))
+        [:span [:i.fa.fa-users.fa-lg] (t :badgeIssuer/Selectrecipients)]]]]]]))
 
 (defn issued-badge-element [element-data state]
   (let [{:keys [expires_on revoked issued_on status id last_name first_name profile_picture user_id]} element-data
@@ -217,7 +225,8 @@
         state (atom {:badge badge
                      :tab-no (or tab-no 1)
                      :in-modal true
-                     :issue_to_self 0})]
+                     :issue_to_self 0
+                     :success-alert false})]
     (fn []
       (selfie-content state))))
 

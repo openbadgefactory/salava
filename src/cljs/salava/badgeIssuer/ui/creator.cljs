@@ -14,6 +14,7 @@
    [salava.core.i18n :refer [t translate-text]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]
+   [salava.core.ui.popover :refer [about-page]]
    [salava.core.ui.tag :as tag]))
 
 
@@ -180,6 +181,7 @@
    (fn []
      [:div#badge-creator
         [:h1.sr-only (t :badgeIssuer/Editbadge)]
+
         [:div.panel
          [progress-wizard state]
          (when (and (:error-message @state) (not (blank? (:error-message @state))))
@@ -203,17 +205,7 @@
      [:p (t :badgeIssuer/Aboutselfiebadges2)]
      [:div.panel
       [progress-wizard state]
-      #_(when (and (:error-message @state) (not (blank? (:error-message @state))))
-          [:div
-           [:div;.col-md-12
-            {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))]])
-      #_(when (and (:error-message @state) (not (blank? (:error-message @state))))
-          (m/modal! (error-msg state)
-           #_[:div
-              [:div;.col-md-12
-               {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))]] {}))
       [:div.panel-body
-
        (case @step
          0 [add-image state]
          1 [badge-content state]

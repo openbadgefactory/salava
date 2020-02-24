@@ -44,42 +44,54 @@
    ;:issue_to_self s/Int
    (s/optional-key :issued_from_gallery) s/Bool})
 
-(s/defschema recipient
-  {:type    (s/eq "email")
-   :identity s/Str
-   :hashed   s/Bool
-   :salt     s/Str})
+#_(s/defschema recipient
+    {:type    (s/eq "email")
+     :identity s/Str
+     :hashed   s/Bool
+     :salt     s/Str})
 
-(s/defschema revoked-assertion
-  {:status (s/eq 410)
-   :body {:id s/Str
-          :revoked (s/eq false)}})
+#_(s/defschema revoked-assertion
+    {:status (s/eq 410)
+     :body {:id s/Str
+            :revoked (s/eq true)}})
 
-(s/defschema valid-assertion
-  {:status (s/eq 200)
-   ;:headers (s/eq {"Content-Type" "application/json"})
-   :body {:id s/Str
-          :issuedOn s/Str
-          :recipient recipient
-          :badge s/Str
-          :expires (s/maybe s/Str)
-          :verification  {:type (s/eq "HostedBadge")}
-          :type (s/eq "Assertion")
-          (keyword "@context") (s/eq "https://w3id.org/openbadges/v2")}})
+#_(s/defschema valid-assertion
+    {:status (s/eq 200)
+     :headers (s/eq {"Content-Type" "application/json"})
+     :body {:id s/Str
+            :issuedOn s/Str
+            :recipient recipient
+            :badge s/Str
+            :expires (s/maybe s/Str)
+            :verification  {:type (s/eq "HostedBadge")}
+            :type (s/eq "Assertion")
+            (keyword "@context") (s/eq (str "https://w3id.org/openbadges/v2"))}})
 
-(s/defschema not-found
-  {:status (s/eq 404)
-   :body (s/eq "Badge assertion not found")})
+#_(def valid-assertion
+    {:status (s/eq 200)
+     :headers s/Any #_(s/eq {"Content-Type" "application/json"})
+     :body {:id s/Str
+            :issuedOn s/Str
+            :recipient recipient
+            :badge s/Str
+            :expires (s/maybe s/Str)
+            :verification  {:type (s/eq "HostedBadge")}
+            :type (s/eq "Assertion")
+            (keyword "@context") (s/eq (str "https://w3id.org/openbadges/v2"))}})
 
-(s/defschema server-error
-  {:status (s/eq 500)
-   :body (s/eq nil)})
+#_(s/defschema not-found
+    {:status (s/eq 404)
+     :body (s/eq "Badge assertion not found")})
 
-(s/defschema assertion-response
-  (s/conditional #(= (:status %) 500) server-error
-                #(= (:status %) 404) not-found
-                #(= (:status %) 410) revoked-assertion
-                #(= (:status %) 200) valid-assertion))
+#_(s/defschema server-error
+    {:status (s/eq 500)
+     :body (s/eq nil)})
+
+#_(s/defschema assertion-response
+    (s/conditional #(= (:status %) 500) server-error
+                  #(= (:status %) 404) not-found
+                  #(= (:status %) 410) revoked-assertion
+                  #(= (:status %) 200) valid-assertion))
 
 (s/defschema badge
   {:id s/Str

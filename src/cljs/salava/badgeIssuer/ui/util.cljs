@@ -68,6 +68,7 @@
                      (when reload-fn (reload-fn))))}))))
 
 (defn issue-selfie-badge [state reload-fn]
+  (reset! (cursor state [:success-alert]) false)
   (let [id @(cursor state [:badge :id])
         recipients (mapv :id @(cursor state [:selected-users]))
         expires_on (if (nil? @(cursor state [:badge :expires_on])) nil (iso8601-to-unix-time @(cursor state [:badge :expires_on])))]
@@ -78,8 +79,14 @@
                 :expires_on expires_on
                 :issued_from_gallery (or @(cursor state [:issued_from_gallery]) false)}
        :handler (fn [data]
-                  (when (= "success" (:status data))
-                    (when reload-fn (reload-fn))))})))
+                  (if (= "success" (:status data))
+                    (do
+                      (reset! (cursor state [:success-alert]) true)
+                      (when reload-fn (reload-fn)))
+                    (reset! (cursor state [:error-msg]) (t :core/Errorpage))))
+       :finally (fn []
+                  (js/setTimeout (fn [] (reset! (cursor state [:success-alert]) false)) 3000))})))
+
 
 (defn delete-selfie-badge [state]
   (let [id @(cursor state [:badge :id])]
@@ -119,7 +126,6 @@
 
 (defn revoke-badge-content [user-badge-id state]
   (when (and @(cursor state [:revocation-request]) (= user-badge-id @(cursor state [:revoke-id])))
-  ;  [:div.row ;{:style {:text-align "left"}}
      [:div.col-md-12
       [:div.panel.thumbnail
         [:div.alert.alert-warning
@@ -127,11 +133,9 @@
         [:div
          [:button {:type "button"
                    :class "btn btn-danger btn-bulky"
-                   ;:data-dismiss "modal"
                    :on-click #(do (.preventDefault %)
                                   (revoke-selfie-badge user-badge-id state))}
           (t :badgeIssuer/Revoke)]
          [:button.btn.btn-primary.btn-bulky {:type "button"
                                              :on-click #(reset! (cursor state [:revocation-request]) false)}
-                                             ;:data-dismiss "modal"}
           (t :core/Cancel)]]]]))

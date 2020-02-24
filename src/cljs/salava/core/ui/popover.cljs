@@ -32,34 +32,28 @@
                    :top "-5px"}
                   (merge style))]
       (fn []
-        [:div;.page-info-box
+        [:div
          (when @link-visible
            [:div.row {:style style}
-            [:div.pull-right;.col-md-12
+            [:div.pull-right
              [:a.popup-info {:title (t :core/Aboutthispage)
                              :aria-label (t :core/Aboutthispage)
                              :on-click #(do
                                          (.preventDefault %)
-                                         (toggle-alert link-visible))};(reset! link-visible false))}
-              [:i.fa.fa-info-circle.fa-2x] #_heading]]])
+                                         (toggle-alert link-visible))}
+              [:i.fa.fa-question-circle.fa-3x]]]])
 
          (when-not @link-visible
           [:div
            [:div.page-info-box.alert.alert-dismissible
             [:button.close {:type "button"
-                            ;:data-dismiss "alert"
                             :aria-label "Close"
                             :on-click #(do
                                          (.preventDefault %)
-                                         (toggle-alert link-visible))};(reset! link-visible true))}
+                                         (toggle-alert link-visible))}
              [:span {:aria-hidden true
                      :dangerouslySetInnerHTML {:__html "&times;"}}]]
             [:div
              [:h4.alert-heading heading]
              [:hr]
              [:p content]]]])])))
-
-
-
-
-(comment)
