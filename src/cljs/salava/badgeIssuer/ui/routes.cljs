@@ -17,7 +17,7 @@
    (str (base-path context) "/selfie") [[["/criteria/" :id] criteria/handler]]})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/badge/selfie") {:weight 46 :title (t :badgeIssuer/IssueBadges) :site-navi true :breadcrumb (t :badge/Badge " / " :badgeIssuer/IssueBadges)}
+  {(str (base-path context) "/badge/selfie") {:weight 100 :title (t :badgeIssuer/IssueBadges) :site-navi true :breadcrumb (t :badge/Badge " / " :badgeIssuer/IssueBadges)}
    (str (base-path context) "/badge/selfie/create") {:weight 101 :title (t :badgeIssuer/Createselfiebadges) :site-navi false :breadcrumb (t :badge/Badge " / " :badgeIssuer/Createselfiebadge)}
    (str (base-path context) "/badge/selfie/create/\\S+")  {:breadcrumb (t :badge/Badge " / " :badgeIssuer/Editselfiebadge)}})
 
