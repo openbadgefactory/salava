@@ -15,6 +15,7 @@
 @import '../rtl';
 @import '../metabadge';
 @import '../profile';
+@import '../badgeIssuer';
 
 /* LINKS */
 a, #badge-info a {
@@ -420,7 +421,7 @@ a.popup-info {
   }
 }
 
-#my-badges #grid #import-badge #add-element-link, #my-badges #grid #import-badge .add-element-link {
+#my-badges #grid #import-badge #add-element-link, #my-badges #grid #import-badge .add-element-link, #selfie-badges #grid #import-badge #add-element-link {
   color: $badge-title;
   &:hover, &:focus, &:active {
     color: $button-hover;
@@ -542,7 +543,7 @@ a.popup-info {
   background: linear-gradient(to left, #26a0da, #314755);
 }
 
-#my-badges #grid #import-badge #add-element-icon, .pages #grid .grid-container #add-element #add-element-icon {
+#my-badges #grid #import-badge #add-element-icon, .pages #grid .grid-container #add-element #add-element-icon, #selfie-badges #grid #import-badge #add-element-icon {
   color: $title-color;
   .fa-plus:before {
     background: -webkit-gradient(linear, left bottom, right top, from(#314755), to(#26a0da));

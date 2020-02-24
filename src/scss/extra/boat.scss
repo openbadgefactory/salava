@@ -14,6 +14,7 @@
 @import '../rtl';
 @import '../metabadge';
 @import '../profile';
+@import '../badgeIssuer';
 
 /* Fonts */
 @font-face {
@@ -799,4 +800,8 @@ p.help-block {
    color: $main-color;
    font-weight: bold;
  }
+}
+
+.page-info-box {
+  background-color: #F9F9F9;
 }
