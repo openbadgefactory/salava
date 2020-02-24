@@ -13,10 +13,11 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.error :as err]
             [salava.core.ui.grid :as g]
-            [cljsjs.simplemde]
+            ;[cljsjs.simplemde]
             [salava.translator.ui.helper :refer [translate]]
             [salava.core.ui.popover :refer [info]]
-            [dommy.core :as dommy :refer-macros [sel1 sel]]))
+            [dommy.core :as dommy :refer-macros [sel1 sel]]
+            [salava.core.ui.input :refer [editor markdown-editor]]))
 
 (defn endorsement-row [endorsement & lang]
   (let [{:keys [issuer content issued_on]} endorsement]
@@ -165,12 +166,12 @@
                (when (= "success" (:status data))
                  (when reload-fn (reload-fn state))))}))
 
-(def simplemde-toolbar (array "bold" "italic" "heading-3"
-                              "quote" "unordered-list" "ordered-list"
-                              "link" "horizontal-rule"
-                              "preview"))
+#_(def simplemde-toolbar (array "bold" "italic" "heading-3"
+                                "quote" "unordered-list" "ordered-list"
+                                "link" "horizontal-rule"
+                                "preview"))
 
-(def editor (atom nil))
+#_(def editor (atom nil))
 
 ;(def md-editor (atom {:editor nil :enabled? true}))
 
@@ -187,16 +188,16 @@
       (js/setTimeout (fn [] (.value @editor @value)) 200)
       (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor))))))
 
-(defn init-editor [element-id value]
-  (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
-                                          :toolbar simplemde-toolbar
-                                          :spellChecker false
-                                          :forceSync true})))
-  (-> (sel1 [".CodeMirror" :textarea])
-      (dommy/set-attr! :aria-label "CodeMirror textarea"))
-  (.value @editor @value)
-  (js/setTimeout (fn [] (.value @editor @value)) 200)
-  (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor)))))
+#_(defn init-editor [element-id value]
+    (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
+                                            :toolbar simplemde-toolbar
+                                            :spellChecker false
+                                            :forceSync true})))
+    (-> (sel1 [".CodeMirror" :textarea])
+        (dommy/set-attr! :aria-label "CodeMirror textarea"))
+    (.value @editor @value)
+    (js/setTimeout (fn [] (.value @editor @value)) 200)
+    (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor)))))
 
 #_(defn markdown-editor [value]
     (create-class {:component-did-mount (fn []
@@ -213,15 +214,15 @@
                                                   :aria-label "Compose text"}]])
                    :component-did-update (fn [] #(reset! value (.-target.value %)))}))
 
-(defn markdown-editor [value]
-  (create-class {:component-did-mount (fn []
-                                        (init-editor (str "editor" (-> (session/get :user) :id)) value))
-                 :reagent-render (fn []
-                                   [:div.form-group {:style {:display "block"}}
-                                    [:textarea {:class "form-control"
-                                                :id (str "editor" (-> (session/get :user) :id))
-                                                :defaultValue @value
-                                                :on-change #(reset! value (.-target.value %))}]])}))
+#_(defn markdown-editor [value]
+    (create-class {:component-did-mount (fn []
+                                          (init-editor (str "editor" (-> (session/get :user) :id)) value))
+                   :reagent-render (fn []
+                                     [:div.form-group {:style {:display "block"}}
+                                      [:textarea {:class "form-control"
+                                                  :id (str "editor" (-> (session/get :user) :id))
+                                                  :defaultValue @value
+                                                  :on-change #(reset! value (.-target.value %))}]])}))
 
 #_(defn toggle-markdown-editor [element-id value]
     (let [md? (cursor md-editor [:enabled?])
@@ -604,7 +605,7 @@
                          [:div.caption
                           [:hr.line]
                           [endorse-badge user_badge_id {:request_id id}]
-                          (when (= status "pending") 
+                          (when (= status "pending")
                             [:div.endorsebadge {:style {:margin "25px 0"}} [:a {:href "#"
                                                                                 :on-click #(do
                                                                                              (.preventDefault %)

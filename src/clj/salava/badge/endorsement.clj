@@ -143,7 +143,7 @@
         given (endorsements-given-p ctx user-id)
         sent-requests (some->> (select-sent-endorsement-requests-p {:id user-id} (get-db ctx)) (mapv #(assoc % :type "sent_request")))
         requests (->> (endorsement-requests-p ctx user-id) (filterv #(= (:status %) "pending")) (mapv #(assoc % :type "request")))]
-    
+
     {:given given
      :received received
      :sent-requests sent-requests
@@ -179,7 +179,7 @@
                                                   :issuer_id id
                                                   :issuer_url (str (get-full-path ctx) "/profile/" id)}  (get-db ctx))
                           :generated_key)]
-       (publish ctx :request_endorsement {:subject owner-id :object request-id})
+       (publish ctx :request_endorsement {:verb "request_endorsement" :type "badge" :subject owner-id :object request-id})
        (when-not user-connection (as-> (first (plugin-fun (get-plugins ctx) "db" "create-connections-user!")) $   ;;create user connection if not existing
                                        (when $ ($ ctx owner-id id))))))))
   {:status "success"}

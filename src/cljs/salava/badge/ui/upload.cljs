@@ -40,7 +40,7 @@
                  (.item 0))
         form-data (doto
                    (js/FormData.)
-                    (.append "file" file (.-name file)))]
+                   (.append "file" file (.-name file)))]
     (swap! state assoc :status "loading")
     (ajax/POST
      (path-for "/obpv1/badge/upload")

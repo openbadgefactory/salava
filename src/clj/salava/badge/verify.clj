@@ -30,7 +30,9 @@
     (http/http-req {:url url :method :get :throw-exceptions false :as :byte-array})
     (catch Exception e
       (log/error "failed to get image from " url " Message: " (.getMessage e))
-      {:status 500})))
+      (if (re-find #"^data:image" url)
+        {:status 200}
+        {:status 500}))))
 
 (defn fetch-url [url]
   (log/info "fetch response from " url)
@@ -77,6 +79,7 @@
             delete-user-metabadge (first (plugin-fun (get-plugins ctx) "db" "clear-user-metabadge!"))]
         (if (url? asr)
           (let [asr-response (assertion asr)]
+            (prn asr-response)
             (case (:status asr-response)
               404 (assoc result :assertion-status 404
                          :asr asr)
@@ -92,13 +95,17 @@
                          :message (:message asr-response))
               200 (let [asr-data (:body asr-response)
                         badge-data (if (url? (:badge asr-data)) (fetch-json-data (:badge asr-data)) (:badge asr-data))
-                        badge-image (if (map? (:image badge-data)) (fetch-image (get-in badge-data [:image :id])) (fetch-image (:image badge-data)))
+                        badge-image (if (map? (:image badge-data))
+                                      (fetch-image (get-in badge-data [:image :id]))
+                                      (fetch-image (:image badge-data)))
                         badge-criteria (if (and (map? (:criteria badge-data)) (contains? (:criteria badge-data) :id))
-                                         (fetch-url (get-in badge-data [:criteria :id]))
+                                         (if-not (clojure.string/blank? (get-in badge-data [:criteria :id]))
+                                            (fetch-url (get-in badge-data [:criteria :id]))
+                                            (get-in badge-data [:criteria :narrative]))
                                          (if (url? (:criteria badge-data)) (fetch-url (:criteria badge-data)) {:status 800}))
-                        badge-issuer (if (and (map? (:issuer badge-data)) (contains? (:issuer badge-data) :id))
-                                       (fetch-url (get-in badge-data [:issuer :id]))
-                                       (if (url? (:issuer badge-data)) (fetch-url (:issuer badge-data)) {:status 800}))
+                        #_badge-issuer #_(if (and (map? (:issuer badge-data)) (contains? (:issuer badge-data) :id))
+                                           (fetch-url (get-in badge-data [:issuer :id]))
+                                           (if (url? (:issuer badge-data)) (fetch-url (:issuer badge-data)) {:status 800}))
                         issuedOn {:issuedOn (process-time (:issuedOn asr-data))}
                         expires (if-let [exp (process-time (:expires asr-data))] {:expires exp} nil)
 
@@ -109,10 +116,9 @@
                            :asr asr
                            :badge-image-status (:status badge-image)
                            :badge-criteria-status (:status badge-criteria)
-                           :badge-issuer-status (:status badge-issuer)
+                           :badge-issuer-status 200 #_(:status badge-issuer)
                            :revoked? revoked?
                            :expired? expired?))
-
               (assoc result :assertion-status 500
                      :asr asr
                      :message (:reason-phrase asr-response))))

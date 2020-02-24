@@ -16,7 +16,11 @@
             [pantomime.mime :refer [extension-for-name mime-type-of]]
             [buddy.core.mac :as mac]
             [buddy.core.codecs :as codecs]
-            [clojure.core.async :refer [>!!]])
+            [clojure.core.async :refer [>!!]]
+            [salava.core.schemas :as schemas]
+            [schema.core :refer [validate]])
+
+
   (:import (java.io StringReader)
            (java.net URLEncoder)
            (java.util Base64)))
@@ -266,6 +270,7 @@
 
 
 (defn publish [ctx topic data]
+  (validate schemas/PublishEvent data)
   (if-not (map? data)
     (throw (IllegalArgumentException. "Publish: Data must be a map")))
   (if-not  (keyword? topic)
@@ -273,8 +278,9 @@
   (>!! (:input-chan ctx) (assoc data :topic topic)))
 
 (defn event [ctx subject verb object type]
-  ;TODO VALIDATE DATA
-  (publish ctx :event {:subject subject :verb verb :object object :type type}))
+  (let [data {:subject subject :verb verb :object object :type type}]
+    (validate schemas/PublishEvent data)
+    (publish ctx :event data)))
 
 (defn url? [s]
   "Pattern Source: https://mathiasbynens.be/demo/url-regex"

@@ -40,6 +40,22 @@
                (swap! state merge data))})
   (stream/init-data state))
 
+(defn selfie-issue-event [event state]
+  (let [{:keys [event_id subject verb image_file message ctime event_id name object first_name last_name profile_picture]}  event]
+    [:div {:style {:height "100%"}}
+     [:a {:href "#"
+          :on-click #(do
+                       (mo/open-modal [:profile :view] {:user-id subject})
+                       (.preventDefault %))}
+      [:div {:class "media"}
+       [:div.media-left
+        [:img.small-image {:src (profile-picture profile_picture) :alt ""}]];(str first_name " " last_name)}]]
+       [:div.media-body
+        [:div.content-text
+         [:p.content-heading (str first_name " " last_name  " " (t :badgeIssuer/Hasissuedselfie) " " name)]
+         [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
+     (stream/hide-event event_id state)]))
+
 (defn follow-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
         modal-message (str "messages")]
@@ -191,7 +207,7 @@
 
 (defn welcome-block-body [lang]
   (let [language (if-not (blank? lang) lang "en")
-        message (first (plugin-fun (session/get :plugins) "block" "welcomeblockbody"))]
+        message (first (plugin-fun (session/get :plugins) "block" "welcomeblockboConnectionsdy"))]
     (if message (message lang) "")))
 
 (defn welcome-block [state]
@@ -266,6 +282,7 @@
                                                                                 (= "message" (:verb event)) [message-event event state]
                                                                                 (and (= "badge" (:type event)) (= "endorse_badge" (:verb event))) (endorse-event-badge event state)
                                                                                 (and (= "badge" (:type event)) (= "request_endorsement" (:verb event))) (endorsement-request-event-badge event state)
+                                                                                (and (= "selfie" (:type event)) (= "issue" (:verb event))) (selfie-issue-event event state)
                                                                                 :else "")]))
 
                                                                    [:div (when (>= (count events) 4) [:div.clear_all [:a {:href "#" :on-click #(hide-all-events! state)} [:span [:i.fa.fa-remove.fa-fw] (t :social/clearall)]]])] events)
@@ -273,6 +290,10 @@
 
 (defn latest-earnable-badges []
   (let [block (first (plugin-fun (session/get :plugins)  "application" "latestearnablebadges"))]
+    (if block [block] [:div ""])))
+
+(defn latest-gettable-badges []
+  (let [block (first (plugin-fun (session/get :plugins) "block" "latest_gettable_badges"))]
     (if block [block] [:div ""])))
 
 (defn application-button [opt]
@@ -318,10 +339,15 @@
 
            (when (seq (:pending-badges @state)) [:div.pending
                                                  [:p.header (t :badge/Pendingbadges)]
-                                                 (if (seq (:pending-badges @state))
-                                                   (reduce (fn [r badge]
-                                                             (conj r [:a {:href "#" :on-click #(navigate-to "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (str (t :badge/Badge) " " (:name badge)) :title (:name badge)}]]))
-                                                           [:div] (take 5 (:pending-badges @state))))])
+                                                 ;(if (seq (:pending-badges @state))
+                                                 (conj
+                                                  (reduce (fn [r badge]
+                                                            (conj r [:a {:href "#" :on-click #(navigate-to "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (str (t :badge/Badge) " " (:name badge)) :title (:name badge)}]]))
+                                                          [:div] (take 5 (->> (:pending-badges @state)
+                                                                              (sort-by :mtime >))))
+                                                  (when (> (count (:pending-badges @state)) 5)
+                                                    [:span " + " (- (count (:pending-badges @state)) 5)]))])
+
            (when welcome-tip
              [:div.pending {:style {:padding "10px 0"}} [:p.header (str (t :social/Youdonthaveanyanybadgesyet) ".")]])
            [:div.badge-columns
@@ -334,7 +360,8 @@
                                                              (.preventDefault %)
                                                              (mo/open-modal [:badge :info] {:badge-id (:id badge)} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge)}]])) ;:title (:name badge)}]]))
                        [:div {:style {:padding "5px 0"}}] badges)])
-            [latest-earnable-badges]]
+            [latest-earnable-badges]
+            [latest-gettable-badges]]
            (when (> (get-in @state [:stats :badge_count] 0) (:published_badges_count @state))
              [:div#_profiletips {:style {:position "relative" :bottom "1px" :margin-right "10px" :padding-top "20px"}}
               [:div.tip

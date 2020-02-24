@@ -16,6 +16,7 @@
             [salava.core.time :refer [unix-time]]
             [salava.mail.mail :as m]
             [salava.badge.endorsement :as end]
+            [salava.badgeIssuer.db :as selfie]
             [salava.social.db :as so]
             [salava.profile.db :as up]))
 
@@ -375,6 +376,8 @@
        #_(update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
        (delete-user-profile! {:user_id user-id} {:connection tr-cn})
        (delete-user-terms! {:user_id user-id} {:connection tr-cn})
+       ;;remove selfie-badges
+       (selfie/delete-user-selfie-badges! ctx user-id)
 
        #_(if activated
            (doall (map #(update-user-email-set-deleted! {:user_id user-id :email (:email %) :deletedemail (str "deleted-" (:email %) ".so.deleted")} {:connection tr-cn}) emails))
@@ -443,6 +446,7 @@
   (let [badges (->> (b/user-badges-all ctx user-id)
                     (:badges)
                     (filter #(= "accepted" (:status %)))
+                    (remove :revoked)
                     (sort-by :mtime >)
                     (take 5))
         public-badges-count (->> (b/user-badges-all ctx user-id)
@@ -455,6 +459,7 @@
         user-info (user-information-with-registered-and-last-login ctx user-id)
         user-profile (-> (user-information-and-profile ctx user-id nil)
                          (dissoc :badges :pages :owner?))]
+
     {:badges badges
      :stats stats
      :endorsing (->> (end/endorsements-given ctx user-id) count)

@@ -123,47 +123,52 @@
 
                                                               (when-not (empty? $tags)
                                                                 [:paragraph.generic
-                                                                 [:chunk.chunk (str (t :badge/Tags ul) ": ")] (into [:phrase] (for [t $tags] (str t " ")))]) [:paragraph
-                                                                                                                                                              (let [alignments (replace-nils (select-alignment-content {:badge_content_id (:badge_content_id %)} (u/get-db ctx)))]
-                                                                                                                                                                (when-not (empty? alignments)
-                                                                                                                                                                  [:paragraph.generic
-                                                                                                                                                                   [:spacer 0]
-                                                                                                                                                                   [:phrase {:size 12 :style :bold} (str (t :badge/Alignments ul) ": " (count alignments))] "\n"
-                                                                                                                                                                   (into [:paragraph] (for [a alignments]
-                                                                                                                                                                                        [:paragraph
-                                                                                                                                                                                         (:name a) "\n"
-                                                                                                                                                                                         [:chunk {:style :italic} (:description a)] "\n"
-                                                                                                                                                                                         [:chunk.link (:url a)] [:spacer 0]]))]))]
+                                                                 [:chunk.chunk (str (t :badge/Tags ul) ": ")] (into [:phrase] (for [t $tags] (str t " ")))])
+
+                                                              [:paragraph
+                                                               (let [alignments (replace-nils (select-alignment-content {:badge_content_id (:badge_content_id %)} (u/get-db ctx)))]
+                                                                 (when-not (empty? alignments)
+                                                                   [:paragraph.generic
+                                                                    [:spacer 0]
+                                                                    [:phrase {:size 12 :style :bold} (str (t :badge/Alignments ul) ": " (count alignments))] "\n"
+                                                                    (into [:paragraph] (for [a alignments]
+                                                                                         [:paragraph
+                                                                                          (:name a) "\n"
+                                                                                          [:chunk {:style :italic} (:description a)] "\n"
+                                                                                          [:chunk.link (:url a)] [:spacer 0]]))]))]
                                                               [:paragraph
                                                                [:chunk.chunk (str (t :badge/Criteria ul) ": ")] [:anchor {:target (:criteria_url %)} [:chunk.link (t :badge/Opencriteriapage ul)]] "\n"
 
                                                                [:spacer 0]
                                                                (process-markdown (:criteria_content %) $id "Criteria")
-                                                               [:spacer 1] "\n"]] (when-not (empty? $evidences)
-                                                                                    [:paragraph.generic
-                                                                                     [:spacer 0]
-                                                                                     [:phrase {:size 12 :style :bold} (if (= 1 (count $evidences)) (t :badge/Evidence ul) (t :badge/Evidences ul))]
-                                                                                     [:spacer]
-                                                                                     (reduce (fn [r evidence]
-                                                                                               (conj r [:phrase
-                                                                                                        (when (and (not (blank? (:name evidence))) (not= "-" (:name evidence))) [:phrase [:chunk (:name evidence)] "\n"])
-                                                                                                        (when (and (not (blank? (:narrative evidence))) (not= "-" (:narrative evidence)))  [:phrase [:chunk (:narrative evidence)] "\n"])
-                                                                                                        (when (and (not (blank? (:description evidence))) (not= "-" (:description evidence))) [:phrase [:chunk (:description evidence)] "\n"])
-                                                                                                        [:anchor {:target (:url evidence)} [:chunk.link (str (t :badge/Openevidencepage ul) "...")]]
-                                                                                                        [:spacer 2]]))
-                                                                                             [:list {:numbered true :indent 0}] $evidences)])
+                                                               [:spacer 1] "\n"]]
+
+                                                             (when-not (empty? $evidences)
+                                                               [:paragraph.generic
+                                                                [:spacer 0]
+                                                                [:phrase {:size 12 :style :bold} (if (= 1 (count $evidences)) (t :badge/Evidence ul) (t :badge/Evidences ul))]
+                                                                [:spacer]
+                                                                (reduce (fn [r evidence]
+                                                                          (conj r [:phrase
+                                                                                   (when (and (not (blank? (:name evidence))) (not= "-" (:name evidence))) [:phrase [:chunk (:name evidence)] "\n"])
+                                                                                   (when (and (not (blank? (:narrative evidence))) (not= "-" (:narrative evidence)))  [:phrase [:chunk (:narrative evidence)] "\n"])
+                                                                                   (when (and (not (blank? (:description evidence))) (not= "-" (:description evidence))) [:phrase [:chunk (:description evidence)] "\n"])
+                                                                                   [:anchor {:target (:url evidence)} [:chunk.link (str (t :badge/Openevidencepage ul) "...")]]
+                                                                                   [:spacer 2]]))
+                                                                        [:list {:numbered true :indent 0}] $evidences)])
 
                                                              (when (seq $endorsements)
                                                                [:paragraph.generic
                                                                   ;[:spacer 0]
                                                                 [:phrase {:size 12 :style :bold} (t :badge/BadgeEndorsedBy ul)] "\n"
                                                                 [:spacer 0]
-                                                                (into [:paragraph {:indent 0}] (for [e $endorsements]
-                                                                                                 [:paragraph
-                                                                                                  (if (or (= "-" (:issuer_name e)) (blank? (:issuer_name e))) (str (:first_name e) " " (:last_name e)) (:issuer_name e)) "\n"
-                                                                                                  [:anchor {:target (:issuer_url e) :style {:family :times-roman :color [66 100 162]}} (or (:issuer_url e) "-")] "\n"
-                                                                                                  [:chunk (if (number? (or (:issued_on e) (:mtime e))) (date-from-unix-time (long (* 1000 (or (:issued_on e) (:mtime e))))) (or (:issued_on e) (:mtime e)))] "\n"
-                                                                                                  (process-markdown (:content e) $id "Endorsements")]))])
+                                                                (into [:paragraph {:indent 0}]
+                                                                      (for [e $endorsements]
+                                                                        [:paragraph
+                                                                         (if (or (= "-" (:issuer_name e)) (blank? (:issuer_name e))) (str (:first_name e) " " (:last_name e)) (:issuer_name e)) "\n"
+                                                                         [:anchor {:target (:issuer_url e) :style {:family :times-roman :color [66 100 162]}} (or (:issuer_url e) "-")] "\n"
+                                                                         [:chunk (if (number? (or (:issued_on e) (:mtime e))) (date-from-unix-time (long (* 1000 (or (:issued_on e) (:mtime e))))) (or (:issued_on e) (:mtime e)))] "\n"
+                                                                         (process-markdown (:content e) $id "Endorsements")]))])
 
                                                              [:line {:dotted true}]
                                                              [:spacer 0]

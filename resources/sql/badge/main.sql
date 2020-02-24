@@ -24,7 +24,7 @@ GROUP BY ub.id
 
 -- name: select-user-badges-all
 -- get user's badges
-SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.gallery_id,
+SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.gallery_id, ub.badge_id,
            ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.assertion_url,
            ic.name AS issuer_content_name, ic.url AS issuer_content_url, SUM(IF(bec.endorsement_content_id IS NULL, 0, 1)) AS endorsement_count, COUNT(ube.id) AS user_endorsement_count,
            ubm.meta_badge, ubm.meta_badge_req

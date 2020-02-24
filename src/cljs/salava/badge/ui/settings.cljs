@@ -58,17 +58,10 @@
      (path-for (str "/obpv1/badge/settings/" id))
      {:params  {:settings {:visibility   visibility
                            :rating       (if (pos? rating) rating nil)
-                           :show_recipient_name show_recipient_name} ;@(cursor state [:badge-settings :show_recipient_name])}
+                           :show_recipient_name show_recipient_name} 
                 :tags tags}
       :handler (fn [] (update-settings id state))
       :finally (fn [] (when reload-fn (reload-fn)))})))
-
-#_(defn toggle-recipient-name [id show-recipient-name-atom]
-    (let [new-value (not @show-recipient-name-atom)]
-      (ajax/POST
-       (path-for (str "/obpv1/badge/toggle_recipient_name/" id))
-       {:params {:show_recipient_name new-value}
-        :handler (fn [] (reset! show-recipient-name-atom new-value))})))
 
 (defn toggle-recipient-name [state]
   (let [show-recipient-name-atom (cursor state [:show_recipient_name])
@@ -96,50 +89,8 @@
                {:handler (fn [data]
                            (reset! notifications-atom (:connected? data)))})))
 
-#_(defn visibility-form [state init-data]
-    [:form {:class "form-horizontal"}
-     [:div
-      [:fieldset {:class "form-group visibility"}
-       [:legend {:class "col-md-9 sub-heading"}
-        (t :badge/Badgevisibility)]
-       [:div {:class (str "col-md-12 " (get-in @state [:badge-settings :visibility]))}
-        (if-not (private?)
-          [:div [:input {:id              "visibility-public"
-                         :name            "visibility"
-                         :value           "public"
-                         :type            "radio"
-                         :on-change       #(do
-                                             (set-visibility "public" state)
-                                             (save-settings state init-data "share"))
-                         :default-checked (= "public" (get-in @state [:badge-settings :visibility]))}]
-           [:i {:class "fa fa-globe"}]
-           [:label {:for "visibility-public"}
-            (t :badge/Public)]])
-        [:div [:input {:id              "visibility-internal"
-                       :name            "visibility"
-                       :value           "internal"
-                       :type            "radio"
-                       :on-change       #(do
-                                           (set-visibility "internal" state)
-                                           (save-settings state init-data "share"))
-                       :default-checked (= "internal" (get-in @state [:badge-settings :visibility]))}]
-         [:i {:class "fa fa-group"}]
-         [:label {:for "visibility-internal"}
-          (t :badge/Shared)]]
-        [:div [:input {:id              "visibility-private"
-                       :name            "visibility"
-                       :value           "private"
-                       :type            "radio"
-                       :on-change       #(do
-                                           (set-visibility "private" state)
-                                           (save-settings state init-data "share"))
-                       :default-checked (= "private" (get-in @state [:badge-settings :visibility]))}]
-         [:i {:class "fa fa-lock"}]
-         [:label {:for "visibility-private"}
-          (t :badge/Private)]]]]]])
-
 (defn delete-tab-content [{:keys [name image_file]} state]
-  [:div.row.flip ;{#_:id #_"badge-settings" :class "row flip"}
+  [:div.row.flip
    [:div {:class "col-md-3 badge-image modal-left"}
     [:img {:src (str "/" image_file) :alt name}]]
    [:div {:class "col-md-9 delete-confirm delete-tab"}
@@ -157,36 +108,6 @@
                :on-click     #(delete-badge state)}
       (t :badge/Delete)]]]])
 
-#_(defn share-tab-content [{:keys [id name image_file issued_on expires_on show_evidence revoked issuer_content_name]} state init-data]
-    (let [expired? (bh/badge-expired? expires_on)
-          revoked (pos? revoked)
-          visibility (cursor state [:badge-settings :visibility])]
-      [:div {:id "badge-settings" :class "row flip"}
-       [:div {:class "col-md-3 badge-image modal-left"}
-        [:img {:src (str "/" image_file) :alt name}]]
-       [:div {:class "col-md-9 settings-content"}
-        (if (and (not expired?) (not revoked))
-          [visibility-form state init-data])
-        [:div
-         [:hr]
-         [s/share-buttons-badge
-          (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-          name
-          (= "public" @visibility)
-          true
-          (cursor state [:show-link-or-embed])
-          image_file
-          {:name     name
-           :authory  issuer_content_name
-           :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
-           :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-           :datefrom issued_on
-           :dateto   expires_on}]]
-
-        (into [:div
-               (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]
-                 [f id])])]]))
-
 (defn settings-tab-content [data state init-data]
   (let [{:keys [id name image_file issued_on expires_on show_evidence revoked rating]} data
         expired? (bh/badge-expired? expires_on)
@@ -202,31 +123,24 @@
         revoked [:div.revoked (t :badge/Revoked)]
         expired? [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))]
         (and (not revoked) (not expired?)) [:div [:div {:class "form-horizontal"}
-                                                  #_[:div.form-group
-                                                     [:fieldset {:class "col-md-9 checkbox"}
-                                                      [:legend {:class "col-md-9 sub-heading"}
-                                                       (t :badge/Rating)]
-                                                      [:div.col-md-12
-                                                       {:on-click #(save-raiting id state init-data (get-in @state [:badge-settings :rating]))}
-                                                       [r/rate-it rating (cursor state [:badge-settings :rating])]]]]
-
                                                   [:div.form-group
                                                    [:fieldset {:class "col-md-9 checkbox"}
                                                     [:legend.md-9 ""]
                                                     [:div.col-md-12 [:label {:for "show-name"}
                                                                      [:input {:type      "checkbox"
                                                                               :id        "show-name"
-                                                                              :on-change #(toggle-recipient-name state) #_(toggle-recipient-name id show-recipient-name-atom)
+                                                                              :on-change #(toggle-recipient-name state)
                                                                               :checked   @show-recipient-name-atom}]
-                                                                     (t :badge/Showyourname)]]]] [:div.form-group
-                                                                                                  [:fieldset {:class "col-md-9 checkbox"}
-                                                                                                   [:legend.col-md-9 ""]
-                                                                                                   [:div.col-md-12 [:label {:for "receive-notifications"}
-                                                                                                                    [:input {:type      "checkbox"
-                                                                                                                             :id        "receive-notifications"
-                                                                                                                             :on-change #(toggle-receive-notifications badge_id notifications-atom)
-                                                                                                                             :checked   @notifications-atom}]
-                                                                                                                    (str (t :social/Getbadgenotifications) #_(t :social/Followbadge))]]]]
+                                                                     (t :badge/Showyourname)]]]]
+                                                  [:div.form-group
+                                                   [:fieldset {:class "col-md-9 checkbox"}
+                                                    [:legend.col-md-9 ""]
+                                                    [:div.col-md-12 [:label {:for "receive-notifications"}
+                                                                     [:input {:type      "checkbox"
+                                                                              :id        "receive-notifications"
+                                                                              :on-change #(toggle-receive-notifications badge_id notifications-atom)
+                                                                              :checked   @notifications-atom}]
+                                                                     (str (t :social/Getbadgenotifications))]]]]
                                                   [:div
                                                    [:div {:class "row"}
                                                     [:label {:class "col-md-12 sub-heading" :for "newtags"}

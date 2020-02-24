@@ -74,16 +74,23 @@
          (if (nil? (schema/check g/GalleryBadges b))
            b
            (do
-             (log/error (str "Gallery Badge Error: ") (into (sorted-map) (assoc (schema/check g/GalleryBadges b) :badge_id (:badge_id b))))
+             (log/error (str "Gallery Badge Errgallery_idsor: ") (into (sorted-map) (assoc (schema/check g/GalleryBadges b) :badge_id (:badge_id b))))
              nil)))
        badges))
+
+(defn selfie-checker [ctx gallery-ids badges]
+ (let [f (first (plugin-fun (get-plugins ctx) "db" "map-badges-issuable"))
+       gallery-ids (if (seq? gallery-ids) gallery-ids (map :gallery_id badges))]
+   (if (every? empty? [badges gallery-ids])
+     badges
+     (if-not (ifn? f) badges (f ctx gallery-ids badges)))))
 
 (defn gallery-badges
   "Get badges for gallery grid"
   [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count]}]
   (let [offset (string->number page_count)
         gallery-ids (get-gallery-ids ctx tags badge-name issuer-name recipient-name)
-        badges (some->> (select-badges ctx country gallery-ids order offset) (badge-checker) (remove nil?))]
+        badges (some->> (select-badges ctx country gallery-ids order offset) (badge-checker) (remove nil?) (selfie-checker ctx gallery-ids))]
     {:badges badges
      :badge_count (badge-count (if (nil? gallery-ids)
                                  (get (select-gallery-badges-count {:country country} (get-db-1 ctx)) :total 0)

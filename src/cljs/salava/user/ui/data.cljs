@@ -58,7 +58,7 @@
                      [:p (t :user/Loginaddress) ": " [:i {:class "fa fa-check"}]])]]))]])
 
 (defn content [state]
-  (let [{location :location user_followers :user_followers user_following :user_following pending_badges :pending_badges connections :connections events :events user_files :user_files user_badges :user_badges endorsements :endorsements
+  (let [{selfies :selfies location :location user_followers :user_followers user_following :user_following pending_badges :pending_badges connections :connections events :events user_files :user_files user_badges :user_badges endorsements :endorsements
          user_pages :user_pages owner? :owner? {id :id first_name :first_name last_name :last_name profile_picture :profile_picture about :about role :role language :language
                                                 private :private activated? :activated country :country
                                                 email_notifications :email_notifications
@@ -146,7 +146,8 @@
           (email-address-table-mobile email)]
 
          [:div {:class "row col-md-12 col-sm-12 col-xs-12" :style {:margin-bottom "20px"}}
-          [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")} (str (t :badge/Mybadges) ": ") (count user_badges)]]
+          [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")}
+                                            (str (t :badge/Mybadges) ": " (count user_badges)) (when (seq pending_badges) (str  ", " (t :social/Pending) ": " (count pending_badges)))]]
           (when (seq user_badges)
             (doall
              (for [b user_badges]
@@ -155,107 +156,134 @@
                                                            (.preventDefault %)
                                                            (mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)}))}
                                           (:name b)]])))]
+         #_[:div {:class "row col-md-12 col-sm-12 col-xs-12"}
+            (when (seq pending_badges)
+              [:div
+               [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")} (str (t :badge/Pendingbadges) ": ") (count pending_badges)]]
+               (doall
+                (for [p pending_badges]
+                  ^{:key p} [:div {:style {:margin "10px 0"}}
+                             [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
+                             [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]]))])]
+         (when (seq selfies)
+           [:div.row.col-md-12.col-sm-12.col-xs-12
+            [:h2.uppercase-header
+             [:a {:href (path-for "/badge/selfie")}
+              (str (t :badgeIssuer/Selfiebadges) ": ") (count selfies)]]
+            (reduce (fn [r s]
+                      (conj r ^{:key s}[:div.col-xs-12 [:a {:href "#"
+                                                            :on-click #(do
+                                                                         (.preventDefault %)
+                                                                         (mo/open-modal [:selfie :preview] {:badge s}))}
+                                                          (:name s)]]))
+
+                  [:div] selfies)])
+
+         (when (seq user_pages)
+           [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
+            [:h2 {:class "uppercase-header"} [:a {:href (path-for "/profile/page")} (str (t :page/Mypages) ": ") (count user_pages)]]
+            (doall
+             (for [p user_pages]
+               ^{:key p} [:div.col-xs-12 [:a {:href "#"
+                                              :on-click #(do
+                                                           (.preventDefault %)
+                                                           (mo/open-modal [:page :view] {:page-id (:id p)}))}
+                                          (:name p)]]))])
+
+         (when (seq user_files)
+           [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
+            [:h2 {:class "uppercase-header"} [:a {:href (path-for "/profile/files")} (str (t :file/Files) ": ") (count user_files)]]
+            (doall
+             (for [f user_files]
+               ^{:key f} [:div.col-xs-12 [:a {:href  (str "/" (:path f)) :target "_blank"}
+                                          (:name f)]]))])
+
          [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
-          (when (seq pending_badges)
+          [:h1 {:class "uppercase-header" :style {:text-align "center"}} (t :user/Activity)]
+          (when (pos? connections)
             [:div
-             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")} (str (t :badge/Pendingbadges) ": ") (count pending_badges)]]
-             (doall
-              (for [p pending_badges]
-                ^{:key p} [:div
-                           [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
-                           [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]]))])] (when (seq user_pages)
-                                                                                                           [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
-                                                                                                            [:h2 {:class "uppercase-header"} [:a {:href (path-for "/profile/page")} (str (t :page/Mypages) ": ") (count user_pages)]]
-                                                                                                            (doall
-                                                                                                             (for [p user_pages]
-                                                                                                               ^{:key p} [:div.col-xs-12 [:a {:href "#"
-                                                                                                                                              :on-click #(do
-                                                                                                                                                           (.preventDefault %)
-                                                                                                                                                           (mo/open-modal [:page :view] {:page-id (:id p)}))}
-                                                                                                                                          (:name p)]]))]) (when (seq user_files)
-                                                                                                                                                            [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
-                                                                                                                                                             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/profile/files")} (str (t :file/Files) ": ") (count user_files)]]
-                                                                                                                                                             (doall
-                                                                                                                                                              (for [f user_files]
-                                                                                                                                                                ^{:key f} [:div.col-xs-12 [:a {:href  (str "/" (:path f)) :target "_blank"}
-                                                                                                                                                                                           (:name f)]]))]) [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
-                                                                                                                                                                                                            [:h1 {:class "uppercase-header" :style {:text-align "center"}} (t :user/Activity)]
-                                                                                                                                                                                                            (when (pos? connections)
-                                                                                                                                                                                                              [:div
-                                                                                                                                                                                                               [:h2 {:class "uppercase-header"} [:a {:href (path-for "/connections/badge") :on-click #(session/put! :visible-area :badges)} (str (t :user/Badgeconnections) ": ")  connections]]])
-                                                                                                                                                                                                            (when (pos? endorsements)
-                                                                                                                                                                                                              [:div
-                                                                                                                                                                                                               [:h2 {:class "uppercase-header"} [:a {:href (path-for "/connections/endorsement")} (str (t :badge/Myendorsements) ": ")  endorsements]]])
-                                                                                                                                                                                                            (when (or (seq user_following) (seq user_followers))
-                                                                                                                                                                                                              [:div
-                                                                                                                                                                                                               [:h2 {:class "uppercase-header"} (str (t :user/Socialconnections) ": ") (+ (count user_followers) (count user_following))]
-                                                                                                                                                                                                               (when (seq user_followers)
-                                                                                                                                                                                                                 [:div
-                                                                                                                                                                                                                  [:h3 (str (t :social/Followersusers) ": ")]
-                                                                                                                                                                                                                  (for [follower user_followers
-                                                                                                                                                                                                                        :let [id (:owner_id follower)
-                                                                                                                                                                                                                              fname (:first_name follower)
-                                                                                                                                                                                                                              lname (:last_name follower)
-                                                                                                                                                                                                                              status (:status follower)]]
-                                                                                                                                                                                                                    ^{:key follower} [:div
-                                                                                                                                                                                                                                      [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"} [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id (:owner_id follower)})} (str (:first_name follower) " " (:last_name follower))] ", " [:b (str (t :user/Status) ": ")] (t (keyword (str "social/" (:status follower))))]]
-                                                                                                                                                                                                                                      #_[:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (t (keyword (str "social/" (:status follower))))]])
+             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/connections/badge") :on-click #(session/put! :visible-area :badges)} (str (t :user/Badgeconnections) ": ")  connections]]])
+          (when (pos? endorsements)
+            [:div
+             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/connections/endorsement")} (str (t :badge/Myendorsements) ": ")  endorsements]]])
+          (when (or (seq user_following) (seq user_followers))
+            [:div
+             [:h2 {:class "uppercase-header"} (str (t :user/Socialconnections) ": ") (+ (count user_followers) (count user_following))]
+             (when (seq user_followers)
+               [:div
+                [:h3 (str (t :social/Followersusers) ": ")]
+                (for [follower user_followers
+                      :let [id (:owner_id follower)
+                            fname (:first_name follower)
+                            lname (:last_name follower)
+                            status (:status follower)]]
+                  ^{:key follower} [:div
+                                    [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"} [:b (str (t :badge/Name) ": ")] [:a {:href "#"
+                                                                                                                                               :on-click #(mo/open-modal [:profile :view] {:user-id (:owner_id follower)})} (str (:first_name follower) " " (:last_name follower))] ", " [:b (str (t :user/Status) ": ")] (t (keyword (str "social/" (:status follower))))]]
+                                    #_[:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (t (keyword (str "social/" (:status follower))))]])
 
-                                                                                                                                                                                                                  [:br]])
+                [:br]])
 
-                                                                                                                                                                                                               (when (seq user_following)
-                                                                                                                                                                                                                 [:div
-                                                                                                                                                                                                                  [:h3 (str (t :social/Followedusers) ": ")]
-                                                                                                                                                                                                                  (for [f user_following
-                                                                                                                                                                                                                        :let [fid (:user_id f)
-                                                                                                                                                                                                                              fname (:first_name f)
-                                                                                                                                                                                                                              lname (:last_name f)
-                                                                                                                                                                                                                              status (:status f)]]
-                                                                                                                                                                                                                    ^{:key f} [:div
-                                                                                                                                                                                                                               [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"}  [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f))] ", " [:b (str (t :user/Status) ": ")] (t (keyword (str "social/" (:status f))))]]])])]) (when (seq events)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              [:div.th-align
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               [:h2 {:class "uppercase-header"} (str (t :user/Activityhistory) ": ") (count events)]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               [:table.table
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                [:thead
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 [:tr
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  [:th (t :social/Action)]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  [:th (t :social/Object)]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  [:th (t :badge/Name)]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  [:th (t :social/Created)]]]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                [:tbody
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 (doall
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  (for [e (->> (reverse events) (remove #(= "-" (:info %))))]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ^{:key e} [:tr
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               [:td [:div (t (keyword (str "social/" (:verb e))))]]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               [:td [:div (case (:type e)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "page" (t :social/Emailpage)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "badge" (t :social/Emailbadge)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "user" (lower-case (t :social/User))
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "admin" (lower-case (t :admin/Admin))
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "-")]]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               [:td [:div (case (str (:verb e) (:type e))
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "publishpage"  (or (get-in e [:info :object_name]) "-")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "unpublishpage" (or (get-in e [:info :object_name]) "-")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "publishbadge" (or (get-in e [:info :object_name]) "-")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "unpublishbadge" (or (get-in e [:info :object_name]) "-")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "messagebadge" [:div {:style {:max-width "550px"}}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            (or (get-in e [:info :object_name]) "-") "\n"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            [:br] [:br]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            [:p [:i (or (get-in e [:info :message :message]) "comment-removed")]]]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "congratulatebadge" (or (get-in e [:info :object_name]) "-")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "followbadge" (or (get-in e [:info :object_name]) "-")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "followuser" (or (get-in e [:info :object_name]) "-")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "ticketadmin" (or (get-in e [:info :object_name]) "-")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "request_endorsementbadge" [:div {:style {:max-width "550px"}}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        (or (get-in e [:info :object_name]) "-") "\n"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        [:br] [:br]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        [:div {:dangerouslySetInnerHTML {:__html (or (get-in e [:info :content]) "-")}  :style {:font-style "italic"}}]]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "endorse_badgebadge" [:div {:style {:max-width "550px"}}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  (or (get-in e [:info :object_name]) "-") "\n"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  [:br] [:br]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  [:div {:dangerouslySetInnerHTML {:__html (or (get-in e [:info :content]) "-")}  :style {:font-style "italic"}}]]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "-")]]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]))]]])]]])]))
+             (when (seq user_following)
+               [:div
+                [:h3 (str (t :social/Followedusers) ": ")]
+                (for [f user_following
+                      :let [fid (:user_id f)
+                            fname (:first_name f)
+                            lname (:last_name f)
+                            status (:status f)]]
+                  ^{:key f} [:div
+                             [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"}  [:b (str (t :badge/Name) ": ")] [:a {:href "#"
+                                                                                                                                         :on-click #(mo/open-modal [:profile :view] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f))] ", " [:b (str (t :user/Status) ": ")] (t (keyword (str "social/" (:status f))))]]])])])
+
+          (when (seq events)
+            [:div.th-align
+             [:h2 {:class "uppercase-header"} (str (t :user/Activityhistory) ": ") (count events)]
+             [:table.table
+              [:thead
+               [:tr
+                [:th (t :social/Action)]
+                [:th (t :social/Object)]
+                [:th (t :badge/Name)]
+                [:th (t :social/Created)]]]
+              [:tbody
+               (doall
+                (for [e (->> (reverse events) (remove #(= "-" (:info %))))]
+                  ^{:key e} [:tr
+                             [:td [:div (t (keyword (str "social/" (:verb e))))]]
+                             [:td [:div (case (:type e)
+                                          "page" (t :social/Emailpage)
+                                          "badge" (t :social/Emailbadge)
+                                          "user" (lower-case (t :social/User))
+                                          "admin" (lower-case (t :admin/Admin))
+                                          "selfie" (lower-case (t :badgeIssuer/Selfie))
+                                          "-")]]
+                             [:td [:div (case (str (:verb e) (:type e))
+                                          "publishpage"  (or (get-in e [:info :object_name]) "-")
+                                          "unpublishpage" (or (get-in e [:info :object_name]) "-")
+                                          "publishbadge" (or (get-in e [:info :object_name]) "-")
+                                          "unpublishbadge" (or (get-in e [:info :object_name]) "-")
+                                          "messagebadge" [:div {:style {:max-width "550px"}}
+                                                          (or (get-in e [:info :object_name]) "-") "\n"
+                                                          [:br] [:br]
+                                                          [:p [:i (or (get-in e [:info :message :message]) "comment-removed")]]]
+                                          "congratulatebadge" (or (get-in e [:info :object_name]) "-")
+                                          "followbadge" (or (get-in e [:info :object_name]) "-")
+                                          "followuser" (or (get-in e [:info :object_name]) "-")
+                                          "ticketadmin" (or (get-in e [:info :object_name]) "-")
+                                          "request_endorsementbadge" [:div {:style {:max-width "550px"}}
+                                                                      (or (get-in e [:info :object_name]) "-") "\n"
+                                                                      [:br] [:br]
+                                                                      [:div {:dangerouslySetInnerHTML {:__html (or (get-in e [:info :content]) "-")}  :style {:font-style "italic"}}]]
+                                          "endorse_badgebadge" [:div {:style {:max-width "550px"}}
+                                                                (or (get-in e [:info :object_name]) "-") "\n"
+                                                                [:br] [:br]
+                                                                [:div {:dangerouslySetInnerHTML {:__html (or (get-in e [:info :content]) "-")}  :style {:font-style "italic"}}]]
+                                          "issueselfie" (or (get-in e [:info :object_name]) "-")
+                                          "createselfie" (or (get-in e [:info :object_name]) "-")
+                                          "modifyselfie" (or (get-in e [:info :object_name]) "-")
+                                          "-")]]
+                             [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]))]]])]]])]))
 
 (defn init-data [user-id state]
   (ajax/GET

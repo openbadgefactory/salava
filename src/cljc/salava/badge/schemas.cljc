@@ -8,7 +8,7 @@
 
 (defn either [s1 s2]
   #? (:clj (s/either s1 s2)
-           :cljs (s/cond-pre s1 s2)))
+      :cljs (s/cond-pre s1 s2)))
 
 (s/defschema user-badge-p {:id                                   (describe s/Int "internal user-badge id")
                            :name                                 s/Str
@@ -36,6 +36,7 @@
                                    (s/optional-key :assertion-jws)              (s/maybe s/Str)
                                    (s/optional-key :new_message_count)          (s/maybe s/Int)
                                    (s/optional-key :gallery_id)                 (s/maybe s/Int)
+                                   (s/optional-key :badge_id)                   (s/maybe s/Str)
                                    (s/optional-key :status)                     (describe (s/maybe (s/enum "pending" "accepted" "declined")) "internal user-badge acceptance status"))))
 
 (s/defschema user-badges {:badges [user-badge]})

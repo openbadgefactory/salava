@@ -182,3 +182,9 @@ ALTER TABLE social_event MODIFY COLUMN verb enum('message','follow','publish','d
 
 --name: hide-user-events-all!
 UPDATE social_event_owners SET hidden = 1 WHERE owner = :user_id
+
+--name: modify-social-event-table-selfie!
+--modify social event table change columns verb and type to varchar
+ALTER TABLE social_event
+  MODIFY COLUMN verb varchar(255) DEFAULT NULL,
+  MODIFY COLUMN type varchar(255) DEFAULT NULL;

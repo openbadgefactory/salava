@@ -36,6 +36,11 @@
  (let [{:keys [user_badge_id name content]} (select-endorsement-event-info-by-endorsement-id {:id endorsement-id} (into {:result-set-fn first} (util/get-db ctx)))]
   (if (and user_badge_id name content) {:object_name name :content (if md? (util/md->html content) content) :badge_id user_badge_id} nil)))
 
+(defn- create-selfie-event-map [ctx selfie_id user-id]
+  (let [f (first (util/plugin-fun (util/get-plugins ctx) "db" "user-selfie-badge"))
+        selfie (if (ifn? f) (some->> (f ctx user-id selfie_id) first) {})]
+    {:object_name (:name selfie) :selfie_id selfie_id}))
+
 (defn events-helper [ctx event user-id md?]
   (let [badge-info (select-multi-language-badge-content {:id (:object event)} (util/get-db ctx))
         badge-id (select-user-badge-id-by-badge-id-and-user-id {:id (:id event)} (util/get-db ctx))
@@ -46,6 +51,7 @@
         page-info (p/page-with-blocks ctx (:object event))
         request-info (when (= "request_endorsement" (:verb event)) (request-event-map ctx (:object event) user-id md?))
         endorsement-info (when (= "endorse_badge" (:verb event)) (endorsement-event-map ctx (:object event) user-id md?))]
+
     (cond
       (and (= (:verb event) "follow") (= (:type event) "badge")) {:object_name (:name (first badge-info)) :badge_id (:id badge-id)}
       (and (= (:verb event) "follow") (= (:type event) "user")) {:object_name (str (:first_name user-info) " " (:last_name user-info)) :id (:object event)}
@@ -57,6 +63,9 @@
       (and (= (:verb event) "unpublish") (= (:type event) "page")) {:object_name (:name page-info) :page_id (:id page-info)}
       (and (= (:verb event) "request_endorsement") (= (:type event) "badge")) request-info
       (and (= (:verb event) "endorse_badge") (= (:type event) "badge")) endorsement-info
+      (and (= (:verb event) "issue") (= (:type event) "selfie")) {:object_name (:name (first (:content user-badge-info))) :badge_id (:object event)}
+      (and (= (:verb event) "create") (= (:type event) "selfie")) (create-selfie-event-map ctx (:object event) user-id)
+      (and (= (:verb event) "modify") (= (:type event) "selfie")) (create-selfie-event-map ctx (:object event) user-id)
       :else nil)))
 
 
@@ -76,7 +85,10 @@
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) nil)
          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
          user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) nil)
-         user-location (-> (select-user-location {:user current-user-id} (into {:result-set-fn first} (util/get-db ctx))))]
+         user-location (-> (select-user-location {:user current-user-id} (into {:result-set-fn first} (util/get-db ctx))))
+         selfie-badges (as-> (first (util/plugin-fun (util/get-plugins ctx) "db" "user-selfie-badges")) $
+                             (if (ifn? $) ($ ctx user-id)))]
+
      (assoc (replace-nils (assoc all-user-info
                             :emails email-addresses
                             :user_badges user-badges
@@ -88,7 +100,8 @@
                             :pending_badges pending-badges
                             :user_followers user-followers
                             :user_following user-following
-                            :location user-location))
+                            :location user-location
+                            :selfies selfie-badges))
             :events events)))
 
   ([ctx user-id current-user-id _]
@@ -97,7 +110,7 @@
          user-badges (map (fn [b]
                             {:id (:id b)
                              :badge_id (:badge_id b)
-                             :name (:name b)})(b/user-badges-all ctx current-user-id))
+                             :name (:name b)})(some->> (b/user-badges-all ctx current-user-id) :badges))
          pending-badges (map (fn [pb]
                                {:name (:name pb)
                                 :description (:description pb)}) (b/user-badges-pending ctx user-id))
@@ -115,8 +128,17 @@
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) ())
          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
          user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) ())
-         user-location (-> (select-user-location {:user current-user-id} (into {:result-set-fn first} (util/get-db ctx))))]
-
+         user-location (-> (select-user-location {:user current-user-id} (into {:result-set-fn first} (util/get-db ctx))))
+         selfie-badges (as-> (first (util/plugin-fun (util/get-plugins ctx) "db" "user-selfie-badges")) $
+                             (if (ifn? $)
+                                (some->> ($ ctx user-id)
+                                     (map (fn [s] {:id (:id s)
+                                                   :name (:name s)
+                                                   :image (:image s)
+                                                   :description (:description s)
+                                                   :criteria (:criteria_html s)
+                                                   :tags (or (:tags s) [])})))
+                                []))]
      (replace-nils (assoc all-user-info
                      :emails email-addresses
                      :user_badges user-badges
@@ -128,7 +150,8 @@
                      :user_followers user-followers
                      :user_following user-following
                      :endorsements endorsements
-                     :location user-location)))))
+                     :location user-location
+                     :selfies selfie-badges)))))
 
 
 (defn strip-html-tags [s]
@@ -356,6 +379,27 @@
                                                 [:chunk.chunk (str (t :badge/Issuedon ul) ": ")] [:chunk (if (number? (:issued_on pb)) (str (date-from-unix-time (long (* 1000 (:issued_on pb))) "date") ", ") (str (:issued_on pb) ", "))]
                                                 [:chunk.chunk (str (t :badge/Expireson ul) ": ")] [:chunk (if (number? (:expires_on pb)) (str (date-from-unix-time (long (* 1000 (:expires_on pb))) "date") ", ") (str (:expires_on pb) ", "))]]))])])
 
+        selfie-template (pdf/template
+                         [:paragraph.generic
+                          (when (seq $selfies)
+                            [:paragraph
+                             [:heading.heading-name (t :badgeIssuer/Selfiebadges ul)]
+                             [:spacer]
+                             (into [:paragraph]
+                                   (for [s $selfies]
+                                     [:paragraph
+                                      [:chunk.chunk (str (t :badge/BadgeID ul) ": ")] [:chunk (str (:id s))] "\n"
+                                      [:chunk.chunk (str (t :badge/Name ul) ": ")] [:chunk (str (:name s))]"\n"
+                                      [:chunk.chunk (str (t :page/Description ul) ": ")] [:chunk  (str (:description s))]"\n"
+                                      [:chunk.chunk (str (t :badge/Imagefile ul) ": ")] [:anchor {:target (str site-url "/" (:image s))} [:chunk.link (str site-url "/" (:image s)) ]]"\n"
+                                      [:paragraph
+                                       [:chunk.chunk (str (t :badge/Criteria ul) ": ")][:paragraph (str  (:criteria s))]] ;(process-markdown (:criteria s) (:id s) "Selfie badges")]"\n"]
+                                      (when (seq (:tags s))
+                                        [:phrase
+                                         [:chunk.chunk (str (t :badge/Tags ul) ": ")] [:chunk (join ", " (:tags s))]"\n"])
+                                      [:chunk.chunk (str (t :badgeIssuer/Issuableselfiebadge ul) ": ")] [:chunk (str (:issuable_from_gallery s))]
+                                      [:spacer 1]]))])])
+
         page-template (pdf/template
                         [:paragraph.generic
                          (when-not (empty? $user_pages)
@@ -530,6 +574,7 @@
                                                                 (= "badge" (:type e)) (t :social/Emailbadge ul)
                                                                 (= "user" (:type e)) (lower-case (t :social/User ul))
                                                                 (= "admin" (:type e)) (lower-case (t :admin/Admin ul))
+                                                                (= "selfie" (:type e)) (lower-case (t :badgeIssuer/Selfie ul))
                                                                 :else "-"))]
                                                            [:cell (if (number? (:ctime e))(date-from-unix-time (long (* 1000 (:ctime e))) "date") (:ctime e))]])))])]
 
@@ -540,6 +585,7 @@
                                             (profile-template user-data)
                                             (badge-template user-data)
                                             (pending-badges-template user-data)
+                                            (selfie-template user-data)
                                             (page-template user-data)
                                             (user-connections-template user-data)
                                             (badge-connections-template user-data)

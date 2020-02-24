@@ -137,6 +137,30 @@
        [:div.media-body
         (t :social/Youstartedfollowbadge)]]]]))
 
+(defn selfie-issue-event [event state]
+  (let [{:keys [event_id subject verb image_file ctime event_id name object first_name last_name profile_picture badge_id]}  event]
+    [:div.media.message-item.tips
+     (hide-event event_id state)
+     [:div.media-left
+
+      [:a {:href "#"
+            :on-click #(do
+                         (mo/open-modal [:profile :view] {:user-id subject})
+                         (.preventDefault %))}
+        [:img {:src (profile-picture profile_picture) :alt ""}]]]
+
+     [:div.media-body
+      [:div.date (date-from-unix-time (* 1000 ctime) "days")]
+      [:i {:class "fa fa-paper-plane fa-lg"}]
+      [:div.content-text
+       [:p.media-heading (str first_name " " last_name  " " (t :badgeIssuer/Hasissuedselfie) " " name)]
+       [:div.media 
+        [:span.pull-left
+         [:img {:class "message-profile-img" :src (str "/" image_file) :alt ""}]]
+        [:div {:class "media-body"}
+         [:p {:class " h4"}
+          [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})} (str first_name " " last_name)]]]]]]]))
+
 (defn badge-advert-event [event state]
   (let [{:keys [subject verb image_file ctime event_id name object issuer_content_id issuer_content_name issuer_image]} event
         visibility (if issuer_image "visible" "hidden")]
@@ -434,6 +458,7 @@
                (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
                (= "advert" (:type event)) (badge-advert-event event state)
                (= "message" (:verb event)) [message-event event state]
+               (and (= "selfie" (:type event)) (= "issue" (:verb event))) (selfie-issue-event event state)
                :else "")))]))
 
 (defn handler [site-navi]

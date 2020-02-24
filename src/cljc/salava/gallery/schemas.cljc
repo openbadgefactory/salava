@@ -42,7 +42,8 @@
                             :image_file          s/Str
                             :issuer_content_name s/Str
                             :name                s/Str
-                            :recipients          s/Int})
+                            :recipients          s/Int
+                            (s/optional-key :selfie_id) (s/maybe s/Str)})
 
 
 #_(s/defschema Badgesgallery {:badge_count s/Int
