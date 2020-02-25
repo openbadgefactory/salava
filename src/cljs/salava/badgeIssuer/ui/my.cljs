@@ -54,8 +54,8 @@
         selected-users (cursor state [:selected-users])]
     [:div.media.grid-container
      [:div.media-content
-      (when issuable_from_gallery
-        [:span.inline-block.pull-right {:title (t :badgeIssuer/Issuableselfiebadge) :aria-label (t :badgeIssuer/Issuableselfiebadge)} [:i.fa.fa-paper-plane]])
+      #_(when issuable_from_gallery
+          [:span.inline-block.pull-right {:title (t :badgeIssuer/Issuableselfiebadge) :aria-label (t :badgeIssuer/Issuableselfiebadge)} [:i.fa.fa-paper-plane]])
       [:a {:href "#"
            :on-click #(do
                         (.preventDefault %)

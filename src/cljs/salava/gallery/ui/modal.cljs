@@ -43,9 +43,9 @@
                    (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])
 
         (when-not @show-messages (bm/badge-endorsement-modal-link badge_id endorsement_count))
-        (into [:div]
-            (for [f (plugin-fun (session/get :plugins) "block" "issue_badge_link")]
-              [f gallery_id]))]
+        #_(into [:div]
+              (for [f (plugin-fun (session/get :plugins) "block" "issue_badge_link")]
+                [f gallery_id]))]
 
        [:div {:class "col-md-9 badge-info"}
         (if @show-messages
@@ -58,7 +58,7 @@
             (if (< 1 (count content))
               [:div.inline [:span._label (t :core/Languages) ": "] (content-language-selector selected-language content)])
             (bm/issuer-modal-link issuer_content_id issuer_content_name)
-            (bm/creator-modal-link creator_content_id creator_name)
+            (when-not (= issuer_content_name creator_name) (bm/creator-modal-link creator_content_id creator_name))
             [:div.row
              [:div {:class "col-md-12 description"}
               description]]

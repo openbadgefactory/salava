@@ -190,7 +190,11 @@
       [:div.row.flip
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)
-         [:div.col-md-3])
+         (if true
+           (into [:div]
+                 (for [f (plugin-fun (session/get :plugins) "block" "selfie_stamp")]
+                   [f]))
+          [:div.col-md-3]))
        [:div.col.md-9.text-right {:style {:padding-right "10px" :margin-right "auto" :visibility visibility}}
         [follow-badge badge_id]]]
       [:div.row.flip {:style {:padding "10px"}}
@@ -256,7 +260,7 @@
         (if (< 1 (count (:content @state)))
           [:div.inline [:span._label (t :core/Languages) ": "] (content-language-selector selected-language (:content @state))])
         (issuer-modal-link issuer_content_id issuer_content_name)
-        (creator-modal-link creator_content_id creator_name)
+        (when-not (= creator_name issuer_content_name) (creator-modal-link creator_content_id creator_name))
         (if (and issued_on (> issued_on 0))
           [:div [:span._label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
         (if (and expires_on (not expired?))

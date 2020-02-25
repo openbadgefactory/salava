@@ -41,7 +41,9 @@
   {:selfie_id     s/Str
    :recipients    [s/Int]
    :expires_on    (s/maybe s/Int)
-   ;:issue_to_self s/Int
+   (s/optional-key :request_endorsement) {:comment s/Str
+                                          :selected_users [s/Int]}
+   (s/optional-key :issue_to_self) (s/enum 0 1)
    (s/optional-key :issued_from_gallery) s/Bool})
 
 #_(s/defschema recipient

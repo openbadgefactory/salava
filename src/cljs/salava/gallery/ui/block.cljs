@@ -202,7 +202,7 @@
                                             (reduce (fn [r user]
                                                       (conj r [profile-grid-element user selected-users-atom type]))
                                                     [:div.col-md-12.profilescontainer
-                                                     (when (= "endorsement" context)
+                                                     (when (or (= "endorsement_selfie" context)(= "endorsement" context))
                                                        [:div.col-md-12 {:style {:font-weight "bold"}}
                                                         [:hr.line]
                                                         [:p (t :badge/Requestendorsementmodalinfo)]
@@ -213,14 +213,15 @@
                                                         [:hr.line]
                                                         [:p (t :badgeIssuer/Issueselfiebadgeinfo)]
                                                         [:hr.line]])]
-                                                    (if (= context "endorsement")
+
+                                                    (if (or (= context "endorsement") (= context "endorsement_selfie"))
                                                      (->> @(cursor data-atom [:users])
                                                            (remove #(= (:id %) (session/get-in [:user :id])))
                                                            (filter #(every? nil? (-> % :endorsement vals))))
                                                      @(cursor data-atom [:users])))]
 
                                            [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
-                                            (when (= context "endorsement")
+                                            (when (or (= context "endorsement") (= context "endorsement_selfie"))
                                              [:button.btn.btn-primary {:on-click #(mo/previous-view)
                                                                        :disabled (empty? @selected-users-atom)}
                                                  (t :core/Continue)])

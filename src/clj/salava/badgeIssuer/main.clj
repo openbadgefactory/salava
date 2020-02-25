@@ -8,7 +8,7 @@
    [salava.badgeIssuer.creator :refer [generate-image]]
    [salava.badgeIssuer.db :as db]
    [salava.badgeIssuer.util :refer [selfie-id is-badge-issuer? badge-valid? already-issued?]]
-   [salava.core.util :refer [publish get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col]]
+   [salava.core.util :refer [publish get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col plugin-fun get-plugins]]
    [salava.profile.db :refer [user-information]]
    [salava.user.db :refer [primary-email]]
    [slingshot.slingshot :refer :all]))
@@ -72,16 +72,29 @@
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
 (defn issue-selfie-badge [ctx data user-id]
-  (let [{:keys [selfie_id recipients expires_on issued_from_gallery]} data
+  (let [{:keys [selfie_id recipients expires_on issued_from_gallery issue_to_self request_endorsement]} data
         user-id (if issued_from_gallery 0 user-id)]
     (log/info "Got badge issue request for id" recipients)
     (try+
-     (doseq [r recipients
-             :let [email (primary-email ctx r)
-                   recipient {:id r :email email}
-                   data {:selfie_id selfie_id}]]
-       (log/info "Creating assertion for " recipient)
-       (bakery/bake-assertion ctx {:id selfie_id :user-id user-id :recipient recipient :expires_on expires_on}))
+     (if (pos? issue_to_self)
+       (do
+         ;(log/info "Creating assertion for " recipient)
+         (let [recipient {:id user-id :email (primary-email ctx user-id)}
+               user-badge-id (bakery/bake-assertion ctx {:id selfie_id :user-id user-id :recipient recipient :expires_on expires_on} true)
+               request-func (first (plugin-fun (get-plugins ctx) "endorsement" "request-endorsement!"))
+               {:keys [comment selected_users]} request_endorsement]
+
+          (when (and request_endorsement (ifn? request-func))
+            (log/info "Sending endorsement requests to users " selected_users)
+            (request-func ctx user-badge-id user-id selected_users comment))))
+
+       (doseq [r recipients
+               :let [email (primary-email ctx r)
+                     recipient {:id r :email email}]]
+                    ; data {:selfie_id selfie_id}]]
+         (log/info "Creating assertion for " recipient)
+         (bakery/bake-assertion ctx {:id selfie_id :user-id user-id :recipient recipient :expires_on expires_on} false)))
+
      (log/info "Finished issuing badges")
      {:status "success"}
      (catch Object _

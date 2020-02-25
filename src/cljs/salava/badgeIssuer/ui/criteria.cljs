@@ -4,6 +4,7 @@
    [clojure.walk :refer [keywordize-keys]]
    [reagent.core :refer [atom cursor create-class]]
    [reagent.session :as session]
+   [salava.badgeIssuer.ui.helper :refer [logo]]
    [salava.core.ui.ajax-utils :as ajax]
    [salava.core.ui.helper :refer [path-for disable-background-image]]
    [salava.core.ui.layout :as layout]))
@@ -21,12 +22,12 @@
    {:handler (fn [data]
                (swap! state merge data))}))
 
-(defn logo []
-  [:div.col-md-8.col-md-offset-2 {:style {:margin "40px 0"}}
-   [:div {:class "logo-image logo-image-url img-responsive"
-          :title "OBP logo"
-          :aria-label "OBP logo"}]
-   #_[:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]])
+#_(defn logo []
+    [:div.col-md-8.col-md-offset-2 {:style {:margin "40px 0"}}
+     [:div {:class "logo-image logo-image-url img-responsive"
+            :title "OBP logo"
+            :aria-label "OBP logo"}]
+     #_[:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]])
 
 (defn content [state]
    (create-class
@@ -61,9 +62,7 @@
 
 (defn handler [site-navi params]
   (let [id (:id params)
-        ;badge_id (-> js/window .-location .-href url/url :query keywordize-keys :bid)
-        state (atom {:id id})] ;:bid badge_id})]
-
+        state (atom {:id id})] 
     (init-data id state)
     (fn []
       (layout/embed-page [content state]))))

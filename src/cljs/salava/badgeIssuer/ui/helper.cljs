@@ -52,81 +52,150 @@
                (swap! state assoc :badge data
                       :generating-image false))}))
 
-(defn bottom-navigation [step state]
+(defn md->html [md]
+  (if @editor (.previewRender (.-options @editor) md) md))
+
+
+(defn bottom-buttons [state]
   (create-class
    {:reagent-render
-    (fn [step]
-      [:div.bottom-navigation
-       [:hr.border]
-       [:div.row
-        [:div.col-md-12
-             ;;previous
-         (when (pos? @step) [:a {:href "#"
-                                 :on-click #(do
-                                              (.preventDefault %)
-                                              (reset! step (dec @step)))}
-                             [:div {:id "step-button-previous"}
-                              (t :core/Previous)]])
-             ;;preview
-         (when (and  (not @(cursor state [:in-modal])) (< @step 2))
-           [:a.btn.btn-success.btn-bulky
-            {:href "#"
-             :on-click #(do
-                          (.preventDefault %)
-                          (mo/open-modal [:selfie :preview] {:badge (assoc (:badge @state) :criteria (if @editor
-                                                                                                      (.previewRender (.-options @editor) (get-in @state [:badge :criteria] ""))
-                                                                                                      (get-in @state [:badge :criteria] "")))}))}
-            [:span  (t :badgeIssuer/Preview)]])
-
-                ;;Saveandexit
-         (when (>= @step 1)
-           [:a.btn.btn-primary.btn-bulky
-            {:href "#"
-             :on-click #(save-selfie-badge state (if @(cursor state [:in-modal])
-                                                   (fn [] (do
-                                                            (init-selfie-badge @(cursor state [:badge :id]) state)
-                                                            (reset! (cursor state [:tab]) nil)
-                                                            (reset! (cursor state [:tab-no]) 1)))
-
-                                                   (fn [] (if (pos? @(cursor state [:badge :issue_to_self]))
-                                                            (navigate-to "/badge")
-                                                            (navigate-to "/badge/selfie")))))}
-
-            (t :badgeIssuer/Saveandexit)])
-
-              ;;cancel
-         (when (not= @step 2)
-           [:a.btn.btn-danger.btn-bulky
-            {:href "#"
-             :on-click #(do
-                          (.preventDefault %)
-                          (if @(cursor state [:in-modal])
-                            (do
-                              (init-selfie-badge @(cursor state [:badge :id]) state)
-                              (reset! (cursor state [:tab]) nil)
-                              (reset! (cursor state [:tab-no]) 1))
-                            (navigate-to "/badge/selfie")))}
-            [:span (t :core/Cancel)]])
-
-               ;;save
-         #_(when (= 2 @step)
-             [:a.btn.btn-primary
-              {:href "#"
-               :on-click #(save-selfie-badge state nil)}
-              (t :badgeIssuer/Save)])
-
-                ;;next
-         (when (< @step 2)
-           [:a {:href "#"
+    (fn []
+      [:div.bottom-navigation.panel-footer
+       ;[:hr.border]
+       [:div;.row
+        [:div
+         (when (and @(cursor state [:in-modal])(:error-message @state) (not (blank? (:error-message @state))))
+            [:div
+              {:class "alert alert-danger" :role "alert"}  (:error-message @state)])
+         [:div.btn-toolbar
+           [:div.btn-group
+           ;;preview
+            (when (not @(cursor state [:in-modal]))
+              [:a.btn.btn-success.btn-bulky
+               {:href "#"
                 :on-click #(do
                              (.preventDefault %)
-                             (reset! step (inc @step))
-                             #_(if (pos? @step)
-                                 (save-selfie-badge state (fn [] (reset! step (inc @step))))
-                                 (reset! step (inc @step))))}
-            [:div.pull-right {:id "step-button"}
-             (t :core/Next)]])]]])
-    :component-did-mount (fn [] (reset! step 0))}))
+                             (mo/open-modal [:selfie :preview] {:badge (assoc (:badge @state) :criteria (md->html (get-in @state [:badge :criteria] "")) #_(if @editor
+                                                                                                                                                                                                                                                                    (.previewRender (.-options @editor) (get-in @state [:badge :criteria] ""))
+                                                                                                                                                                                                                                                                    (get-in @state [:badge :criteria] "")))}))}
+               [:span  (t :badgeIssuer/Preview)]])
+            ;;Saveandexit
+            [:a.btn.btn-primary.btn-bulky
+             {:href "#"
+              :on-click #(save-selfie-badge state (if @(cursor state [:in-modal])
+                                                    (fn [] (do
+                                                             (init-selfie-badge @(cursor state [:badge :id]) state)
+                                                             (reset! (cursor state [:tab]) nil)
+                                                             (reset! (cursor state [:tab-no]) 1)))
+
+                                                    (fn [] (if (pos? @(cursor state [:badge :issue_to_self]))
+                                                             (navigate-to "/badge")
+                                                             (navigate-to "/badge/selfie")))))}
+
+             (t :badgeIssuer/Saveandexit)]
+            ;;Saveandissue
+             ;(when (not @(cursor state [:in-modal]))
+            [:a.btn.btn-primary.btn-bulky
+             {:href "#"
+              :on-click #(save-selfie-badge state (if @(cursor state [:in-modal])
+                                                    (fn []
+                                                      (swap! state assoc :tab nil :tab-no 2))
+                                                    (fn []
+                                                      (do
+                                                       (navigate-to "/badge/selfie")
+                                                       (mo/open-modal [:selfie :view] {:badge (:badge @state) :tab 2})))))}
+             (t :badgeIssuer/Saveandissue)]
+
+
+           ;;cancel
+            [:div.btn-group
+             [:a.btn.btn-danger.btn-bulky
+               {:href "#"
+                :on-click #(do
+                             (.preventDefault %)
+                             (if @(cursor state [:in-modal])
+                               (do
+                                 (init-selfie-badge @(cursor state [:badge :id]) state)
+                                 (reset! (cursor state [:tab]) nil)
+                                 (reset! (cursor state [:tab-no]) 1))
+                               (navigate-to "/badge/selfie")))}
+               [:span (t :core/Cancel)]]]]]]]])}))
+
+#_(defn bottom-navigation [step state]
+      (create-class
+       {:reagent-render
+        (fn [step]
+          [:div.bottom-navigation
+           [:hr.border]
+           [:div.row
+            [:div.col-md-12
+                 ;;previous
+             (when (pos? @step) [:a {:href "#"
+                                     :on-click #(do
+                                                  (.preventDefault %)
+                                                  (reset! step (dec @step)))}
+                                 [:div {:id "step-button-previous"}
+                                  (t :core/Previous)]])
+                 ;;preview
+             (when (and  (not @(cursor state [:in-modal])) (< @step 2))
+               [:a.btn.btn-success.btn-bulky
+                {:href "#"
+                 :on-click #(do
+                              (.preventDefault %)
+                              (mo/open-modal [:selfie :preview] {:badge (assoc (:badge @state) :criteria (if @editor
+                                                                                                          (.previewRender (.-options @editor) (get-in @state [:badge :criteria] ""))
+                                                                                                          (get-in @state [:badge :criteria] "")))}))}
+                [:span  (t :badgeIssuer/Preview)]])
+
+                    ;;Saveandexit
+             (when (>= @step 1)
+               [:a.btn.btn-primary.btn-bulky
+                {:href "#"
+                 :on-click #(save-selfie-badge state (if @(cursor state [:in-modal])
+                                                       (fn [] (do
+                                                                (init-selfie-badge @(cursor state [:badge :id]) state)
+                                                                (reset! (cursor state [:tab]) nil)
+                                                                (reset! (cursor state [:tab-no]) 1)))
+
+                                                       (fn [] (if (pos? @(cursor state [:badge :issue_to_self]))
+                                                                (navigate-to "/badge")
+                                                                (navigate-to "/badge/selfie")))))}
+
+                (t :badgeIssuer/Saveandexit)])
+
+                  ;;cancel
+             (when (not= @step 2)
+               [:a.btn.btn-danger.btn-bulky
+                {:href "#"
+                 :on-click #(do
+                              (.preventDefault %)
+                              (if @(cursor state [:in-modal])
+                                (do
+                                  (init-selfie-badge @(cursor state [:badge :id]) state)
+                                  (reset! (cursor state [:tab]) nil)
+                                  (reset! (cursor state [:tab-no]) 1))
+                                (navigate-to "/badge/selfie")))}
+                [:span (t :core/Cancel)]])
+
+                   ;;save
+             #_(when (= 2 @step)
+                 [:a.btn.btn-primary
+                  {:href "#"
+                   :on-click #(save-selfie-badge state nil)}
+                  (t :badgeIssuer/Save)])
+
+                    ;;next
+             (when (< @step 2)
+               [:a {:href "#"
+                    :on-click #(do
+                                 (.preventDefault %)
+                                 (reset! step (inc @step))
+                                 #_(if (pos? @step)
+                                     (save-selfie-badge state (fn [] (reset! step (inc @step))))
+                                     (reset! step (inc @step))))}
+                [:div.pull-right {:id "step-button"}
+                 (t :core/Next)]])]]])
+        :component-did-mount (fn [] (reset! step 0))}))
 
 (defn badge-image [badge]
   (let [{:keys [name image]} badge]
@@ -167,3 +236,12 @@
              :on-click #(mo/open-modal [:profile :view] {:user-id id})}
          [:img.badge-img {:src (profile-picture picture) :alt ""}]
          (str first_name " " last_name)]])
+
+(defn logo []
+  [:div.col-md-8.col-md-offset-2 {:style {:margin "40px 0"}}
+   [:div {:class "logo-image logo-image-url img-responsive"
+          :title "OBP logo"
+          :aria-label "OBP logo"}]])
+
+(defn stamp []
+  [:div {:style {:width "220px"}}])

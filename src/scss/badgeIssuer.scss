@@ -1,6 +1,17 @@
 @import 'variables';
 
 #badge-creator {
+  .img-buttons {
+    margin: 20px auto;
+    text-align: center;
+    .btn {
+      margin: 10px;
+    }
+  }
+  .panel-section {
+    margin: 10px 0;
+    padding: 15px;
+  }
   .bottom-navigation {
     .btn {
       color: #FFF !important;
@@ -20,6 +31,10 @@
     img {
       padding: 5px;
       max-width: 200px;
+    }
+
+    @media (max-width: 400px) {
+      width: auto;
     }
   }
 

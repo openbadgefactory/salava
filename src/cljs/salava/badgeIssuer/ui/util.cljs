@@ -1,5 +1,6 @@
 (ns salava.badgeIssuer.ui.util
   (:require
+    [clojure.string :refer [blank?]]
     [reagent.core :refer [atom cursor create-class]]
     [reagent-modals.modals :as m]
     [reagent.session :as session]
@@ -71,13 +72,19 @@
   (reset! (cursor state [:success-alert]) false)
   (let [id @(cursor state [:badge :id])
         recipients (mapv :id @(cursor state [:selected-users]))
-        expires_on (if (nil? @(cursor state [:badge :expires_on])) nil (iso8601-to-unix-time @(cursor state [:badge :expires_on])))]
+        expires_on (if (nil? @(cursor state [:badge :expires_on])) nil (iso8601-to-unix-time @(cursor state [:badge :expires_on])))
+        request (if (and (seq  @(cursor state [:send_request_to])) (not (blank? @(cursor state [:request-comment]))))
+                    {:comment @(cursor state [:request-comment])
+                     :selected_users (mapv :id @(cursor state [:send_request_to]))}
+                  nil)]
     (ajax/POST
       (path-for (str "/obpv1/selfie/issue"))
       {:params {:selfie_id id
                 :recipients recipients
                 :expires_on expires_on
-                :issued_from_gallery (or @(cursor state [:issued_from_gallery]) false)}
+                :issued_from_gallery (or @(cursor state [:issued_from_gallery]) false)
+                :issue_to_self @(cursor state [:issue_to_self])
+                :request_endorsement request}
        :handler (fn [data]
                   (if (= "success" (:status data))
                     (do
