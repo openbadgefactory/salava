@@ -100,7 +100,7 @@
       [:i {:class "fa fa-cog fa-spin fa-2x "}]
       [:span (str (t :core/Loading) "...")]]
      [:div
-      [about-page {:heading (t :badgeIssuer/Selfiebadges) :content (t :badgeIssuer/Aboutselfiebadges)}]
+      #_[about-page {:heading (t :badgeIssuer/Selfiebadges) :content (t :badgeIssuer/Aboutselfiebadges)}]
       [grid-form state]
       (if (not-activated?)
         [not-activated-banner]
@@ -112,5 +112,6 @@
                      :tags-all true
                      :tags-selected []})]
     (init-data state)
+    (session/put! :page {:about {:heading (t :badgeIssuer/Selfiebadges) :content (t :badgeIssuer/Aboutselfiebadges)}})
     (fn []
       (layout/default site-navi [content state]))))

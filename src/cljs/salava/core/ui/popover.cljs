@@ -28,8 +28,8 @@
         link-visible (atom true)
         heading (if (blank? heading)(t :core/Aboutthispage) heading)
         style (-> {:position "absolute"
-                   :right "-20px"
-                   :top "-5px"}
+                   :right "35px"
+                   :top "125px"}
                   (merge style))]
       (fn []
         [:div

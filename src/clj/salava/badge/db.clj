@@ -45,7 +45,7 @@
 
 (defn filter-own-events [events user_id]
   (filter #(and (= user_id (:subject %)) (= "follow" (:verb %))) events))
-
+ 
 (defn get-user-badge-events
   "get users badge  message and follow events"
   [ctx user_id]

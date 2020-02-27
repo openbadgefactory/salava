@@ -11,6 +11,7 @@
    [salava.core.i18n :refer [t]]
    [salava.core.ui.helper :refer [plugin-fun js-navigate-to navigate-to]]
    [salava.core.ui.modal :as mo]
+   [salava.core.ui.popover :refer [info]]
    [salava.core.time :refer [date-from-unix-time]]
    [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]))
 
@@ -83,7 +84,8 @@
         its (cursor state [:issue_to_self])
         current-user {:id (session/get-in [:user :id])}
         request-mode (cursor state [:request-mode])
-        request (cursor state [:request-comment])]
+        request (cursor state [:request-comment])
+        visibility (cursor state [:visibility])]
    [:div {:id "badge-info" :class "row flip" :style {:margin "10px 0"}}
     [badge-image badge]
     [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
@@ -119,13 +121,54 @@
 
        [:div#badge-settings
 
+        ;;visibility
+        (when (pos? @its)
+          [:div.row
+           [:div.col-md-12
+            [:div.panel.panel-default
+             [:div.panel-heading {:style {:padding "8px"}}
+              [:div.panel-title {:style {:margin-bottom "unset" :font-size "16px"}}
+               (t :badge/Setbadgevisibility) [info {:style {:position "absolute" :right "0" :top "0"} :content (t :badge/Visibilityinfo) :placement "left"}]]]
+             [:div.panel-body {:style {:padding "15px"}}
+
+              [:div.visibility-opts-group
+               [:div.visibility-opt
+                 [:input.radio-btn {:id "private"
+                                    :type "radio"
+                                    :name "private"
+                                    :on-click #(do
+                                                 (.preventDefault %)
+                                                 (reset! visibility "private"))
+                                    :checked (= "private" @visibility)}]
+                 [:div.radio-tile
+                  [:div.icon [:i.fa.fa-lock.fa-4x]]
+                  [:label.radio-tile-label {:for "private"} (t :badge/Private)]]]
+               [:div.visibility-opt
+                 [:input.radio-btn {:id "internal"
+                                    :type "radio"
+                                    :name "internal"
+                                    :on-click #(do
+                                                 (.preventDefault %)
+                                                 (reset! visibility "internal"))
+                                    :checked (= "internal" @visibility)}]
+                 [:div.radio-tile
+                  [:div.icon [:i.fa.fa-group.fa-3x]]
+                  [:label.radio-tile-label {:for "internal"} (t :badge/Shared)]]]
+               [:div.visibility-opt
+                 [:input.radio-btn {:id "public"
+                                    :type "radio"
+                                    :name "public"
+                                    :on-click #(do
+                                                 (.preventDefault %)
+                                                 (reset! visibility "public"))
+                                    :checked (= "public" @visibility)}]
+                 [:div.radio-tile
+                  [:div.icon [:i.fa.fa-globe.fa-3x]]
+                  [:label.radio-tile-label {:for "public"} (t :badge/Public)]]]]]]]])
+
         ;;evidences
         (when (pos? @its)
           [add-evidence-block state])
-
-        ;;visibility
-        (when (pos? @its)
-          [:div])
 
         ;;endorsement-requests
         (when (pos? @its)
@@ -136,7 +179,8 @@
             [:a {:href "#"
                  :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :context "endorsement_selfie"})
                  :id "#request_endorsement"}
-             [:span [:i.fa.fa-fw.fa-hand-o-right] (t :badge/Requestendorsement)]]]]))]
+             [:span [:i.fa.fa-fw.fa-hand-o-right] (t :badge/Requestendorsement)]]
+            [:span.text-muted  [:em (str " - " (t :badgeIssuer/Optional))]]]]))]
 
        [:div.btn-toolbar {:style {:margin-top "20px"}}
         [:div.btn-group
@@ -200,13 +244,11 @@
 
          (if (seq @(cursor state [:history :data]))
            [:div#badge-stats.issuing-history
-            [:h2.uppercase-header (t :badgeIssuer/Issuinghistory)]
+            #_[:h2.uppercase-header (t :badgeIssuer/Issuinghistory)]
             [:div.panel.panel-default;.issuing-history-panel
-             ;[:div.panel-heading]
-
-             [:div.panel-heading ;{:style {:padding "5px"}}
+             [:div.panel-heading
               [:div.row
-               [:div.col-md-12 ;.panel-heading {:style {:padding "5px"}}
+               [:div.col-md-12
                 [:div.col-md-4]
                 [:div.col-md-2.hidden-header (t :badge/Issuedon)]
                 [:div.col-md-2.hidden-header (t :badge/Expireson)]
@@ -247,12 +289,12 @@
        [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 2 (:tab-no @state))) "active")}
         [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [issue-selfie-content state]  :tab-no 2)}
          [:div  [:i.nav-icon.fa.fa-paper-plane.fa-lg] (t :badgeIssuer/Issue)]]]
-       [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 4 (:tab-no @state))) "active")}
-        [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [manage-selfie-content state]  :tab-no 4)}
-         [:div  [:i.nav-icon.fa.fa-tasks.fa-lg] (t :badgeIssuer/Manage)]]]
        [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 3 (:tab-no @state))) "active")}
         [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [edit-selfie-content state]  :tab-no 3)}
          [:div  [:i.nav-icon.fa.fa-edit.fa-lg] (t :badgeIssuer/Edit)]]]
+       [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 4 (:tab-no @state))) "active")}
+        [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [manage-selfie-content state]  :tab-no 4)}
+         [:div  [:i.nav-icon.fa.fa-tasks.fa-lg] (t :badgeIssuer/History)]]]
        [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 5 (:tab-no @state))) "active")}
         [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [delete-selfie-content state] :tab-no 5)}
          [:div  [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]]]))
@@ -287,7 +329,8 @@
                      :send_request_to []
                      :request-comment ""
                      :evidence {}
-                     :all_evidence []})]
+                     :all_evidence []
+                     :visibility "private"})]
 
     (fn []
       (selfie-content state))))

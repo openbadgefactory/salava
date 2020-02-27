@@ -136,10 +136,6 @@
                        :aria-label (t :badgeIssuer/Uploadbadgeimage)}]
          [:span [:i.fa.fa-upload.fa-lg.fa-fw](t :badgeIssuer/Uploadbadgeimage)]]]]]]))
 
-
-
-
-
 (defn badge-content [state]
   (fn []
     [:div.col-md-12.panel-section
@@ -169,7 +165,6 @@
      [:div.row
       [:span._label  (t :badge/Criteria) [:span.form-required " *"]]
       [markdown-editor (cursor state [:badge :criteria])]]]))
-
 
 (defn set-badge-content [state]
   [:div
@@ -231,7 +226,7 @@
        step (cursor state [:step])]
    (init-data (:id badge) state)
    (fn []
-     [:div#badge-creator ;{:style {:margin "15px auto"}}
+     [:div#badge-creator {:style {:margin "20px"}}
       [:div.panel.panel-default
        [:div.panel-heading]
        #_(when (and (:error-message @state) (not (blank? (:error-message @state))))

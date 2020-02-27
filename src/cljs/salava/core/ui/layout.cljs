@@ -8,7 +8,8 @@
             [salava.core.ui.footer :refer [base-footer]]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.terms :refer [default-terms default-terms-fr]]))
+            [salava.core.ui.terms :refer [default-terms default-terms-fr]]
+            [salava.core.ui.popover :refer [about-page]]))
 
 (defn navi-parent [path]
   (let [path (s/replace-first (str path) (re-pattern (base-path)) "")
@@ -224,10 +225,12 @@
     [:div {:class "container"}
      (breadcrumb site-navi)]]
    [:div {:class "container main-container"}
+    (when (session/get-in [:page :about])
+       [about-page (session/get-in [:page :about])])
     [:div {:class "row flip"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
-     [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]
-   (footer site-navi)])
+     [:div {:class "col-md-10 col-sm-9" :id "content"} content]
+     (footer site-navi)]]])
 
 (defn default-no-sidebar [site-navi content]
   [:div {:role "main"}

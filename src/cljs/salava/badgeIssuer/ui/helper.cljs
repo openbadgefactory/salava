@@ -501,5 +501,6 @@
                            (swap! state assoc :tab [evidence-form state]
                                               :tab-no 2))}
 
-        (t :badge/Addnewevidence)]]
+        (t :badge/Addnewevidence)]
+       [:span.text-muted  [:em (str " - " (t :badgeIssuer/Optional))]]]
       [evidence-list ev-atom state]]]))

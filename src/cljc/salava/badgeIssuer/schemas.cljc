@@ -47,7 +47,7 @@
    (s/optional-key :request_endorsement) (s/maybe {:comment s/Str
                                                    :selected_users [s/Int]})
    (s/optional-key :evidence) (s/maybe [(assoc evidence (s/optional-key :resource_visibility) (s/maybe s/Str))])
-   (s/optional-key :visibility) (s/maybe s/Bool)
+   (s/optional-key :visibility) (s/enum "private" "public" "internal")
    (s/optional-key :issue_to_self) (s/enum 0 1)
    (s/optional-key :issued_from_gallery) s/Bool})
 

@@ -79,18 +79,17 @@
 
 (defn bake-assertion
   "Create Assertion and save badge to db"
-  [ctx data selfie?]
+  [ctx data]
   (try+
-   (let [{:keys [id user-id recipient expires_on]} data
+   (let [{:keys [id user-id recipient expires_on selfie? visibility]} data
          base-url (get-site-url ctx)
          badge  (db/user-selfie-badge ctx user-id id)
-         ;badge (assoc badge :tags (if-not (blank? (:tags badge)) (json/read-str (:tags badge)) []))
          issuedOn (now)
          r (badge-recipient ctx (:email recipient))
          initial {:user_id (:id recipient)
                   :email (:email recipient)
                   :status (if selfie? "accepted" "pending")
-                  :visibility "private"
+                  :visibility (if-not (blank? visibility) visibility "private")
                   :show_recipient_name 0
                   :rating nil
                   :ctime (now)

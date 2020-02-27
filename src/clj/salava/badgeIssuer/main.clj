@@ -72,7 +72,7 @@
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
 (defn issue-selfie-badge [ctx data user-id]
-  (let [{:keys [selfie_id recipients expires_on issued_from_gallery issue_to_self request_endorsement evidence]} data
+  (let [{:keys [selfie_id recipients expires_on issued_from_gallery issue_to_self request_endorsement evidence visibility]} data
         user-id (if issued_from_gallery 0 user-id)]
     (log/info "Got badge issue request for id" recipients)
     (try+
@@ -80,7 +80,7 @@
        (do
          (log/info "Issuing selfie badge to user-id" user-id)
          (let [recipient {:id user-id :email (primary-email ctx user-id)}
-               user-badge-id (bakery/bake-assertion ctx {:id selfie_id :user-id user-id :recipient recipient :expires_on expires_on} true)
+               user-badge-id (bakery/bake-assertion ctx {:id selfie_id :user-id user-id :recipient recipient :expires_on expires_on :selfie? true :visibility visibility})
                request-func (first (plugin-fun (get-plugins ctx) "endorsement" "request-endorsement!"))
                evidence-func (first (plugin-fun (get-plugins ctx) "evidence" "save-badge-evidence"))
                {:keys [comment selected_users]} request_endorsement]
@@ -112,7 +112,7 @@
                      recipient {:id r :email email}]]
                     ; data {:selfie_id selfie_id}]]
          (log/info "Creating assertion for " recipient)
-         (bakery/bake-assertion ctx {:id selfie_id :user-id user-id :recipient recipient :expires_on expires_on} false)))
+         (bakery/bake-assertion ctx {:id selfie_id :user-id user-id :recipient recipient :expires_on expires_on})))
 
      (log/info "Finished issuing badges")
      {:status "success"}

@@ -78,6 +78,7 @@
                      :selected_users (mapv :id @(cursor state [:send_request_to]))}
                   nil)
         evidence @(cursor state [:all_evidence])]
+
     (ajax/POST
       (path-for (str "/obpv1/selfie/issue"))
       {:params {:selfie_id id
@@ -86,7 +87,8 @@
                 :issued_from_gallery (or @(cursor state [:issued_from_gallery]) false)
                 :issue_to_self @(cursor state [:issue_to_self])
                 :request_endorsement request
-                :evidence evidence}
+                :evidence evidence
+                :visibility @(cursor state [:visibility])}
        :handler (fn [data]
                   (if (= "success" (:status data))
                     (do
