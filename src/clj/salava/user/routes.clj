@@ -39,7 +39,7 @@
             (layout/main ctx "/remote/facebook")
             (layout/main ctx "/remote/linkedin")
             (layout/main-meta ctx "/data/:id" :user)
-            (layout/main ctx "/delete-user")
+            (layout/main ctx "/delete-user/:lang")
             (layout/main ctx "/terms")
             (layout/main ctx "/registration-complete")
 

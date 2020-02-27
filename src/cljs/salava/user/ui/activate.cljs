@@ -40,7 +40,7 @@
      [:div.form-group
       [:label {:class "col-xs-4"
                :for "input-password"}
-       (t :user/Password)
+       (t :user/Newpassword)
        [:span.form-required " *"]]
       [:div.col-xs-8
        [:input {:class "form-control"
@@ -74,7 +74,7 @@
   [:div {:id "activate-account"}
    [:div {:id "narrow-panel"
           :class "panel"}
-    [:div.panel-heading [:h1 {:style {:font-size "24px"}} (t :core/Emailresetheader)]]
+    [:div.panel-heading [:h1.sectiontitle {:style {:font-size "24px"}} (t :core/Emailresetheader)]]
     [:div.panel-body
      (if (:account-activated @state)
        [:div {:class "alert alert-success"
