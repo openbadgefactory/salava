@@ -65,7 +65,7 @@
                       (reset! (cursor state [:error-message]) (t :badgeIssuer/Errormessage))
                       (m/modal! (error-msg state) {}))
                     (when (= "success" (:status data))
-                     (reset! (cursor state [:badge :id]) (:id data))
+                     (reset! (cursor state [:badge]) (:badge data))
                      (when reload-fn (reload-fn))))}))))
 
 (defn issue-selfie-badge [state reload-fn]
@@ -76,7 +76,8 @@
         request (if (and (seq  @(cursor state [:send_request_to])) (not (blank? @(cursor state [:request-comment]))))
                     {:comment @(cursor state [:request-comment])
                      :selected_users (mapv :id @(cursor state [:send_request_to]))}
-                  nil)]
+                  nil)
+        evidence @(cursor state [:all_evidence])]
     (ajax/POST
       (path-for (str "/obpv1/selfie/issue"))
       {:params {:selfie_id id
@@ -84,7 +85,8 @@
                 :expires_on expires_on
                 :issued_from_gallery (or @(cursor state [:issued_from_gallery]) false)
                 :issue_to_self @(cursor state [:issue_to_self])
-                :request_endorsement request}
+                :request_endorsement request
+                :evidence evidence}
        :handler (fn [data]
                   (if (= "success" (:status data))
                     (do

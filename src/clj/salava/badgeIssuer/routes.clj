@@ -87,7 +87,7 @@
 
             (POST "/create" []
                   :return {:status (s/enum "success" "error")
-                           :id (s/maybe s/Str)
+                           :badge schemas/initialize-badge
                            (s/optional-key :message) (s/maybe s/Str)}
                   :body [data schemas/save-selfie-badge]
                   :summary "Create new selfie badge"

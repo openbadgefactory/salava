@@ -6,10 +6,10 @@
    [reagent.session :as session]
    [salava.badgeIssuer.ui.block :as block]
    [salava.badgeIssuer.ui.creator :as creator]
-   [salava.badgeIssuer.ui.helper :refer [badge-content badge-image profile-link-inline md->html]]
+   [salava.badgeIssuer.ui.helper :refer [badge-content badge-image profile-link-inline md->html add-evidence-block]]
    [salava.badgeIssuer.ui.util :refer [toggle-setting delete-selfie-badge issue-selfie-badge issuing-history revoke-badge-content]]
    [salava.core.i18n :refer [t]]
-   [salava.core.ui.helper :refer [js-navigate-to navigate-to]]
+   [salava.core.ui.helper :refer [plugin-fun js-navigate-to navigate-to]]
    [salava.core.ui.modal :as mo]
    [salava.core.time :refer [date-from-unix-time]]
    [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]))
@@ -43,27 +43,30 @@
 (defn endorsement-request-block [state]
   (let [selected-users (cursor state [:send_request_to])
         request (cursor state [:request-comment])]
-     [:div.panel.panel-default
+     [:div.panel.panel-default.endorsement-coded-panel
       [:div.panel-heading {:style {:padding "8px"}}
-       (t :badge/Requestendorsement)
-       [:div.btn-toolbar.pull-right
-        [:div.btn-group
-         [:a
-          {:role "button"
-           :title "Edit request"
-           :aria-label "Edit request"
-           :on-click #(do (.preventDefault %)
-                          (mo/open-modal [:badge :requestendorsement] {:state state :context "endorsement_selfie"}))}
-          [:i.fa.fa-edit]]
-         [:a;.close
-          {:role "button"
-           :aria-label "Delete request"
-           :on-click #(do
-                        (.preventDefault %)
-                        (swap! state assoc :request-comment "" :send_request_to []))}
-          [:i.fa.fa-trash]]]]]
+       [:div.panel-title {:style {:margin-bottom "unset"}}
+        [:span.label.endorsement-draft (t :badgeIssuer/Endorsementrequestdraft)]
+        [:p {:style {:margin "unset"}} (t :badgeIssuer/Requestendorsementinfo)]]]
+      [:div;.btn-toolbar.pull-right
+       [:div;.btn-group
+        [:button.close.panel-edit
+         {:role "button"
+          :title (t :badgeIssuer/Editrequest)
+          :aria-label (t :badgeIssuer/Editrequest)
+          :on-click #(do (.preventDefault %)
+                         (mo/open-modal [:badge :requestendorsement] {:state state :context "endorsement_selfie"}))}
+         [:i.fa.fa-edit.edit-evidence]]
+        [:button.close;.close
+         {:role "button"
+          :aria-label (t :badgeIssuer/Deleterequestdraft)
+          :title (t :badgeIssuer/Deleterequestdraft)
+          :on-click #(do
+                       (.preventDefault %)
+                       (swap! state assoc :request-comment "" :send_request_to []))}
+         [:i.fa.fa-trash]]]]
       [:div.panel-body {:style {:padding "10px"}}
-       [:p {:style {:margin "unset"}} (t :badgeIssuer/Requestendorsementinfo)]
+
        (reduce (fn [r u]
                  (let [{:keys [id first_name last_name profile_picture]} u]
                    (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
@@ -80,8 +83,7 @@
         its (cursor state [:issue_to_self])
         current-user {:id (session/get-in [:user :id])}
         request-mode (cursor state [:request-mode])
-        request (cursor state [:request-comment])
-        hand-icon (if @request-mode "fa-hand-o-down" "fa-hand-o-right")]
+        request (cursor state [:request-comment])]
    [:div {:id "badge-info" :class "row flip" :style {:margin "10px 0"}}
     [badge-image badge]
     [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
@@ -115,24 +117,28 @@
                     :checked   @its}]
            (str (t :badgeIssuer/Issuetoself))]]]]
 
-       ;;evidences
+       [:div#badge-settings
 
-       ;;visibility
-       (when (pos? @its)
-         [:div])
+        ;;evidences
+        (when (pos? @its)
+          [add-evidence-block state])
 
-       ;;endorsement-requests
-       (when (pos? @its)
-        (if (and (seq @(cursor state [:send_request_to])) (not (blank? request)))
-         [endorsement-request-block state]
-         [:div
-          [:div.request-link {:id "endorsebadge" :style {:margin "10px 0"}}
-           [:a {:href "#"
-                :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :context "endorsement_selfie"})
-                :id "#request_endorsement"}
-            [:span [:i {:class (str "fa fa-fw " hand-icon)}] (t :badge/Requestendorsement)]]]]))
+        ;;visibility
+        (when (pos? @its)
+          [:div])
 
-       [:div.btn-toolbar
+        ;;endorsement-requests
+        (when (pos? @its)
+         (if (and (seq @(cursor state [:send_request_to])) (not (blank? request)))
+          [endorsement-request-block state]
+          [:div
+           [:div.request-link {:id "endorsebadge" :style {:margin "10px 0"}}
+            [:a {:href "#"
+                 :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :context "endorsement_selfie"})
+                 :id "#request_endorsement"}
+             [:span [:i.fa.fa-fw.fa-hand-o-right] (t :badge/Requestendorsement)]]]]))]
+
+       [:div.btn-toolbar {:style {:margin-top "20px"}}
         [:div.btn-group
          (when (pos? @its)
            [:button.btn.btn-primary.btn-bulky
@@ -278,7 +284,11 @@
                      :in-modal true
                      :issue_to_self 0
                      :success-alert false
-                     :send_request_to []})]
+                     :send_request_to []
+                     :request-comment ""
+                     :evidence {}
+                     :all_evidence []})]
+
     (fn []
       (selfie-content state))))
 
@@ -294,6 +304,7 @@
                        :in-modal true
                        :selected-users []
                        :request-comment ""})]
+
       (fn []
         (issue-selfie-content state))))
 

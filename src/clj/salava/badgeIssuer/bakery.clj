@@ -83,8 +83,8 @@
   (try+
    (let [{:keys [id user-id recipient expires_on]} data
          base-url (get-site-url ctx)
-         badge (first (db/user-selfie-badge ctx user-id id))
-         badge (assoc badge :tags (if-not (blank? (:tags badge)) (json/read-str (:tags badge)) []))
+         badge  (db/user-selfie-badge ctx user-id id)
+         ;badge (assoc badge :tags (if-not (blank? (:tags badge)) (json/read-str (:tags badge)) []))
          issuedOn (now)
          r (badge-recipient ctx (:email recipient))
          initial {:user_id (:id recipient)

@@ -3,7 +3,7 @@
   [clojure.data.json :as json]
   [clojure.string :refer [blank?]]
   [clojure.tools.logging :as log]
-  [salava.core.util :refer [get-db file-from-url-fix get-full-path md->html]]
+  [salava.core.util :refer [get-db get-db-1 file-from-url-fix get-full-path md->html]]
   [slingshot.slingshot :refer :all]
   [yesql.core :refer [defqueries]]))
 
@@ -16,11 +16,13 @@
                                               :criteria_html (md->html (:criteria s))))))
                   []))))
 
-(defn user-selfie-badge [ctx user-id id]
-  (get-selfie-badge {:id id} (get-db ctx)))
-
 (defn selfie-badge [ctx id]
- (get-selfie-badge {:id id} (get-db ctx)))
+ (let [selfie (get-selfie-badge {:id id} (get-db-1 ctx))
+       tags (if-not (blank? (:tags selfie)) (json/read-str (:tags selfie)) [])]
+  (some-> selfie (assoc :tags tags))))
+
+(defn user-selfie-badge [ctx user-id id]
+  (selfie-badge ctx id))
 
 (defn delete-selfie-badge [ctx user-id id]
   (try+
@@ -37,7 +39,7 @@
     (delete-selfie-badges-all! {:user_id user-id} (get-db ctx))
     (catch Object _
       (log/error _))))
- 
+
 (defn map-badges-issuable [ctx gallery_ids badges]
   (let [_ (select-issuable-gallery-badges {:gallery_ids gallery_ids} (get-db ctx))]
     (->> badges
