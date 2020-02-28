@@ -292,9 +292,9 @@
   (let [block (first (plugin-fun (session/get :plugins)  "application" "latestearnablebadges"))]
     (if block [block] [:div ""])))
 
-(defn latest-gettable-badges []
-  (let [block (first (plugin-fun (session/get :plugins) "block" "latest_gettable_badges"))]
-    (if block [block] [:div ""])))
+#_(defn latest-gettable-badges []
+    (let [block (first (plugin-fun (session/get :plugins) "block" "latest_gettable_badges"))]
+      (if block [block] [:div ""])))
 
 (defn application-button [opt]
   (let [button (first (plugin-fun (session/get :plugins) "application" "button"))]
@@ -361,7 +361,7 @@
                                                              (mo/open-modal [:badge :info] {:badge-id (:id badge)} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge)}]])) ;:title (:name badge)}]]))
                        [:div {:style {:padding "5px 0"}}] badges)])
             [latest-earnable-badges]
-            [latest-gettable-badges]]
+            #_[latest-gettable-badges]]
            (when (> (get-in @state [:stats :badge_count] 0) (:published_badges_count @state))
              [:div#_profiletips {:style {:position "relative" :bottom "1px" :margin-right "10px" :padding-top "20px"}}
               [:div.tip

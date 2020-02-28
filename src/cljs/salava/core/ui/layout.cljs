@@ -53,13 +53,13 @@
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
         :key target}
-   [:a {:href target} title]])
+   [:a {:href target :on-click #(do (.preventDefault %) (session/put! :page nil))} title]])
 
 (defn navi-dropdown [{:keys [target title active items]}]
   (let [subitems (sub-navi-list (navi-parent (current-path)) items "sub-subnavi")
         subitemactive  (some :active subitems)]
     [:li {:key target}
-     [:a {:class "dropdown collapsed" :data-toggle "collapse" :data-target (str "#" (hash target))}  title]
+     [:a {:class "dropdown collapsed" :data-toggle "collapse" :data-target (str "#" (hash target)) :on-click #(do (.preventDefault %) (session/put! :page nil))}  title]
      [:ul {:id (hash target) :class (if subitemactive "collapse in side-dropdown-links" "collapse side-dropdown-links")}
       (doall (for [i subitems]
                (navi-link i)))]]))
