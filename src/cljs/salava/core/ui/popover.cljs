@@ -28,7 +28,7 @@
         link-visible (atom true)
         heading (if (blank? heading)(t :core/Aboutthispage) heading)
         style (-> {:position "absolute"
-                   :right "80px"
+                   :right "5px"
                    :top "125px"}
                   (merge style))]
       (fn []
@@ -55,5 +55,5 @@
                      :dangerouslySetInnerHTML {:__html "&times;"}}]]
             [:div
              [:h4.alert-heading heading]
-             [:hr]
+             [:hr.border]
              [:p content]]]])])))
