@@ -54,8 +54,8 @@
         selected-users (cursor state [:selected-users])]
     [:div.media.grid-container
      [:div.media-content
-      (when issuable_from_gallery
-        [:span.inline-block.pull-right {:title (t :badgeIssuer/Issuableselfiebadge) :aria-label (t :badgeIssuer/Issuableselfiebadge)} [:i.fa.fa-paper-plane]])
+      #_(when issuable_from_gallery
+          [:span.inline-block.pull-right {:title (t :badgeIssuer/Issuableselfiebadge) :aria-label (t :badgeIssuer/Issuableselfiebadge)} [:i.fa.fa-paper-plane]])
       [:a {:href "#"
            :on-click #(do
                         (.preventDefault %)
@@ -100,7 +100,7 @@
       [:i {:class "fa fa-cog fa-spin fa-2x "}]
       [:span (str (t :core/Loading) "...")]]
      [:div
-      [about-page {:heading (t :badgeIssuer/Selfiebadges) :content (t :badgeIssuer/Aboutselfiebadges)}]
+      #_[about-page {:heading (t :badgeIssuer/Selfiebadges) :content (t :badgeIssuer/Aboutselfiebadges)}]
       [grid-form state]
       (if (not-activated?)
         [not-activated-banner]
@@ -112,5 +112,6 @@
                      :tags-all true
                      :tags-selected []})]
     (init-data state)
+    (session/put! :page {:about {:heading (t :badgeIssuer/Selfiebadges) :content (t :badgeIssuer/Aboutselfiebadges)}})
     (fn []
       (layout/default site-navi [content state]))))

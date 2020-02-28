@@ -134,8 +134,8 @@
                                      [:div.media-heading name]
                                      [:div.media-issuer [:p issuer_content_name]]]]]]]
        (= "gallery" badge-type) [:div
-                                 (when-not (clojure.string/blank? selfie_id)
-                                   [:span.inline-block.pull-right {:title (t :badgeIssuer/Issuableselfiebadge) :aria-label (t :badgeIssuer/Issuableselfiebadge)} [:i.fa.fa-paper-plane]])
+                                 #_(when-not (clojure.string/blank? selfie_id)
+                                     [:span.inline-block.pull-right {:title (t :badgeIssuer/Issuableselfiebadge) :aria-label (t :badgeIssuer/Issuableselfiebadge)} [:i.fa.fa-paper-plane]])
                                  [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id gallery_id})
                                       :title name}
                                   [:div.media-content

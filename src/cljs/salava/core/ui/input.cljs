@@ -48,6 +48,7 @@
 (defn init-editor [element-id value]
   (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
                                           :toolbar simplemde-toolbar
+                                          :status false
                                           :spellChecker false
                                           :forceSync true})))
   (-> (sel1 [".CodeMirror" :textarea])

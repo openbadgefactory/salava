@@ -2,7 +2,7 @@
   (:require
    [reagent.core :refer [atom cursor create-class]]
    [reagent.session :as session]
-   [salava.badgeIssuer.ui.helper :refer [badge-image badge-content]]
+   [salava.badgeIssuer.ui.helper :refer [badge-image badge-content stamp]]
    [salava.badgeIssuer.ui.util :refer [issue-selfie-badge]]
    [salava.core.i18n :refer [t]]
    [salava.core.ui.ajax-utils :as ajax]
@@ -113,3 +113,6 @@
 (defn ^:export latest_gettable_badges []
   (let [state (atom {:badges []})]
     (latestgettablebadges state)))
+
+(defn ^:export selfie_stamp []
+  (stamp))

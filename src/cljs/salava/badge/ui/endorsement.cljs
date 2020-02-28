@@ -798,9 +798,10 @@
       :finally (fn [] (mo/previous-view))})))
 
 (defn request-endorsement [params]
-  (let [{:keys [state reload-fn]} params
+  (let [{:keys [state reload-fn context]} params
         request-comment (cursor state [:request-comment])
-        selected-users (cursor state [:selected-users])]
+        context (if (blank? context) "endorsement" context)
+        selected-users (if (blank? context) (cursor state [:selected-users]) (cursor state [:send_request_to]))]
     (reset! request-comment (t :badge/Defaultrequestbadge))
     (fn []
       [:div.col-md-12 {:id "social-tab"}
@@ -811,7 +812,7 @@
         (when (seq @selected-users)
           [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw.fa-3x]
            [:a {:href "#"
-                :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context "endorsement" :user_badge_id (:id @state)})}
+                :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state)})}
             (t :badge/Editselectedusers)]])
         (reduce (fn [r u]
                   (let [{:keys [id first_name last_name profile_picture]} u]
@@ -823,12 +824,13 @@
          (if-not (empty? @selected-users)
            [:button.btn.btn-primary {:on-click #(do
                                                   (.preventDefault %)
-                                                  (send-endorsement-request state reload-fn))
-
+                                                  (if (= context "endorsement_selfie")
+                                                    (mo/previous-view)
+                                                    (send-endorsement-request state reload-fn)))
                                      :disabled (empty? @selected-users)}
-            (t :badge/Sendrequest)]
+            (if (= context "endorsement_selfie") (t :badge/Continue) (t :badge/Sendrequest))]
            [:button.btn.btn-primary.select-users-link {:href "#"
-                                                       :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context "endorsement" :user_badge_id (:id @state)})
+                                                       :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state)})
                                                        :disabled (< (count @request-comment) 15)}
             [:i.fa.fa-users.fa-fw.fa-3x] (t :badge/Selectusers)])]]])))
 

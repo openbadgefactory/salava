@@ -8,7 +8,7 @@
    [salava.badgeIssuer.creator :refer [generate-image]]
    [salava.badgeIssuer.db :as db]
    [salava.badgeIssuer.util :refer [selfie-id is-badge-issuer? badge-valid? already-issued?]]
-   [salava.core.util :refer [publish get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col]]
+   [salava.core.util :refer [publish get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col plugin-fun get-plugins]]
    [salava.profile.db :refer [user-information]]
    [salava.user.db :refer [primary-email]]
    [slingshot.slingshot :refer :all]))
@@ -72,34 +72,87 @@
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
 (defn issue-selfie-badge [ctx data user-id]
-  (let [{:keys [selfie_id recipients expires_on issued_from_gallery]} data
+  (let [{:keys [selfie_id recipients expires_on issued_from_gallery issue_to_self request_endorsement evidence visibility]} data
         user-id (if issued_from_gallery 0 user-id)]
     (log/info "Got badge issue request for id" recipients)
     (try+
-     (doseq [r recipients
-             :let [email (primary-email ctx r)
-                   recipient {:id r :email email}
-                   data {:selfie_id selfie_id}]]
-       (log/info "Creating assertion for " recipient)
-       (bakery/bake-assertion ctx {:id selfie_id :user-id user-id :recipient recipient :expires_on expires_on}))
+     (if (pos? issue_to_self)
+       (do
+         (log/info "Issuing selfie badge to user-id" user-id)
+         (let [recipient {:id user-id :email (primary-email ctx user-id)}
+               user-badge-id (bakery/bake-assertion ctx {:id selfie_id :user-id user-id :recipient recipient :expires_on expires_on :selfie? true :visibility visibility})
+               request-func (first (plugin-fun (get-plugins ctx) "endorsement" "request-endorsement!"))
+               evidence-func (first (plugin-fun (get-plugins ctx) "evidence" "save-badge-evidence"))
+               {:keys [comment selected_users]} request_endorsement]
+
+          ;endorsement-request
+          (when (and request_endorsement (ifn? request-func))
+            (log/info "Started sending endorsement requests to users " selected_users)
+            (request-func ctx user-badge-id user-id selected_users comment)
+            (log/info "Finished sending endorsement requests"))
+
+          ;;save evidence
+          (when (and (seq evidence) (ifn? evidence-func))
+            (log/info "Started saving badge evidence")
+            (doseq [e evidence
+                    :let [evidence-data {:name (:name e)
+                                         :url (:url e)
+                                         :narrative (:narrative e)
+                                         :resource_id (get-in e [:properties :resource_id])
+                                         :resource_type (get-in e [:properties :resource_type])
+                                         :mime_type (get-in e [:properties :mime_type])}]]
+              (when (= "private" (:resource_visibility e))
+               (as-> (first (plugin-fun (get-plugins ctx) "main" "toggle-visibility!")) $
+                     (if (ifn? $) ($ ctx (get-in e [:properties :resource_id] 0) "public" user-id))))
+
+              (evidence-func ctx user-id user-badge-id evidence-data)))))
+
+       (doseq [r recipients
+               :let [email (primary-email ctx r)
+                     recipient {:id r :email email}]]
+                    ; data {:selfie_id selfie_id}]]
+         (log/info "Creating assertion for " recipient)
+         (bakery/bake-assertion ctx {:id selfie_id :user-id user-id :recipient recipient :expires_on expires_on})))
+
      (log/info "Finished issuing badges")
      {:status "success"}
      (catch Object _
        (log/error _)
        {:status "error"}))))
 
+(defn initialize
+  ([ctx user]
+   {:image (:url (generate-image ctx user))
+    :name nil
+    :criteria ""
+    :description nil
+    :tags nil
+    :issuable_from_gallery 0
+    :id nil
+    :issue_to_self 0})
+  ([ctx user id]
+   (let [selfie-badge (db/user-selfie-badge ctx (:id user) id) #_(first (db/user-selfie-badge ctx (:id user) id))
+         ifg (if (:issuable_from_gallery selfie-badge) 1 0)]
+         ;tags (if (blank? (:tags selfie-badge)) nil (json/read-str (:tags selfie-badge)))]
+     (-> selfie-badge
+         (assoc :issuable_from_gallery ifg
+                :issue_to_self 0
+                ;:tags tags
+                :criteria_html (md->html (:criteria selfie-badge)))
+         (dissoc :deleted :ctime :mtime :creator_id))))
+  ([ctx user id md?]
+   (if md?
+     (-> (initialize ctx user id)
+         (update :criteria md->html))
+     (initialize ctx user id))))
+
 (defn- get-selfie-id [ctx data user-id]
   (if (blank? (:id data))
       (selfie-id)
-      (let [we-have (-> (db/get-selfie-badge {:id (:id data)} (into {:result-set-fn first} (get-db ctx)))
+      (let [we-have (-> (db/selfie-badge ctx (:id data))
                         (select-keys [:name :image :description :criteria :tags]))
             we-got (-> data (select-keys [:name :image :description :criteria :tags]))]
-       (if (= (-> we-have (assoc :tags (if-not (blank? (:tags we-have))
-                                         (json/read-str (:tags we-have))
-                                         [])))
-              we-got)
-           (:id data)
-           (selfie-id)))))
+       (if (= we-have  we-got) (:id data) (selfie-id)))))
 
 (defn save-selfie-badge
   "Create new/edit selfie badge. Editing already issued badge clones badge content and creates new badge "
@@ -112,7 +165,6 @@
          tags (if (seq (:tags data)) (json/write-str (:tags data)) nil)
          selfie (-> data (assoc :id id :creator_id user-id :image image :tags tags)
                          (dissoc :issue_to_self))]
-
      (db/insert-selfie-badge<! selfie (get-db ctx))
      (publish ctx :create {:type "selfie"
                            :verb (if-not (blank? (:id data)) "modify" "create")
@@ -122,7 +174,8 @@
      (when (pos? (:issue_to_self data))
        (issue-selfie-badge ctx {:selfie_id id :recipients [user-id]} user-id))
 
-     {:status "success" :id id})
+     {:status "success" :badge (initialize ctx {:id user-id} id true)})
+
    (catch Object _
      (log/error (.getMessage _))
      (log/error _)
@@ -142,32 +195,6 @@
    (catch Object _
      (log/error _)
      {:status "error" :message _})))
-
-(defn initialize
-  ([ctx user]
-   {:image (:url (generate-image ctx user))
-    :name nil
-    :criteria ""
-    :description nil
-    :tags nil
-    :issuable_from_gallery 0
-    :id nil
-    :issue_to_self 0})
-  ([ctx user id]
-   (let [selfie-badge (first (db/user-selfie-badge ctx (:id user) id))
-         ifg (if (:issuable_from_gallery selfie-badge) 1 0)
-         tags (if (blank? (:tags selfie-badge)) nil (json/read-str (:tags selfie-badge)))]
-     (-> selfie-badge
-         (assoc :issuable_from_gallery ifg
-                :issue_to_self 0
-                :tags tags
-                :criteria_html (md->html (:criteria selfie-badge)))
-         (dissoc :deleted :ctime :mtime :creator_id))))
-  ([ctx user id md?]
-   (if md?
-     (-> (initialize ctx user id)
-         (update :criteria md->html))
-     (initialize ctx user id))))
 
 (defn latest-selfie-badges
   "Get 5 most recently published selfie badges"

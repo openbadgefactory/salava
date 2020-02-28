@@ -12,6 +12,7 @@
   [salava.core.ui.grid :as g]
   [salava.core.i18n :as i18n :refer [t]]
   [salava.core.ui.badge-grid :refer [badge-grid-element]]
+  [salava.core.ui.popover :refer [info]]
   [salava.user.ui.helper :refer [profile-link-inline-modal]]))
 
 (defn init-data
@@ -104,6 +105,51 @@
                                             [:div {:style {:font-size "16px"}} [:p [:b (t :badge/Youhavenobadgesyet)]]])])]]))
                    :component-will-mount (fn [] (init-data state))})))
 
+(defn visibilityform [vatom]
+ [:div.row
+  [:div.col-md-12
+   [:div.panel.panel-default
+    [:div.panel-heading {:style {:padding "8px"}}
+     [:div.panel-title {:style {:margin-bottom "unset" :font-size "16px"}}
+      (t :badge/Setbadgevisibility) [info {:style {:position "absolute" :right "0" :top "0"} :content (t :badge/Visibilityinfo) :placement "left"}]]]
+    [:div.panel-body {:style {:padding "15px"}}
+     [:div.visibility-opts-group
+      [:div.visibility-opt
+        [:input.radio-btn {:id "private"
+                           :type "radio"
+                           :name "private"
+                           :on-change #(do
+                                         (.preventDefault %)
+                                         (reset! vatom "private"))
+                           :checked (= "private" @vatom)}]
+        [:div.radio-tile
+         [:div.icon [:i.fa.fa-lock.fa-4x]]
+         [:label.radio-tile-label {:for "private"} (t :badge/Private)]]]
+      [:div.visibility-opt
+        [:input.radio-btn {:id "internal"
+                           :type "radio"
+                           :name "internal"
+                           :on-change #(do
+                                         (.preventDefault %)
+                                         (reset! vatom "internal"))
+                           :checked (= "internal" @vatom)}]
+        [:div.radio-tile
+         [:div.icon [:i.fa.fa-group.fa-3x]]
+         [:label.radio-tile-label {:for "internal"} (t :badge/Shared)]]]
+      [:div.visibility-opt
+        [:input.radio-btn {:id "public"
+                           :type "radio"
+                           :name "public"
+                           :on-change #(do
+                                         (.preventDefault %)
+                                         (reset! vatom "public"))
+                           :checked (= "public" @vatom)}]
+        [:div.radio-tile
+         [:div.icon [:i.fa.fa-globe.fa-3x]]
+         [:label.radio-tile-label {:for "public"} (t :badge/Public)]]]]]]]
+  #_[:div.col-md-12
+     [:hr.border.dotted-border]]])
+
 (defn ^:export badge_endorsements [id data]
  [endorsement-list id data])
 
@@ -118,3 +164,6 @@
 
 (defn ^:export evidence_block [data state init-data]
   [evidenceblock data state init-data])
+
+(defn ^:export badge_visibility_form [vatom]
+  [visibilityform vatom])

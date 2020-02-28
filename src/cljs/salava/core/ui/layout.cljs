@@ -8,7 +8,8 @@
             [salava.core.ui.footer :refer [base-footer]]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.terms :refer [default-terms default-terms-fr]]))
+            [salava.core.ui.terms :refer [default-terms default-terms-fr]]
+            [salava.core.ui.popover :refer [about-page]]))
 
 (defn navi-parent [path]
   (let [path (s/replace-first (str path) (re-pattern (base-path)) "")
@@ -52,13 +53,13 @@
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
         :key target}
-   [:a {:href target} title]])
+   [:a {:href target :on-click #(do (.preventDefault %) (session/put! :page nil))} title]])
 
 (defn navi-dropdown [{:keys [target title active items]}]
   (let [subitems (sub-navi-list (navi-parent (current-path)) items "sub-subnavi")
         subitemactive  (some :active subitems)]
     [:li {:key target}
-     [:a {:class "dropdown collapsed" :data-toggle "collapse" :data-target (str "#" (hash target))}  title]
+     [:a {:class "dropdown collapsed" :data-toggle "collapse" :data-target (str "#" (hash target)) :on-click #(do (.preventDefault %) (session/put! :page nil))}  title]
      [:ul {:id (hash target) :class (if subitemactive "collapse in side-dropdown-links" "collapse side-dropdown-links")}
       (doall (for [i subitems]
                (navi-link i)))]]))
@@ -225,6 +226,8 @@
     [:div {:class "container"}
      (breadcrumb site-navi)]]
    [:div {:class "container main-container"}
+    (when (session/get-in [:page :about])
+       [about-page (session/get-in [:page :about])])
     [:div {:class "row flip"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
      [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]

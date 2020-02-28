@@ -6,7 +6,7 @@
    [reagent.core :refer [atom create-class cursor]]
    [reagent-modals.modals :as m]
    [reagent.session :as session]
-   [salava.badgeIssuer.ui.helper :refer [bottom-navigation progress-wizard]]
+   [salava.badgeIssuer.ui.helper :refer [#_bottom-navigation progress-wizard bottom-buttons]]
    [salava.badgeIssuer.ui.util :refer [generate-image toggle-setting issuing-history]]
    [salava.core.ui.ajax-utils :as ajax]
    [salava.core.ui.helper :refer [path-for navigate-to current-route-path]]
@@ -72,128 +72,190 @@
                      (reset! (cursor state [:generating-image]) false))
                   (m/modal! (upload-modal data) {:hidden #(reset! (cursor state [:generating-image]) false)})))})))
 
-(defn badge-content [state]
-  (fn []
-    [:div.panel.panel-success
-     [:div.panel-heading
-      [:div.uppercase-header.text-center (t :badgeIssuer/Content)]]
-     [:div.panel-body
-      [:div.col-md-12
-       [:div]
+#_(defn add-image [state]
+      (let [{:keys [badge generating-image]} @state
+            {:keys [image name]} badge]
+        [:div.col-md-12.panel-section
+         [:p (t :badgeIssuer/Aboutselfieimage)]
+         [:div.col-md-6.text-center
+          [:div.image-container
+           (if-not @(cursor state [:generating-image])
+             (when-not (blank? image)
+              [:img {:src (if (re-find #"^data:image" image)
+                            image
+                            (str "/" image))
+                     :alt "image"}])
+             [:span.fa.fa-spin.fa-cog.fa-2x])]]
+         [:div.col-md-6.text-center
+          [:div.buttons {:style {:margin-bottom "20px"}}
+           [:button.btn.btn-primary.btn-bulky
+            {:on-click #(do
+                         (.preventDefault %)
+                         (generate-image state))
+             :aria-label (t :badgeIssuer/Generaterandomimage)}
+            [:span [:i.fa.fa-random.fa-lg]" "(t :badgeIssuer/Generaterandomimage)]]
 
-       [:form.form-horizontal
-        [:div.form-group
-         [:label {:for "input-name"} (t :badge/Name) [:span.form-required " *"]]
-         [text-field
-          {:name "name"
-           :atom (cursor state [:badge :name])
-           :placeholder (t :badgeIssuer/Inputbadgename)}]]
-
-        [:div.form-group
-         [:label {:for "input-description"} (t :page/Description) [:span.form-required " *"]]
-         [text-field
-          {:name "description"
-           :atom (cursor state [:badge :description])
-           :placeholder (t :badgeIssuer/Inputbadgedescription)}]]
-        [:div.form-group
-         [:label {:for "newtags"} (t :badge/Tags)]
-         [:div {:class "row"}
-          [:div {:class "col-md-12"}
-           [tag/tags (cursor state [:badge :tags])]]]
-         [:div {:class "form-group"}
-          [:div {:class "col-md-12"}
-           [tag/new-tag-input (cursor state [:badge :tags]) (cursor state [:badge :new-tag])]]]]]
-
-       [:div.row
-        [:span._label  (t :badge/Criteria) [:span.form-required " *"]]
-        [markdown-editor (cursor state [:badge :criteria])]]]]]))
-
+           [:div.or (t :user/or)]
+           [:span {:class "btn btn-primary btn-file btn-bulky"}
+                 [:input {:type       "file"
+                          :name       "file"
+                          :on-change  #(send-file state)
+                          :accept     "image/png"
+                          :aria-label (t :badgeIssuer/Uploadbadgeimage)}]
+            [:span [:i.fa.fa-upload.fa-lg.fa-fw](t :badgeIssuer/Uploadbadgeimage)]]]]]))
 
 (defn add-image [state]
   (let [{:keys [badge generating-image]} @state
         {:keys [image name]} badge]
-    [:div.panel.panel-success
-     [:div.panel-heading
-      [:div.uppercase-header.text-center  (t :badgeIssuer/Image)]]
-     [:div.panel-body
-      [:div.col-md-12 {:style {:margin "20px 0"}}
-       [:div.col-md-6.text-center
-        [:div.buttons {:style {:margin-bottom "20px"}}
-         [:button.btn.btn-primary.btn-bulky
-          {:on-click #(do
-                       (.preventDefault %)
-                       (generate-image state))
-           :aria-label (t :badgeIssuer/Generaterandomimage)}
-          [:span [:i.fa.fa-random.fa-lg]" "(t :badgeIssuer/Generaterandomimage)]]
+    [:div.col-md-12.panel-section
+     [:p (t :badgeIssuer/Aboutselfieimage)]
+     [:div.row.text-center {:style {:margin "15px 0"}}
+      ;[:div.col-md-9;.image-container
+       [:div.image-container
+        (if-not @(cursor state [:generating-image])
+          (when-not (blank? image)
+           [:img {:src (if (re-find #"^data:image" image)
+                         image
+                         (str "/" image))
+                  :alt "image"}])
+          [:span.fa.fa-spin.fa-cog.fa-2x])]
+      [:div.row ;col-md-3;.text-center
+       [:div.btn-group.img-buttons {:style {:margin-bottom "20px"}}
+        [:button.btn.btn-primary.btn-bulky
+         {:on-click #(do
+                      (.preventDefault %)
+                      (generate-image state))
+          :aria-label (t :badgeIssuer/Generaterandomimage)}
+         [:span [:i.fa.fa-random.fa-lg]" "(t :badgeIssuer/Generaterandomimage)]]
 
-         [:div.or (t :user/or)]
-         [:span {:class "btn btn-primary btn-file btn-bulky"}
-               [:input {:type       "file"
-                        :name       "file"
-                        :on-change  #(send-file state)
-                        :accept     "image/png"
-                        :aria-label (t :badgeIssuer/Uploadbadgeimage)}]
-          [:span [:i.fa.fa-upload.fa-lg.fa-fw](t :badgeIssuer/Uploadbadgeimage)]]]]
-       [:div.col-md-6.text-center
-        [:div.image-container
-         (if-not @(cursor state [:generating-image])
-           (when-not (blank? image)
-            [:img {:src (if (re-find #"^data:image" image)
-                          image
-                          (str "/" image))
-                   :alt "image"}])
-           [:span.fa.fa-spin.fa-cog.fa-2x])]]]]]))
+        [:span {:class "btn btn-primary btn-file btn-bulky"}
+              [:input {:type       "file"
+                       :name       "file"
+                       :on-change  #(send-file state)
+                       :accept     "image/png"
+                       :aria-label (t :badgeIssuer/Uploadbadgeimage)}]
+         [:span [:i.fa.fa-upload.fa-lg.fa-fw](t :badgeIssuer/Uploadbadgeimage)]]]]]]))
 
-(defn settings-content [state]
-  (let [{:keys [badge]} @state
-        ifg (cursor state [:badge :issuable_from_gallery])
-        its (cursor state [:badge :issue_to_self])]
-    [:div.panel.panel-success
-     [:div.panel-heading
-      [:div.uppercase-header.text-center  (t :badgeIssuer/Settings)]]
-     [:div.panel-body
-      [:div.col-md-12
-       [:div.checkbox
-        [:label {:for "ifg"}
-         [:input
-           {:type "checkbox"
-            :on-change #(toggle-setting ifg)
-            :checked  (pos? @ifg)
-            :id "ifg"}]]
-        [:span " " (t :badgeIssuer/Issuablefromgallery)]]]
+(defn badge-content [state]
+  (fn []
+    [:div.col-md-12.panel-section
+     [:form.form-horizontal
+      [:div.form-group
+       [:label {:for "input-name"} (t :badge/Name) [:span.form-required " *"]]
+       [text-field
+        {:name "name"
+         :atom (cursor state [:badge :name])
+         :placeholder (t :badgeIssuer/Inputbadgename)}]]
 
-      (when-not @(cursor state [:in-modal])
-        [:div.form-group
-         [:fieldset {:class "col-md-9 checkbox"}
-          [:legend.col-md-9 ""]
-          [:div.col-md-12 [:label {:for "its"}
-                           [:input {;:name "issuetoself"
-                                    :type      "checkbox"
-                                    :id        "its"
-                                    :on-change #(toggle-setting its)
-                                    :checked   @its}]
-                           (str (t :badgeIssuer/Issuetoself))]]]])]]))
+      [:div.form-group
+       [:label {:for "input-description"} (t :page/Description) [:span.form-required " *"]]
+       [text-field
+        {:name "description"
+         :atom (cursor state [:badge :description])
+         :placeholder (t :badgeIssuer/Inputbadgedescription)}]]
+      [:div.form-group
+       [:label {:for "newtags"} (t :badge/Tags)]
+       [:div {:class "row"}
+        [:div {:class "col-md-12"}
+         [tag/tags (cursor state [:badge :tags])]]]
+       [:div {:class "form-group"}
+        [:div {:class "col-md-12"}
+         [tag/new-tag-input (cursor state [:badge :tags]) (cursor state [:badge :new-tag])]]]]]
+
+     [:div.row
+      [:span._label  (t :badge/Criteria) [:span.form-required " *"]]
+      [markdown-editor (cursor state [:badge :criteria])]]]))
+
+(defn set-badge-content [state]
+  [:div
+   [badge-content state]])
+
+#_(defn settings-content [state]
+      (let [{:keys [badge]} @state
+            ifg (cursor state [:badge :issuable_from_gallery])
+            its (cursor state [:badge :issue_to_self])]
+        [:div.panel.panel-success
+         [:div.panel-heading
+          [:div.uppercase-header.text-center  (t :badgeIssuer/Settings)]]
+         [:div.panel-body
+          [:div.col-md-12
+           [:div.checkbox
+            [:label {:for "ifg"}
+             [:input
+               {:type "checkbox"
+                :on-change #(toggle-setting ifg)
+                :checked  (pos? @ifg)
+                :id "ifg"}]]
+            [:span " " (t :badgeIssuer/Issuablefromgallery)]]]
+
+          (when-not @(cursor state [:in-modal])
+            [:div.form-group
+             [:fieldset {:class "col-md-9 checkbox"}
+              [:legend.col-md-9 ""]
+              [:div.col-md-12 [:label {:for "its"}
+                               [:input {;:name "issuetoself"
+                                        :type      "checkbox"
+                                        :id        "its"
+                                        :on-change #(toggle-setting its)
+                                        :checked   @its}]
+                               (str (t :badgeIssuer/Issuetoself))]]]])]]))
+
+#_(defn modal-content [state]
+     (let [{:keys [badge generating-image]} @state
+           step (cursor state [:step])]
+       (init-data (:id badge) state)
+       (fn []
+         [:div#badge-creator;.col-md-12
+          [:h1.sr-only (t :badgeIssuer/Editbadge)]
+          [:div.panel
+           [progress-wizard state]
+           (when (and (:error-message @state) (not (blank? (:error-message @state))))
+             [:div
+               {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))])
+           [:div.panel-body {:style {:padding "15px"}}
+            [set-badge-content state]
+            (case @step
+             0 [add-image state]
+             1 [badge-content state]
+             2 [settings-content state]
+             [add-image state])
+            [bottom-navigation step state]]]])))
 
 (defn modal-content [state]
  (let [{:keys [badge generating-image]} @state
        step (cursor state [:step])]
    (init-data (:id badge) state)
    (fn []
-     [:div#badge-creator
-        [:h1.sr-only (t :badgeIssuer/Editbadge)]
+     [:div#badge-creator {:style {:margin "20px"}}
+      [:div.panel.panel-default
+       [:div.panel-heading]
+       #_(when (and (:error-message @state) (not (blank? (:error-message @state))))
+             [:div
+               {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))])
+       [:div.panel-body
+         [:div
+          [add-image state]
+          [:hr.border]
+          [badge-content state]]]
+       [bottom-buttons state]]])))
 
-        [:div.panel
-         [progress-wizard state]
-         (when (and (:error-message @state) (not (blank? (:error-message @state))))
-           [:div
-             {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))])
-         [:div.panel-body
-          (case @step
+#_(defn content [state]
+      (let [{:keys [badge generating-image]} @state
+            step (cursor state [:step])]
+        [:div#badge-creator
+         [m/modal-window]
+         [:h1.uppercase-header (t :badgeIssuer/Createselfiebadge)]
+         [:p (t :badgeIssuer/Aboutselfiebadges2)]
+         [:div.panel
+          [progress-wizard state]
+          [:div.panel-body
+           [set-badge-content state]
+           (case @step
             0 [add-image state]
             1 [badge-content state]
             2 [settings-content state]
             [add-image state])
-          [bottom-navigation step state]]]])))
+           [bottom-navigation step state]]]]))
 
 
 (defn content [state]
@@ -203,15 +265,15 @@
      [m/modal-window]
      [:h1.uppercase-header (t :badgeIssuer/Createselfiebadge)]
      [:p (t :badgeIssuer/Aboutselfiebadges2)]
-     [:div.panel
-      [progress-wizard state]
+     [:div.panel.panel-default
+      [:div.panel-heading]
       [:div.panel-body
-       (case @step
-         0 [add-image state]
-         1 [badge-content state]
-         2 [settings-content state]
-         [add-image state])
-       [bottom-navigation step state]]]]))
+       [:div
+        [add-image state]
+        [:hr.border]
+        [badge-content state]]]
+
+      [bottom-buttons state]]]))
 
 (defn handler [site-navi params]
   (let [id (:id params)

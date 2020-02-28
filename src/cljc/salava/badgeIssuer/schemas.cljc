@@ -3,10 +3,12 @@
             [schema.core :as s]
             [schema.coerce :as c]
             [clojure.string :refer [blank?]]
-            [compojure.api.sweet :refer [describe]])
+            [compojure.api.sweet :refer [describe]]
+            [salava.badge.schemas :refer [evidence]])
       :cljs (:require
              [schema.core :as s :include-macros true]
-             [clojure.string :refer [blank?]])))
+             [clojure.string :refer [blank?]]
+             [salava.badge.schemas :refer [evidence]])))
 
 #? (:cljs (defn describe [v _] v))
 
@@ -37,11 +39,16 @@
        (s/optional-key :tags) [(s/maybe s/Str)])
       (dissoc :ctime :mtime :deleted :creator_id)))
 
+
 (s/defschema issue-selfie-badge
   {:selfie_id     s/Str
    :recipients    [s/Int]
    :expires_on    (s/maybe s/Int)
-   ;:issue_to_self s/Int
+   (s/optional-key :request_endorsement) (s/maybe {:comment s/Str
+                                                   :selected_users [s/Int]})
+   (s/optional-key :evidence) (s/maybe [(assoc evidence (s/optional-key :resource_visibility) (s/maybe s/Str))])
+   (s/optional-key :visibility) (s/enum "private" "public" "internal")
+   (s/optional-key :issue_to_self) (s/enum 0 1)
    (s/optional-key :issued_from_gallery) s/Bool})
 
 #_(s/defschema recipient

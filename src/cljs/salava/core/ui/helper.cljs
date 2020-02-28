@@ -56,9 +56,13 @@
 
 (defn navigate-to [url]
   (let [history (session/get :history)]
+    ;;remove-page-info
+    (session/put! :page nil)
     (pushy/replace-token! history (path-for url))))
 
 (defn js-navigate-to [url]
+  ;;remove-page-info
+  (session/put! :page nil)
   (set! (.-location.href js/window) (path-for url)))
 
 

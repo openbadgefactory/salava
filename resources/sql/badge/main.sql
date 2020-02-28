@@ -731,7 +731,7 @@ INSERT INTO user_badge (
 ) VALUES (
     :badge_id, :user_id, :email,
     :assertion_url, :assertion_jws, :assertion_json,
-    :issued_on, :expires_on, :status, 'private',
+    :issued_on, :expires_on, :status, :visibility,
     1, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0
 );
 

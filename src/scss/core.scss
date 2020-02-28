@@ -899,5 +899,14 @@ body.embed {
 }
 
 .page-info-box {
-  background-color: lighten($titlebar-color, 20%);
+  background-color: whitesmoke; //lighten($titlebar-color, 20%);
+  color: dimgray;
+  font-weight: 600;
+  .alert-heading {
+    font-weight: 600;
+  }
+  .close {
+    opacity: 1;
+    font-size: 25px;
+  }
 }

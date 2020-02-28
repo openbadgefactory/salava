@@ -81,16 +81,15 @@
   "Create Assertion and save badge to db"
   [ctx data]
   (try+
-   (let [{:keys [id user-id recipient expires_on]} data
+   (let [{:keys [id user-id recipient expires_on selfie? visibility]} data
          base-url (get-site-url ctx)
-         badge (first (db/user-selfie-badge ctx user-id id))
-         badge (assoc badge :tags (if-not (blank? (:tags badge)) (json/read-str (:tags badge)) []))
+         badge  (db/user-selfie-badge ctx user-id id)
          issuedOn (now)
          r (badge-recipient ctx (:email recipient))
          initial {:user_id (:id recipient)
                   :email (:email recipient)
-                  :status "pending"
-                  :visibility "private"
+                  :status (if selfie? "accepted" "pending")
+                  :visibility (if-not (blank? visibility) visibility "private")
                   :show_recipient_name 0
                   :rating nil
                   :ctime (now)
@@ -126,7 +125,7 @@
                                    :assertion_json assertion_json
                                    :issuer_id user-id})
      (log/info "Finished saving user badge!")
-     (publish ctx :issue {:type "selfie" :verb "issue" :subject user-id :object user-badge-id}))
-
+     (publish ctx :issue {:type "selfie" :verb "issue" :subject user-id :object user-badge-id})
+     user-badge-id)
    (catch Object _
      (log/error "error: " _))))
