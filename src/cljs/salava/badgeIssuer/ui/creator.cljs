@@ -108,7 +108,7 @@
   (let [{:keys [badge generating-image]} @state
         {:keys [image name]} badge]
     [:div.col-md-12.panel-section
-     [:p (t :badgeIssuer/Aboutselfieimage)]
+
      [:div.row.text-center {:style {:margin "15px 0"}}
       ;[:div.col-md-9;.image-container
        [:div.image-container
@@ -120,13 +120,13 @@
                   :alt "image"}])
           [:span.fa.fa-spin.fa-cog.fa-2x])]
       [:div.row ;col-md-3;.text-center
-       [:div.btn-group.img-buttons {:style {:margin-bottom "20px"}}
-        [:button.btn.btn-primary.btn-bulky
-         {:on-click #(do
-                      (.preventDefault %)
-                      (generate-image state))
-          :aria-label (t :badgeIssuer/Generaterandomimage)}
-         [:span [:i.fa.fa-random.fa-lg]" "(t :badgeIssuer/Generaterandomimage)]]
+       [:div.img-buttons {:style {:margin-bottom "20px"}}
+        #_[:button.btn.btn-primary.btn-bulky
+             {:on-click #(do
+                          (.preventDefault %)
+                          (generate-image state))
+              :aria-label (t :badgeIssuer/Generaterandomimage)}
+             [:span [:i.fa.fa-random.fa-lg]" "(t :badgeIssuer/Generaterandomimage)]]
 
         [:span {:class "btn btn-primary btn-file btn-bulky"}
               [:input {:type       "file"
@@ -134,7 +134,14 @@
                        :on-change  #(send-file state)
                        :accept     "image/png"
                        :aria-label (t :badgeIssuer/Uploadbadgeimage)}]
-         [:span [:i.fa.fa-upload.fa-lg.fa-fw](t :badgeIssuer/Uploadbadgeimage)]]]]]]))
+         [:span [:i.fa.fa-upload.fa-lg.fa-fw](t :badgeIssuer/Uploadbadgeimage)]]
+        [:button.btn.btn-primary.btn-bulky
+         {:on-click #(do
+                      (.preventDefault %)
+                      (generate-image state))
+          :aria-label (t :badgeIssuer/Generaterandomimage)}
+         [:span [:i.fa.fa-random.fa-lg]" "(t :badgeIssuer/Generaterandomimage)]]]]]
+     [:p (t :badgeIssuer/Aboutselfieimage)]]))
 
 (defn badge-content [state]
   (fn []
@@ -264,7 +271,7 @@
     [:div#badge-creator
      [m/modal-window]
      [:h1.uppercase-header (t :badgeIssuer/Createselfiebadge)]
-     [:p (t :badgeIssuer/Aboutselfiebadges2)]
+     [:p (t :badgeIssuer/Createnewbadgeinfo)]
      [:div.panel.panel-default
       [:div.panel-heading]
       [:div.panel-body

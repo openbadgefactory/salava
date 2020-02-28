@@ -4,8 +4,12 @@
   .img-buttons {
     margin: 20px auto;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    width: auto;
     .btn {
-      margin: 10px;
+    //  margin: 10px;
+
     }
   }
   .panel-section {
@@ -208,8 +212,8 @@
 
   .visibility-opt {
     position: relative;
-    height: 10em;
-    width: 11.5em;
+    height: 8.5em;
+    width: 9em;
     margin: 1rem;
 
 
