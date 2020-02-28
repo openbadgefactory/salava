@@ -828,7 +828,7 @@
                                                     (mo/previous-view)
                                                     (send-endorsement-request state reload-fn)))
                                      :disabled (empty? @selected-users)}
-            (if (= context "endorsement_selfie") (t :badge/Continue) (t :badge/Sendrequest))]
+            (if (= context "endorsement_selfie") (t :core/Continue) (t :badge/Sendrequest))]
            [:button.btn.btn-primary.select-users-link {:href "#"
                                                        :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state)})
                                                        :disabled (< (count @request-comment) 15)}
