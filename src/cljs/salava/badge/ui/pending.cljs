@@ -137,53 +137,62 @@
   (let [visibility (atom (:visibility badge))]
     (create-class {:reagent-render
                    (fn [] [:div#badge-settings {:style {:padding "10px"}}
-                           [:form {:class "form-horizontal"}
-                            [:div ;{:class "col-md-12"}
-                             [:fieldset {:class "form-group visibility"}
-                              [:legend {:class "col-md-9 sub-heading"}
-                               (t :badge/Badgevisibility) [info {:content (t :badge/Visibilityinfo) :placement "right"}]]
-                              [:div {:class (str "col-md-12 " @visibility) :style {:margin-top "20px"}}
-                               (if-not (private?)
-                                 [:div [:input {:id              "visibility-public"
+                           #_[:form {:class "form-horizontal"}
+                              [:div ;{:class "col-md-12"}
+                               [:fieldset {:class "form-group visibility"}
+                                [:legend {:class "col-md-9 sub-heading"}
+                                 (t :badge/Badgevisibility) [info {:content (t :badge/Visibilityinfo) :placement "right"}]]
+                                [:div {:class (str "col-md-12 " @visibility) :style {:margin-top "20px"}}
+                                 (if-not (private?)
+                                   [:div [:input {:id              "visibility-public"
+                                                  :name            "visibility"
+                                                  :value           "public"
+                                                  :type            "radio"
+                                                  :on-change     #(do
+                                                                    (.preventDefault %)
+                                                                    (reset! visibility "public"))
+                                                  :tabIndex 0
+                                                  :aria-checked (= "public" (:visibility badge))
+                                                  :role "radio"}]
+                                    [:i {:class "fa fa-globe"}]
+                                    [:label {:for "visibility-public"}
+                                     (t :badge/Public)]])
+                                 [:div [:input {:id              "visibility-internal"
                                                 :name            "visibility"
-                                                :value           "public"
+                                                :value           "internal"
                                                 :type            "radio"
-                                                :on-change     #(do
-                                                                  (.preventDefault %)
-                                                                  (reset! visibility "public"))
+                                                :on-change       #(do
+                                                                    (.preventDefault %)
+                                                                    (reset! visibility "internal"))
                                                 :tabIndex 0
-                                                :aria-checked (= "public" (:visibility badge))
+                                                :aria-checked (= "internal" (:visibility badge))
                                                 :role "radio"}]
-                                  [:i {:class "fa fa-globe"}]
-                                  [:label {:for "visibility-public"}
-                                   (t :badge/Public)]])
-                               [:div [:input {:id              "visibility-internal"
-                                              :name            "visibility"
-                                              :value           "internal"
-                                              :type            "radio"
-                                              :on-change       #(do
-                                                                  (.preventDefault %)
-                                                                  (reset! visibility "internal"))
-                                              :tabIndex 0
-                                              :aria-checked (= "internal" (:visibility badge))
-                                              :role "radio"}]
-                                [:i {:class "fa fa-group"}]
-                                [:label {:for "visibility-internal"}
-                                 (t :badge/Shared)]]
-                               [:div [:input {:id              "visibility-private"
-                                              :name            "visibility"
-                                              :value           "private"
-                                              :type            "radio"
-                                              :on-change       #(do
-                                                                  (.preventDefault %)
-                                                                  (reset! visibility "private"))
-                                              :default-checked (= "private" (:visibility badge)) #_(= "private" (:visibility badge) #_(get-in @state [:badge-settings :visibility]))
-                                              :tabIndex 0
-                                              :aria-checked (= "private" (:visibility badge))
-                                              :role "radio"}]
-                                [:i {:class "fa fa-lock"}]
-                                [:label {:for "visibility-private"}
-                                 (t :badge/Private)]]]]]]
+                                  [:i {:class "fa fa-group"}]
+                                  [:label {:for "visibility-internal"}
+                                   (t :badge/Shared)]]
+                                 [:div [:input {:id              "visibility-private"
+                                                :name            "visibility"
+                                                :value           "private"
+                                                :type            "radio"
+                                                :on-change       #(do
+                                                                    (.preventDefault %)
+                                                                    (reset! visibility "private"))
+                                                :default-checked (= "private" (:visibility badge)) #_(= "private" (:visibility badge) #_(get-in @state [:badge-settings :visibility]))
+                                                :tabIndex 0
+                                                :aria-checked (= "private" (:visibility badge))
+                                                :role "radio"}]
+                                  [:i {:class "fa fa-lock"}]
+                                  [:label {:for "visibility-private"}
+                                   (t :badge/Private)]]]]]]
+
+                           [:div
+                            (into [:div]
+                              (for [f (plugin-fun (session/get :plugins) "block" "badge_visibility_form")]
+                                [f visibility]))
+
+                            #_[:div
+                               [:hr.border.dotted-border]]]
+
 
                            (into [:div]
                                  (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]

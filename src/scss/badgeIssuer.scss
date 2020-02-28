@@ -132,7 +132,7 @@
 }
 
 .its_block {
-  background-color: darken($background-color, 0.2%);
+  background-color: ghostwhite; //snow;//darken($background-color, 0.2%);
   padding: 8px;
   border-radius: 2px;
 }
@@ -268,9 +268,32 @@
 
     .radio-tile-label {
       color: lavenderblush !important;
-      background-color: cadetblue;
+      //background-color: cadetblue;
     }
   }
 }
 
+}
+
+.evidence-coded-panel {
+  border-left-color: darkslateblue !important;
+  border-left-width: thick;
+}
+
+.endorsement-coded-panel {
+  border-left-color: darkslategray !important;
+  border-left-width: thick;
+}
+
+span.evidence-draft {
+  background-color: darkslateblue;
+}
+
+span.endorsement-draft {
+  background-color: darkslategray;
+}
+
+.dotted-border {
+  border-color: #607d8b;
+  border-style: dashed;
 }

@@ -899,23 +899,14 @@ body.embed {
 }
 
 .page-info-box {
-  background-color: lighten($titlebar-color, 20%);
-}
-
-.evidence-coded-panel {
-  border-left-color: cadetblue !important;
-  border-left-width: thick;
-}
-
-.endorsement-coded-panel {
-  border-left-color: purple !important;
-  border-left-width: thick;
-}
-
-span.evidence-draft {
-  background-color: cadetblue;
-}
-
-span.endorsement-draft {
-  background-color: purple;
+  background-color: whitesmoke; //lighten($titlebar-color, 20%);
+  color: dimgray;
+  font-weight: 600;
+  .alert-heading {
+    font-weight: 600;
+  }
+  .close {
+    opacity: 1;
+    font-size: 25px;
+  }
 }

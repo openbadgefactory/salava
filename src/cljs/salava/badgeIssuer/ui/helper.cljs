@@ -503,4 +503,7 @@
 
         (t :badge/Addnewevidence)]
        [:span.text-muted  [:em (str " - " (t :badgeIssuer/Optional))]]]
-      [evidence-list ev-atom state]]]))
+      [evidence-list ev-atom state]
+      (when (seq @(cursor state [:all_evidence]))
+        [:div.col-md-12
+         [:hr.border.dotted-border]])]]))

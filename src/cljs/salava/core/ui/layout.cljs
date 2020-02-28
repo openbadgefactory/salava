@@ -229,8 +229,8 @@
        [about-page (session/get-in [:page :about])])
     [:div {:class "row flip"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
-     [:div {:class "col-md-10 col-sm-9" :id "content"} content]
-     (footer site-navi)]]])
+     [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]
+   (footer site-navi)])
 
 (defn default-no-sidebar [site-navi content]
   [:div {:role "main"}

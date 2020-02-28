@@ -28,7 +28,7 @@
         link-visible (atom true)
         heading (if (blank? heading)(t :core/Aboutthispage) heading)
         style (-> {:position "absolute"
-                   :right "35px"
+                   :right "80px"
                    :top "125px"}
                   (merge style))]
       (fn []
