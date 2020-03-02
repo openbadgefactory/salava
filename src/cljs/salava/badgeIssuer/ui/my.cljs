@@ -112,6 +112,5 @@
                      :tags-all true
                      :tags-selected []})]
     (init-data state)
-    (session/put! :page {:about {:heading (t :badgeIssuer/Selfiebadges) :content (t :badgeIssuer/Aboutselfiebadges)}})
     (fn []
       (layout/default site-navi [content state]))))

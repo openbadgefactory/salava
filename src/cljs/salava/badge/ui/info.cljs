@@ -237,8 +237,13 @@
            [:h1.uppercase-header name]
            (if (< 1 (count (:content @state)))
              [:div.inline [:span._label (translate lng :core/Languages) ": "] (content-language-selector selected-language (:content @state))])
-           (bm/issuer-modal-link issuer_content_id issuer_content_name lng)
-           (bm/creator-modal-link creator_content_id creator_name lng)
+           (if (bm/is-user? issuer_content_url)
+            (bm/issuer-modal-link-user issuer_content_id issuer_content_name lng issuer_content_url)
+            (bm/issuer-modal-link issuer_content_id issuer_content_name lng))
+           (when-not (= creator_name issuer_content_name)
+            (if (bm/is-user? creator_url)
+             (bm/creator-modal-link-user creator_content_id creator_name lng creator_url)
+             (bm/creator-modal-link creator_content_id creator_name lng)))
 
            (if (and issued_on (> issued_on 0))
              [:div [:span._label (translate lng :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])

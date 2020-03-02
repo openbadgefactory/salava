@@ -135,7 +135,7 @@
                        :accept     "image/png"
                        :aria-label (t :badgeIssuer/Uploadbadgeimage)}]
          [:span [:i.fa.fa-upload.fa-lg.fa-fw](t :badgeIssuer/Uploadbadgeimage)]]
-        [:button.btn.btn-primary.btn-bulky
+        [:button.btn.btn-light.btn-bulky
          {:on-click #(do
                       (.preventDefault %)
                       (generate-image state))

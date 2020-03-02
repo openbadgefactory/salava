@@ -247,7 +247,10 @@
           :aria-label "OBP logo"}]])
 
 (defn stamp []
-  [:div {:style {:width "220px"}}])
+  (let [site-name (session/get :site-name)]
+   [:span.label.label-info
+    (str (t :badgeIssuer/Createdandissued) " " site-name)]))
+
 
 (defn evidence-list [ev-atom state]
   (let [evidence-name-atom (cursor ev-atom [:name])

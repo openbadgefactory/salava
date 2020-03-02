@@ -1,6 +1,6 @@
 (ns salava.badge.ui.modal
   (:require
-   [clojure.string :refer [blank? starts-with? split]]
+   [clojure.string :refer [blank? starts-with? split includes?]]
    [reagent.core :refer [atom cursor]]
    [reagent.session :as session]
    [salava.admin.ui.reporttool :refer [reporttool1]]
@@ -139,6 +139,28 @@
            (str  endorsement-count " " (translate (:lng params) :badge/endorsement) #_(t :badge/endorsement))
            (str  endorsement-count " " (translate (:lng params) :badge/endorsements) #_(t :badge/endorsements)))]]))))
 
+(defn is-user? [url]
+  (let [base-url (str (session/get :site-url) (session/get :base-path))]
+    (when-not (blank? url) (includes? url (str base-url "/profile/")))))
+
+(defn issuer-modal-link-user
+ ([issuer-id name url]
+  (let [id (->> (split url #"/profile/") last long)]
+    [:div {:class "issuer-data clearfix"}
+     [:span._label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
+     [:div {:class "issuer-links pull-label-left inline"}
+      [:a {:href "#"
+           :on-click #(do (.preventDefault %)
+                          (mo/open-modal [:profile :view] {:user-id id} {}))} name]]]))
+ ([issuer-id name lang url]
+  (let [id (->> (split url #"/profile/") last long)]
+   [:div {:class "issuer-data clearfix"}
+    [:span._label {:class "pull-label-left"}  (translate lang :badge/Issuedby) ":"]
+    [:div {:class "issuer-links pull-label-left inline"}
+     [:a {:href "#"
+          :on-click #(do (.preventDefault %)
+                         (mo/open-modal [:profile :view] {:user-id id} {}))} name]]])))
+
 (defn issuer-modal-link
   ([issuer-id name]
    [:div {:class "issuer-data clearfix"}
@@ -154,6 +176,26 @@
      [:a {:href "#"
           :on-click #(do (.preventDefault %)
                          (mo/open-modal [:badge :issuer] issuer-id {}))} name]]]))
+
+(defn creator-modal-link-user
+  ([creator-id name url]
+   (when (and creator-id (not (blank? name)))
+     (let [id (->> (split url #"/profile/") last long)]
+      [:div {:class "issuer-data clearfix"}
+       [:span._label.pull-left (t :badge/Createdby) ":"]
+       [:div {:class "issuer-links pull-label-left inline"}
+        [:a {:href "#"
+             :on-click #(do (.preventDefault %)
+                            (mo/open-modal [:profile :view] {:user-id id}))} name]]])))
+  ([creator-id name lang url]
+   (when (and creator-id (not (blank? name)))
+     (let [id (->> (split url #"/profile/") last long)]
+      [:div {:class "issuer-data clearfix"}
+       [:span._label.pull-left (translate lang :badge/Createdby) ":"]
+       [:div {:class "issuer-links pull-label-left inline"}
+        [:a {:href "#"
+             :on-click #(do (.preventDefault %)
+                            (mo/open-modal [:profile :view] {:user-id id}))} name]]]))))
 
 ;;;TODO creator endorsements
 (defn creator-modal-link
@@ -184,14 +226,14 @@
     :handler (fn []
                (init-data state id))}))
 
-(defn follow-verified-bar [{:keys [verified_by_obf issued_by_obf badge_id obf_url]} context show-messages]
+(defn follow-verified-bar [{:keys [verified_by_obf issued_by_obf badge_id obf_url]} context show-messages selfie_id]
   (let [visibility (if show-messages "hidden" "visible")]
     (if (= context "gallery")
       [:div.row.flip
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)
-         (if true
-           (into [:div]
+         (if selfie_id
+           (into [:div.col-md-3.selfie-stamp]
                  (for [f (plugin-fun (session/get :plugins) "block" "selfie_stamp")]
                    [f]))
           [:div.col-md-3]))
@@ -235,6 +277,7 @@
      ;endorsements
      [:div.row (badge-endorsement-modal-link {:badge-id badge_id :id id} endorsement_count user_endorsement_count)]]))
 
+
 (defn badge-content [state]
   (let [{:keys [id badge_id  owner? visibility show_evidence rating issuer_image issued_on expires_on revoked issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_content_id creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count issuer-endorsements content endorsement_count endorsements evidences]} @state
         expired? (bh/badge-expired? expires_on)
@@ -244,6 +287,7 @@
         metabadge-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge"))
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count creator_content_id]} (content-setter @selected-language content)
         evidences (remove #(= true (get-in % [:properties :hidden])) evidences)]
+
     [:div {:id "badge-info" :class "row flip"}
      [:div {:class "col-md-3"}
       [:div.badge-image
@@ -259,8 +303,13 @@
         [:h1.uppercase-header name]
         (if (< 1 (count (:content @state)))
           [:div.inline [:span._label (t :core/Languages) ": "] (content-language-selector selected-language (:content @state))])
-        (issuer-modal-link issuer_content_id issuer_content_name)
-        (when-not (= creator_name issuer_content_name) (creator-modal-link creator_content_id creator_name))
+        (if (is-user? issuer_content_url)
+          (issuer-modal-link-user issuer_content_id issuer_content_name issuer_content_url)
+          (issuer-modal-link issuer_content_id issuer_content_name))
+        (when-not (= creator_name issuer_content_name)
+          (if (is-user? creator_url)
+            (creator-modal-link-user creator_content_id creator_name creator_url)
+            (creator-modal-link creator_content_id creator_name)))
         (if (and issued_on (> issued_on 0))
           [:div [:span._label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
         (if (and expires_on (not expired?))

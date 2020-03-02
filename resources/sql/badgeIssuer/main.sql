@@ -124,7 +124,8 @@ SELECT gallery_id, selfie_id FROM user_badge WHERE user_id = :user_id AND status
 --name: select-issuable-gallery-badges
 SELECT ub.gallery_id, ub.selfie_id FROM user_badge ub
 LEFT JOIN selfie_badge sb ON sb.id = ub.selfie_id
-WHERE ub.gallery_id IN (:gallery_ids) AND selfie_id IS NOT NULL AND sb.issuable_from_gallery = 1
+WHERE ub.gallery_id IN (:gallery_ids) AND selfie_id IS NOT NULL
+-- AND sb.issuable_from_gallery = 1
 
 --name: insert-selfie-event<!
 INSERT INTO social_event (subject, verb, object, type, ctime, mtime) VALUES (:subject, :verb, :object, 'selfie', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())

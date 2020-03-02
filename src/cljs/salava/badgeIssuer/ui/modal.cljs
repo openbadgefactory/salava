@@ -47,7 +47,7 @@
      [:div.panel.panel-default.endorsement-coded-panel
       [:div.panel-heading {:style {:padding "8px"}}
        [:div.panel-title {:style {:margin-bottom "unset"}}
-        [:span.label.endorsement-draft (t :badgeIssuer/Endorsementrequestdraft)]
+        ;[:span.label.endorsement-draft (t :badgeIssuer/Endorsementrequestdraft)]
         [:p {:style {:margin "unset"}} (t :badgeIssuer/Requestendorsementinfo)]]]
       [:div;.btn-toolbar.pull-right
        [:div;.btn-group
@@ -60,6 +60,7 @@
          [:i.fa.fa-edit.edit-evidence]]
         [:button.close;.close
          {:role "button"
+          :style {:margin-right "unset"}
           :aria-label (t :badge/Delete)
           :title (t :badge/Delete)
           :on-click #(do
