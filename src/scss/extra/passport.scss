@@ -690,6 +690,20 @@ html[dir="rtl"] .wizard {
 .footer .footer-container a {
   color: $link-color;
 }
+
+.page-info-box {
+  .close {
+    right: unset;
+  }
+}
+
+.btn-bulky {
+  padding: 8px;
+  border-radius: 2px;
+  .fa {
+    color: #FFF !important;
+  }
+}
 /*
 a#login-button {
 height: 36px;
