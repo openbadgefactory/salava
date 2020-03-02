@@ -261,6 +261,7 @@
         ^{:key @evidence-container}
         [:div {:style {:margin "20px 0"}}
          [:div.col-md-12
+          [:h4 (t :badge/Evidence)]
           (reduce (fn [r evidence]
                     (let [{:keys [narrative description name id url mtime ctime properties]} evidence
                           ;id (-> (make-random-uuid) (uuid-string))

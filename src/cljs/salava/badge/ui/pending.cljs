@@ -131,6 +131,7 @@
      (case (:badge-alert @state)
        "accepted"  [:div (str (t :badge/Youhaveaccepted) " \"" (:badge-name @state) "\". ") (t :badge/Youcanfind)]
        "declined" (t :badge/Badgedeclined)
+       "issue"    (t :badgeIssuer/Badgesuccessfullyissued)
        "")]))
 
 (defn visibility-modal [badge state reload-fn]

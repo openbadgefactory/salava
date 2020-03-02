@@ -2297,9 +2297,9 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
 
   .visibility-opt {
     position: relative;
-    height: 8.5em;
-    width: 9em;
-    margin: 1rem;
+    height: 100px;//8.5em;
+    width: 95px;//9em;
+    margin: 5px; //1rem;
 
     .radio-btn {
       opacity: 0;
@@ -2326,6 +2326,7 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
     }
 
     .icon {
+      font-size: 30px;
       //position: absolute;
       //top: 10px;
 
@@ -2354,6 +2355,10 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
     border: 2px solid cadetblue;
     color: lavenderblush !important;
     transform: scale(1.1, 1.1);
+
+    .icon {
+      font-size: 35px;
+    }
 
     .radio-tile-label {
       color: lavenderblush !important;
