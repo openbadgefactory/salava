@@ -226,8 +226,8 @@
     [:div {:class "container"}
      (breadcrumb site-navi)]]
    [:div {:class "container main-container"}
-    (when (session/get-in [:page :about])
-       [about-page (session/get-in [:page :about])])
+    (when (session/get-in [:about-page])
+       [about-page (session/get-in [:about-page])])
     [:div {:class "row flip"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
      [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]

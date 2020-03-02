@@ -23,14 +23,14 @@
     (s/split tags #",")))
 
 (defn content [state show-messages]
-  (let [{:keys [badge public_users private_user_count reload-fn hide-info-link]} @state
+  (let [{:keys [badge public_users private_user_count reload-fn hide-info-link selfie_id]} @state
         {:keys [badge_id gallery_id content average_rating rating_count obf_url verified_by_obf issued_by_obf endorsement_count]} badge
         selected-language (cursor state [:content-language])
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
         tags (tag-parser tags)]
 
     [:div#gallery-modal
-     (when (session/get :user) [bm/follow-verified-bar badge "gallery" @show-messages])
+     (when (session/get :user) [bm/follow-verified-bar badge "gallery" @show-messages selfie_id])
      [:div {:id "badge-contents"}
       [:div.row.flip
        [:div {:class "col-md-3 badge-image modal-left"}
@@ -57,8 +57,13 @@
            [:div
             (if (< 1 (count content))
               [:div.inline [:span._label (t :core/Languages) ": "] (content-language-selector selected-language content)])
-            (bm/issuer-modal-link issuer_content_id issuer_content_name)
-            (when-not (= issuer_content_name creator_name) (bm/creator-modal-link creator_content_id creator_name))
+            (if (bm/is-user? issuer_content_url)
+             (bm/issuer-modal-link-user issuer_content_id issuer_content_name issuer_content_url)
+             (bm/issuer-modal-link issuer_content_id issuer_content_name))
+            (when-not (= issuer_content_name creator_name)
+              (if (bm/is-user? creator_url)
+                (bm/creator-modal-link-user creator_content_id creator_name creator_url)
+                (bm/creator-modal-link creator_content_id creator_name)))
             [:div.row
              [:div {:class "col-md-12 description"}
               description]]
@@ -110,12 +115,14 @@
                                     :permission "success"
                                     :reload-fn (:reload-fn @state)
                                     :hide-info-link (:hide-info-link @state)
-                                    :content-language (init-content-language  (get-in data [:badge :content])))))}
+                                    :content-language (init-content-language  (get-in data [:badge :content]))
+                                    :selfie_id (:selfie_id @state))))}
    (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [params]
   (let [badge-id (:badge-id params)
         gallery-id (:gallery-id params)
+        selfie_id (:selfie-id params)
         state (atom {:permission "initial"
                      :badge {:badge_id badge-id :gallery_id gallery-id}
                      :public_users []
@@ -123,7 +130,8 @@
                      :badge-small-view false
                      :pages-small-view true
                      :reload-fn (or (:reload-fn params) nil)
-                     :hide-info-link (or (:hide-info-link params) false)})
+                     :hide-info-link (or (:hide-info-link params) false)
+                     :selfie_id selfie_id})
         user (session/get :user)
         show-messages (atom (or (:show-messages params) false))]
     (init-data gallery-id badge-id state)

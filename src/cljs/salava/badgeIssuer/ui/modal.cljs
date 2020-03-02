@@ -47,21 +47,22 @@
      [:div.panel.panel-default.endorsement-coded-panel
       [:div.panel-heading {:style {:padding "8px"}}
        [:div.panel-title {:style {:margin-bottom "unset"}}
-        [:span.label.endorsement-draft (t :badgeIssuer/Endorsementrequestdraft)]
+        ;[:span.label.endorsement-draft (t :badgeIssuer/Endorsementrequestdraft)]
         [:p {:style {:margin "unset"}} (t :badgeIssuer/Requestendorsementinfo)]]]
       [:div;.btn-toolbar.pull-right
        [:div;.btn-group
         [:button.close.panel-edit
          {:role "button"
-          :title (t :badgeIssuer/Editrequest)
-          :aria-label (t :badgeIssuer/Editrequest)
+          :title (t :badgeIssuer/Edit)
+          :aria-label (t :badgeIssuer/Edit)
           :on-click #(do (.preventDefault %)
                          (mo/open-modal [:badge :requestendorsement] {:state state :context "endorsement_selfie"}))}
          [:i.fa.fa-edit.edit-evidence]]
         [:button.close;.close
          {:role "button"
-          :aria-label (t :badgeIssuer/Deleterequestdraft)
-          :title (t :badgeIssuer/Deleterequestdraft)
+          :style {:margin-right "unset"}
+          :aria-label (t :badge/Delete)
+          :title (t :badge/Delete)
           :on-click #(do
                        (.preventDefault %)
                        (swap! state assoc :request-comment "" :send_request_to []))}
@@ -85,7 +86,8 @@
         current-user {:id (session/get-in [:user :id])}
         request-mode (cursor state [:request-mode])
         request (cursor state [:request-comment])
-        visibility (cursor state [:visibility])]
+        visibility (cursor state [:visibility])
+        evs (cursor state [:enable_visibility])]
    [:div {:id "badge-info" :class "row flip" :style {:margin "10px 0"}}
     [badge-image badge]
     [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
@@ -121,62 +123,6 @@
 
        [:div#badge-settings
 
-        ;;visibility
-        (when (pos? @its)
-          [:div
-           (into [:div]
-             (for [f (plugin-fun (session/get :plugins) "block" "badge_visibility_form")]
-               [f visibility]))
-           [:div
-            [:hr.border.dotted-border]]]
-
-
-          #_[:div.row
-             [:div.col-md-12
-              [:div.panel.panel-default
-               [:div.panel-heading {:style {:padding "8px"}}
-                [:div.panel-title {:style {:margin-bottom "unset" :font-size "16px"}}
-                 (t :badge/Setbadgevisibility) [info {:style {:position "absolute" :right "0" :top "0"} :content (t :badge/Visibilityinfo) :placement "left"}]]]
-               [:div.panel-body {:style {:padding "15px"}}
-
-                [:div.visibility-opts-group
-                 [:div.visibility-opt
-                   [:input.radio-btn {:id "private"
-                                      :type "radio"
-                                      :name "private"
-                                      :on-click #(do
-                                                   (.preventDefault %)
-                                                   (reset! visibility "private"))
-                                      :checked (= "private" @visibility)}]
-                   [:div.radio-tile
-                    [:div.icon [:i.fa.fa-lock.fa-4x]]
-                    [:label.radio-tile-label {:for "private"} (t :badge/Private)]]]
-                 [:div.visibility-opt
-                   [:input.radio-btn {:id "internal"
-                                      :type "radio"
-                                      :name "internal"
-                                      :on-click #(do
-                                                   (.preventDefault %)
-                                                   (reset! visibility "internal"))
-                                      :checked (= "internal" @visibility)}]
-                   [:div.radio-tile
-                    [:div.icon [:i.fa.fa-group.fa-3x]]
-                    [:label.radio-tile-label {:for "internal"} (t :badge/Shared)]]]
-                 [:div.visibility-opt
-                   [:input.radio-btn {:id "public"
-                                      :type "radio"
-                                      :name "public"
-                                      :on-click #(do
-                                                   (.preventDefault %)
-                                                   (reset! visibility "public"))
-                                      :checked (= "public" @visibility)}]
-                   [:div.radio-tile
-                    [:div.icon [:i.fa.fa-globe.fa-3x]]
-                    [:label.radio-tile-label {:for "public"} (t :badge/Public)]]]]]]]
-             [:div.col-md-12
-              [:hr.border.dotted-border]]])
-
-
         ;;evidences
         (when (pos? @its)
           [add-evidence-block state])
@@ -191,7 +137,33 @@
                  :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :context "endorsement_selfie"})
                  :id "#request_endorsement"}
              [:span [:i.fa.fa-fw.fa-hand-o-right] (t :badge/Requestendorsement)]]
-            [:span.text-muted  [:em (str " - " (t :badgeIssuer/Optional))]]]]))]
+            [:span.text-muted  [:em (str " - " (t :badgeIssuer/Optional))]]]]))
+
+        (when (pos? @its)
+          [:div.row
+           [:div.col-md-12
+            [:div.form-group
+             [:fieldset {:class "checkbox"}
+              [:legend.sr-only ""]
+              [:div
+               [:label {:for "evs"}
+                [:input {:name "evs_checkbox"
+                         :type      "checkbox"
+                         :id        "evs"
+                         :on-change #(do
+                                       (if @evs (reset! evs false) (reset! evs true)))
+                         :checked   @evs}]
+                [:span.fa-fw (str (t :badge/Setbadgevisibility))]]
+               [:span.text-muted  [:em (str " - " (t :badgeIssuer/Optional))]]]]]]])
+
+        ;;visibility
+        (when (and @evs (pos? @its))
+         [:div
+          (into [:div]
+            (for [f (plugin-fun (session/get :plugins) "block" "badge_visibility_form")]
+              [f visibility]))
+          [:div
+           [:hr.border.dotted-border]]])]
 
        [:div.btn-toolbar {:style {:margin-top "20px"}}
         [:div.btn-group
@@ -341,7 +313,8 @@
                      :request-comment ""
                      :evidence {}
                      :all_evidence []
-                     :visibility "private"})]
+                     :visibility "private"
+                     :enable_visibility false})]
 
     (fn []
       (selfie-content state))))

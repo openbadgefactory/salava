@@ -111,11 +111,11 @@
   [:div.row
    [:div.col-md-12
     [:div.panel.panel-default
-     [:div.panel-heading {:style {:padding "8px"}}
+     [:div.panel-heading ;{:style {:padding "8px"}}
       [:div.panel-title {:style {:margin-bottom "unset" :font-size "16px"}}
        (t :badge/Setbadgevisibility) [info {:style {:position "absolute" :right "0" :top "0"} :content (t :badge/Visibilityinfo) :placement "left"}]]]
      [:div.panel-body {:style {:padding "15px"}}
-      [:p (t :badge/Selectvisibilityinfo)]
+      [:p [:b (t :badge/Selectvisibilityinfo)]]
       [:div.visibility-opts-group
        [:div.visibility-opt
          [:input.radio-btn {:id "private"
@@ -155,19 +155,19 @@
        (case @vatom
          "private" [:div
                     [:ul
-                     [:li (t :badge/Privatevisibilityinfo)]
+                     [:li [:b (t :badge/Privatevisibilityinfo)]]
                      [:li (t :badge/Socialfeaturesnotavailable)]
                      [:li (t :badge/Badgesharingnotavailable)]]]
          "internal" [:div
                      [:ul
                       [:li (t :badge/Internalvisibilityinfo)]
-                      [:li (t :badge/Socialfeaturesavailable)]
+                      [:li [:b (t :badge/Socialfeaturesavailable)]]
                       [:li (t :badge/Badgesharingnotavailable)]]]
          "public"  [:div
                       [:ul
                        [:li (t :badge/Publicvisibilityinfo)]
                        [:li (t :badge/Socialfeaturesavailable)]
-                       [:li (t :badge/Badgesharingavailable)]]])]]]]]))
+                       [:li [:b (t :badge/Badgesharingavailable)]]]])]]]]]))
 
 (defn ^:export badge_endorsements [id data]
  [endorsement-list id data])

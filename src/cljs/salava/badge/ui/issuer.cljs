@@ -61,7 +61,7 @@
     (fn []
       (let [{:keys [name description email url image_file]} @state
             is-user? (when-not (blank? url) (includes? url (str base-url "/profile/")))
-            user-id (when is-user? 12 #_(->> (split url #"/profile/") last int))]
+            user-id (when is-user? (->> (split url #"/profile/") last int))]
         [:div.row {:id "badge-contents"}
          [:div.col-xs-12
           [:div.row

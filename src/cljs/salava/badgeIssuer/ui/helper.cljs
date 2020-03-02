@@ -247,7 +247,10 @@
           :aria-label "OBP logo"}]])
 
 (defn stamp []
-  [:div {:style {:width "220px"}}])
+  (let [site-name (session/get :site-name)]
+   [:span.label.label-info
+    (str (t :badgeIssuer/Createdandissued) " " site-name)]))
+
 
 (defn evidence-list [ev-atom state]
   (let [evidence-name-atom (cursor ev-atom [:name])
@@ -273,7 +276,7 @@
                                [:div.panel-heading {:id (str "heading" id)
                                                     :role "tab"}
                                 [:div.panel-title
-                                 [:span.label.evidence-draft (t :badgeIssuer/Evidencedraft)]
+                                 #_[:span.label.evidence-draft (t :badgeIssuer/Evidencedraft)]
                                  [:div.url.row.flip [:div.col-md-1 [evidence-icon {:type resource_type :mime_type mime_type}]]
                                   [:div.col-md.11.break (case resource_type
                                                           "file" (hyperlink url)

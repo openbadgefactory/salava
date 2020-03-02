@@ -1,6 +1,6 @@
 (ns salava.badge.ui.social
   (:require
-   [clojure.string :refer [upper-case replace]]
+   [clojure.string :refer [upper-case replace blank?]]
    [reagent.core :refer [cursor atom create-class force-update]]
    [reagent.session :as session]
    [salava.badge.ui.helper :refer [badge-expired?]]
@@ -246,49 +246,121 @@
           (for [f (plugin-fun (session/get :plugins) "block" "message_link")]
             [f (:message_count @state) (:badge_id @state)]))))
 
-(defn- visibility-form [dataatom state]
-  (fn []
-    [:div {:class "form-horizontal"}
-     [:div
-      [:fieldset {:class "form-group visibility"}
-       [:legend ""]
-       [:div {:class (str "col-md-12 " (get-in @state [:badge-settings :visibility]))}
-        (if-not (private?)
-          [:div [:input {:id              "visibility-public"
-                         :name            "visibility"
-                         :value           "public"
-                         :type            "radio"
-                         :on-change       #(do
-                                             (set-visibility "public" state)
-                                             (save-settings state (fn [] (get-rating dataatom state))))
+#_(defn- visibility-form [dataatom state]
+      (fn []
+       [:div {:class "form-horizontal"}
+        [:div
+         [:fieldset {:class "form-group visibility"}
+          [:legend ""]
+          [:div {:class (str "col-md-12 " (get-in @state [:badge-settings :visibility]))}
+           (if-not (private?)
+             [:div [:input {:id              "visibility-public"
+                            :name            "visibility"
+                            :value           "public"
+                            :type            "radio"
+                            :on-change       #(do
+                                                (set-visibility "public" state)
+                                                (save-settings state (fn [] (get-rating dataatom state))))
 
-                         :default-checked (= "public" (get-in @state [:badge-settings :visibility]))}]
-           [:i {:class "fa fa-globe"}]
-           [:label {:for "visibility-public"}
-            (t :badge/Public)]])
-        [:div [:input {:id              "visibility-internal"
-                       :name            "visibility"
-                       :value           "internal"
-                       :type            "radio"
-                       :on-change       #(do
-                                           (set-visibility "internal" state)
-                                           (save-settings state nil))
+                            :default-checked (= "public" (get-in @state [:badge-settings :visibility]))}]
+              [:i {:class "fa fa-globe"}]
+              [:label {:for "visibility-public"}
+               (t :badge/Public)]])
+           [:div [:input {:id              "visibility-internal"
+                          :name            "visibility"
+                          :value           "internal"
+                          :type            "radio"
+                          :on-change       #(do
+                                              (set-visibility "internal" state)
+                                              (save-settings state nil))
 
-                       :default-checked (= "internal" (get-in @state [:badge-settings :visibility]))}]
-         [:i {:class "fa fa-group"}]
-         [:label {:for "visibility-internal"}
-          (t :badge/Shared)]]
-        [:div [:input {:id              "visibility-private"
-                       :name            "visibility"
-                       :value           "private"
-                       :type            "radio"
-                       :on-change       #(do
-                                           (set-visibility "private" state)
-                                           (save-settings state nil))
-                       :default-checked (= "private" (get-in @state [:badge-settings :visibility]))}]
-         [:i {:class "fa fa-lock"}]
-         [:label {:for "visibility-private"}
-          (t :badge/Private)]]]]]]))
+                          :default-checked (= "internal" (get-in @state [:badge-settings :visibility]))}]
+            [:i {:class "fa fa-group"}]
+            [:label {:for "visibility-internal"}
+             (t :badge/Shared)]]
+           [:div [:input {:id              "visibility-private"
+                          :name            "visibility"
+                          :value           "private"
+                          :type            "radio"
+                          :on-change       #(do
+                                              (set-visibility "private" state)
+                                              (save-settings state nil))
+                          :default-checked (= "private" (get-in @state [:badge-settings :visibility]))}]
+            [:i {:class "fa fa-lock"}]
+            [:label {:for "visibility-private"}
+             (t :badge/Private)]]]]]]))
+
+
+(defn visibility-form [dataatom state]
+ (let [site-name (session/get :site-name)
+       vatom (cursor state [:badge-settings :visibility])]
+  [:div.row
+   [:div.col-md-12
+    [:div;.panel.panel-default
+     #_[:div.panel-heading ;{:style {:padding "8px"}}
+          [:div.panel-title {:style {:margin-bottom "unset" :font-size "16px"}}
+           (t :badge/Setbadgevisibility) [info {:style {:position "absolute" :right "0" :top "0"} :content (t :badge/Visibilityinfo) :placement "left"}]]]
+     [:div;.panel-body {:style {:padding "15px"}}
+      [:p [:b (t :badge/Selectvisibilityinfo)]]
+      [:div.visibility-opts-group
+       [:div.visibility-opt
+         [:input.radio-btn {:id "private"
+                            :type "radio"
+                            :name "private"
+                            :on-change #(do
+                                          (.preventDefault %)
+                                          (set-visibility "private" state)
+                                          (save-settings state nil))
+                                          ;(reset! vatom "private"))
+                            :checked (= "private" @vatom)}]
+         [:div.radio-tile
+          [:div.icon [:i.fa.fa-lock.fa-4x]]
+          [:label.radio-tile-label {:for "private"} (t :core/Private)]]]
+       [:div.visibility-opt
+         [:input.radio-btn {:id "internal"
+                            :type "radio"
+                            :name "internal"
+                            :on-change #(do
+                                          (.preventDefault %)
+                                          (set-visibility "internal" state)
+                                          (save-settings state nil))
+                                          ;(reset! vatom "internal"))
+                            :checked (= "internal" @vatom)}]
+         [:div.radio-tile
+          [:div.icon [:i.fa.fa-group.fa-3x]]
+          [:label.radio-tile-label {:for "internal"} (if (blank? site-name)(t :core/Internal) site-name)]]]
+       [:div.visibility-opt
+         [:input.radio-btn {:id "public"
+                            :type "radio"
+                            :name "public"
+                            :on-change #(do
+                                          (.preventDefault %)
+                                          (set-visibility "public" state)
+                                          (save-settings state (fn [] (get-rating dataatom state))))
+
+                            ;(reset! vatom "public"))
+                            :checked (= "public" @vatom)}]
+         [:div.radio-tile
+          [:div.icon [:i.fa.fa-globe.fa-3x]]
+          [:label.radio-tile-label {:for "public"} (t :core/Public)]]]]
+      [:div {:style {:margin "10px auto"}}
+       ;[:hr.border.dotted-border]
+       (case @vatom
+         "private" [:div
+                    [:ul
+                     [:li [:b (t :badge/Privatevisibilityinfo)]]
+                     [:li (t :badge/Socialfeaturesnotavailable)]
+                     [:li (t :badge/Badgesharingnotavailable)]]]
+         "internal" [:div
+                     [:ul
+                      [:li (t :badge/Internalvisibilityinfo)]
+                      [:li [:b (t :badge/Socialfeaturesavailable)]]
+                      [:li (t :badge/Badgesharingnotavailable)]]]
+         "public"  [:div
+                      [:ul
+                       [:li (t :badge/Publicvisibilityinfo)]
+                       [:li (t :badge/Socialfeaturesavailable)]
+                       [:li [:b (t :badge/Badgesharingavailable)]]]])]]]]]))
 
 (defn- share-badge [{:keys [id name image_file issued_on expires_on show_evidence revoked issuer_content_name]} dataatom state]
   (let [expired? (badge-expired? expires_on)
@@ -298,9 +370,9 @@
      [:div.col-md-12
       [:div.panel
        [:div.panel-heading
-        [:div [:h1 (t :badge/Badgevisibility)]]]
+        [:div [:h1 (t :badge/Badgevisibility)] [info {:style {:position "absolute" :right "0" :top "0"} :content (t :badge/Visibilityinfo) :placement "left"}]]]
 
-       [:div.panel-body {:style {:padding "6px"}}
+       [:div.panel-body {:style {:padding "8px"}}
         (if (and (not expired?) (not revoked))
           [visibility-form dataatom state])
         [:div

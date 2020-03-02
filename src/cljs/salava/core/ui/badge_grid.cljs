@@ -107,7 +107,7 @@
                                                                                                                        (if (clojure.string/includes? (str js/window.location.href) (path-for (str "/badge?id=" id)))
                                                                                                                          (.replaceState js/history {} "Badge modal" (path-for "/badge"))
                                                                                                                          (navigate-to (current-route-path))))
-                                                                                                                     (init-data state))}))}
+                                                                                                                     (init-data state))}))}selfie_id
                                   [badge-icons {:endorsement-count endorsementscount :meta_badge meta_badge :meta_badge_req meta_badge_req :visibility visibility :expires_on expires_on}]
                                   (if image_file
                                     [:div.media-left
@@ -136,7 +136,7 @@
        (= "gallery" badge-type) [:div
                                  #_(when-not (clojure.string/blank? selfie_id)
                                      [:span.inline-block.pull-right {:title (t :badgeIssuer/Issuableselfiebadge) :aria-label (t :badgeIssuer/Issuableselfiebadge)} [:i.fa.fa-paper-plane]])
-                                 [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id gallery_id})
+                                 [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id gallery_id :selfie-id selfie_id})
                                       :title name}
                                   [:div.media-content
                                    (if image_file

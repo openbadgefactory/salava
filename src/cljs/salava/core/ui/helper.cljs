@@ -56,15 +56,12 @@
 
 (defn navigate-to [url]
   (let [history (session/get :history)]
-    ;;remove-page-info
-    (session/put! :page nil)
+    (session/put! :about-page nil) ;;initialize about page info
     (pushy/replace-token! history (path-for url))))
 
 (defn js-navigate-to [url]
-  ;;remove-page-info
-  (session/put! :page nil)
+  (session/put! :about-page nil) ;;initialize about page info
   (set! (.-location.href js/window) (path-for url)))
-
 
 (defn input-valid? [schema input]
   (try
