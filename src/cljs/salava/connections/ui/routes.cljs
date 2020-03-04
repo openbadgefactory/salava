@@ -20,7 +20,7 @@
             (t :connections/Aboutbadgeconnections)]
            [:div
             [:h5 [:b (t :badge/Issuers)]]
-            (t :connection/Aboutissuerconnections)]]
+            (t :connections/Aboutissuerconnections)]]
    :stats [:div
            [:p (t :badge/Aboutbadgestatistics)]
            [:div
@@ -29,8 +29,8 @@
    :endorsement [:div
                  [:p (t :connections/Aboutendorsementspage)]
                  [:div
-                  [:h5 (t :badge/Whatareendorsements)]
-                  (t :badge/Aboutbadgeendorsement)
+                  [:h5 [:b (t :badge/Whatareendorsements)]]
+                  [:p (t :badge/Aboutbadgeendorsement)]
                   [:p (t :badge/Aboutendorsementrequests)]]]})
 
 (defn ^:export navi [context]
@@ -38,5 +38,5 @@
    (str (base-path context) "/connections/badge")         {:weight 61 :title (t :badge/Badges) :site-navi true :breadcrumb (t :social/Connections " / " :badge/Badges) :about {:heading (t :social/Connections) :content (:badge about)}}
   ; (str (base-path context) "/connections/users")         {:weight 63 :title (t :connections/Users) :site-navi true :breadcrumb (t :social/Connections " / " :connections/Users)}
    (str (base-path context) "/connections/stats")          {:weight 64 :title (t :badge/Stats) :site-navi true :breadcrumb (t :social/Connections " / " :badge/Stats) :about {:heading (t :badge/Stats) :content (:stats about)}}
-   (str (base-path context) "/connections/endorsement") {:weight 62 :title (t :connections/Endorsements) :breadcrumb (t :social/Connections " / " :connections/Endorsements) :site-navi true}})
+   (str (base-path context) "/connections/endorsement") {:weight 62 :title (t :connections/Endorsements) :breadcrumb (t :social/Connections " / " :connections/Endorsements) :site-navi true :about {:heading (t :connections/Endorsements)  :content (:endorsement about)}}})
    ;(str (base-path context) "/social/stats") {:weight 21 :title (t :badge/Stats) :site-navi true :breadcrumb (t :social/Social " / " :badge/Stats)}
