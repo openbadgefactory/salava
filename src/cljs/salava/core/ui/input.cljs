@@ -41,7 +41,8 @@
        "ordered-list"
        "link"
        "horizontal-rule"
-       "preview"])
+       "preview"
+       "guide"])
 
 (def editor (atom nil))
 

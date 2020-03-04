@@ -1939,3 +1939,12 @@ html[dir="rtl"] #endorsebadge{
 html[dir= "rtl"] .editor .pull-right {
   float: left !important;
 }
+
+html[dir="rtl"] .popup-info {
+  right: unset !important;
+  left: 0px !important;
+}
+
+html[dir="rtl"] .editor-toolbar a.fa-question-circle{
+  float: left;
+}

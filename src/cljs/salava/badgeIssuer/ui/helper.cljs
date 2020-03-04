@@ -293,7 +293,8 @@
 
                                 [:div
                                  [:div [:button {:type "button"
-                                                 :aria-label "OK"
+                                                 :aria-label (t :badgeIssuer/Edit)
+                                                 :title (t :badgeIssuer/Edit)
                                                  :class "close panel-edit"
                                                  :on-click #(do (.preventDefault %)
                                                                 (init-evidence-form evidence state true))
@@ -308,7 +309,8 @@
                                  [:div
                                   [:button.close
                                    {:type "button"
-                                    :aria-label "OK"
+                                    :aria-label (t :badge/Delete)
+                                    :title (t :badge/Delete)
                                     :data-toggle "collapse"
                                     :on-click #(do (.preventDefault %)
                                                    (reset! evidence-container (remove (fn [e] (= (:id e) (:id evidence))) @evidence-container)))

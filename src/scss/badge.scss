@@ -2015,12 +2015,20 @@ a.popup-info {
 
   }
   .request-link {
-    margin: 10px 0;
+    margin: 5px 0;
+
     i {
       vertical-align: text-bottom;
     }
     a {
       text-decoration: none;
+      font-weight: 600 !important;
+
+      &:hover, &:focus, &:active {
+        color: $link-color !important;
+      }
+
+
     }
   }
   .info-block {
@@ -2367,4 +2375,11 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
   }
 }
 
+}
+
+.editor-toolbar {
+  a.fa-question-circle {
+   float: right;
+   font-size: 25px !important;
+  }
 }

@@ -332,7 +332,7 @@
         (check-badge id)
 
         ;;Endorse-badge
-        (when (and (session/get :user) (not owner?)) [endr/endorse-badge id])]]
+        (when (and (session/get :user) (not owner?) (not expired?)) [endr/endorse-badge id])]]
       (when-not (empty? alignment)
         [:div.row
          [:div.col-md-12

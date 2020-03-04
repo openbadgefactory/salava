@@ -62,13 +62,13 @@
          [:i.fa.fa-edit.edit-evidence]]
         [:button.close;.close
          {:role "button"
-          :style {:margin-right "unset"}
+          ;:style {:margin-right "unset"}
           :aria-label (t :badge/Delete)
           :title (t :badge/Delete)
           :on-click #(do
                        (.preventDefault %)
                        (swap! state assoc :request-comment "" :send_request_to []))}
-         [:i.fa.fa-trash]]]]
+         [:i.fa.fa-trash.trash]]]] ;{:style {:margin-right "unset"}}]]]]
       [:div.panel-body {:style {:padding "10px"}}
 
        (reduce (fn [r u]
@@ -78,7 +78,9 @@
                              [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
                [:div.selected-users-container] @selected-users)
        [:div
-        {:dangerouslySetInnerHTML {:__html (md->html @request)}}]]]]))
+        {:dangerouslySetInnerHTML {:__html (md->html @request)}}]]]
+     (when (and (seq @selected-users) (not (blank? @request)))
+       [:hr.border.dotted-border])]))
 
 (defn issue-selfie-content [state]
   (let [badge (:badge @state)

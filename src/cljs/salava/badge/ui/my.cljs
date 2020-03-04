@@ -25,11 +25,12 @@
   (ajax/GET
    (path-for "/obpv1/badge" true)
    {:handler (fn [data]
+
                (swap! state assoc :badges (filter #(= "accepted" (:status %)) (:badges data))
                       :pending (filter #(= "pending" (:status %)) data)
                       :initializing false
-                      :badge-alert (if (session/get! :issue-success) "issue" nil))
-               (js/setTimeout #(swap! state assoc :badge-alert nil) 3000))}))
+                      :badge-alert (if (session/get! :issue-success) "issue" (:badge-alert @state)))
+               (when (= (:badge-alert @state) "issue") (js/setTimeout #(swap! state assoc :badge-alert nil) 3000)))}))
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}

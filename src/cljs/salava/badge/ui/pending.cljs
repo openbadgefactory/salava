@@ -34,7 +34,7 @@
     :keywords? true
     :params {:status new-status}
     :handler (fn []
-               (js/setTimeout (fn [] (swap! state assoc :badge-alert nil)) 2000)
+               (js/setTimeout (fn [] (swap! state assoc :badge-alert nil)) 3000)
                (if reload-fn (reload-fn) #_(reload-fn state)))
     :error-handler (fn [{:keys [status status-text]}])}))
 
