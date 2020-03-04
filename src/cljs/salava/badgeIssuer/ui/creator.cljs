@@ -240,7 +240,7 @@
       [:div.panel.panel-default
        [:div.panel-heading
         [:div.panel-title
-         [:img {:src (str "/" (:image badge)) :style {:width "40px" :height "auto"}}][:h4.inline " " (t :badgeIssuer/Editbadge) "/" (:name badge)]]]
+         [:img {:src (str "/" (:image badge)) }][:h4.inline " " (t :badgeIssuer/Editbadge) "/" (:name badge)]]]
        #_(when (and (:error-message @state) (not (blank? (:error-message @state))))
              [:div
                {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))])

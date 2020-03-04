@@ -100,7 +100,6 @@
       [:i {:class "fa fa-cog fa-spin fa-2x "}]
       [:span (str (t :core/Loading) "...")]]
      [:div
-      #_[about-page {:heading (t :badgeIssuer/Selfiebadges) :content (t :badgeIssuer/Aboutselfiebadges)}]
       [grid-form state]
       (if (not-activated?)
         [not-activated-banner]

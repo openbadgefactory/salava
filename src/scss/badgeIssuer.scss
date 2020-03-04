@@ -1,6 +1,15 @@
 @import 'variables';
 
 #badge-creator {
+
+  .panel-heading {
+    img {
+        vertical-align: text-bottom;
+        width: 40px;
+        height: auto;
+      }
+
+  }
   .popup-info {
     font-size: medium;
   }
