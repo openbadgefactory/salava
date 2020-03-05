@@ -98,6 +98,10 @@
      (when @(cursor state [:success-alert])
        [:div.alert.alert-success
         (t :badgeIssuer/Badgesuccessfullyissued)])
+
+     (when-not (blank? @(cursor state [:error-msg]))
+      [:div.alert.alert-info @(cursor state [:error-msg])])
+
      [badge-content badge]
      [:hr.border]
      [:div {:style {:margin "15px 0"}}
@@ -112,6 +116,7 @@
                         (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]]
 
       [:div.its_block
+       [:p [:b (t :badgeIssuer/Issuebadgeinfo)]]
        [:div.form-group
         [:fieldset {:class "checkbox"}
          [:legend.sr-only ""]
@@ -173,7 +178,7 @@
         [:div.btn-group
          (when (pos? @its)
            [:button.btn.btn-primary.btn-bulky
-            {:data-dismiss "modal"
+            {;:data-dismiss "modal"
              :on-click #(do
                           (.preventDefault %)
                           (issue-selfie-badge state (fn [] (do

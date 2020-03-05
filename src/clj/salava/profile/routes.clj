@@ -25,10 +25,14 @@
                   :current-user current-user
                   (let [profile (p/user-information-and-profile ctx userid (:id current-user))
                         visibility (get-in profile [:user :profile_visibility])]
+                    (prn profile)
                     (if (or (= visibility "public")
                             (and (= visibility "internal") current-user))
                       (ok profile)
-                      (unauthorized))))
+                      (ok (if (get-in profile [:user :id])
+                            {:visibility "internal"}
+                            {:visibility "gone"}))
+                      #_(unauthorized))))
 
              (GET "/user/edit" []
                   :no-doc true

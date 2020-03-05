@@ -200,7 +200,8 @@
         about-page (get-in site-navi [:navi-items matched-route :about])]
     (if matched-route
       [:h1 (get-in site-navi [:navi-items matched-route :breadcrumb]) (when about-page
-                                                                        [:a {:on-click #(do
+                                                                        [:a {:style {:color "inherit"} 
+                                                                             :on-click #(do
                                                                                           (.preventDefault %)
                                                                                           (m/modal! [about-page-modal about-page]))}
 

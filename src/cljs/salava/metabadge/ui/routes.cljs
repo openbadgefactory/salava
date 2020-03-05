@@ -12,4 +12,6 @@
 
 (defn ^:export navi [context]
   {(str (base-path context) "/badge/metabadges") {:weight 45 :title (t :metabadge/Milestonebadges) :site-navi true :breadcrumb (t :badge/Badges " / " :metabadge/Milestonebadges) :about {:heading (t :metabadge/Milestonebadges)
-                                                                                                                                                                                          :content (str (t :metabadge/Aboutmilestonebadge) " " (t :metabadge/Milestonebadgespageinfo))}}}) 
+                                                                                                                                                                                          :content [:div#about-page
+                                                                                                                                                                                                    [:p (t :metabadge/Aboutmilestonebadge)]
+                                                                                                                                                                                                    [:p.page-tip [:em (t :metabadge/Milestonebadgespageinfo)]]]}}})

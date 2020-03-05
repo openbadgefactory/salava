@@ -27,11 +27,11 @@
             [:h5 [:b (t :badge/Howcanigetcongratulated)]]
             (t :badge/Aboutbadgecongratulations)]]
    :endorsement [:div
-                 [:p (t :connections/Aboutendorsementspage)]
                  [:div
                   [:h5 [:b (t :badge/Whatareendorsements)]]
                   [:p (t :badge/Aboutbadgeendorsement)]
-                  [:p (t :badge/Aboutendorsementrequests)]]]})
+                  [:p (t :badge/Aboutendorsementrequests)]
+                  [:p.page-tip (t :connections/Aboutendorsementspage)]]]})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/connections")                 {:weight 45 :title (t :social/Connections) :top-navi true :breadcrumb (t :social/Connections " / " :badge/Badges) :about {:heading (t :social/Connections) :content (:badge about)}}

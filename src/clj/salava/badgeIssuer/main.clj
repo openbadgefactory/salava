@@ -73,7 +73,16 @@
 
 (defn issue-selfie-badge [ctx data user-id]
   (let [{:keys [selfie_id recipients expires_on issued_from_gallery issue_to_self request_endorsement evidence visibility]} data
-        user-id (if issued_from_gallery 0 user-id)]
+        user-id (if issued_from_gallery 0 user-id)
+        #_user-profile-visibility #_(as-> (first (plugin-fun (get-plugins ctx) "db" "user-information")) $
+                                          (if (ifn? $) (-> ($ ctx user-id) :profile_visibility) nil))]
+
+    #_(when (= "internal" user-profile-visibility)
+        (log/error "Issuer's profile is internal")
+        (as-> (first (plugin-fun (get-plugins ctx) "db" "set-profile-visibility")) $
+              (when (ifn? $) ($ ctx "public" user-id)))
+        (log/info "Set issuer's profile to public"))
+
     (log/info "Got badge issue request for id" recipients)
     (try+
      (if (pos? issue_to_self)

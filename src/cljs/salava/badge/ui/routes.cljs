@@ -22,13 +22,14 @@
     #(layout/default site-navi content)))
 
 (def about
-  {:mybadges [:div [:p (t :badge/Aboutmybadges)]
+  {:mybadges [:div#about-page
                    [:div
                     [:h5 [:b (t :badge/Whatisabadge)]]
                     (t :badge/AnOpenBadgeIs)]
                    [:div
                     [:h5 [:b (t :badge/Whatisapendingbadge)]]
-                    (t :badge/Apendingbadgeis)]]
+                    (t :badge/Apendingbadgeis)]
+                  [:p.page-tip [:em (t :badge/Aboutmybadges)]]]
    :import [:div
             [:div
              (t :badge/Aboutimportbadge)]]})

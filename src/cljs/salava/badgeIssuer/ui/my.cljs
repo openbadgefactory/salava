@@ -9,7 +9,7 @@
    [salava.core.ui.helper :refer [path-for navigate-to private? unique-values not-activated?]]
    [salava.core.ui.grid :as g]
    [salava.core.ui.notactivated :refer [not-activated-banner]]
-   [salava.core.ui.popover :refer [about-page]]
+  ; [salava.core.ui.popover :refer [about-page]]
    [salava.core.i18n :refer [t translate-text]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]))

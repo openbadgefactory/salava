@@ -14,7 +14,7 @@
    [salava.core.i18n :refer [t translate-text]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]
-   [salava.core.ui.popover :refer [about-page info]]
+   [salava.core.ui.popover :refer [info]]
    [salava.core.ui.tag :as tag]))
 
 

@@ -12,6 +12,13 @@
   {(str (base-path context) "/gallery") [["/map" explore/handler]
                                          ["/map/embed" embed/handler]
                                          ["/map/embed/generate-link" embed/link-handler]]})
+(def about
+  {:heading (t :location/Map)
+   :content [:div
+             [:p (t :location/Aboutlocation)]
+             [:h5 [:b (t :location/Notonmap)]]
+             [:p (t :Toappearonmap)]]})
+
 (defn ^:export navi [context]
   {(str (base-path context) "/gallery/map") {:weight 50 :title (t :location/Map) :site-navi true :breadcrumb (t :gallery/Gallery " / " :location/Map)}})
 
