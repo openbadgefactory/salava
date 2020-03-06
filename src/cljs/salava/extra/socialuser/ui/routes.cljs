@@ -11,8 +11,8 @@
   {(str (base-path context) "/connections") [["/user" connections/handler]]})
 
 (def about
-  {:heading (t :connections/UserConnections)
-   :content (t :connections/Userconnectionsinfo)})
+  {:heading (t :social/Connections " / " :connections/Users)
+   :content [:p.page-tip (t :connections/Userconnectionsinfo)]})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/connections/user") {:weight 63 :title (t :connections/Users) :site-navi true :breadcrumb (t :social/Connections " / " :connections/Users) :about about}})

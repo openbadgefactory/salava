@@ -14,8 +14,8 @@
   {(str (base-path context) "/badge") [["/application" a/handler]
                                        [["/application/"[#"\d+" :user-id] "/embed"] embed/handler]]})
 (def about
-  {:heading (t :extra-application/Application)
-   :content (t :extra-application/AboutEarnbadges)})
+  {:heading (t :badge/Badges " / " :extra-application/Application)
+   :content [:p.page-tip (t :extra-application/AboutEarnbadges)]})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/badge/application") {:weight 45 :title (t :extra-application/Application)  :site-navi true :breadcrumb (t :badge/Badges " / " :extra-application/Application) :about about}})
