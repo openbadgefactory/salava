@@ -223,10 +223,8 @@
                                                                     (reset! (cursor state [:revoke-id]) id)
                                                                     (if @revocation
                                                                       (reset! revocation false)
-                                                                      (reset! revocation true))
-                                                                    ;(m/modal! (revoke-selfie-badge-modal id state) {})
-                                                                    #_(revoke-selfie-badge id state))}
-                                                      [:span [:i.fa.fa-close.fa-remove {:style {:vertical-align "text-bottom"}}] (t :badgeIssuer/Revoke)]])]]
+                                                                      (reset! revocation true)))}
+                                                      [:span [:i.fa.fa-trash.fa-lg] (t :badgeIssuer/Revoke)]])]]
      (revoke-badge-content id state)]))
 
 (defn selfie-issueing-history [state]
