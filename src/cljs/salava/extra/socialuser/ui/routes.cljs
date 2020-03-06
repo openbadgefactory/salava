@@ -10,5 +10,9 @@
 (defn ^:export routes [context]
   {(str (base-path context) "/connections") [["/user" connections/handler]]})
 
+(def about
+  {:heading (t :connections/UserConnections)
+   :content (t :connections/Userconnectionsinfo)})
+
 (defn ^:export navi [context]
-  {(str (base-path context) "/connections/user") {:weight 63 :title (t :connections/Users) :site-navi true :breadcrumb (t :social/Connections " / " :connections/Users)}})
+  {(str (base-path context) "/connections/user") {:weight 63 :title (t :connections/Users) :site-navi true :breadcrumb (t :social/Connections " / " :connections/Users) :about about}})

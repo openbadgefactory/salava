@@ -704,6 +704,13 @@ html[dir="rtl"] .wizard {
     color: #FFF !important;
   }
 }
+
+.selfie-stamp {
+  line-height: 0px;
+  .logo-image-url {
+    width: 160px;
+  }
+}
 /*
 a#login-button {
 height: 36px;
