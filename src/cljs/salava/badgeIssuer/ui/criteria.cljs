@@ -22,13 +22,6 @@
    {:handler (fn [data]
                (swap! state merge data))}))
 
-#_(defn logo []
-    [:div.col-md-8.col-md-offset-2 {:style {:margin "40px 0"}}
-     [:div {:class "logo-image logo-image-url img-responsive"
-            :title "OBP logo"
-            :aria-label "OBP logo"}]
-     #_[:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]])
-
 (defn content [state]
    (create-class
     {:reagent-render
@@ -44,7 +37,7 @@
               [:div#selfie_criteria
                [:div.row
                 (logo)]
-               [:div.panel.panel-default.thumbnail
+               [:div.panel.panel-default.thumbnail {:style {:margin "10px 0"}}
                 [:div.panel-body
                  [:div.row.flip
                   [:div.col-md-3.badge-image
@@ -62,7 +55,7 @@
 
 (defn handler [site-navi params]
   (let [id (:id params)
-        state (atom {:id id})] 
+        state (atom {:id id})]
     (init-data id state)
     (fn []
       (layout/embed-page [content state]))))
