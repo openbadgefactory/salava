@@ -21,7 +21,8 @@
             :content [:div
                       [:p.page-tip [:em (t :badgeIssuer/Issuebadgespageinfo)]]
                       [:div
-                       [:p (t :badgeIssuer/Whyshouildicreatebadges)]
+                       [:h5 [:b (t :badgeIssuer/Whyshouldicreatebadges)]]
+                       [:p (str (t :badgeIssuer/Whycreatebadges) " " (t :badgeIssuer/Whycreatebadges2))]
                        [:p (t :badge/AnOpenBadgeIs)]]]}
 
 

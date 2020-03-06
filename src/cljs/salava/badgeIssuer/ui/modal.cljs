@@ -6,14 +6,15 @@
    [reagent.session :as session]
    [salava.badgeIssuer.ui.block :as block]
    [salava.badgeIssuer.ui.creator :as creator]
-   [salava.badgeIssuer.ui.helper :refer [badge-content badge-image profile-link-inline md->html add-evidence-block]]
+   [salava.badgeIssuer.ui.helper :refer [badge-content badge-image profile-link-inline add-evidence-block]]
    [salava.badgeIssuer.ui.util :refer [toggle-setting delete-selfie-badge issue-selfie-badge issuing-history revoke-badge-content]]
    [salava.core.i18n :refer [t]]
    [salava.core.ui.helper :refer [plugin-fun js-navigate-to navigate-to]]
    [salava.core.ui.modal :as mo]
    [salava.core.ui.popover :refer [info]]
    [salava.core.time :refer [date-from-unix-time]]
-   [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]))
+   [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]
+   [markdown.core :refer [md->html]]))
 
 (defn preview-selfie [badge]
   (let [{:keys [name description tags criteria image]} badge]
@@ -139,7 +140,7 @@
 
          ;;endorsement-requests
          (when (pos? @its)
-          (if (and (seq @(cursor state [:send_request_to])) (not (blank? request)))
+          (if (and (seq @(cursor state [:send_request_to])) (not (blank? @request)))
            [endorsement-request-block state]
            [:div
             [:div.request-link {:id "endorsebadge" :style {:margin "10px 0"}}
