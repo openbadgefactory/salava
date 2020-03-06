@@ -13,7 +13,8 @@
    [salava.core.ui.input :refer [editor]]
    [salava.core.i18n :refer [t]]
    [salava.core.ui.modal :as mo]
-   [salava.user.ui.helper :refer [profile-picture]]))
+   [salava.user.ui.helper :refer [profile-picture]]
+   [markdown.core :refer [md->html]]))
 
 
 (defn progress-wizard [state]
@@ -55,8 +56,8 @@
                (swap! state assoc :badge data
                       :generating-image false))}))
 
-(defn md->html [md]
-  (if @editor (.previewRender (.-options @editor) md) md))
+#_(defn md->html [md]
+    (if @editor (.previewRender (.-options @editor) md) md))
 
 
 (defn bottom-buttons [state]
