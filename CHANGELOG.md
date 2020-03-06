@@ -1,9 +1,19 @@
 # Changelog
 
+## 3.9.0
+
+### New features
+- BadgeIssuer plugin
+- Information about each page
+
+### Updates 
+- Bug fixes
+- Minor ui improvements
+
 ## 3.8.3
  - Ui improvements to account deleted page
  - Translation fixes
- 
+
 ## 3.8.2
  - Disabled mouse wheel zooming in embedded map
  - Fixed typo
