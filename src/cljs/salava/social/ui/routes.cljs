@@ -15,8 +15,10 @@
                                         ["/connections" c/handler]
                                         ["/stats" stats/handler]]})
 (def about
-  {:heading (t :social/Stream)
-   :content (t :social/Aboutstream)})
+  {:heading (t :social/Social " / " :social/Stream)
+   :content [:div
+             [:p.page-tip (t :social/Aboutstream)]
+             [:p (t :social/Streamtip)]]})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/social")                 {:weight 1 :title (t :social/Social) :top-navi true :breadcrumb (t :social/Social " / " "Dashboard" #_:social/Stream)}

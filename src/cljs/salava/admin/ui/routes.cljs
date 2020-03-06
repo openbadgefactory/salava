@@ -16,14 +16,14 @@
                                        ["/statistics" s/handler]
                                        ["/userlist" u/handler]]})
 (def about
-  {:stats {:heading (t :admin/Statistics)
-           :content [:div
+  {:stats {:heading (t :admin/Admin " / "  :admin/Statistics)
+           :content [:p.page-tip
                      (t :admin/Aboutadminstats)]}
-   :tickets {:heading (t :admin/Tickets)
-             :content [:div
+   :tickets {:heading (t :admin/Admin " / "  :admin/Tickets)
+             :content [:p.page-tip
                        (t :admin/Abouttickets)]}
-   :users {:heading (t :admin/Userlist)
-           :content [:div
+   :users {:heading (t :admin/Admin " / "  :admin/Userlist)
+           :content [:p.page-tip
                      (t :admin/Aboutusers)]}})
 
 (defn admin-navi [context]

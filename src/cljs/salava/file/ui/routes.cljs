@@ -9,7 +9,12 @@
   {(str (base-path context) "/profile") [["/files" my/handler]]
    (str (base-path context) "/file") [[["/browser/" :editor "/" :callback "/" :lang] browser/handler]]})
 
+(def about
+  {:heading (t :user/Profile " / " :page/Files)
+   :content [:div
+             [:p.page-tip (t :file/Aboutfiles)]
+             [:p (t :file/Aboutfiles2)]]})
+
+
 (defn ^:export navi [context]
-  {(str (base-path context) "/profile/files") {:weight 35 :title (t :page/Files) :site-navi true :breadcrumb (t :user/Profile " / " :page/Files) :about {:heading (t :file/Files) :content [:div
-                                                                                                                                                                                            [:p (t :file/Aboutfiles)]
-                                                                                                                                                                                            [:p.page-tip (t :file/Aboutfiles2)]]}}})
+  {(str (base-path context) "/profile/files") {:weight 35 :title (t :page/Files) :site-navi true :breadcrumb (t :user/Profile " / " :page/Files) :about about}})
