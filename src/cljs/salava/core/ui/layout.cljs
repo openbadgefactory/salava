@@ -2,6 +2,7 @@
   (:require [reagent.session :as session]
             [clojure.string :as s]
             [ajax.core :as ajax]
+            [reagent-modals.modals :as m]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [current-path navigate-to js-navigate-to path-for base-path current-route-path plugin-fun route-path enable-background-image]]
             [salava.user.ui.helper :refer [profile-picture]]
@@ -9,7 +10,7 @@
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.terms :refer [default-terms default-terms-fr]]
-            [salava.core.ui.popover :refer [about-page]]))
+            [salava.core.ui.popover :refer [about-page-modal]]))
 
 (defn navi-parent [path]
   (let [path (s/replace-first (str path) (re-pattern (base-path)) "")
@@ -196,9 +197,16 @@
     [:h1 (get-in dropdownitems [matched-route :breadcrumb])]))
 
 (defn breadcrumb [site-navi]
-  (let [matched-route (first (filter (fn [r] (re-matches (re-pattern r) (current-path))) (keys (:navi-items site-navi))))]
+  (let [matched-route (first (filter (fn [r] (re-matches (re-pattern r) (current-path))) (keys (:navi-items site-navi))))
+        about-page (get-in site-navi [:navi-items matched-route :about])]
     (if matched-route
-      [:h1 (get-in site-navi [:navi-items matched-route :breadcrumb])]
+      [:h1 (get-in site-navi [:navi-items matched-route :breadcrumb]) (when about-page
+                                                                        [:a {:style {:color "inherit"} 
+                                                                             :on-click #(do
+                                                                                          (.preventDefault %)
+                                                                                          (m/modal! [about-page-modal about-page]))}
+
+                                                                         [:i.fa.fa-question-circle.fa-fw]])]
       (get-dropdown-breadcrumb site-navi))))
 
 (defn default-0 [top-items sub-items heading content]
@@ -226,8 +234,8 @@
     [:div {:class "container"}
      (breadcrumb site-navi)]]
    [:div {:class "container main-container"}
-    (when (session/get-in [:about-page])
-       [about-page (session/get-in [:about-page])])
+    #_(when (session/get-in [:about-page])
+         [about-page (session/get-in [:about-page])])
     [:div {:class "row flip"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
      [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]

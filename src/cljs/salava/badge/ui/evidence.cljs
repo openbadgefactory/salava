@@ -218,7 +218,7 @@
                  (.item 0))
         form-data (doto
                    (js/FormData.)
-                    (.append "file" file (.-name file)))]
+                   (.append "file" file (.-name file)))]
     (ajax/POST
      (path-for "/obpv1/file/upload")
      {:body    form-data
@@ -298,33 +298,64 @@
        [:div.evidence-info (t :badge/Evidenceinfo)]
 
        [:div.row.form-horizontal
-        [:div
-         [:div.col-md-12.resource-options
+        #_[:div
+           [:div.col-md-12.resource-options
+            [:div
+             [:div [:a {:class (if (= :url_input @input-mode) "active-resource" "")
+                        :href "#"
+                        :on-click #(do
+                                     (.preventDefault %)
+                                     (toggle-input-mode :url_input state))}
+                    [:i.fa.fa-link] (t :admin/Url)]]
+             [:div  [:a {:class (if (= :page_input @input-mode) "active-resource" "")
+                         :href "#"
+                         :on-click #(do
+                                      (.preventDefault %)
+                                      (toggle-input-mode :page_input state))}
+
+                     [:i.fa.fa-file-text] (t :page/Pages)]]
+             [:div  [:a {:class (if (= :file_input @input-mode) "active-resource" "")
+                         :href "#" :on-click #(do
+                                                (.preventDefault %)
+                                                (toggle-input-mode :file_input state))}
+                     [:i.fa.fa-files-o] (t :page/Files)]]
+             [:div.cancel [:a {:href "#" :on-click #(do
+                                                      (.preventDefault %)
+                                                      (swap! state assoc :tab [settings-tab-content (dissoc data :evidence) state init-data]
+                                                             :tab-no 2))}
+
+                           [:i.fa.fa-remove] (t :core/Cancel)]]]]]
+
           [:div
-           [:div [:a {:class (if (= :url_input @input-mode) "active-resource" "")
-                      :href "#"
-                      :on-click #(do
-                                   (.preventDefault %)
-                                   (toggle-input-mode :url_input state))}
-                  [:i.fa.fa-link] (t :admin/Url)]]
-           [:div  [:a {:class (if (= :page_input @input-mode) "active-resource" "")
-                       :href "#"
-                       :on-click #(do
-                                    (.preventDefault %)
-                                    (toggle-input-mode :page_input state))}
+           [:div.col-md-12.btn-toolbar.resource-buttons {:style {:margin "10px 0"}}
+            [:div.btn-group {:role "group"}
+             [:a.btn.btn-primary.btn-bulky {:class (if (= :url_input @input-mode) "active-resource" "")
+                                            :href "#"
+                                            :type "button"
+                                            :aria-label "url input"
+                                            :on-click #(do
+                                                         (.preventDefault %)
+                                                         (toggle-input-mode :url_input state))}
+              [:i.fa.fa-link] (t :admin/Url)]
+             [:a.btn.btn-primary.btn-bulky {:class (if (= :page_input @input-mode) "active-resource" "")
+                                            :href "#"
+                                            :on-click #(do
+                                                         (.preventDefault %)
+                                                         (toggle-input-mode :page_input state))}
 
-                   [:i.fa.fa-file-text] (t :page/Pages)]]
-           [:div  [:a {:class (if (= :file_input @input-mode) "active-resource" "")
-                       :href "#" :on-click #(do
-                                              (.preventDefault %)
-                                              (toggle-input-mode :file_input state))}
-                   [:i.fa.fa-files-o] (t :page/Files)]]
-           [:div.cancel [:a {:href "#" :on-click #(do
-                                                    (.preventDefault %)
-                                                    (swap! state assoc :tab [settings-tab-content (dissoc data :evidence) state init-data]
-                                                           :tab-no 2))}
+              [:i.fa.fa-file-text] (t :page/Pages)]
+             [:button.btn.btn-primary.btn-bulky {:class (if (= :file_input @input-mode) "active-resource" "")
+                                                 :href "#" :on-click #(do
+                                                                        (.preventDefault %)
+                                                                        (toggle-input-mode :file_input state))}
+              [:i.fa.fa-files-o] (t :page/Files)]
 
-                         [:i.fa.fa-remove] (t :core/Cancel)]]]]]
+             [:button.btn.btn-danger.btn-bulky {:href "#" :on-click #(do
+                                                                       (.preventDefault %)
+                                                                       (swap! state assoc :tab [settings-tab-content (dissoc data :evidence) state init-data]
+                                                                              :tab-no 2))}
+
+              [:span [:i.fa.fa-remove] (t :core/Cancel)]]]]]
 
         ;;Preview
         (when @(cursor state [:show-preview])

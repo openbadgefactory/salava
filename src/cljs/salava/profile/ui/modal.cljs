@@ -28,39 +28,45 @@
         [:div.profile-picture-wrapper
          [:img.profile-picture {:src (profile-picture profile_picture)
                                 :alt fullname}]]]
-       [:div {:class "col-md-9 col-sm-9 col-xs-12"}
-        (if (not-empty about)
-          [:div {:class "row about" :style {:line-height "1.6"}}
-           [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
-           [:div.col-xs-12 {:style {:padding "8px 15px"}} about]])
-        (if (not-empty profile)
-          [:div.row
-           [:div.col-xs-12 [:b (t :profile/Additionalinformation) ":"]]
-           [:div.col-xs-12
-            [:table.table
-             [:thead
-              [:tr
-               [:th {:style {:display "none"}} "Field"]
-               [:th {:style {:display "none"}} "Value"]]]
-             (into [:tbody]
-                   (for [profile-field (sort-by :order profile)
-                         :let          [{:keys [field value]} profile-field
-                                        key (->> additional-fields
-                                                 (filter #(= (:type %) field))
-                                                 first
-                                                 :key)]]
-                     [:tr
-                      [:td.profile-field (t key) ":"]
-                      [:td.field-value (cond
-                                         (or (re-find #"www." (str value)) (re-find #"^https?://" (str value)) (re-find #"^http?://" (str value))) (hyperlink value)
-                                         (and (re-find #"@" (str value)) (= "twitter" field))                                                      [:a {:href (str "https://twitter.com/" value) :target "_blank"} (t value)]
-                                         (and (re-find #"@" (str value)) (= "email" field))                                                        [:a {:href (str "mailto:" value)} (t value)]
-                                         (and  (empty? (re-find #" " (str value))) (= "facebook" field))                                           [:a {:href (str "https://www.facebook.com/" value) :target "_blank"} (t value)]
-                                         (= "twitter" field)                                                                                       [:a {:href (str "https://twitter.com/" value) :target "_blank"} (t value)]
-                                         (and  (empty? (re-find #" " (str value))) (= "pinterest" field))                                          [:a {:href (str "https://www.pinterest.com/" value) :target "_blank"} (t value)]
-                                         (and  (empty? (re-find #" " (str value))) (= "instagram" field))                                          [:a {:href (str "https://www.instagram.com/" value) :target "_blank"} (t value)]
-                                         (= "blog" field)                                                                                          (hyperlink value)
-                                         :else                                                                                                     (t value))]]))]]])]]]]))
+       (if (and (empty? (session/get :user)) (= "internal" (:visibility @state)))
+        [:div {:class "col-md-9 col-sm-9 col-xs-12"}
+         [:div.col-md-12;.alert.alert-info
+          [:i.fa.fa-lock.fa-lg.fa-fw {:style {:vertical-align "bottom"}}]
+          (t :profile/Userprofilenotpublic)]]
+
+        [:div {:class "col-md-9 col-sm-9 col-xs-12"}
+         (if (not-empty about)
+           [:div {:class "row about" :style {:line-height "1.6"}}
+            [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
+            [:div.col-xs-12 {:style {:padding "8px 15px"}} about]])
+         (if (not-empty profile)
+           [:div.row
+            [:div.col-xs-12 [:b (t :profile/Additionalinformation) ":"]]
+            [:div.col-xs-12
+             [:table.table
+              [:thead
+               [:tr
+                [:th {:style {:display "none"}} "Field"]
+                [:th {:style {:display "none"}} "Value"]]]
+              (into [:tbody]
+                    (for [profile-field (sort-by :order profile)
+                          :let          [{:keys [field value]} profile-field
+                                         key (->> additional-fields
+                                                  (filter #(= (:type %) field))
+                                                  first
+                                                  :key)]]
+                      [:tr
+                       [:td.profile-field (t key) ":"]
+                       [:td.field-value (cond
+                                          (or (re-find #"www." (str value)) (re-find #"^https?://" (str value)) (re-find #"^http?://" (str value))) (hyperlink value)
+                                          (and (re-find #"@" (str value)) (= "twitter" field))                                                      [:a {:href (str "https://twitter.com/" value) :target "_blank"} (t value)]
+                                          (and (re-find #"@" (str value)) (= "email" field))                                                        [:a {:href (str "mailto:" value)} (t value)]
+                                          (and  (empty? (re-find #" " (str value))) (= "facebook" field))                                           [:a {:href (str "https://www.facebook.com/" value) :target "_blank"} (t value)]
+                                          (= "twitter" field)                                                                                       [:a {:href (str "https://twitter.com/" value) :target "_blank"} (t value)]
+                                          (and  (empty? (re-find #" " (str value))) (= "pinterest" field))                                          [:a {:href (str "https://www.pinterest.com/" value) :target "_blank"} (t value)]
+                                          (and  (empty? (re-find #" " (str value))) (= "instagram" field))                                          [:a {:href (str "https://www.instagram.com/" value) :target "_blank"} (t value)]
+                                          (= "blog" field)                                                                                          (hyperlink value)
+                                          :else                                                                                                     (t value))]]))]]])])]]]))
 
 (defn view-profile [state]
   (let [blocks (cursor state [:blocks])
@@ -90,9 +96,13 @@
        [:div.col-xs-12
         [:div.pull-right
          (ph/connect-user @(cursor state [:user-id]))]])
-     [:div#profile
-      [ph/profile-navi state]
-      (if (= (:active-index @state) 0) [view-profile state] tab)]]))
+     (if (= "gone" (:visibility @state))
+       [:div.col-md-12
+        [:p
+         [:b (t :profile/Userdoesnotexist)]]]
+       [:div#profile
+        [ph/profile-navi state]
+        (if (= (:active-index @state) 0) [view-profile state] tab)])]))
 
 (defn init-data [id state]
   (ajax/GET

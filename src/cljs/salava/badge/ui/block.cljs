@@ -115,7 +115,9 @@
       [:div.panel-title {:style {:margin-bottom "unset" :font-size "16px"}}
        (t :badge/Setbadgevisibility) [info {:style {:position "absolute" :right "0" :top "0"} :content (t :badge/Visibilityinfo) :placement "left"}]]]
      [:div.panel-body {:style {:padding "15px"}}
-      [:p [:b (t :badge/Selectvisibilityinfo)]]
+      [:div.row
+       [:div.col-md-12
+        [:p [:b (t :badge/Selectvisibilityinfo)]]]]
       [:div.visibility-opts-group
        [:div.visibility-opt
          [:input.radio-btn {:id "private"
@@ -126,7 +128,7 @@
                                           (reset! vatom "private"))
                             :checked (= "private" @vatom)}]
          [:div.radio-tile
-          [:div.icon [:i.fa.fa-lock.fa-4x]]
+          [:div.icon [:i.fa.fa-lock]]
           [:label.radio-tile-label {:for "private"} (t :core/Private)]]]
        [:div.visibility-opt
          [:input.radio-btn {:id "internal"
@@ -137,7 +139,7 @@
                                           (reset! vatom "internal"))
                             :checked (= "internal" @vatom)}]
          [:div.radio-tile
-          [:div.icon [:i.fa.fa-group.fa-3x]]
+          [:div.icon [:i.fa.fa-group]]
           [:label.radio-tile-label {:for "internal"} (if (blank? site-name)(t :core/Internal) site-name)]]]
        [:div.visibility-opt
          [:input.radio-btn {:id "public"
@@ -148,7 +150,7 @@
                                           (reset! vatom "public"))
                             :checked (= "public" @vatom)}]
          [:div.radio-tile
-          [:div.icon [:i.fa.fa-globe.fa-3x]]
+          [:div.icon [:i.fa.fa-globe]]
           [:label.radio-tile-label {:for "public"} (t :core/Public)]]]]
       [:div {:style {:margin "10px auto"}}
        ;[:hr.border.dotted-border]

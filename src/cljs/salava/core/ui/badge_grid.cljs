@@ -147,7 +147,10 @@
                                     [:div.media-heading
                                      [:p.heading-link name]]
                                     [:div.media-issuer
-                                     [:p issuer_content_name]]
+                                     [:p (when-not (clojure.string/blank? selfie_id)
+                                          [:i.fa.fa-user.fa-fw.fa-lg {:title (str (t :badgeIssuer/Createdandissued) " " (session/get :site-name))
+                                                                      :aria-label (str (t :badgeIssuer/Createdandissued) " " (session/get :site-name))}])
+                                      issuer_content_name]]
                                     (if recipients
                                       [:div.media-recipients
                                        recipients " " (if (= recipients 1)

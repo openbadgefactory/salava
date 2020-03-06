@@ -20,28 +20,47 @@
                                          [["/badges/" :user-id "/" :badge_id] b/handler]
                                          ["/pages" p/handler]
                                          [["/pages/" :user-id] p/handler]
-                                         ["/profiles" u/handler]
+                                         ["/profiles" u/handler]]})
                                          ;[["/badgeview/" :badge-content-id] bv/handler]
-                                         ]})
+
+(def about
+  {:badges {:heading (t :badge/Badges)
+            :content [:div
+                      [:h5 [:b (t :badge/Whatisabadge)]]
+                      [:p (t :badge/AnOpenBadgeIs)]
+                      [:h5 [:b (t :gallery/Whatisasharedbadge)]]
+                      [:p (t :gallery/Asharedbadgeis)]
+                      [:p.page-tip (t :gallery/Aboutexplorebadges)]]}
+   :pages {:heading (t :page/Pages)
+           :content [:div
+                     [:h5 [:b (t :page/Whatisapage)]]
+                     [:p (t :page/Apageis)]
+                     [:h5 [:b (t :gallery/Whatisasharedpage)]]
+                     [:p (t :gallery/Asharedpageis)]
+                     [:p.page-tip (t :gallery/Aboutexplorepages)]]}
+   :profiles {:heading (t :gallery/Profiles)
+              :content [:div
+                        (t :gallery/Aboutprofiles)]}})
+
 
 #_(defn ^:export navi [context]
-  {(str (base-path context) "/gallery")                {:weight 40 :title (t :gallery/Gallery) :top-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedbadges)}
-   (str (base-path context) "/gallery/badges")         {:weight 41 :title (t :gallery/Sharedbadges) :site-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedbadges)}
-   (str (base-path context) "/gallery/pages")          {:weight 42 :title (t :gallery/Sharedpages) :site-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedpages)}
-   (str (base-path context) "/gallery/profiles")       {:weight 43 :title (t :gallery/Sharedprofiles) :site-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedprofiles)}
-   (str (base-path context) "/gallery/badges/\\d+")    {:breadcrumb (t :gallery/Gallery " / " :gallery/Sharedbadges)}
-   (str (base-path context) "/gallery/pages/\\d+")     {:breadcrumb (t :gallery/Gallery " / " :gallery/Sharedpages)}
-   (str (base-path context) "/gallery/badgeview/\\w+") {:breadcrumb (t :gallery/Gallery " / " :gallery/Viewbadge)}})
+   {(str (base-path context) "/gallery")                {:weight 40 :title (t :gallery/Gallery) :top-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedbadges)}
+    (str (base-path context) "/gallery/badges")         {:weight 41 :title (t :gallery/Sharedbadges) :site-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedbadges)}
+    (str (base-path context) "/gallery/pages")          {:weight 42 :title (t :gallery/Sharedpages) :site-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedpages)}
+    (str (base-path context) "/gallery/profiles")       {:weight 43 :title (t :gallery/Sharedprofiles) :site-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedprofiles)}
+    (str (base-path context) "/gallery/badges/\\d+")    {:breadcrumb (t :gallery/Gallery " / " :gallery/Sharedbadges)}
+    (str (base-path context) "/gallery/pages/\\d+")     {:breadcrumb (t :gallery/Gallery " / " :gallery/Sharedpages)}
+    (str (base-path context) "/gallery/badgeview/\\w+") {:breadcrumb (t :gallery/Gallery " / " :gallery/Viewbadge)}})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/gallery")                {:weight 40 :title (t :gallery/Gallery) :top-navi true :breadcrumb (t :gallery/Gallery " / " :badge/Badges)}
-   (str (base-path context) "/gallery/badges")         {:weight 41 :title (t :badge/Badges) :site-navi true :breadcrumb (t :gallery/Gallery " / " :badge/Badges)}
-   (str (base-path context) "/gallery/pages")          {:weight 42 :title (t :page/Pages) :site-navi true :breadcrumb (t :gallery/Gallery " / " :page/Pages)}
-   (str (base-path context) "/gallery/profiles")       {:weight 43 :title (t :gallery/Profiles) :site-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Profiles)}
+  {(str (base-path context) "/gallery")                {:weight 40 :title (t :gallery/Gallery) :top-navi true :breadcrumb (t :gallery/Gallery " / " :badge/Badges) :about (:badges about)}
+   (str (base-path context) "/gallery/badges")         {:weight 41 :title (t :badge/Badges) :site-navi true :breadcrumb (t :gallery/Gallery " / " :badge/Badges) :about (:badges about)}
+   (str (base-path context) "/gallery/pages")          {:weight 42 :title (t :page/Pages) :site-navi true :breadcrumb (t :gallery/Gallery " / " :page/Pages) :about (:pages about)}
+   (str (base-path context) "/gallery/profiles")       {:weight 43 :title (t :gallery/Profiles) :site-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Profiles) :about (:profiles about)}
    (str (base-path context) "/gallery/badges/\\d+")    {:breadcrumb (t :gallery/Gallery " / " :badge/Badges)}
-   (str (base-path context) "/gallery/pages/\\d+")     {:breadcrumb (t :gallery/Gallery " / " :page/Pages)}
+   (str (base-path context) "/gallery/pages/\\d+")     {:breadcrumb (t :gallery/Gallery " / " :page/Pages)}})
    ;(str (base-path context) "/gallery/badgeview/\\w+") {:breadcrumb (t :gallery/Gallery " / " :gallery/Viewbadge)}
-   })
+
 
 (defn ^:export quicklinks []
   [{:title [:p (t :social/Iwanttofindbadges)]

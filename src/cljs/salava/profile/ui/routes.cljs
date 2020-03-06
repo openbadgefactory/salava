@@ -18,9 +18,17 @@
                                          [["/" [#"\d+" :user-id] "/embed"] embed/handler]]
    (str (base-path context) "/page") [[["/mypages" page/handler]]]})
 
+(def about
+  {:profile [:div
+             [:p (t :profile/Aboutprofilepage)]
+             [:div
+              [:h5 [:b (t :profile/Whocanviewmyprofile)]]
+              [:p (t :profile/Aboutuserprofile)]
+              [:p (t :profile/Aboutpublicprofile)]]]})
+
 (defn ^:export navi [context]
-  {(str (base-path context) "/profile/\\d+")  {:breadcrumb (t :user/User " / " :user/Profile)}
-   (str (base-path context) "/profile/" (get-in context [:user :id])) {:weight 30 :title (t :user/Profile) :top-navi true :site-navi true :breadcrumb (str (t :user/Profile) " / " (get-in context [:user :first_name]) " " (get-in context [:user :last_name]))}})
+  {(str (base-path context) "/profile/\\d+")  {:breadcrumb (t :user/User " / " :user/Profile) :about {:heading (t :user/Profile) :content (:profile about)}}
+   (str (base-path context) "/profile/" (get-in context [:user :id])) {:weight 30 :title (t :user/Profile) :top-navi true :site-navi true :breadcrumb (str (t :user/Profile) " / " (get-in context [:user :first_name]) " " (get-in context [:user :last_name])) :about {:heading (t :user/Profile) :content (:profile about)}}})
 
 (defn ^:export quicklinks []
   [{:title [:p (t :social/Iwanttoseeprofile)]

@@ -1,6 +1,7 @@
 (ns salava.oauth.ui.status
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
+            [reagent-modals.modals :as m]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link google-link]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [base-path navigate-to path-for]]
@@ -22,6 +23,7 @@
                   "linkedin" linkedin-link
                   "google" google-link)]
     [:div {:id "login-page"}
+     [m/modal-window]
      [:div {:class "panel"}
       [:div {:class "panel-body"}
        (if (:initializing @state)

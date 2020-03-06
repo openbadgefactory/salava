@@ -99,13 +99,13 @@
                    :profile_picture    (s/maybe s/Str)
                    :about              (s/maybe s/Str)})
 
-(s/defschema user-profile {:user       (merge user user-setting)
-                           :profile    [(s/maybe profile-field)]
-                           :visibility (s/enum "public" "internal")
-                           :blocks     [(s/maybe profile-block)]
-                           :theme      s/Int
-                           :tabs       [(s/maybe profile-tab)]
-                           :owner?     s/Bool})
+(s/defschema user-profile {(s/optional-key :user)       (merge user user-setting)
+                           (s/optional-key :profile)    [(s/maybe profile-field)]
+                           :visibility (s/enum "public" "internal" "gone")
+                           (s/optional-key :blocks)     [(s/maybe profile-block)]
+                           (s/optional-key :theme)      s/Int
+                           (s/optional-key :tabs)       [(s/maybe profile-tab)]
+                           (s/optional-key :owner?)     s/Bool})
 
 (s/defschema edit-user-profile-p  {(s/optional-key :profile_visibility) (s/enum "internal" "public")
                                    (s/optional-key :about)           (describe (s/maybe s/Str) "A short description about user")

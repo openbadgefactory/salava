@@ -28,7 +28,10 @@
                     (if (or (= visibility "public")
                             (and (= visibility "internal") current-user))
                       (ok profile)
-                      (unauthorized))))
+                      (ok (if (get-in profile [:user :id])
+                            {:visibility "internal"}
+                            {:visibility "gone"}))
+                      #_(unauthorized))))
 
              (GET "/user/edit" []
                   :no-doc true

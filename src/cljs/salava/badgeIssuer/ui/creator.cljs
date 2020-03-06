@@ -14,9 +14,8 @@
    [salava.core.i18n :refer [t translate-text]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]
-   [salava.core.ui.popover :refer [about-page]]
+   [salava.core.ui.popover :refer [info]]
    [salava.core.ui.tag :as tag]))
-
 
 (defn init-data
   ([state]
@@ -148,30 +147,33 @@
     [:div.col-md-12.panel-section
      [:form.form-horizontal
       [:div.form-group
-       [:label {:for "input-name"} (t :badge/Name) [:span.form-required " *"]]
+       [:label {:for "input-name"} (t :badge/Name) [:span.form-required " *"] [info {:content (t :badgeIssuer/Badgenameinfo) :placement "right"}]]
        [text-field
         {:name "name"
          :atom (cursor state [:badge :name])
          :placeholder (t :badgeIssuer/Inputbadgename)}]]
 
+
       [:div.form-group
-       [:label {:for "input-description"} (t :page/Description) [:span.form-required " *"]]
+       [:label {:for "input-description"} (t :page/Description) [:span.form-required " *"] [info {:content (t :badgeIssuer/Badgedescriptioninfo) :placement "right"}]]
        [text-field
         {:name "description"
          :atom (cursor state [:badge :description])
          :placeholder (t :badgeIssuer/Inputbadgedescription)}]]
       [:div.form-group
-       [:label {:for "newtags"} (t :badge/Tags)]
+       [:span._label {:style {:margin-bottom "5px"}}  (t :badge/Criteria) [:span.form-required " *"] [info {:content (t :badgeIssuer/Badgecriteriainfo) :placement "right"}]]
+       [:div.col-md-12 [markdown-editor (cursor state [:badge :criteria])]]]
+
+      [:div.form-group
+       [:div [:label {:for "newtags"} (t :badge/Tags)] [:em [:span.text-muted (str " - " (t :badgeIssuer/Optional)) [info {:content (t :badgeIssuer/Badgetagsinfo) :placement "right"}]]]]
        [:div {:class "row"}
         [:div {:class "col-md-12"}
          [tag/tags (cursor state [:badge :tags])]]]
        [:div {:class "form-group"}
         [:div {:class "col-md-12"}
-         [tag/new-tag-input (cursor state [:badge :tags]) (cursor state [:badge :new-tag])]]]]]
+         [tag/new-tag-input (cursor state [:badge :tags]) (cursor state [:badge :new-tag])]]]]]]))
 
-     [:div.row
-      [:span._label  (t :badge/Criteria) [:span.form-required " *"]]
-      [markdown-editor (cursor state [:badge :criteria])]]]))
+
 
 (defn set-badge-content [state]
   [:div
@@ -235,7 +237,9 @@
    (fn []
      [:div#badge-creator {:style {:margin "20px"}}
       [:div.panel.panel-default
-       [:div.panel-heading]
+       [:div.panel-heading
+        [:div.panel-title
+         [:img {:src (str "/" (:image badge)) }][:h4.inline " " (t :badgeIssuer/Editbadge) "/" (:name badge)]]]
        #_(when (and (:error-message @state) (not (blank? (:error-message @state))))
              [:div
                {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))])

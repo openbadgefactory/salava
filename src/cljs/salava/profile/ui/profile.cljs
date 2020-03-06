@@ -124,13 +124,17 @@
 (defn content [state]
   [:div
    [m/modal-window]
-   [:div#profile
-    [:h2.sr-only (t :user/Editprofile)]
-    [ph/profile-navi state]
-    (when @(cursor state [:show-manage-buttons]) [ph/manage-buttons state])
-    (if @(cursor state [:edit-mode])
-      [edit-profile state]
-      [view-profile state])]])
+   (if (= "gone" (:visibility @state))
+     [:div.col-md-12
+      [:p
+       [:b (t :profile/Userdoesnotexist)]]]
+     [:div#profile
+      [:h2.sr-only (t :user/Editprofile)]
+      [ph/profile-navi state]
+      (when @(cursor state [:show-manage-buttons]) [ph/manage-buttons state])
+      (if @(cursor state [:edit-mode])
+        [edit-profile state]
+        [view-profile state])])])
 
 (defn init-data [user-id state]
   (ajax/GET

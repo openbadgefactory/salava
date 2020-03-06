@@ -40,7 +40,8 @@
 (defn get-pending-requests [dataatom state]
   (ajax/GET
    (path-for (str "/obpv1/badge/user_endorsement/request/pending/" (:id @state)))
-   {:handler (fn [data] (reset! (cursor dataatom [:sent-requests]) data))}))
+   {:handler (fn [data]
+               (reset! (cursor dataatom [:sent-requests]) data))}))
 
 (defn refresh-social-tab [dataatom state]
   (let [endorsements (cursor state [:user-badge-endorsements])
@@ -111,11 +112,12 @@
 (defn badge-endorsements [data dataatom state]
   (let [panel-identity :endo
         visible-area-atom (cursor state [:visible-area])
-        icon-class (if (= @visible-area-atom :endo) "fa-chevron-circle-down" "fa-chevron-circle-right")
+        ;icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")
         pending-endorsements-count @(cursor state [:pending_endorsements_count])
         request-mode (cursor state [:request-mode])
         hand-icon (if @request-mode "fa-hand-o-down" "fa-hand-o-right")
         sent-requests (cursor dataatom [:sent-requests])]
+    (prn pending-endorsements-count)
     (create-class
      {:reagent-render
       (fn []
@@ -123,29 +125,40 @@
          [:div.col-md-12
           [:div.panel.expandable-block ;{:id "social-tab"}
            [:div.panel-heading
-            [:a {:id (str "#" panel-identity) :href "#" :on-click #(do (.preventDefault %) (toggle-panel :endo visible-area-atom))}
-             [:h1 (str (t :badge/Userendorsements) " : "  @(cursor state [:user_endorsement_count]))
-              [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]
-             (when (and (pos? @(cursor state [:notification])) (pos? pending-endorsements-count)) [:span.badge.social-panel-info  pending-endorsements-count])]]
+            (if (or (pos? pending-endorsements-count) (seq @sent-requests) (pos? @(cursor state [:user_endorsement_count])))
+             [:a {:id (str "#" panel-identity) :href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom))}
+              [:h1 (str (t :badge/Userendorsements) " : "  @(cursor state [:user_endorsement_count]))
+               [:i.fa.fa-lg.panel-status-icon {:class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")}]]
+              (when (and (pos? @(cursor state [:notification])) (pos? pending-endorsements-count)) [:span.badge.social-panel-info  pending-endorsements-count])]
+             [:h1 (str (t :badge/Userendorsements) " : "  @(cursor state [:user_endorsement_count]))])
+            [:div.row.panel-title {:id "endorsebadge" :style {:margin-bottom "auto" :margin-top "10px"}}
+             [:div.col-md-12.request-link [:a {:href "#"
+                                               :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :reload-fn (do (toggle-panel panel-identity visible-area-atom) (fn [] (get-pending-requests dataatom state)))})}
+                                           [:span [:i {:class (str "fa fa-fw " hand-icon)}] (t :badge/Requestendorsement)]]]]]
            (when (= @(cursor state [:visible-area]) panel-identity)
              [:div.panel-body.endorsements
-              [:div.col-md-12.request-link {:id "endorsebadge"} [:a {:href "#"
-                                                                     :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :reload-fn (fn [] (get-pending-requests dataatom state))}) #_(if @request-mode (reset! request-mode false) (reset! request-mode true))
-                                                                     :id "#request_endorsement"}
-                                                                 [:span [:i {:class (str "fa fa-fw " hand-icon)}] (t :badge/Requestendorsement)]]]
-              (when @(cursor state [:resp-message]) [:div.col-md-12 [:div.alert.alert-success {:style {:margin "15px 0"}} (t :badge/Requestsuccessfullysent)]])
+              #_[:div.col-md-12.request-link {:id "endorsebadge"} [:a {:href "#"
+                                                                       :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :reload-fn (do
+                                                                                                                                                        (fn [] (get-pending-requests dataatom state)))})
+                                                                       :id "#request_endorsement"}
+                                                                   [:span [:i {:class (str "fa fa-fw " hand-icon)}] (t :badge/Requestendorsement)]]]
+              (when @(cursor state [:resp-message])
+                [:div.col-md-12 [:div.alert.alert-success {:style {:margin "15px 0"}} (t :badge/Requestsuccessfullysent)]])
 
               (when (seq @sent-requests)
                 [:div.col-md-12
-                 [:hr.border]
+                 #_[:hr.border]
                  (reduce (fn [r u]
                            (let [{:keys [user_id first_name last_name profile_picture]} u]
                              (conj r [profile-link-inline-modal user_id first_name last_name profile_picture])))
                          [:div.col-md-12 {:style {:margin-bottom "20px"}} [:div.row {:style {:margin "5px auto"}} [:span.label.label-primary (t :badge/Alreadysentrequest)]]]
                          @sent-requests)
-                 [:hr.border]]) (into [:div.col-md-12 {:style {:margin-top "20px"}}]
-                                      (for [f (plugin-fun (session/get :plugins) "block" "badge_endorsements")]
-                                        [f (:id @state) {:pending-endorsements-atom (cursor state [:pending_endorsements_count]) :pending-info-atom (cursor state [:notification]) :reload-fn (fn [] (init-pending-endorsements state))}]))])]]])})))
+                 (when (or (pos? pending-endorsements-count) (pos? @(cursor state [:user_endorsement_count]))) [:hr.border.dotted-border])])
+
+              (into [:div.col-md-12 {:style {:margin-top "20px"}}]
+                    (for [f (plugin-fun (session/get :plugins) "block" "badge_endorsements")]
+                      [f (:id @state) {:pending-endorsements-atom (cursor state [:pending_endorsements_count]) :pending-info-atom (cursor state [:notification]) :reload-fn (fn [] (init-pending-endorsements state))}]))])]]])})))
+
 
 (defn badge-views [data]
   [:div.row ;{:id "social-tab"}
@@ -314,7 +327,7 @@
                                           ;(reset! vatom "private"))
                             :checked (= "private" @vatom)}]
          [:div.radio-tile
-          [:div.icon [:i.fa.fa-lock.fa-4x]]
+          [:div.icon [:i.fa.fa-lock]]
           [:label.radio-tile-label {:for "private"} (t :core/Private)]]]
        [:div.visibility-opt
          [:input.radio-btn {:id "internal"
@@ -327,7 +340,7 @@
                                           ;(reset! vatom "internal"))
                             :checked (= "internal" @vatom)}]
          [:div.radio-tile
-          [:div.icon [:i.fa.fa-group.fa-3x]]
+          [:div.icon [:i.fa.fa-group]]
           [:label.radio-tile-label {:for "internal"} (if (blank? site-name)(t :core/Internal) site-name)]]]
        [:div.visibility-opt
          [:input.radio-btn {:id "public"
@@ -341,7 +354,7 @@
                             ;(reset! vatom "public"))
                             :checked (= "public" @vatom)}]
          [:div.radio-tile
-          [:div.icon [:i.fa.fa-globe.fa-3x]]
+          [:div.icon [:i.fa.fa-globe]]
           [:label.radio-tile-label {:for "public"} (t :core/Public)]]]]
       [:div {:style {:margin "10px auto"}}
        ;[:hr.border.dotted-border]
@@ -370,7 +383,7 @@
      [:div.col-md-12
       [:div.panel
        [:div.panel-heading
-        [:div [:h1 (t :badge/Badgevisibility)] [info {:style {:position "absolute" :right "0" :top "0"} :content (t :badge/Visibilityinfo) :placement "left"}]]]
+        [:div [:h1 (t :badge/Badgevisibility)] [info {:style {:font-size "large" :position "absolute" :right "0" :top "0"} :content (t :badge/Visibilityinfo) :placement "left"}]]]
 
        [:div.panel-body {:style {:padding "8px"}}
         (if (and (not expired?) (not revoked))
@@ -411,16 +424,18 @@
         [share-badge data dataatom state]
         (case @visibility
           "public" [:div
+                    [badge-endorsements @endorsements dataatom state]
                     (when (-> (:views-stats @dataatom) (dissoc :id) (->> (filter second) seq boolean)) [badge-views @dataatom])
                     [rate-badge dataatom state]
                     [badge-recipients recipients state]
-                    [badge-endorsements @endorsements dataatom state]
                     [badge-congratulations congratulations state]]
           "internal" [:div
+                      [badge-endorsements @endorsements dataatom state]
                       (when (-> (:views-stats @dataatom) (dissoc :id) (->> (filter second) seq boolean)) [badge-views @dataatom])
                       [rate-badge dataatom state]
                       [badge-recipients recipients state]
-                      [badge-endorsements @endorsements dataatom state]
                       [badge-congratulations congratulations state]]
-          [:div {:id "endorsebadge"} [:p [:i.fa.fa-lock] (t :badge/Lockedsocialfeatures)]
+          [:div {:id "endorsebadge"}
+           [badge-endorsements @endorsements dataatom state]
+           [:p [:i.fa.fa-lock] (t :badge/Lockedsocialfeatures)]
            [:p [:b (t :badge/Unlocksocialfeatures)]]])]])))

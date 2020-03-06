@@ -44,6 +44,8 @@
 (defn endorsement-request-block [state]
   (let [selected-users (cursor state [:send_request_to])
         request (cursor state [:request-comment])]
+    [:div
+     [:h4 (t :badge/Endorsementrequest)]
      [:div.panel.panel-default.endorsement-coded-panel
       [:div.panel-heading {:style {:padding "8px"}}
        [:div.panel-title {:style {:margin-bottom "unset"}}
@@ -60,13 +62,13 @@
          [:i.fa.fa-edit.edit-evidence]]
         [:button.close;.close
          {:role "button"
-          :style {:margin-right "unset"}
+          ;:style {:margin-right "unset"}
           :aria-label (t :badge/Delete)
           :title (t :badge/Delete)
           :on-click #(do
                        (.preventDefault %)
                        (swap! state assoc :request-comment "" :send_request_to []))}
-         [:i.fa.fa-trash]]]]
+         [:i.fa.fa-trash.trash]]]] ;{:style {:margin-right "unset"}}]]]]
       [:div.panel-body {:style {:padding "10px"}}
 
        (reduce (fn [r u]
@@ -76,7 +78,9 @@
                              [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
                [:div.selected-users-container] @selected-users)
        [:div
-        {:dangerouslySetInnerHTML {:__html (md->html @request)}}]]]))
+        {:dangerouslySetInnerHTML {:__html (md->html @request)}}]]]
+     (when (and (seq @selected-users) (not (blank? @request)))
+       [:hr.border.dotted-border])]))
 
 (defn issue-selfie-content [state]
   (let [badge (:badge @state)
@@ -94,6 +98,10 @@
      (when @(cursor state [:success-alert])
        [:div.alert.alert-success
         (t :badgeIssuer/Badgesuccessfullyissued)])
+
+     (when-not (blank? @(cursor state [:error-msg]))
+      [:div.alert.alert-info @(cursor state [:error-msg])])
+
      [badge-content badge]
      [:hr.border]
      [:div {:style {:margin "15px 0"}}
@@ -108,6 +116,7 @@
                         (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]]
 
       [:div.its_block
+       [:p [:b (t :badgeIssuer/Issuebadgeinfo)]]
        [:div.form-group
         [:fieldset {:class "checkbox"}
          [:legend.sr-only ""]
@@ -172,7 +181,9 @@
             {:data-dismiss "modal"
              :on-click #(do
                           (.preventDefault %)
-                          (issue-selfie-badge state (fn [] (js-navigate-to "/badge"))))}
+                          (issue-selfie-badge state (fn [] (do
+                                                             (js/setTimeout (fn [] (navigate-to "/badge")) 1000)
+                                                             (session/put! :issue-success true)))))}
 
             [:span [:i.fa.fa-paper-plane.fa-lg] (t :badgeIssuer/Issuenow)]])
 
@@ -184,9 +195,10 @@
                                                             :id id
                                                             :selfie badge
                                                             :func (fn [] (issue-selfie-badge state (fn []
-                                                                                                     (if (some (fn [u] (= u (session/get-in [:user :id]))) (map :id @selected-users))
-                                                                                                       (js-navigate-to "/badge")
-                                                                                                       (mo/previous-view)))))})}
+                                                                                                      (mo/previous-view)
+                                                                                                     #_(if (some (fn [u] (= u (session/get-in [:user :id]))) (map :id @selected-users))
+                                                                                                         (js-navigate-to "/badge")
+                                                                                                         (mo/previous-view)))))})}
 
            [:span [:i.fa.fa-users.fa-lg] (t :badgeIssuer/Selectrecipients)]])]]]]]]))
 

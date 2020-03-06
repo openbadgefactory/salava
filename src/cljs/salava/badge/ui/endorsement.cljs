@@ -801,7 +801,7 @@
   (let [{:keys [state reload-fn context]} params
         request-comment (cursor state [:request-comment])
         context (if (blank? context) "endorsement" context)
-        selected-users (if (blank? context) (cursor state [:selected-users]) (cursor state [:send_request_to]))]
+        selected-users (if (= "endorsement_selfie" context)  (cursor state [:send_request_to]) (cursor state [:selected-users]))]
     (reset! request-comment (t :badge/Defaultrequestbadge))
     (fn []
       [:div.col-md-12 {:id "social-tab"}

@@ -1,6 +1,6 @@
 (ns salava.badge.ui.my
   (:require
-   [reagent.core :refer [atom create-class]]
+   [reagent.core :refer [atom create-class cursor]]
    [reagent.session :as session]
    [reagent-modals.modals :as m]
    [clojure.set :as set :refer [intersection]]
@@ -25,9 +25,12 @@
   (ajax/GET
    (path-for "/obpv1/badge" true)
    {:handler (fn [data]
+
                (swap! state assoc :badges (filter #(= "accepted" (:status %)) (:badges data))
                       :pending (filter #(= "pending" (:status %)) data)
-                      :initializing false))}))
+                      :initializing false
+                      :badge-alert (if (session/get! :issue-success) "issue" (:badge-alert @state)))
+               (when (= (:badge-alert @state) "issue") (js/setTimeout #(swap! state assoc :badge-alert nil) 3000)))}))
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
@@ -114,6 +117,7 @@
                                                                                                (.replaceState js/history {} "Badge modal" (path-for "/badge"))
                                                                                                (navigate-to (current-route-path)))
                                                                                              (init-data state)))}))}))
+
 (defn content [state]
   (create-class {:reagent-render (fn []
                                    [:div {:id "my-badges"}
@@ -124,7 +128,6 @@
                                        [:span (str (t :core/Loading) "...")]]
                                       [:div
                                        [badge-alert state]
-
                                        (if (seq (:pending-badges @state)) [badges-pending state (fn [] (init-data state))]
                                            [badge-grid-form state])
                                        (cond
@@ -148,6 +151,7 @@
                      :initializing true
                      :init-id id
                      :badge-alert nil})]
+
     (init-data state)
     (fn []
       (layout/default site-navi [content state]))))

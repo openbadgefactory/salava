@@ -79,24 +79,27 @@
                   nil)
         evidence @(cursor state [:all_evidence])]
 
-    (ajax/POST
-      (path-for (str "/obpv1/selfie/issue"))
-      {:params {:selfie_id id
-                :recipients recipients
-                :expires_on expires_on
-                :issued_from_gallery (or @(cursor state [:issued_from_gallery]) false)
-                :issue_to_self @(cursor state [:issue_to_self])
-                :request_endorsement request
-                :evidence evidence
-                :visibility @(cursor state [:visibility])}
-       :handler (fn [data]
-                  (if (= "success" (:status data))
-                    (do
-                      (reset! (cursor state [:success-alert]) true)
-                      (when reload-fn (reload-fn)))
-                    (reset! (cursor state [:error-msg]) (t :core/Errorpage))))
-       :finally (fn []
-                  (js/setTimeout (fn [] (reset! (cursor state [:success-alert]) false)) 3000))})))
+    #_(if (= "internal" (session/get-in [:user :profile_visibility]))
+        (reset! (cursor state [:error-msg]) (t :badgeIssuer/Profilevisibilityinfo)))
+
+      (ajax/POST
+        (path-for (str "/obpv1/selfie/issue"))
+        {:params {:selfie_id id
+                  :recipients recipients
+                  :expires_on expires_on
+                  :issued_from_gallery (or @(cursor state [:issued_from_gallery]) false)
+                  :issue_to_self @(cursor state [:issue_to_self])
+                  :request_endorsement request
+                  :evidence evidence
+                  :visibility @(cursor state [:visibility])}
+         :handler (fn [data]
+                    (if (= "success" (:status data))
+                      (do
+                        (reset! (cursor state [:success-alert]) true)
+                        (when reload-fn (reload-fn)))
+                      (reset! (cursor state [:error-msg]) (t :core/Errorpage))))
+         :finally (fn []
+                    (js/setTimeout (fn [] (reset! (cursor state [:success-alert]) false)) 3000))})))
 
 
 (defn delete-selfie-badge [state]

@@ -2015,12 +2015,20 @@ a.popup-info {
 
   }
   .request-link {
-    margin: 10px 0;
+    margin: 5px 0;
+
     i {
       vertical-align: text-bottom;
     }
     a {
       text-decoration: none;
+      font-weight: 600 !important;
+
+      &:hover, &:focus, &:active {
+        color: $link-color !important;
+      }
+
+
     }
   }
   .info-block {
@@ -2297,9 +2305,9 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
 
   .visibility-opt {
     position: relative;
-    height: 8.5em;
-    width: 9em;
-    margin: 1rem;
+    height: 100px;//8.5em;
+    width: 95px;//9em;
+    margin: 5px; //1rem;
 
     .radio-btn {
       opacity: 0;
@@ -2326,6 +2334,7 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
     }
 
     .icon {
+      font-size: 30px;
       //position: absolute;
       //top: 10px;
 
@@ -2355,6 +2364,10 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
     color: lavenderblush !important;
     transform: scale(1.1, 1.1);
 
+    .icon {
+      font-size: 35px;
+    }
+
     .radio-tile-label {
       color: lavenderblush !important;
       //background-color: cadetblue;
@@ -2362,4 +2375,17 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
   }
 }
 
+}
+
+.editor-toolbar {
+  a.fa-question-circle {
+   float: right;
+   font-size: 25px !important;
+  }
+}
+
+.resource-buttons, .btn-toolbar {
+  .btn .fa {
+    color: #FFF !important;
+  }
 }

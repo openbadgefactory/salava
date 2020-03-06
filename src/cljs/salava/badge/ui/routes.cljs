@@ -21,6 +21,18 @@
   (fn [site-navi params]
     #(layout/default site-navi content)))
 
+(def about
+  {:mybadges [:div#about-page
+                   [:div
+                    [:h5 [:b (t :badge/Whatisabadge)]]
+                    (t :badge/AnOpenBadgeIs)]
+                   [:div
+                    [:h5 [:b (t :badge/Whatisapendingbadge)]]
+                    (t :badge/Apendingbadgeis)]
+                  [:p.page-tip [:em (t :badge/Aboutmybadges)]]]
+   :import [:div
+            [:div
+             (t :badge/Aboutimportbadge)]]})
 
 (defn ^:export routes [context]
   {(str (base-path context) "/badge") [["" my/handler]
@@ -34,11 +46,11 @@
                                        #_[["/user/endorsements"] e/handler]]})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/badge") {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges)}
-   (str (base-path context) "/badge/mybadges") {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
-   (str (base-path context) "/badge/import") {:weight 22 :title (t :badge/Import) :site-navi false :breadcrumb (t :badge/Badges " / " :badge/Import)}
-   (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}
-   (str (base-path context) "/badge\\S+") {:weight 23 :breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo) :site-navi true}})
+  {(str (base-path context) "/badge") {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges) :about {:heading (t :badge/Mybadges) :content (:mybadges about)}}
+   (str (base-path context) "/badge/mybadges") {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges) :about {:heading (t :badge/Mybadges) :content (:mybadges about)}}
+   (str (base-path context) "/badge/import") {:weight 21 :title (t :badge/Import) :site-navi false :breadcrumb (t :badge/Badges " / " :badge/Import) :about {:heading (t :badge/ImportBadge) :content (:import about)}}
+   (str (base-path context) "/badge/info/\\d+") {:weight 22 :breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo) :site-navi false}})
+   ;(str (base-path context) "/badge\\S+") {:weight 22 :breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo) :site-navi false}})
    ;(str (base-path context) "/badge/user/endorsements") {:weight 50 :title (t :badge/Myendorsements) :breadcrumb (t :badge/Badges " / " :badge/Myendorsements) :site-navi true}
 
 

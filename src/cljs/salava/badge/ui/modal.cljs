@@ -233,7 +233,7 @@
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)
          (if selfie_id
-           (into [:div.col-md-3.selfie-stamp]
+           (into [:div.col-md-3];.selfie-stamp]
                  (for [f (plugin-fun (session/get :plugins) "block" "selfie_stamp")]
                    [f]))
           [:div.col-md-3]))
@@ -332,7 +332,7 @@
         (check-badge id)
 
         ;;Endorse-badge
-        (when (and (session/get :user) (not owner?)) [endr/endorse-badge id])]]
+        (when (and (session/get :user) (not owner?) (not expired?)) [endr/endorse-badge id])]]
       (when-not (empty? alignment)
         [:div.row
          [:div.col-md-12
