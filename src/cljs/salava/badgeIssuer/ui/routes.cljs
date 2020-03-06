@@ -17,17 +17,18 @@
    (str (base-path context) "/selfie") [[["/criteria/" :id] criteria/handler]]})
 
 (def about
-  {:selfie {:heading (t :badgeIssuer/IssueBadges)
+  {:selfie {:heading (t :badge/Badges " / " :badgeIssuer/IssueBadges)
             :content [:div
-                       [:div
-                        [:h5 [:b (t :badge/Whatisabadge)]]
-                        [:p (t :badge/AnOpenBadgeIs)]]
-                       [:p.page-tip [:em (t :badgeIssuer/Issuebadgespageinfo)]]]}
+                      [:p.page-tip [:em (t :badgeIssuer/Issuebadgespageinfo)]]
+                      [:div
+                       [:p (t :badgeIssuer/Whyshouildicreatebadges)]
+                       [:p (t :badge/AnOpenBadgeIs)]]]}
+
 
    :create {:heading (t :badgeIssuer/Createselfiebadge)
             :content [:div
                       [:p (t :badgeIssuer/Createnewbadgeinfo)]
-                      [:p (t :badgeIssuer/Createnewbadgeinfo2)]]}})
+                      [:p (t :badgeIssuer/Issuebadgeinfo)]]}})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/badge/selfie") {:weight 100 :title (t :badgeIssuer/IssueBadges) :site-navi true :breadcrumb (t :badge/Badges " / " :badgeIssuer/IssueBadges) :about (:selfie about)}

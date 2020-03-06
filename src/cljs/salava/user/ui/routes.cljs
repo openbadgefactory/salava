@@ -46,24 +46,25 @@
                                       ["/registration-complete" rc/handler]]})
 
 (def about
-  {:edit {:heading (t :user/Accountsettings)
+  {:edit {:heading (t :user/User " / " :user/Accountsettings)
           :content [:div
-                    [:p (t :user/Aboutaccountsettings)]]}
-   :password {:heading (t :user/Passwordsettings)
+                    [:p.page-tip (t :user/Aboutaccountsettings)]]}
+   :password {:heading (t :user/User " / " :user/Passwordsettings)
               :content [:div
-                        [:p (t :user/Aboutpasswordsettings)]]}
-   :email {:heading (t :user/Emailaddresses)
+                        [:p.page-tip (t :user/Aboutpasswordsettings)]]}
+   :email {:heading (t :user/User " / " :user/Emailaddresses)
            :content [:div
-                     [:p (t :user/Aboutemailaddresses)]
+                     [:p.page-tip (t :user/Aboutemailaddresses)]
                      [:p (t :user/Aboutemailaddresses2)]
-                     [:p.page-tip (t :user/Emailaddresstip)]]}
-   :cancel {:heading (t :user/Cancelaccount)
+                     [:p (t :user/Emailaddresstip)]]}
+
+   :cancel {:heading (t :user/User " / " :user/Cancelaccount)
             :content [:div
-                      [:p (t :user/Aboutremoveaccount)]
-                      [:p.page-tip (t :user/Removeaccountinstruction2)]]}
-   :data {:heading (t :user/Mydata)
+                      [:p.page-tip  (t :user/Aboutremoveaccount)]
+                      [:p (t :user/Removeaccountinstruction2)]]}
+   :data {:heading (t :user/User " / " :user/Mydata)
           :content [:div
-                    [:p (t :user/Aboutmydata)]]}})
+                    [:p.page-tip (t :user/Aboutmydata)]]}})
 
 
 (defn ^:export navi [context]

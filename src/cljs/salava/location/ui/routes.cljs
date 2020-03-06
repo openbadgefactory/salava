@@ -15,8 +15,7 @@
 (def about
   {:heading (t :location/Map)
    :content [:div
-             [:p (t :location/Aboutlocation)]
-             [:h5 [:b (t :location/Notonmap)]]
+             [:p.page-tip (t :location/Aboutlocation)]
              [:p (t :location/Toappearonmap)]]})
 
 (defn ^:export navi [context]

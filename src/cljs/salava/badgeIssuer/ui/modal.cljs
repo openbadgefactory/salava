@@ -92,115 +92,116 @@
         request (cursor state [:request-comment])
         visibility (cursor state [:visibility])
         evs (cursor state [:enable_visibility])]
-   [:div {:id "badge-info" :class "row flip" :style {:margin "10px 0"}}
-    [badge-image badge]
-    [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
-     (when @(cursor state [:success-alert])
-       [:div.alert.alert-success
-        (t :badgeIssuer/Badgesuccessfullyissued)])
+   (fn []
+    [:div {:id "badge-info" :class "row flip" :style {:margin "10px 0"}}
+     [badge-image badge]
+     [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
+      (when @(cursor state [:success-alert])
+        [:div.alert.alert-success
+         (t :badgeIssuer/Badgesuccessfullyissued)])
 
-     (when-not (blank? @(cursor state [:error-msg]))
-      [:div.alert.alert-info @(cursor state [:error-msg])])
+      (when-not (blank? @(cursor state [:error-msg]))
+       [:div.alert.alert-info @(cursor state [:error-msg])])
 
-     [badge-content badge]
-     [:hr.border]
-     [:div {:style {:margin "15px 0"}}
-      [:p [:b (t :badgeIssuer/Setbadgedetails)]]
-      [:div.form-horizontal
-       [:div.form-group {:style {:margin "15px 0"}}
-        [:label {:for "date"} (t :badge/Expireson)]
-        [:input.form-control
-         {:type "date"
-          :id "date"
-          :on-change #(do
-                        (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]]
+      [badge-content badge]
+      [:hr.border]
+      [:div {:style {:margin "15px 0"}}
+       [:p [:b (t :badgeIssuer/Setbadgedetails)]]
+       [:div.form-horizontal
+        [:div.form-group {:style {:margin "15px 0"}}
+         [:label {:for "date"} (t :badge/Expireson)]
+         [:input.form-control
+          {:type "date"
+           :id "date"
+           :on-change #(do
+                         (reset! (cursor state [:badge :expires_on]) (.-target.value %)))}]]]
 
-      [:div.its_block
-       [:p [:b (t :badgeIssuer/Issuebadgeinfo)]]
-       [:div.form-group
-        [:fieldset {:class "checkbox"}
-         [:legend.sr-only ""]
-         [:div
-          [:label {:for "its"}
-           [:input {:name "its_checkbox"
-                    :type      "checkbox"
-                    :id        "its"
-                    :on-change #(do
-                                  (toggle-setting its))
-                    :checked   @its}]
-           (str (t :badgeIssuer/Issuetoself))]]]]
-
-       [:div#badge-settings
-
-        ;;evidences
-        (when (pos? @its)
-          [add-evidence-block state])
-
-        ;;endorsement-requests
-        (when (pos? @its)
-         (if (and (seq @(cursor state [:send_request_to])) (not (blank? request)))
-          [endorsement-request-block state]
+       [:div.its_block
+        [:p [:b (t :badgeIssuer/Issuebadgeinfo)]]
+        [:div.form-group
+         [:fieldset {:class "checkbox"}
+          [:legend.sr-only ""]
           [:div
-           [:div.request-link {:id "endorsebadge" :style {:margin "10px 0"}}
-            [:a {:href "#"
-                 :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :context "endorsement_selfie"})
-                 :id "#request_endorsement"}
-             [:span [:i.fa.fa-fw.fa-hand-o-right] (t :badge/Requestendorsement)]]
-            [:span.text-muted  [:em (str " - " (t :badgeIssuer/Optional))]]]]))
+           [:label {:for "its"}
+            [:input {:name "its_checkbox"
+                     :type      "checkbox"
+                     :id        "its"
+                     :on-change #(do
+                                   (toggle-setting its))
+                     :checked   @its}]
+            (str (t :badgeIssuer/Issuetoself))]]]]
 
-        (when (pos? @its)
-          [:div.row
-           [:div.col-md-12
-            [:div.form-group
-             [:fieldset {:class "checkbox"}
-              [:legend.sr-only ""]
-              [:div
-               [:label {:for "evs"}
-                [:input {:name "evs_checkbox"
-                         :type      "checkbox"
-                         :id        "evs"
-                         :on-change #(do
-                                       (if @evs (reset! evs false) (reset! evs true)))
-                         :checked   @evs}]
-                [:span.fa-fw (str (t :badge/Setbadgevisibility))]]
-               [:span.text-muted  [:em (str " - " (t :badgeIssuer/Optional))]]]]]]])
+        [:div#badge-settings
 
-        ;;visibility
-        (when (and @evs (pos? @its))
-         [:div
-          (into [:div]
-            (for [f (plugin-fun (session/get :plugins) "block" "badge_visibility_form")]
-              [f visibility]))
-          [:div
-           [:hr.border.dotted-border]]])]
-
-       [:div.btn-toolbar {:style {:margin-top "20px"}}
-        [:div.btn-group
+         ;;evidences
          (when (pos? @its)
+           [add-evidence-block state])
+
+         ;;endorsement-requests
+         (when (pos? @its)
+          (if (and (seq @(cursor state [:send_request_to])) (not (blank? request)))
+           [endorsement-request-block state]
+           [:div
+            [:div.request-link {:id "endorsebadge" :style {:margin "10px 0"}}
+             [:a {:href "#"
+                  :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :context "endorsement_selfie"})
+                  :id "#request_endorsement"}
+              [:span [:i.fa.fa-fw.fa-hand-o-right] (t :badge/Requestendorsement)]]
+             [:span.text-muted  [:em (str " - " (t :badgeIssuer/Optional))]]]]))
+
+         (when (pos? @its)
+           [:div.row
+            [:div.col-md-12
+             [:div.form-group
+              [:fieldset {:class "checkbox"}
+               [:legend.sr-only ""]
+               [:div
+                [:label {:for "evs"}
+                 [:input {:name "evs_checkbox"
+                          :type      "checkbox"
+                          :id        "evs"
+                          :on-change #(do
+                                        (if @evs (reset! evs false) (reset! evs true)))
+                          :checked   @evs}]
+                 [:span.fa-fw (str (t :badge/Setbadgevisibility))]]
+                [:span.text-muted  [:em (str " - " (t :badgeIssuer/Optional))]]]]]]])
+
+         ;;visibility
+         (when (and @evs (pos? @its))
+          [:div
+           (into [:div]
+             (for [f (plugin-fun (session/get :plugins) "block" "badge_visibility_form")]
+               [f visibility]))
+           [:div
+            [:hr.border.dotted-border]]])]
+
+        [:div.btn-toolbar {:style {:margin-top "20px"}}
+         [:div.btn-group
+          (when (pos? @its)
+            [:button.btn.btn-primary.btn-bulky
+             {:data-dismiss "modal"
+              :on-click #(do
+                           (.preventDefault %)
+                           (issue-selfie-badge state (fn [] (do
+                                                              (js/setTimeout (fn [] (navigate-to "/badge")) 1000)
+                                                              (session/put! :issue-success true)))))}
+
+             [:span [:i.fa.fa-paper-plane.fa-lg] (t :badgeIssuer/Issuenow)]])
+
+          (when-not (pos? @its)
            [:button.btn.btn-primary.btn-bulky
-            {:data-dismiss "modal"
-             :on-click #(do
-                          (.preventDefault %)
-                          (issue-selfie-badge state (fn [] (do
-                                                             (js/setTimeout (fn [] (navigate-to "/badge")) 1000)
-                                                             (session/put! :issue-success true)))))}
+            {:on-click #(mo/open-modal [:gallery :profiles] {:type "pickable"
+                                                             :context "selfie_issue"
+                                                             :selected-users-atom selected-users
+                                                             :id id
+                                                             :selfie badge
+                                                             :func (fn [] (issue-selfie-badge state (fn []
+                                                                                                       (mo/previous-view)
+                                                                                                      #_(if (some (fn [u] (= u (session/get-in [:user :id]))) (map :id @selected-users))
+                                                                                                          (js-navigate-to "/badge")
+                                                                                                          (mo/previous-view)))))})}
 
-            [:span [:i.fa.fa-paper-plane.fa-lg] (t :badgeIssuer/Issuenow)]])
-
-         (when-not (pos? @its)
-          [:button.btn.btn-primary.btn-bulky
-           {:on-click #(mo/open-modal [:gallery :profiles] {:type "pickable"
-                                                            :context "selfie_issue"
-                                                            :selected-users-atom selected-users
-                                                            :id id
-                                                            :selfie badge
-                                                            :func (fn [] (issue-selfie-badge state (fn []
-                                                                                                      (mo/previous-view)
-                                                                                                     #_(if (some (fn [u] (= u (session/get-in [:user :id]))) (map :id @selected-users))
-                                                                                                         (js-navigate-to "/badge")
-                                                                                                         (mo/previous-view)))))})}
-
-           [:span [:i.fa.fa-users.fa-lg] (t :badgeIssuer/Selectrecipients)]])]]]]]]))
+            [:span [:i.fa.fa-users.fa-lg] (t :badgeIssuer/Selectrecipients)]])]]]]]])))
 
 (defn issued-badge-element [element-data state]
   (let [{:keys [expires_on revoked issued_on status id last_name first_name profile_picture user_id]} element-data

@@ -20,7 +20,7 @@
 
 (def about
   {:profile [:div
-             [:p (t :profile/Aboutprofilepage)]
+             [:p.page-tip (t :profile/Aboutprofilepage)]
              [:div
               [:h5 [:b (t :profile/Whocanviewmyprofile)]]
               [:p (t :profile/Aboutuserprofile)]

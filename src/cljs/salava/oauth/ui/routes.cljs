@@ -17,14 +17,14 @@
      (str (base-path context) "/user/oauth/google") {:weight 46 :title (t :oauth/Google) :site-navi true :breadcrumb (t :user/User " / " :oauth/Google)}})
 
 (def about
-  {:google {:heading (t :oauth/Google)
-            :content [:div
+  {:google {:heading (t :user/User " / " :oauth/Google)
+            :content [:p.page-tip
                       (t :oauth/AboutGooglelogin)]}
-   :facebook {:heading (t :oauth/Facebook)
-              :content [:div
+   :facebook {:heading (t :user/User " / " :oauth/Facebook)
+              :content [:p.page-tip
                         (t :oauth/AboutFacebooklogin)]}
-   :linkedin {:heading (t :oauth/LinkedIn)
-              :content [:div
+   :linkedin {:heading (t :user/User " / " :oauth/Linkedin)
+              :content [:p.page-tip
                         (t :oauth/AboutLinkedinlogin)]}})
 
 (defn ^:export navi [context]

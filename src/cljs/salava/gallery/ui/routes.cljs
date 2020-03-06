@@ -24,23 +24,21 @@
                                          ;[["/badgeview/" :badge-content-id] bv/handler]
 
 (def about
-  {:badges {:heading (t :badge/Badges)
+  {:badges {:heading (t :gallery/Gallery " / " :badge/Badges)
             :content [:div
-                      [:h5 [:b (t :badge/Whatisabadge)]]
-                      [:p (t :badge/AnOpenBadgeIs)]
-                      [:h5 [:b (t :gallery/Whatisasharedbadge)]]
+                      [:p.page-tip (t :gallery/Aboutexplorebadges)]
                       [:p (t :gallery/Asharedbadgeis)]
-                      [:p.page-tip (t :gallery/Aboutexplorebadges)]]}
-   :pages {:heading (t :page/Pages)
+                      [:p (t :badge/AnOpenBadgeIs)]]}
+
+   :pages {:heading (t :gallery/Gallery " / " :page/Pages)
            :content [:div
-                     [:h5 [:b (t :page/Whatisapage)]]
-                     [:p (t :page/Apageis)]
-                     [:h5 [:b (t :gallery/Whatisasharedpage)]]
+                     [:p.page-tip (t :gallery/Aboutexplorepages)]
                      [:p (t :gallery/Asharedpageis)]
-                     [:p.page-tip (t :gallery/Aboutexplorepages)]]}
-   :profiles {:heading (t :gallery/Profiles)
+                     [:p (t :page/Apageis)]]}
+
+   :profiles {:heading (t :gallery/Gallery " / " :gallery/Profiles)
               :content [:div
-                        (t :gallery/Aboutprofiles)]}})
+                        [:p.page-tip (t :gallery/Aboutprofiles)]]}})
 
 
 #_(defn ^:export navi [context]
