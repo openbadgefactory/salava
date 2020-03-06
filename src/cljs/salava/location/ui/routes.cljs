@@ -17,7 +17,7 @@
    :content [:div
              [:p (t :location/Aboutlocation)]
              [:h5 [:b (t :location/Notonmap)]]
-             [:p (t :Toappearonmap)]]})
+             [:p (t :location/Toappearonmap)]]})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/gallery/map") {:weight 50 :title (t :location/Map) :site-navi true :breadcrumb (t :gallery/Gallery " / " :location/Map) :about about}})
