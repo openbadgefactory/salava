@@ -28,7 +28,7 @@
            :content [:div
                      [:p.page-tip (t :page/Aboutpages)]
                      ;[:h5 [:b (t :page/Whatisapage)]]
-                     [:p (t :page/Apageis)]]}})
+                     [:p (t :page/Whatispage)]]}})
 
 
 

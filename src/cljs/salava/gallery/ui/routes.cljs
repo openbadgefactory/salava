@@ -34,7 +34,7 @@
            :content [:div
                      [:p.page-tip (t :gallery/Aboutexplorepages)]
                      [:p (t :gallery/Asharedpageis)]
-                     [:p (t :page/Apageis)]]}
+                     [:p (t :page/Whatispage)]]}
 
    :profiles {:heading (t :gallery/Gallery " / " :gallery/Profiles)
               :content [:div
