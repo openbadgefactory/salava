@@ -1,6 +1,7 @@
 (ns salava.user.ui.edit
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
+            [reagent-modals.modals :as m]
             [clojure.string :refer [blank?]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [input-valid? js-navigate-to path-for plugin-fun]]
@@ -42,6 +43,7 @@
 
         email-notifications-atom (cursor state [:user :email_notifications])]
     [:div {:class "panel" :id "edit-user"}
+     [m/modal-window]
      (if message
        [:div {:class (str "alert " (:class message))}
         (translate-text (:content message))])

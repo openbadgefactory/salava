@@ -17,7 +17,6 @@
    [salava.core.ui.popover :refer [info]]
    [salava.core.ui.tag :as tag]))
 
-
 (defn init-data
   ([state]
    (ajax/POST

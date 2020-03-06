@@ -68,6 +68,7 @@
         fullname (str first_name " " last_name)
         site-url (session/get :site-url)]
     [:div {:id "my-data"}
+     [m/modal-window]
      [:h1.uppercase-header (t :user/Mydata)]
      [:div
       [:p (str (t :user/Deleteinstruction) " " (t :user/Todeletedata) " ") [:a {:href (path-for "/user/cancel")} (str (t :user/Removeaccount) ".")]]]
@@ -77,7 +78,7 @@
         [:i {:class "fa fa-cog fa-spin fa-2x "}]
         [:span (str (t :core/Loading) "...")]]
        [:div.panel {:id "profile"}
-        [m/modal-window]
+
 
         [:div.panel-body
          [:div {:id "page-buttons-share"}

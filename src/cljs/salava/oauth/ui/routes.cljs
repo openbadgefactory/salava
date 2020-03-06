@@ -16,8 +16,19 @@
      (str (base-path context) "/user/oauth/linkedin") {:weight 45 :title (t :oauth/Linkedin) :site-navi true :breadcrumb (t :user/User " / " :oauth/Linkedin)}
      (str (base-path context) "/user/oauth/google") {:weight 46 :title (t :oauth/Google) :site-navi true :breadcrumb (t :user/User " / " :oauth/Google)}})
 
+(def about
+  {:google {:heading (t :oauth/Google)
+            :content [:div
+                      (t :oauth/AboutGooglelogin)]}
+   :facebook {:heading (t :oauth/Facebook)
+              :content [:div
+                        (t :oauth/AboutFacebooklogin)]}
+   :linkedin {:heading (t :oauth/LinkedIn)
+              :content [:div
+                        (t :oauth/AboutLinkedinlogin)]}})
+
 (defn ^:export navi [context]
  (as-> {} $
-   (if-not (blank? (session/get-in [:facebook-app-id])) (assoc $ (str (base-path context) "/user/oauth/facebook") {:weight 44 :title (t :oauth/Facebook) :site-navi true :breadcrumb (t :user/User " / " :oauth/Facebook)}) (merge $ {}))
-   (if-not (blank? (session/get-in [:linkedin-app-id])) (assoc $ (str (base-path context) "/user/oauth/linkedin") {:weight 45 :title (t :oauth/Linkedin) :site-navi true :breadcrumb (t :user/User " / " :oauth/Linkedin)}) (merge $ {}))
-   (if-not (blank? (session/get-in [:google-app-id])) (assoc $ (str (base-path context) "/user/oauth/google") {:weight 46 :title (t :oauth/Google) :site-navi true :breadcrumb (t :user/User " / " :oauth/Google)}) (merge $ {}))))
+   (if-not (blank? (session/get-in [:facebook-app-id])) (assoc $ (str (base-path context) "/user/oauth/facebook") {:weight 44 :title (t :oauth/Facebook) :site-navi true :breadcrumb (t :user/User " / " :oauth/Facebook) :about (:facebook about)}) (merge $ {}))
+   (if-not (blank? (session/get-in [:linkedin-app-id])) (assoc $ (str (base-path context) "/user/oauth/linkedin") {:weight 45 :title (t :oauth/Linkedin) :site-navi true :breadcrumb (t :user/User " / " :oauth/Linkedin) :about (:linkedin about)}) (merge $ {}))
+   (if-not (blank? (session/get-in [:google-app-id])) (assoc $ (str (base-path context) "/user/oauth/google") {:weight 46 :title (t :oauth/Google) :site-navi true :breadcrumb (t :user/User " / " :oauth/Google) :about (:google about)}) (merge $ {}))))

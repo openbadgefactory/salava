@@ -248,4 +248,23 @@
 }
 
 .selfie-stamp {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  .stamp-text {
+    margin: 1px;
+    display: inline-block;
+  }
+  font-weight: 600;
+  font-size: 10.5px;
+  color:$button-color;
+  .logo-image-url {
+    width: 120px;
+    background-size: contain;
+  }
+
+  @media (max-width: 768px) {
+    align-items: flex-start;
+  }
 }

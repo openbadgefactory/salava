@@ -14,6 +14,7 @@
 (defn content [state]
   (let [{:keys [register-users last-month-active-users last-month-registered-users all-badges last-month-added-badges pages]} @state]
     [:div {:class "admin-stats"}
+     [m/modal-window]
      [:h1 {:class "uppercase-header"} (t :admin/Statistics)]
      [:div.row
       [:div {:class "col-md-12"}

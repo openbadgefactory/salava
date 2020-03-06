@@ -241,15 +241,17 @@
          (str first_name " " last_name)]])
 
 (defn logo []
-  [:div.col-md-8.col-md-offset-2 {:style {:margin "40px 0"}}
-   [:div {:class "logo-image logo-image-url img-responsive"
-          :title "OBP logo"
-          :aria-label "OBP logo"}]])
+ [:div {:class "logo-image-url logo-image "
+        :title (str (session/get :site-name) " logo")
+        :aria-label (str (session/get :site-name) " logo")}])
 
 (defn stamp []
   (let [site-name (session/get :site-name)]
-   [:span.label.label-info
-    (str (t :badgeIssuer/Createdandissued) " " site-name)]))
+   [:div.selfie-stamp {:style {:margin "5px"}}
+    [:span.stamp-text;.label.label-info
+     (str (t :badgeIssuer/Createdandissued))]
+    [logo]]))
+
 
 
 (defn evidence-list [ev-atom state]

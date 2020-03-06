@@ -178,7 +178,7 @@
         [:div.btn-group
          (when (pos? @its)
            [:button.btn.btn-primary.btn-bulky
-            {;:data-dismiss "modal"
+            {:data-dismiss "modal"
              :on-click #(do
                           (.preventDefault %)
                           (issue-selfie-badge state (fn [] (do

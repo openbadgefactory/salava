@@ -13,7 +13,7 @@
   (ajax/GET
     (path-for (str "/obpv1/selfie/" id))
     {:handler (fn [data]
-               (reset! (cursor state [:badge]) data))}))
+               (reset! (cursor state [:badge]) data))})) 
 
 (defn issue-badge-content [params]
   (let [id (:id params)
