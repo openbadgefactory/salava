@@ -67,14 +67,13 @@
                [f meta_badge meta_badge_req]))]]]))
 
 (defn badge-grid-element [element-data state badge-type init-data]
-  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id gallery_id assertion_url meta_badge meta_badge_req endorsement_count user_endorsement_count pending_endorsements_count new_message_count]} element-data
+  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id gallery_id assertion_url meta_badge meta_badge_req endorsement_count user_endorsement_count pending_endorsements_count new_message_count selfie_id]} element-data
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))
         obf_url (session/get :factory-url)
         notification-count (+ new_message_count pending_endorsements_count)
         endorsementscount (+ endorsement_count user_endorsement_count)]
     [:div {:class "media grid-container" :style {:position "relative"}}
-
      (cond
        (= "basic" badge-type) (if (or expired? revoked)
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
@@ -107,7 +106,7 @@
                                                                                                                        (if (clojure.string/includes? (str js/window.location.href) (path-for (str "/badge?id=" id)))
                                                                                                                          (.replaceState js/history {} "Badge modal" (path-for "/badge"))
                                                                                                                          (navigate-to (current-route-path))))
-                                                                                                                     (init-data state))}))}
+                                                                                                                     (init-data state))}))}selfie_id
                                   [badge-icons {:endorsement-count endorsementscount :meta_badge meta_badge :meta_badge_req meta_badge_req :visibility visibility :expires_on expires_on}]
                                   (if image_file
                                     [:div.media-left
@@ -123,18 +122,18 @@
        (= "profile" badge-type) [:div
                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
                                   [:div.media-content
-
                                    [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
-                                    [:div.visibility-icon.inline
-                                     ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
-                                     (when (pos? endorsementscount) [:span.badge-view [:i.fa.fa-handshake-o]])]]
+                                      [:div.visibility-icon.inline
+                                       (when (pos? endorsementscount) [:span.badge-view [:i.fa.fa-handshake-o]])]]
                                    [:div.media-left
                                     (if image_file  [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}])
                                     [:div.media-body
                                      [:div.media-heading name]
                                      [:div.media-issuer [:p issuer_content_name]]]]]]]
        (= "gallery" badge-type) [:div
-                                 [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id gallery_id})
+                                 #_(when-not (clojure.string/blank? selfie_id)
+                                     [:span.inline-block.pull-right {:title (t :badgeIssuer/Issuableselfiebadge) :aria-label (t :badgeIssuer/Issuableselfiebadge)} [:i.fa.fa-paper-plane]])
+                                 [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id gallery_id :selfie-id selfie_id})
                                       :title name}
                                   [:div.media-content
                                    (if image_file
@@ -145,7 +144,10 @@
                                     [:div.media-heading
                                      [:p.heading-link name]]
                                     [:div.media-issuer
-                                     [:p issuer_content_name]]
+                                     [:p (when-not (clojure.string/blank? selfie_id)
+                                          [:i.fa.fa-user.fa-fw.fa-lg {:title (str (t :badgeIssuer/Createdandissued) " " (session/get :site-name))
+                                                                      :aria-label (str (t :badgeIssuer/Createdandissued) " " (session/get :site-name))}])
+                                      issuer_content_name]]
                                     (if recipients
                                       [:div.media-recipients
                                        recipients " " (if (= recipients 1)
