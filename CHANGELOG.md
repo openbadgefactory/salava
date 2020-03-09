@@ -1,9 +1,12 @@
 # Changelog
 
+## 3.8.4
+ -  Fixed endorsements not showing in profile badges
+
 ## 3.8.3
  - Ui improvements to account deleted page
  - Translation fixes
- 
+
 ## 3.8.2
  - Disabled mouse wheel zooming in embedded map
  - Fixed typo
