@@ -41,6 +41,11 @@
     (ImageIO/write canvas "png" out)
     (str "data:image/png;base64," (bytes->base64 (.toByteArray out)))))
 
+(defn- check-image [width height]
+ (and
+  (some #(= width %) (range (- height 10) (+ height 10)))
+  (some #(= height %) (range (- width 10) (+ width 10)))))
+
 (defn upload-image [ctx user file]
   (let [{:keys [tempfile content-type]} file]
     (try+
@@ -49,7 +54,7 @@
      (let [image (ImageIO/read tempfile) ;;NB Reading image with ImageIO/read strips metadata -> https://stackoverflow.com/questions/31075444/how-to-remove-exif-content-from-a-image-file-of-tiff-png-using-a-java-api
            width (.getWidth image)
            height (.getHeight image)]
-       (when-not (= width height)
+       (when-not (check-image width height) ;(= width height)
          (throw+ {:status "error" :message (t :badgeIssuer/Imagemustbesquare)}))
        {:status "success" :url (image->base64str image)})
      (catch Object _
