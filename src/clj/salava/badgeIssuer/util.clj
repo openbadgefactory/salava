@@ -29,7 +29,7 @@
   (check-badge-issuable {:id gallery_id} (get-db-1 ctx)))
 
 (defn badge-valid?
-  "Check is badge exists, has been deleted by owner or is revoked"
+  "Check if badge exists, has been deleted by owner or is revoked"
   [ctx user-badge-id]
   (some-> (select-issued-badge-validity-status {:id user-badge-id} (into {:result-set-fn first} (get-db ctx)))))
 

@@ -120,13 +120,6 @@
           [:span.fa.fa-spin.fa-cog.fa-2x])]
       [:div.row ;col-md-3;.text-center
        [:div.img-buttons {:style {:margin-bottom "20px"}}
-        #_[:button.btn.btn-primary.btn-bulky
-             {:on-click #(do
-                          (.preventDefault %)
-                          (generate-image state))
-              :aria-label (t :badgeIssuer/Generaterandomimage)}
-             [:span [:i.fa.fa-random.fa-lg]" "(t :badgeIssuer/Generaterandomimage)]]
-
         [:span {:class "btn btn-primary btn-file btn-bulky"}
               [:input {:type       "file"
                        :name       "file"
@@ -152,8 +145,6 @@
         {:name "name"
          :atom (cursor state [:badge :name])
          :placeholder (t :badgeIssuer/Inputbadgename)}]]
-
-
       [:div.form-group
        [:label {:for "input-description"} (t :page/Description) [:span.form-required " *"] [info {:content (t :badgeIssuer/Badgedescriptioninfo) :placement "right"}]]
        [text-field
@@ -172,8 +163,6 @@
        [:div {:class "form-group"}
         [:div {:class "col-md-12"}
          [tag/new-tag-input (cursor state [:badge :tags]) (cursor state [:badge :new-tag])]]]]]]))
-
-
 
 (defn set-badge-content [state]
   [:div

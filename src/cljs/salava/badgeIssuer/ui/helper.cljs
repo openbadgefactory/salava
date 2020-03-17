@@ -16,7 +16,6 @@
    [salava.user.ui.helper :refer [profile-picture]]
    [markdown.core :refer [md->html]]))
 
-
 (defn progress-wizard [state]
   (let [step (cursor state [:step])]
     [:div.container
@@ -55,10 +54,6 @@
     :handler (fn [data]
                (swap! state assoc :badge data
                       :generating-image false))}))
-
-#_(defn md->html [md]
-    (if @editor (.previewRender (.-options @editor) md) md))
-
 
 (defn bottom-buttons [state]
   (create-class
@@ -252,8 +247,6 @@
     [:span.stamp-text;.label.label-info
      (str (t :badgeIssuer/Createdandissued))]
     [logo]]))
-
-
 
 (defn evidence-list [ev-atom state]
   (let [evidence-name-atom (cursor ev-atom [:name])

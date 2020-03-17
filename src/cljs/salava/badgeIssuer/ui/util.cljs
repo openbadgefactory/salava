@@ -79,9 +79,6 @@
                   nil)
         evidence @(cursor state [:all_evidence])]
 
-    #_(if (= "internal" (session/get-in [:user :profile_visibility]))
-        (reset! (cursor state [:error-msg]) (t :badgeIssuer/Profilevisibilityinfo)))
-
       (ajax/POST
         (path-for (str "/obpv1/selfie/issue"))
         {:params {:selfie_id id
@@ -99,7 +96,7 @@
                         (when reload-fn (reload-fn)))
                       (reset! (cursor state [:error-msg]) (t :core/Errorpage))))
          :finally (fn []
-                    (js/setTimeout (fn [] (reset! (cursor state [:success-alert]) false)) 3000))})))
+                    (js/setTimeout (fn [] (reset! (cursor state [:success-alert]) false)) 6000))})))
 
 
 (defn delete-selfie-badge [state]

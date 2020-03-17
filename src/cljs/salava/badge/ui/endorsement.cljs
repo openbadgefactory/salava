@@ -832,7 +832,11 @@
            [:button.btn.btn-primary.select-users-link {:href "#"
                                                        :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state)})
                                                        :disabled (< (count @request-comment) 15)}
-            [:i.fa.fa-users.fa-fw.fa-3x] (t :badge/Selectusers)])]]])))
+            [:i.fa.fa-users.fa-fw.fa-3x] (t :badge/Selectusers)])
+         (when (and (= context "endorsement_selfie") (empty? @selected-users))
+           [:button.btn.btn-danger.btn-bulky
+            {:href "#" :on-click #(do (.preventDefault %) (mo/previous-view))}
+            [:i.fa.fa-remove {:style {:color "white"}}] (t :core/Cancel)])]]])))
 
 (defn pending-endorsement-requests []
   (when (session/get-in [:user :id])
