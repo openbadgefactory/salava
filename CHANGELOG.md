@@ -6,9 +6,12 @@
 - BadgeIssuer plugin
 - Information about each page
 
-### Updates 
+### Updates
 - Bug fixes
 - Minor ui improvements
+
+## 3.8.4
+ -  Fixed endorsements not showing in profile badges
 
 ## 3.8.3
  - Ui improvements to account deleted page

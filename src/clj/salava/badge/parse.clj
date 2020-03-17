@@ -565,6 +565,17 @@
 
 ;;;
 
+(defn- ping-related
+  "Make a HEAD requests to related assertion urls."
+  [asr]
+  (doseq [rel (:related asr)]
+    (when (and (= (:type rel) "Assertion") (re-find #"^http" (get rel :id "")))
+      (try
+        (http/http-req {:method :head :url (:id rel)})
+        (catch Exception e
+          (log/error "HEAD request failed: " (:id rel))
+          (log/error (.getMessage e)))))))
+
 (defmulti verify-assertion assertion-version)
 
 (defmethod verify-assertion :v0.5.0 [url asr]
@@ -573,6 +584,7 @@
       (throw (IllegalArgumentException. "invalid assertion, origin url mismatch")))))
 
 (defmethod verify-assertion :v2.0 [url asr]
+  (ping-related asr)
   (let [kind (get-in asr [:verify :type] (get-in asr [:verification :type]))]
     (when (and (not (nil? url)) (or (= kind "hosted") (= kind "HostedBadge")))
       (if (and (not (string/starts-with? url (:id asr))) (not= (domain url) (domain (:id asr))))
@@ -589,6 +601,7 @@
       (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
   (if (not= (domain (get-in asr [:verify :url])) (domain (:badge asr)))
     (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
+
 
 (defn assertion->badge
   ([user assertion] (assertion->badge user assertion {}))
