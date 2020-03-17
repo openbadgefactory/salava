@@ -45,7 +45,7 @@
                                       [["/data/" [#"\d+" :user-id]] data/handler]
                                       ["/registration-complete" rc/handler]]})
 
-(def about
+(defn about []
   {:edit {:heading (t :user/User " / " :user/Accountsettings)
           :content [:div
                     [:p.page-tip (t :user/Aboutaccountsettings)]]}
@@ -69,11 +69,11 @@
 
 (defn ^:export navi [context]
   {(str (base-path context) "/user/edit/profile")                          {:breadcrumb (t :user/User " / " :user/Editprofile)}
-   (str (base-path context) "/user/edit")                                  {:weight 41 :title (t :user/Accountsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Accountsettings) :about (:edit about)}
-   (str (base-path context) "/user/edit/password")                         {:weight 42 :title (t :user/Passwordsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Passwordsettings) :about (:password about)}
-   (str (base-path context) "/user/edit/email-addresses")                  {:weight 43 :title (t :user/Emailaddresses) :site-navi true :breadcrumb (t :user/User " / " :user/Emailaddresses) :about (:email about)}
-   (str (base-path context) "/user/cancel")                                {:weight 49 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount) :about (:cancel about)}
-   (str (base-path context) "/user/data/" (get-in context [:user :id]))     {:weight 50 :title (t :user/Mydata) :site-navi true :breadcrumb (t :user/User " / " :user/Mydata) :about (:data about)}})
+   (str (base-path context) "/user/edit")                                  {:weight 41 :title (t :user/Accountsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Accountsettings) :about (:edit (about))}
+   (str (base-path context) "/user/edit/password")                         {:weight 42 :title (t :user/Passwordsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Passwordsettings) :about (:password (about))}
+   (str (base-path context) "/user/edit/email-addresses")                  {:weight 43 :title (t :user/Emailaddresses) :site-navi true :breadcrumb (t :user/User " / " :user/Emailaddresses) :about (:email (about))}
+   (str (base-path context) "/user/cancel")                                {:weight 49 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount) :about (:cancel (about))}
+   (str (base-path context) "/user/data/" (get-in context [:user :id]))     {:weight 50 :title (t :user/Mydata) :site-navi true :breadcrumb (t :user/User " / " :user/Mydata) :about (:data (about))}})
 
 
 (defn ^:export quicklinks []

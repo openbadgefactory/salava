@@ -16,7 +16,7 @@
                                               [["/create/" :id] creator/handler]]
    (str (base-path context) "/selfie") [[["/criteria/" :id] criteria/handler]]})
 
-(def about
+(defn about []
   {:selfie {:heading (t :badge/Badges " / " :badgeIssuer/IssueBadges)
             :content [:div
                       [:p.page-tip [:em (t :badgeIssuer/Issuebadgespageinfo)]]
@@ -32,8 +32,8 @@
                       [:p (t :badgeIssuer/Issuebadgeinfo)]]}})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/badge/selfie") {:weight 100 :title (t :badgeIssuer/IssueBadges) :site-navi true :breadcrumb (t :badge/Badges " / " :badgeIssuer/IssueBadges) :about (:selfie about)}
-   (str (base-path context) "/badge/selfie/create") {:weight 101 :title (t :badgeIssuer/Createselfiebadges) :site-navi false :breadcrumb (t :badge/Badges " / " :badgeIssuer/Createselfiebadge) :about (:create about)}})
+  {(str (base-path context) "/badge/selfie") {:weight 100 :title (t :badgeIssuer/IssueBadges) :site-navi true :breadcrumb (t :badge/Badges " / " :badgeIssuer/IssueBadges) :about (:selfie (about))}
+   (str (base-path context) "/badge/selfie/create") {:weight 101 :title (t :badgeIssuer/Createselfiebadges) :site-navi false :breadcrumb (t :badge/Badges " / " :badgeIssuer/Createselfiebadge) :about (:create (about))}})
    ;(str (base-path context) "/badge/selfie/create/\\S+")  {:breadcrumb (t :badge/Badges " / " :badgeIssuer/Editselfiebadge)}})
 
 (defn ^:export quicklinks []
