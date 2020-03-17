@@ -68,6 +68,6 @@
    :description (s/maybe s/Str)
    :type (s/eq "Profile")
    :url s/Str
-   :email (s/eq "no-reply@openbadgepassport.com")
+   :email s/Str
    :image (s/maybe s/Str)
    (keyword "@context") (s/eq "https://w3id.org/openbadges/v2")})
