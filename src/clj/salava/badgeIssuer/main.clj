@@ -8,7 +8,7 @@
    [salava.badgeIssuer.creator :refer [generate-image]]
    [salava.badgeIssuer.db :as db]
    [salava.badgeIssuer.util :refer [selfie-id is-badge-issuer? badge-valid? already-issued?]]
-   [salava.core.util :refer [publish get-site-url get-site-name bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col plugin-fun get-plugins]]
+   [salava.core.util :refer [publish get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col plugin-fun get-plugins]]
    [salava.profile.db :refer [user-information]]
    [salava.user.db :refer [primary-email]]
    [slingshot.slingshot :refer :all]))
@@ -43,7 +43,7 @@
      :description description
      :type "Profile"
      :url (if (pos? uid) (str (get-full-path ctx) "/profile/" uid) (get-site-url ctx))
-     :email (str "no-reply@" (get-site-name ctx))
+     :email (str "no-reply@" (get-site-url ctx))
      :image (str (get-site-url ctx) "/" image_file)
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
