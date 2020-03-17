@@ -1,6 +1,6 @@
 -- name: select-users-public-badges
 SELECT ub.id, badge.id AS badge_id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url,
-COUNT(ube.id) AS user_endorsements_count, COUNT(DISTINCT bec.endorsement_content_id) AS endorsement_count
+COUNT(ube.id) AS user_endorsement_count, COUNT(DISTINCT bec.endorsement_content_id) AS endorsement_count
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)

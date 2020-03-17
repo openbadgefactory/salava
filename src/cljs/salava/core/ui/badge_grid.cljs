@@ -74,7 +74,6 @@
         notification-count (+ new_message_count pending_endorsements_count)
         endorsementscount (+ endorsement_count user_endorsement_count)]
     [:div {:class "media grid-container" :style {:position "relative"}}
-
      (cond
        (= "basic" badge-type) (if (or expired? revoked)
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
@@ -123,11 +122,9 @@
        (= "profile" badge-type) [:div
                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
                                   [:div.media-content
-
                                    [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
-                                    [:div.visibility-icon.inline
-                                     ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
-                                     (when (pos? endorsementscount) [:span.badge-view [:i.fa.fa-handshake-o]])]]
+                                      [:div.visibility-icon.inline
+                                       (when (pos? endorsementscount) [:span.badge-view [:i.fa.fa-handshake-o]])]]
                                    [:div.media-left
                                     (if image_file  [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}])
                                     [:div.media-body

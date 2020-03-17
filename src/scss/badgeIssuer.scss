@@ -154,7 +154,7 @@
     padding: 15px;
     border-radius: 3px;
     white-space: normal;
-    word-break: break-all;
+    word-break: break-word;
     margin: 20px auto;
     background-color: darken($background-color, 0.1%);
     min-height: 80px;
@@ -267,4 +267,8 @@
   @media (max-width: 768px) {
     align-items: flex-start;
   }
+}
+
+#selfie-badges .modal {
+  overflow-y: auto;
 }

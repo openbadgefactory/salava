@@ -44,9 +44,9 @@
    {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
 
 (defn- init-more [state]
+  (init-endorsement-count (:id @state) state)
   (when (:owner? @state)
     (init-new-message-count state)
-    (init-endorsement-count (:id @state) state)
     (ajax/GET
      (path-for (str "/obpv1/badge/user_endorsement/pending_count/" (:id @state)))
      {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
