@@ -14,7 +14,7 @@
                                         ["/stream" s/handler]
                                         ["/connections" c/handler]
                                         ["/stats" stats/handler]]})
-(def about
+(defn about []
   {:heading (t :social/Social " / " :social/Stream)
    :content [:div
              [:p.page-tip (t :social/Aboutstream)]
@@ -22,6 +22,6 @@
 
 (defn ^:export navi [context]
   {(str (base-path context) "/social")                 {:weight 1 :title (t :social/Social) :top-navi true :breadcrumb (t :social/Social " / " "Dashboard" #_:social/Stream)}
-   (str (base-path context) "/social/stream")         {:weight 11 :title (t :social/Stream) :site-navi false :breadcrumb (t :social/Social " / " :social/Stream) :about about}})
+   (str (base-path context) "/social/stream")         {:weight 11 :title (t :social/Stream) :site-navi false :breadcrumb (t :social/Social " / " :social/Stream) :about (about)}})
    ;(str (base-path context) "/social/connections")         {:weight 12 :title (t :social/Connections) :site-navi true :breadcrumb (t :social/Social " / " :social/Connections)}
    ;(str (base-path context) "/social/stats") {:weight 21 :title (t :badge/Stats) :site-navi true :breadcrumb (t :social/Social " / " :badge/Stats)}

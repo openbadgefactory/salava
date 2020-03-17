@@ -12,14 +12,14 @@
   {(str (base-path context) "/gallery") [["/map" explore/handler]
                                          ["/map/embed" embed/handler]
                                          ["/map/embed/generate-link" embed/link-handler]]})
-(def about
+(defn about []
   {:heading (t :location/Map)
    :content [:div
              [:p.page-tip (t :location/Aboutlocation)]
              [:p (t :location/Toappearonmap)]]})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/gallery/map") {:weight 50 :title (t :location/Map) :site-navi true :breadcrumb (t :gallery/Gallery " / " :location/Map) :about about}})
+  {(str (base-path context) "/gallery/map") {:weight 50 :title (t :location/Map) :site-navi true :breadcrumb (t :gallery/Gallery " / " :location/Map) :about (about)}})
 
 (defn ^:export quicklinks []
   [{:title [:p (t :location/Iwanttosetmylocation)]

@@ -10,7 +10,7 @@
 (defn ^:export routes [context]
   {(str (base-path context) "/badge") [["/metabadges" my/handler]]})
 
-(def about
+(defn about []
   {:heading (t :badge/Badges " / " :metabadge/Milestonebadges)
    :content [:div
              [:p.page-tip [:em (t :metabadge/Milestonebadgespageinfo)]]
@@ -18,4 +18,4 @@
 
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/badge/metabadges") {:weight 45 :title (t :metabadge/Milestonebadges) :site-navi true :breadcrumb (t :badge/Badges " / " :metabadge/Milestonebadges) :about about}})
+  {(str (base-path context) "/badge/metabadges") {:weight 45 :title (t :metabadge/Milestonebadges) :site-navi true :breadcrumb (t :badge/Badges " / " :metabadge/Milestonebadges) :about (about)}})
