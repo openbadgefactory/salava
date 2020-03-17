@@ -834,7 +834,7 @@
                                                        :disabled (< (count @request-comment) 15)}
             [:i.fa.fa-users.fa-fw.fa-3x] (t :badge/Selectusers)])
          (when (and (= context "endorsement_selfie") (empty? @selected-users))
-           [:button.btn.btn-danger.btn-bulky
+           [:button.btn.btn-danger
             {:href "#" :on-click #(do (.preventDefault %) (mo/previous-view))}
             [:i.fa.fa-remove {:style {:color "white"}}] (t :core/Cancel)])]]])))
 
