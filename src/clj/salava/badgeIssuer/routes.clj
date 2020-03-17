@@ -27,7 +27,7 @@
 
    (context "/obpv1/selfie/_" []
             :tags ["hosted_badge"]
-
+            :no-doc true
             (GET "/assertion/:user-badge-id" []
                  ;:return schemas/assertion-response
                  :summary "Get hosted badge assertion"
@@ -50,7 +50,7 @@
 
    (context "/obpv1/selfie" []
             :tags ["selfie"]
-            ;:no-doc true
+            :no-doc true
             (GET "/" []
                  :summary "Get user selfie badges"
                  :auth-rules access/authenticated

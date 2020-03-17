@@ -8,7 +8,7 @@
    [salava.badgeIssuer.creator :refer [generate-image]]
    [salava.badgeIssuer.db :as db]
    [salava.badgeIssuer.util :refer [selfie-id is-badge-issuer? badge-valid? already-issued?]]
-   [salava.core.util :refer [publish get-site-url bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col plugin-fun get-plugins]]
+   [salava.core.util :refer [publish get-site-url get-site-name bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col plugin-fun get-plugins]]
    [salava.profile.db :refer [user-information]]
    [salava.user.db :refer [primary-email]]
    [slingshot.slingshot :refer :all]))
@@ -43,13 +43,13 @@
      :description description
      :type "Profile"
      :url (if (pos? uid) (str (get-full-path ctx) "/profile/" uid) (get-site-url ctx))
-     :email "no-reply@openbadgepassport.com"
+     :email (str "no-reply@" (get-site-name ctx))
      :image (str (get-site-url ctx) "/" image_file)
      (keyword "@context") "https://w3id.org/openbadges/v2"}))
 
 (defn badge-criteria
   [ctx id]
-  (some-> (db/get-criteria-page-information {:url (str (get-full-path ctx) "/selfie/criteria/" id)} #_{:bid badge_id :url id} (into {:result-set-fn first} (get-db ctx)))
+  (some-> (db/get-criteria-page-information {:url (str (get-full-path ctx) "/selfie/criteria/" id)} (into {:result-set-fn first} (get-db ctx)))
           (update :criteria_content md->html)))
 
 (defn get-badge
@@ -65,7 +65,7 @@
      :name name
      :image (str (get-site-url ctx) "/" image)
      :description description
-     :criteria {:id criteria_url ;(str (get-full-path ctx) "/selfie/criteria/" criteria_content_id)
+     :criteria {:id criteria_url
                 :narrative criteria_content}
      :issuer (str (get-full-path ctx) "/obpv1/selfie/_/issuer?cid=" issuer_content_id "&uid=" uid)
      :tags (if (seq tags) tags [])
@@ -73,16 +73,7 @@
 
 (defn issue-selfie-badge [ctx data user-id]
   (let [{:keys [selfie_id recipients expires_on issued_from_gallery issue_to_self request_endorsement evidence visibility]} data
-        user-id (if issued_from_gallery 0 user-id)
-        #_user-profile-visibility #_(as-> (first (plugin-fun (get-plugins ctx) "db" "user-information")) $
-                                          (if (ifn? $) (-> ($ ctx user-id) :profile_visibility) nil))]
-
-    #_(when (= "internal" user-profile-visibility)
-        (log/error "Issuer's profile is internal")
-        (as-> (first (plugin-fun (get-plugins ctx) "db" "set-profile-visibility")) $
-              (when (ifn? $) ($ ctx "public" user-id)))
-        (log/info "Set issuer's profile to public"))
-
+        user-id (if issued_from_gallery 0 user-id)]
     (log/info "Got badge issue request for id" recipients)
     (try+
      (if (pos? issue_to_self)
@@ -140,9 +131,8 @@
     :id nil
     :issue_to_self 0})
   ([ctx user id]
-   (let [selfie-badge (db/user-selfie-badge ctx (:id user) id) #_(first (db/user-selfie-badge ctx (:id user) id))
+   (let [selfie-badge (db/user-selfie-badge ctx (:id user) id)
          ifg (if (:issuable_from_gallery selfie-badge) 1 0)]
-         ;tags (if (blank? (:tags selfie-badge)) nil (json/read-str (:tags selfie-badge)))]
      (-> selfie-badge
          (assoc :issuable_from_gallery ifg
                 :issue_to_self 0

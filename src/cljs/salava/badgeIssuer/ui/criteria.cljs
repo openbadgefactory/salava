@@ -9,13 +9,6 @@
    [salava.core.ui.helper :refer [path-for disable-background-image]]
    [salava.core.ui.layout :as layout]))
 
-#_(defn init-data [id state]
-   (let [bid @(cursor state [:bid])]
-     (ajax/GET
-      (path-for (str "/obpv1/selfie/criteria/" id))
-      {:url-params {:bid bid}
-       :handler (fn [data]
-                  (swap! state merge data))})))
 (defn init-data [id state]
   (ajax/GET
    (path-for (str "/obpv1/selfie/criteria/" id))

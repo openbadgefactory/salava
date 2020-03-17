@@ -44,8 +44,6 @@
                 (clojure.string/capitalize last_name)]]
     (if (seq names) (rand-nth names) "")))
 
-(defn- hexagon [])
-
 (defn- draw-polygon [n]
   (let [{:keys [width height base-polygon-point]} settings
         polygon-points (if n n (-> (rand-num 2 7) inc))
