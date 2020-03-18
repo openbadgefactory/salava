@@ -117,7 +117,6 @@
         request-mode (cursor state [:request-mode])
         hand-icon (if @request-mode "fa-hand-o-down" "fa-hand-o-right")
         sent-requests (cursor dataatom [:sent-requests])]
-    (prn pending-endorsements-count)
     (create-class
      {:reagent-render
       (fn []
@@ -399,11 +398,11 @@
           (cursor state [:show-link-or-embed])
           image_file
           {:name     name
-           :authory  issuer_content_name
+           :authory  (-> @state :content first :issuer_content_name)
            :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
            :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-           :datefrom issued_on
-           :dateto   expires_on}]]]]]]))
+           :datefrom (:issued_on @state)
+           :dateto   (:expires_on @state)}]]]]]]))
 
 (defn social-tab [data state]
   (let [{:keys [name image_file obf_url assertion_url congratulations user_endorsement_count settings_fn]} data
