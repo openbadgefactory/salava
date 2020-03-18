@@ -83,6 +83,27 @@
      (when (and (seq @selected-users) (not (blank? @request)))
        [:hr.border.dotted-border])]))
 
+(defn recipient-list-view [state]
+  (let [selected-users (cursor state [:selected-users])]
+    ;[:div {:class "col-md-9 badge-info view-tab" :style {:display "block" :margin "10px 0"}}
+     [:div.panel.panel-default ;{:style {:padding "15px"}}
+       [:button.close
+        {:style {:opacity "1" :color "black"}
+         :href "#"
+         :on-click #(do (.preventDefault %)
+                        (reset! (cursor state [:success-alert]) false))}
+        [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]
+      ;[:p "Badge successfully issued to the following users:"]
+      [:div.panel-heading [:div.panel-title [:p "Badge successfully issued to the following users:"]]]
+
+      [:div.panel-body {:style {:padding "15px"}}
+       (reduce (fn [r u]
+                (let [{:keys [id first_name last_name profile_picture]} u
+                      name (str first_name " " last_name)]
+                 (conj r [profile-link-inline-modal id first_name last_name profile_picture] #_[:div.col-sm-6.col-xs-6 [:div.panel.panel-default.profile-element [:div.panel-body [:div.media [:div.media-left]] name]]])))
+           [:div]
+          @selected-users)]]))
+
 (defn issue-selfie-content [state]
   (let [badge (:badge @state)
         {:keys [id name image]} badge
@@ -98,8 +119,9 @@
      [badge-image badge]
      [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
       (when @(cursor state [:success-alert])
-        [:div.alert.alert-success
-         (t :badgeIssuer/Badgesuccessfullyissued)])
+       [recipient-list-view state]
+       #_[:div.alert.alert-success
+          (t :badgeIssuer/Badgesuccessfullyissued)])
 
       (when-not (blank? @(cursor state [:error-msg]))
        [:div.alert.alert-info @(cursor state [:error-msg])])
@@ -197,6 +219,7 @@
                                                              :id id
                                                              :selfie badge
                                                              :func (fn [] (issue-selfie-badge state (fn []
+                                                                                                       ;(recipient-list-view state)
                                                                                                        (mo/previous-view)
                                                                                                       #_(if (some (fn [u] (= u (session/get-in [:user :id]))) (map :id @selected-users))
                                                                                                           (js-navigate-to "/badge")
