@@ -8,12 +8,13 @@
             [clojure.data.json :as json]))
 
 (defn- push-stats [ctx badge-hits]
-  (let [payload (json/write-str {:social_hits badge-hits
-                                 :source (get-in ctx [:config :core :site-url])
-                                 :ts (System/currentTimeMillis)})
-        checksum (u/hmac-sha256-hex payload (get-in ctx [:config :factory :secret]))
-        url (str (get-in ctx [:config :factory :url]) "/c/badge/passport_stats?&c=" checksum)]
-    (http/http-post url {:body payload})))
+  (when (get-in ctx [:config :factory])
+    (let [payload (json/write-str {:social_hits badge-hits
+                                   :source (get-in ctx [:config :core :site-url])
+                                   :ts (System/currentTimeMillis)})
+          checksum (u/hmac-sha256-hex payload (get-in ctx [:config :factory :secret]))
+          url (str (get-in ctx [:config :factory :url]) "/c/badge/passport_stats?&c=" checksum)]
+      (http/http-post url {:body payload}))))
 
 (defn- id->assertion-url [ctx badge-hits]
   (let [db-conn (:connection (u/get-db ctx))
@@ -35,7 +36,7 @@
             {} (line-seq rdr))))
 
 (defn every-hour [ctx]
-  (let [conf (get-in ctx [:config :extra :stats])]
+  (let [conf (get-in ctx [:config :extra/stats])]
     (when (= (get-in ctx [:-cron :hour]) (get conf :run-at 1))
       (log/info "stats/hit-count: started working")
       (->> (hit-count (:source-file conf) (:services conf))
