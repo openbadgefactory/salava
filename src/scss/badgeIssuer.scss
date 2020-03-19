@@ -278,3 +278,17 @@
      color: white;
    }
  }
+
+.confirm-issue {
+  padding-bottom: 0;
+  .info-text {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .panel-footer {
+    text-align: center;
+    .fa {
+      color: white !important;
+    }
+  }
+}

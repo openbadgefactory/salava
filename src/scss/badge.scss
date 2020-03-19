@@ -1960,6 +1960,9 @@ a.popup-info {
     background-color: $background-color;
     text-align: center;
     border-radius: 4px;
+    .fa {
+          color: white
+        }
     .select-users-link {
       white-space: normal;
       .fa {
