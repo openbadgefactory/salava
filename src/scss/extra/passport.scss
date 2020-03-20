@@ -711,6 +711,12 @@ html[dir="rtl"] .wizard {
     width: 160px;
   }
 }
+
+#selfie-badges .alert-dismissable {
+  button.close {
+    padding: inherit !important;
+  }
+}
 /*
 a#login-button {
 height: 36px;
