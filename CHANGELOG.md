@@ -2,7 +2,8 @@
 
 ## 3.9.1
 - Fixed sharing badge to LinkedIn issue
-
+- badgeIssuer plugin usability improvements
+- bug fixes
 
 ## 3.9.0
 

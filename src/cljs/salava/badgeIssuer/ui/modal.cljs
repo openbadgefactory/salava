@@ -112,7 +112,9 @@
                 [:div.selected-users-container] @selected-users)]
        [:div#social-tab.panel-footer
           [:button.btn.btn-primary.btn-btn-bulky
-           {:on-click #(issue-selfie-badge state (fn [] (navigate-to "/badge/selfie")))}
+           {:data-dismiss "modal"
+            :on-click #(issue-selfie-badge state (fn []
+                                                   (session/put! :issue-event {:badge (select-keys badge [:name :image]) :recipient_count (count @selected-users)})))}
            [:span [:i.fa.fa-lg.fa-paper-plane] (t :badgeIssuer/Issuebadge)]]
           [:button.btn.btn-danger.btn-bulky
            {:on-click #(reset! selected-users [])}
@@ -132,11 +134,6 @@
     [:div {:id "badge-info" :class "row flip" :style {:margin "10px 0"}}
      [badge-image badge]
      [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
-      #_(when @(cursor state [:success-alert])
-         [recipient-list-view state]
-         #_[:div.alert.alert-success
-            (t :badgeIssuer/Badgesuccessfullyissued)])
-
       (when-not (blank? @(cursor state [:error-msg]))
        [:div.alert.alert-info @(cursor state [:error-msg])])
       (if (seq @selected-users)

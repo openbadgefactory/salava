@@ -1,6 +1,9 @@
 @import 'variables';
 
 #badge-creator {
+  .user-item {
+    margin: 5px;
+  }
 
   .panel-heading {
     img {
@@ -280,6 +283,7 @@
  }
 
 .confirm-issue {
+  margin-top: 10px;
   padding-bottom: 0;
   .info-text {
     font-weight: 600;
