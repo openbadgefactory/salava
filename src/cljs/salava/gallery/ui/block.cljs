@@ -226,11 +226,15 @@
                                                                        :disabled (empty? @selected-users-atom)}
                                                  (t :core/Continue)])
                                             (when (= context "selfie_issue")
-                                             [:button.btn.btn-primary.btn-bulky
-                                              {:on-click #(func)
-                                               :disabled (empty? @selected-users-atom)}
-                                              [:span [:i.fa.fa-lg.fa-paper-plane] (t :badgeIssuer/Issuebadge)]])])])]])
-
+                                             [:div
+                                              [:button.btn.btn-primary.btn-bulky
+                                               {:on-click #(mo/previous-view) #_(func)
+                                                :disabled (empty? @selected-users-atom)}
+                                               (t :core/Continue)
+                                               #_[:span [:i.fa.fa-lg.fa-paper-plane] (t :badgeIssuer/Issuebadge)]]
+                                              [:button.btn.btn-danger.btn-bulky
+                                               {:on-click #(do (reset! selected-users-atom []) (mo/previous-view))}
+                                               (t :core/Cancel)]])])])]])
 
 
                    :component-will-mount (fn []

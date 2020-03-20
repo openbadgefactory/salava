@@ -183,7 +183,7 @@
                             "modified" (sort-by :mtime > badges)
                             badges)]
         (into container
-              (for [badge sorted-badges]
+              (for [badge (distinct sorted-badges)]
                 (if (= format "short")
                   (badge-grid-element badge nil "profile" nil)
                   (badge-block (assoc badge :format "long"))))))]]))
