@@ -95,6 +95,7 @@
   (let [alert @(cursor state [:alert])
         {:keys [badge recipient_count]} alert]
    (.scrollTo js/window 0 0)
+   ;(fn []
    [:div#badge-creator.alert.alert-success.alert-dismissable
     [:button.close
      {:type "button"
@@ -115,7 +116,7 @@
       [:i {:class "fa fa-cog fa-spin fa-2x "}]
       [:span (str (t :core/Loading) "...")]]
      [:div
-      (when @(cursor state [:alert]) [issue-alert state])
+      (when @(cursor state [:alert]) (issue-alert state))
       [grid-form state]
       (if (not-activated?)
         [not-activated-banner]
