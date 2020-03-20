@@ -111,7 +111,7 @@
                               [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
                 [:div.selected-users-container] @selected-users)]
        [:div#social-tab.panel-footer
-          [:button.btn.btn-primary.btn-btn-bulky
+          [:button.btn.btn-primary.btn-bulky
            {:data-dismiss "modal"
             :on-click #(issue-selfie-badge state (fn []
                                                    (session/put! :issue-event {:badge (select-keys badge [:name :image]) :recipient_count (count @selected-users)})))}
