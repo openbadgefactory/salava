@@ -95,6 +95,12 @@
          [:h4.inline " " (t :badgeIssuer/Issuebadge) "/" name]]]
        [:div.panel-body
         [:div {:style {:margin "20px 0"}} [:p.info-text  (str (t :badgeIssuer/Issuedtofollowingusers) ":")]]
+        (reduce (fn [r u]
+                  (let [{:keys [id first_name last_name profile_picture]} u]
+                    (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
+                             [:a {:href "#" :on-click (fn [] (reset! selected-users (->> @selected-users (remove #(= id (:id %))) vec)))}
+                              [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
+                [:div.selected-users-container] @selected-users)
         [:div {:style {:margin "20px 0"}}
          [:div  [:i.fa.fa-users.fa-fw.fa-3x]
           [:a {:href "#"
@@ -103,13 +109,7 @@
                                                                 :selected-users-atom selected-users
                                                                 :id id
                                                                 :selfie badge})}
-           (t :badge/Editselectedusers)]]]
-        (reduce (fn [r u]
-                  (let [{:keys [id first_name last_name profile_picture]} u]
-                    (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
-                             [:a {:href "#" :on-click (fn [] (reset! selected-users (->> @selected-users (remove #(= id (:id %))) vec)))}
-                              [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
-                [:div.selected-users-container] @selected-users)]
+           (t :badge/Editselectedusers)]]]]
        [:div#social-tab.panel-footer
           [:button.btn.btn-primary.btn-bulky
            {:data-dismiss "modal"
