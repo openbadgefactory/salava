@@ -89,6 +89,9 @@ footer.footer, div.footer {
   h1{
     font-weight: 600;
     color: #172596; //$dark-blue;
+    a .fa {
+      color: #172596;
+    }
   }
 }
 
@@ -123,7 +126,7 @@ footer.footer, div.footer {
 }
 
 /*ICONS*/
-#my-badges #grid #import-badge #add-element-icon, .pages #grid .grid-container #add-element #add-element-icon {
+#my-badges #grid #import-badge #add-element-icon, .pages #grid .grid-container #add-element #add-element-icon,  #selfie-badges.my-selfie-badges #grid #import-badge #add-element-icon {
   color: $title-color;
   .fa-plus:before {
     background: -webkit-gradient(linear, left bottom, right top, from($main-color), to($second-color) );//linear-gradient(to right, #03a3fc, #00b8ff, #00cbff, #00dcf8, #00eced, #00eced, #00eced, #00eced, #00dcf8, #00cbff, #00b8ff, #03a3fc);
@@ -138,7 +141,7 @@ footer.footer, div.footer {
 }
 
 /*GRID*/
-#my-badges #grid #import-badge #add-element-link, #my-badges #grid #import-badge .add-element-link {
+#my-badges #grid #import-badge #add-element-link, #my-badges #grid #import-badge .add-element-link, #selfie-badges.my-selfie-badges #grid #import-badge #add-element-link {
   color: $badge-title;
   &:hover, &:focus, &:active {
     color: $button-hover;
@@ -684,5 +687,11 @@ p.help-block {
 .message-item.media{
   p.media-heading a {
     color: #076AB8;
+  }
+}
+
+#badge-creator .img-buttons, .its_block, .btn-toolbar {
+   .btn-primary .fa{
+    color: inherit !important;
   }
 }
