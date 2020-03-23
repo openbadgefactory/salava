@@ -130,6 +130,9 @@ footer.footer, div.footer {
   h1{
     font-weight: 600;
     color: white;
+    a .fa {
+      color: white;
+    }
   }
 }
 
@@ -176,7 +179,7 @@ footer.footer,div.footer .footer-container {
 }
 
 /*ICONS*/
-#my-badges #grid #import-badge #add-element-icon, .pages #grid .grid-container #add-element #add-element-icon {
+#my-badges #grid #import-badge #add-element-icon, .pages #grid .grid-container #add-element #add-element-icon, #selfie-badges.my-selfie-badges #grid #import-badge #add-element-icon {
   color: $title-color;
   .fa-plus:before {
     background: -webkit-gradient(linear, left bottom, right top, from($main-color), to($dark-yellow) );//linear-gradient(to right, #03a3fc, #00b8ff, #00cbff, #00dcf8, #00eced, #00eced, #00eced, #00eced, #00dcf8, #00cbff, #00b8ff, #03a3fc);
@@ -191,7 +194,7 @@ footer.footer,div.footer .footer-container {
 }
 
 /*GRID*/
-#my-badges #grid #import-badge #add-element-link, #my-badges #grid #import-badge .add-element-link {
+#my-badges #grid #import-badge #add-element-link, #my-badges #grid #import-badge .add-element-link, #selfie-badges.my-selfie-badges #grid #import-badge #add-element-link {
   color: $badge-title;
   &:hover, &:focus, &:active {
     color: $button-hover;
@@ -351,7 +354,7 @@ button.navbar-toggle {
 
 #badge-settings {
   .new-evidence .fa-plus:before {
-    background: -webkit-gradient(linear, left bottom, right top, from($main-color), to($dark-yellow) );//linear-gradient(to right, #03a3fc, #00b8ff, #00cbff, #00dcf8, #00eced, #00eced, #00eced, #00eced, #00dcf8, #00cbff, #00b8ff, #03a3fc);
+    background: -webkit-gradient(linear, left bottom, right top, from($main-color), to($dark-yellow) );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: initial;
@@ -804,4 +807,8 @@ p.help-block {
 
 .page-info-box {
   background-color: #F9F9F9;
+}
+
+#badge-creator .image-container,  .confirmusers {
+  background-color: #f5f5f5 !important;
 }
