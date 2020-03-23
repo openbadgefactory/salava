@@ -95,18 +95,14 @@
   (let [alert @(cursor state [:alert])
         {:keys [badge recipient_count]} alert]
    (.scrollTo js/window 0 0)
-   ;(fn []
    [:div#badge-creator.alert.alert-success.alert-dismissable
     [:button.close
      {:type "button"
       :data-dismiss "alert"
       :aria-label (t :core/Close)}
      [:span {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    [:div;.alert-heading.panel-heading {:style {:padding "unset"}}
-     ;[:img {:src (str "/" (:image badge))}]
-     ;[:h3.inline " " (:name badge)]
-     ;[:hr.border]
-     [:p (str (t :badgeIssuer/Badgesuccessfullyissuedto) "  " recipient_count " " (if (> recipient_count 1) (t :gallery/recipients) (t :gallery/recipient)))]]]))
+    [:div
+     [:p (str (t :badgeIssuer/Badgesuccessfullyissuedto) " " recipient_count)]]]))
 
 (defn content [state]
   [:div#selfie-badges.my-selfie-badges
