@@ -102,10 +102,10 @@
       :data-dismiss "alert"
       :aria-label (t :core/Close)}
      [:span {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    [:div.alert-heading.panel-heading {:style {:padding "unset"}}
-     [:img {:src (str "/" (:image badge))}]
-     [:h3.inline " " (:name badge)]
-     [:hr.border]
+    [:div;.alert-heading.panel-heading {:style {:padding "unset"}}
+     ;[:img {:src (str "/" (:image badge))}]
+     ;[:h3.inline " " (:name badge)]
+     ;[:hr.border]
      [:p (str (t :badgeIssuer/Badgesuccessfullyissuedto) "  " recipient_count " " (if (> recipient_count 1) (t :gallery/recipients) (t :gallery/recipient)))]]]))
 
 (defn content [state]

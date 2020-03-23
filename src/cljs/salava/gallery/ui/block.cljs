@@ -218,7 +218,9 @@
                                                      (->> @(cursor data-atom [:users])
                                                            (remove #(= (:id %) (session/get-in [:user :id])))
                                                            (filter #(every? nil? (-> % :endorsement vals))))
-                                                     @(cursor data-atom [:users])))]
+                                                     (if (= "selfie_issue" context)
+                                                      (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id]))))
+                                                      @(cursor data-atom [:users]))))]
 
                                            [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
                                             (when (or (= context "endorsement") (= context "endorsement_selfie"))

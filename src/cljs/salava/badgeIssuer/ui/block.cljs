@@ -13,7 +13,7 @@
   (ajax/GET
     (path-for (str "/obpv1/selfie/" id))
     {:handler (fn [data]
-               (reset! (cursor state [:badge]) data))})) 
+               (reset! (cursor state [:badge]) data))}))
 
 (defn issue-badge-content [params]
   (let [id (:id params)
@@ -107,6 +107,20 @@
        {:handler (fn [data]
                    (reset! state {:badges data}))}))}))
 
+#_(defn selfie-badges-checkbox [state func]
+    (let [selfie-badges-atom (cursor state [:only-selfie?])
+          badges (cursor state [:badges])]
+      [:div.form-group
+       [:div {:class "col-sm-10 col-sm-offset-2"}
+        [:div.checkbox
+         [:label
+          [:input {:type "checkbox"
+                   :checked @selfie-badges-atom
+                   :on-change #(do
+                                 (reset! selfie-badges-atom (not @selfie-badges-atom))
+                                 (if @selfie-badges-atom (reset! badges (->> @badges (filter (fn [b] (not (nil? (:selfie_id b))))))) (func)))}]
+          (str (t :badgeIssuer/Issuedbyusers))]]]]))
+
 (defn ^:export issue_badge_link [gallery_id]
   (issue-badge gallery_id))
 
@@ -116,3 +130,6 @@
 
 (defn ^:export selfie_stamp []
   (stamp))
+
+#_(defn ^:export gallery_checkbox [state func]
+    (selfie-badges-checkbox state func))
