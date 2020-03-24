@@ -3,11 +3,12 @@
             [salava.core.http :as http]
             [salava.core.time :refer [iso8601-to-unix-time unix-time date-from-unix-time]]
             [clojure.tools.logging :as log]
-            [salava.core.util :refer [get-db plugin-fun get-plugins]]
+            [salava.core.util :refer [get-db plugin-fun get-plugins str->epoch]]
             [yesql.core :refer [defqueries]]
             [salava.badge.parse :refer [str->badge]]
             [clojure.data.json :as json]
-            [autoclave.core :refer [json-sanitize]]))
+            [autoclave.core :refer [json-sanitize]]
+            [slingshot.slingshot :refer :all]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -64,7 +65,12 @@
   (if (nil? t) nil (if (string? t) (< (iso8601-to-unix-time t) (unix-time)) (< t (unix-time)))))
 
 (defn process-time [t]
-  (if (nil? t) nil (if (string? t) (date-from-unix-time (long (* 1000 (iso8601-to-unix-time t))) "date") (date-from-unix-time (long (* 1000 t)) "date"))))
+  (try+
+   (if (clojure.string/blank? t) nil (date-from-unix-time (* 1000 (str->epoch t)) "date"))
+   #_(if (nil? t) nil (if (string? t) (date-from-unix-time (long (* 1000 (iso8601-to-unix-time t))) "date") (date-from-unix-time (long (* 1000 t)) "date")))
+   (catch Object _
+    (log/error "An error occured when parsing time")
+    nil)))
 
 (defn verify-badge [ctx id]
   (log/info "Badge verification initiated:")
@@ -79,7 +85,6 @@
             delete-user-metabadge (first (plugin-fun (get-plugins ctx) "db" "clear-user-metabadge!"))]
         (if (url? asr)
           (let [asr-response (assertion asr)]
-            (prn asr-response)
             (case (:status asr-response)
               404 (assoc result :assertion-status 404
                          :asr asr)
@@ -103,9 +108,9 @@
                                             (fetch-url (get-in badge-data [:criteria :id]))
                                             (get-in badge-data [:criteria :narrative]))
                                          (if (url? (:criteria badge-data)) (fetch-url (:criteria badge-data)) {:status 800}))
-                        #_badge-issuer #_(if (and (map? (:issuer badge-data)) (contains? (:issuer badge-data) :id))
-                                           (fetch-url (get-in badge-data [:issuer :id]))
-                                           (if (url? (:issuer badge-data)) (fetch-url (:issuer badge-data)) {:status 800}))
+                        badge-issuer (if (and (map? (:issuer badge-data)) (contains? (:issuer badge-data) :id))
+                                       (fetch-url (get-in badge-data [:issuer :id]))
+                                       (if (url? (:issuer badge-data)) (fetch-url (:issuer badge-data)) {:status 800}))
                         issuedOn {:issuedOn (process-time (:issuedOn asr-data))}
                         expires (if-let [exp (process-time (:expires asr-data))] {:expires exp} nil)
 
@@ -116,7 +121,7 @@
                            :asr asr
                            :badge-image-status (:status badge-image)
                            :badge-criteria-status (:status badge-criteria)
-                           :badge-issuer-status 200 #_(:status badge-issuer)
+                           :badge-issuer-status (:status badge-issuer)
                            :revoked? revoked?
                            :expired? expired?))
               (assoc result :assertion-status 500
