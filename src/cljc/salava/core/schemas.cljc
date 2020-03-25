@@ -35,4 +35,5 @@
                  "page"
                  "admin"
                  "advert"
-                 "selfie")})
+                 "selfie")
+   (s/optional-key :user-id) (s/maybe s/Int)})

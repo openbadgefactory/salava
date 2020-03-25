@@ -83,6 +83,7 @@
                            [org.webjars/es5-shim "4.5.9"]
                            [org.webjars/es6-shim "0.20.2"]
                            [org.webjars/leaflet "1.4.0"]
+                           [cljsjs/recharts "1.6.2-0"]
 
                  ; Logging: use logback with slf4j, redirect JUL, JCL and Log4J:
                            [org.clojure/tools.logging "0.4.1"]

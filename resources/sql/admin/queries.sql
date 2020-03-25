@@ -4,11 +4,24 @@ SELECT language FROM user WHERE id = :id
 --name: total-user-count
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND deleted = 0;
 
+--name: total-user-count-fix
+-- Count all users both activated and not
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE deleted = 0;
+
+--name: activated-user-count
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND deleted = 0;
+
+--name: not-activated-user-count
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 0 AND deleted = 0;
+
 --name: count-logged-users-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login > :time AND deleted = 0;
 
 --name: count-registered-users-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND ctime > :time;
+
+--name: count-registered-users-after-date-fix
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE ctime > :time;
 
 --name: count-all-badges
 SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status != 'declined';

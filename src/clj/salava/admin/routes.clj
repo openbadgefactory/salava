@@ -30,7 +30,7 @@
                   :auth-rules access/admin
                   :current-user current-user
                   (do
-                    (ok (a/get-stats ctx))))
+                    (ok (a/get-stats ctx (:last-visited current-user)))))
 
              (POST "/private_badge/:user_badge_id" []
                    :return (s/enum "success" "error")

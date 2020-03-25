@@ -31,10 +31,18 @@
   (let [events (get-user-admin-events ctx user_id)]
     events))
 
+#_(defn register-users-count
+      "Get count from all active and registered users"
+      [ctx]
+      (total-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
+
 (defn register-users-count
   "Get count from all active and registered users"
-  [ctx]
-  (total-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
+  [ctx last-login]
+  {:total (total-user-count-fix {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :activated (activated-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :not-activated (not-activated-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :since-last-visited (count-registered-users-after-date-fix {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
 
 (defn last-month-users-login-count
   "Get count from all last month logged in users"
@@ -64,16 +72,29 @@
   [ctx]
   (count-all-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
 
-(defn get-stats [ctx]
+#_(defn get-stats [ctx last-login]
+      (try+
+       {:register-users (register-users-count ctx last-login)
+        :last-month-active-users (last-month-users-login-count ctx)
+        :last-month-registered-users (last-month-users-registered-count ctx)
+        :all-badges (badges-count ctx)
+        :last-month-added-badges (last-month-added-badges-count ctx)
+        :pages (pages-count ctx)}
+       (catch Object _
+         "error")))
+
+(defn get-stats [ctx last-login]
   (try+
-   {:register-users (register-users-count ctx)
+   {:users (register-users-count ctx last-login)
     :last-month-active-users (last-month-users-login-count ctx)
     :last-month-registered-users (last-month-users-registered-count ctx)
     :all-badges (badges-count ctx)
     :last-month-added-badges (last-month-added-badges-count ctx)
     :pages (pages-count ctx)}
    (catch Object _
+     (log/error (.getMessage _))
      "error")))
+
 
 (defn private-badge! [ctx id]
   (try+

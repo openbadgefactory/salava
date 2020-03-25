@@ -5,7 +5,17 @@
             [salava.core.countries :refer [all-countries]]
             [salava.user.schemas :as u]))
 
-(s/defschema Stats {:register-users (s/maybe s/Int)
+#_(s/defschema Stats {:register-users (s/maybe s/Int)
+                      :last-month-active-users (s/maybe s/Int)
+                      :last-month-registered-users (s/maybe s/Int)
+                      :all-badges (s/maybe s/Int)
+                      :last-month-added-badges (s/maybe s/Int)
+                      :pages (s/maybe s/Int)})
+
+(s/defschema Stats {:users {:total (s/maybe s/Int) 
+                            :not-activated (s/maybe s/Int)
+                            :activated (s/maybe s/Int)
+                            :since-last-visited (s/maybe s/Int)}
                     :last-month-active-users (s/maybe s/Int)
                     :last-month-registered-users (s/maybe s/Int)
                     :all-badges (s/maybe s/Int)

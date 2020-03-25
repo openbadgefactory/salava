@@ -336,3 +336,134 @@
         }
     }
 }
+
+.box-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.admin-stats {
+  .panel-box {
+    webkit-box-shadow: 0 0.46875rem 2.1875rem rgba(0, 0, 0, 0.03), 0 0.9375rem 1.40625rem rgba(0, 0, 0, 0.03), 0 0.25rem 0.53125rem rgba(0, 0, 0, 0.05), 0 0.125rem 0.1875rem rgba(0, 0, 0, 0.03);
+    box-shadow: 0 0.46875rem 2.1875rem rgba(0, 0, 0, 0.03), 0 0.9375rem 1.40625rem rgba(0, 0, 0, 0.03), 0 0.25rem 0.53125rem rgba(0, 0, 0, 0.05), 0 0.125rem 0.1875rem rgba(0, 0, 0, 0.03);
+    border-width: 0;
+    -webkit-transition: all 0.2s;
+    -o-transition: all 0.2s;
+    transition: all 0.2s;
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: 0.25rem;
+    text-align: center;
+    padding: 1rem;
+    position: relative;
+    color: #495057;
+    margin-bottom: 30px !important;
+
+    .panel-icon-wrapper {
+      width: 54px;
+      height: 54px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-line-pack: center;
+      align-content: center;
+      -ms-flex-align: center;
+      align-items: center;
+    }
+
+    i {
+      margin: 15px;
+      font-size: 2.5rem;
+      position: relative;
+      z-index: 5;
+    }
+
+    .icon-bg {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      z-index: 3;
+    }
+
+    .rounded-circle {
+      border-radius: 50% !important;
+    }
+
+    .rounded {
+      border-radius: 0.25em !important;
+    }
+
+    .border-light {
+      border-width: thin;
+      border-color: #d5d9eb !important;
+    }
+
+    .bg-badge {
+      background-color: rgba(115, 168, 57, .2); //rgba(220, 92, 16, .2);
+    }
+
+    .bg-page {
+      background-color: rgba(49, 53, 85,.2);
+    }
+
+
+    .bg-users {
+      background-color: rgba(51, 122, 183, .2); //#033C73 !important;
+    }
+
+
+    .text-users{
+      color: #033C73 !important;
+    }
+
+    .text-badges, .text-success {
+      color: rgba(115, 168, 57, .85); //#DC5C10;
+    }
+
+    .text-pages {
+      background-color: #d5d7ea;
+    }
+
+    .panel-numbers {
+    font-weight: bold;
+    font-size: 3rem;
+    display: block;
+    line-height: 1;
+    margin: 1rem auto;
+
+    }
+  .panel-subheading {
+      margin: -0.5rem 0 0;
+    display: block;
+    opacity: .6;
+   }
+
+   .panel-description {
+    margin: 1rem 0 0;
+   }
+  }
+
+  .chart-wrapper {
+    position: relative;
+    opacity: .8;
+    //margin-top: 1rem;
+    z-index: 6;
+    border-bottom-right-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+    overflow: hidden;
+  }
+  .recharts-responsive-container {
+    opacity: .85;
+    align-items: center;
+  }
+}
