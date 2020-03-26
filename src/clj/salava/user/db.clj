@@ -75,7 +75,6 @@
             user-id             (:generated_key new-user)]
         (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
         ;(u/publish ctx :new-user {:user-id user-id})
-
         {:status "success" :message ""}))))
 
 (defn set-password-and-activate
@@ -393,8 +392,8 @@
            (delete-user! {:id user-id} {:connection tr-cn})
            (update-user-set-deleted! {:first_name "deleted" :last_name "deleted" :id user-id} {:connection tr-cn}))
 
-       (delete-user! {:id user-id} {:connection tr-cn});delete user anyway
-       ){:status "success"})
+       (delete-user! {:id user-id} {:connection tr-cn}));delete user anyway
+      {:status "success"})
     (catch Object _
       {:status "error"}))))
 
