@@ -12,15 +12,31 @@
                       :last-month-added-badges (s/maybe s/Int)
                       :pages (s/maybe s/Int)})
 
-(s/defschema Stats {:users {:total (s/maybe s/Int) 
+(s/defschema Stats {:users {:total (s/maybe s/Int)
                             :not-activated (s/maybe s/Int)
                             :activated (s/maybe s/Int)
-                            :since-last-visited (s/maybe s/Int)}
-                    :last-month-active-users (s/maybe s/Int)
-                    :last-month-registered-users (s/maybe s/Int)
-                    :all-badges (s/maybe s/Int)
-                    :last-month-added-badges (s/maybe s/Int)
-                    :pages (s/maybe s/Int)})
+                            :since-last-login (s/maybe s/Int)
+                            :since-last-month (s/maybe s/Int)
+                            :last-month-login-count (s/maybe s/Int)}
+                    ;:last-month-active-users (s/maybe s/Int)
+                    ;:last-month-registered-users (s/maybe s/Int)
+                    :badges {:total (s/maybe s/Int)
+                             :accepted (s/maybe s/Int)
+                             :pending (s/maybe s/Int)
+                             :declined (s/maybe s/Int)
+                             :private (s/maybe s/Int)
+                             :public (s/maybe s/Int)
+                             :internal (s/maybe s/Int)
+                             :since-last-login (s/maybe s/Int)
+                             :since-last-month (s/maybe s/Int)}
+
+                    ;:last-month-added-badges (s/maybe s/Int)
+                    :pages {:since-last-login (s/maybe s/Int)
+                            :since-last-month (s/maybe s/Int)
+                            :total (s/maybe s/Int)
+                            :internal (s/maybe s/Int)
+                            :private (s/maybe s/Int)
+                            :public (s/maybe s/Int)}})
 
 (s/defschema User-name-and-email {:name s/Str
                                   :email s/Str})

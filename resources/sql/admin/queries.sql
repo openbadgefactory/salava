@@ -26,11 +26,47 @@ SELECT COUNT(DISTINCT id) AS count FROM user WHERE ctime > :time;
 --name: count-all-badges
 SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status != 'declined';
 
+--name: count-all-badges-fix
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0;
+
+--name: count-pending-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'pending';
+
+--name: count-declined-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'declined';
+
+--name: count-accepted-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'accepted';
+
 --name: count-all-badges-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE ctime > :time AND deleted = 0 AND status != 'declined';
 
+--name: count-private-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'private';
+
+--name: count-internal-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'internal';
+
+--name: count-public-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'public';
+
+--name: count-private-pages
+SELECT COUNT(DISTINCT id) AS count FROM page WHERE deleted = 0 AND visibility = 'private';
+
+--name: count-internal-pages
+SELECT COUNT(DISTINCT id) AS count FROM page WHERE deleted = 0 AND visibility = 'internal';
+
+--name: count-public-pages
+SELECT COUNT(DISTINCT id) AS count FROM page WHERE deleted = 0 AND visibility = 'public';
+
+--name: count-all-badges-after-date-fix
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE ctime > :time AND deleted = 0;
+
 --name: count-all-pages
 SELECT COUNT(DISTINCT id) AS count FROM page WHERE  deleted = 0;
+
+--name: count-all-pages-after-date
+SELECT COUNT(DISTINCT id) AS count FROM page WHERE ctime > :time AND deleted = 0;
 
 --name: select-user-admin
 SELECT role FROM user WHERE id= :id;

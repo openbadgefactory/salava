@@ -9,7 +9,8 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [cljsjs.recharts]))
+            [cljsjs.recharts]
+            [clojure.string :refer [lower-case]]))
 
 
 #_(defn content [state]
@@ -36,62 +37,140 @@
         Pie (adapt-react-class js/window.Recharts.Pie.)
         ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
         Cell (adapt-react-class js/window.Recharts.Cell.)
-        Legend (adapt-react-class js/window.Recharts.Legend.)]
-    [PieChart {:width width
-               :height height
-               :margin {:top 5}}
-     (reduce (fn [r c] (conj r [Cell {:fill (:fill c)}]))
-      [Pie {:fill "#82ca9d"
-            :data data
-            :inner-radius 40
-            :padding-angle 1
-            :label false
-            :label-line false
-            :legend-type "square"
-            :dataKey :value}]
+        Legend (adapt-react-class js/window.Recharts.Legend.)
+        ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)]
+    [ResponsiveContainer
+     {:width width :height height :aspect 1.3}
+     [PieChart {:margin {:top 5}}
+      (reduce (fn [r c] (conj r [Cell {:fill (:fill c)}]))
+       [Pie {:fill "#82ca9d"
+             :data data
+             :inner-radius 20
+             :padding-angle 1
+             :label false
+             :label-line false
+             :legend-type "circle"
+             :dataKey :value}]
 
-      data)
-     [ToolTip]
-     [Legend]]))
+       data)
+      [ToolTip]
+      [Legend {:icon-size 8}]]]))
 
-
+(def colors {:primary "#0275d8"
+             :success "#5cb85c"
+             :info "#5bc0de"
+             :warning "#f0ad4e"
+             :danger "#d9534f"})
 
 (defn content [state]
-  (let [{:keys [users last-month-active-users last-month-registered-users all-badges last-month-added-badges pages]} @state]
+  (let [{:keys [users badges last-month-active-users last-month-registered-users all-badges last-month-added-badges pages]} @state]
     [:div {:class "admin-stats"}
      [m/modal-window]
-     [:div;.panel.panel-default
+     [:div#panel-boxes
       [:div.row
-       [:div.col-md-12
-        [:div.col-md-4
-         [:div.panel-box
-          [:div.panel-icon-wrapper.rounded-circle
-           [:div.icon-bg.bg-users
-            [:i.fa.fa-user-o.text-users]]]
-          [:div.panel-numbers (:total users)]
-          [:div.panel-subheading (t :admin/Registeredusers)]
-          (when (pos? (:since-last-visited users))
-            [:div.panel-description
-             [:span.text-success [:i.fa.fa-angle-up.fa-fw] (:since-last-login users)] "since last login"])
-          [:div.chart-wrapper
-           [:div.recharts-responsive-container
-             [:div (make-pie-chart {:width 250 :height 250 :data [{:name "activated" :value (:activated users) :fill "#73a839d9"} {:name "not-activated" :value (:not-activated users) :fill "#FF521B"}]})]]]]]
-        [:div.col-md-4
-         [:div.panel-box
-          [:div.panel-icon-wrapper.rounded-circle
-           [:div.icon-bg.bg-badge
-            [:i.fa.fa-certificate.text-badges]]]
-          [:div.panel-numbers all-badges]
-          [:div.panel-subheading (t :admin/Totalbadges)]]]
+        [:div.col-md-4.col-sm-4
+         [:div.panel-box.panel-chart
+          [:div.panel-chart-content
+           [:div.panel-icon-wrapper.rounded-circle
+            [:div.icon-bg.bg-users
+             [:i.fa.fa-user-o.text-users.panel-icon]]]
+           [:div.panel-numbers (:total users)]
+           [:div.panel-subheading (t :admin/Users)]
+           [:div.panel-description
+            (cond
+              (pos? (:since-last-login users))
+              [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b (:since-last-login users)]] " " (t :admin/Increasesincelastlogin)]
+              (pos? (:since-last-month users))
+              [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b (:since-last-month users)]] " " (t :admin/Increasesincelastmonth)]
+              :else [:span])]]]]
+        [:div.col-md-4.col-sm-4
+         [:div.panel-box.panel-chart
+          [:div.panel-chart-content
+           [:div.panel-icon-wrapper.rounded-circle
+            [:div.icon-bg.bg-badge
+             [:i.fa.fa-certificate.text-badges.panel-icon]]]
+           [:div.panel-numbers (:total badges)]
+           [:div.panel-subheading (t :badge/Badges)]
+           [:div.panel-description
+            (cond
+              (pos? (:since-last-login badges))
+              [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b (:since-last-login badges)]] " " (t :admin/Increasesincelastlogin)]
+              (pos? (:since-last-month badges))
+              [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b (:since-last-month badges)]] " " (t :admin/Increasesincelastmonth)]
+              :else [:span])]]]]
           ;[:div.panel-description (t :admin/Numberofmonthlyaddedbadges)]]]
 
-        [:div.col-md-4
+        [:div.col-md-4.col-sm-4
          [:div.panel-box
           [:div.panel-icon-wrapper.rounded-circle
            [:div.icon-bg.bg-page
-            [:i.fa.fa-file-text-o.text-pages]]]
-          [:div.panel-numbers pages]
-          [:div.panel-subheading (t :admin/Totalpages)]]]]]]]))
+            [:i.fa.fa-file-text-o.text-pages.panel-icon]]]
+          [:div.panel-numbers (:total pages)]
+          [:div.panel-subheading (t :page/Pages)]
+          [:div.panel-description
+           (cond
+            (pos? (:since-last-login pages))
+            [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b (:since-last-login pages)]] " " (t :admin/Increasesincelastlogin)]
+            (pos? (:since-last-month pages))
+            [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b (:since-last-month pages)]] " " (t :admin/Increasesincelastmonth)]
+            :else [:span])]]]]
+      [:div.row
+       [:div.col-md-4.col-sm-6
+         [:div.panel-box.panel-chart
+          [:div.panel-chart-content
+           [:div.panel-icon-wrapper.rounded
+            [:div.icon-bg.bg-users
+             [:i.fa.fa-user-o.text-users.panel-icon]]]
+           ;[:div.panel-numbers (:total users)]
+           [:div.panel-subheading.pad (t :admin/Accountactivation)]]
+          [:div.panel-chart-wrapper.panel-chart-wrapper-relative
+            [:div (make-pie-chart {:width 200
+                                   :height 150
+                                   :data [{:name (t :admin/Activated) :value (:activated users) :fill (:success colors)}
+                                          {:name (t :admin/Notactivated) :value (:not-activated users) :fill (:danger colors)}]})]]]]
+       [:div.col-md-4.col-sm-6
+            [:div.panel-box.panel-chart
+             [:div.panel-chart-content
+              [:div.panel-icon-wrapper.rounded
+               [:div.icon-bg.bg-badge
+                [:i.fa.fa-certificate.text-badges.panel-icon]]]
+              ;[:div.panel-numbers (:total users)]
+              [:div.panel-subheading.pad (t :admin/BadgeAcceptance)]]
+             [:div.panel-chart-wrapper.panel-chart-wrapper-relative
+               [:div (make-pie-chart {:width 200
+                                      :height 150
+                                      :data [{:name (t :social/pending) :value (:pending badges) :fill (:info colors)}
+                                             {:name (t :social/accepted) :value (:accepted badges) :fill (:success colors)}
+                                             {:name (t :social/declined) :value (:declined badges) :fill (:danger colors)}]})]]]]
+       [:div.col-md-4.col-sm-6
+         [:div.panel-box.panel-chart
+          [:div.panel-chart-content
+           [:div.panel-icon-wrapper.rounded
+            [:div.icon-bg.bg-badge
+             [:i.fa.fa-certificate.text-badges.panel-icon]]]
+           ;[:div.panel-numbers (:total users)]
+           [:div.panel-subheading.pad (t :badge/Badgevisibility)]]
+          [:div.panel-chart-wrapper.panel-chart-wrapper-relative
+            [:div (make-pie-chart {:width 200
+                                   :height 150
+                                   :data [{:name (session/get :site-name) :value (:internal badges) :fill (:primary colors)}
+                                          {:name (str (lower-case (t :page/Public))) :value (:public badges) :fill (:success colors)}
+                                          {:name (str (lower-case (t :page/Private))) :value (:private badges) :fill (:warning colors)}]})]]]]]
+      [:div.row
+       [:div.col-md-4.col-sm-6
+        [:div.panel-box.panel-chart
+         [:div.panel-chart-content
+          [:div.panel-icon-wrapper.rounded
+           [:div.icon-bg.bg-page
+            [:i.fa.fa-file-text-o.text-pages.panel-icon]]]
+          ;[:div.panel-numbers (:total users)]
+          [:div.panel-subheading.pad (t :page/Pagevisibility)]]
+         [:div.panel-chart-wrapper.panel-chart-wrapper-relative
+           [:div (make-pie-chart {:width 200
+                                  :height 150
+                                  :data [{:name (session/get :site-name) :value (:internal pages) :fill (:primary colors)}
+                                         {:name (str (lower-case (t :page/Public))) :value (:public pages) :fill (:success colors)}
+                                         {:name (str (lower-case (t :page/Private))) :value (:private pages) :fill (:warning colors)}]})]]]]]]]))
 
 (defn init-data [state]
   (ajax/GET

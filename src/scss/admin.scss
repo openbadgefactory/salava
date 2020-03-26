@@ -381,9 +381,9 @@
       align-items: center;
     }
 
-    i {
-      margin: 15px;
-      font-size: 2.5rem;
+    .panel-icon {
+      margin: 9px;
+      font-size: 3.5rem;
       position: relative;
       z-index: 5;
     }
@@ -430,6 +430,10 @@
       color: rgba(115, 168, 57, .85); //#DC5C10;
     }
 
+    span.text-success {
+      font-size: inherit;
+    }
+
     .text-pages {
       background-color: #d5d7ea;
     }
@@ -453,17 +457,41 @@
    }
   }
 
-  .chart-wrapper {
+  .panel-chart {
+    text-align: center;
+    padding: 1rem;
     position: relative;
-    opacity: .8;
-    //margin-top: 1rem;
+  }
+
+  .panel-chart-content {
+    position: relative;
+    z-index: 5;
+  }
+
+  .panel-chart-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    opacity: .25;
     z-index: 6;
     border-bottom-right-radius: 0.25rem;
     border-bottom-left-radius: 0.25rem;
     overflow: hidden;
   }
+
+  .panel-chart-wrapper-relative {
+    position: relative;
+    opacity: 1;
+    margin-top: .5rem;
+  }
   .recharts-responsive-container {
     opacity: .85;
     align-items: center;
+    margin: auto;
+  }
+
+  .panel-subheading.pad {
+    padding-top: 1rem;
   }
 }
