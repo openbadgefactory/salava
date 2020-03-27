@@ -44,7 +44,9 @@
    :not-activated (not-activated-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :since-last-login (count-registered-users-after-date-fix {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :since-last-month (count-registered-users-after-date-fix {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :last-month-login-count (count-logged-users-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
+   :last-month-login-count (count-logged-users-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :internal (internal-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :public (public-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
 
 #_(defn last-month-users-login-count
     "Get count from all last month logged in users"

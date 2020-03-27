@@ -17,7 +17,9 @@
                             :activated (s/maybe s/Int)
                             :since-last-login (s/maybe s/Int)
                             :since-last-month (s/maybe s/Int)
-                            :last-month-login-count (s/maybe s/Int)}
+                            :last-month-login-count (s/maybe s/Int)
+                            :internal (s/maybe s/Int)
+                            :public (s/maybe s/Int)}
                     ;:last-month-active-users (s/maybe s/Int)
                     ;:last-month-registered-users (s/maybe s/Int)
                     :badges {:total (s/maybe s/Int)

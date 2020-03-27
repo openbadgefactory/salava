@@ -367,6 +367,11 @@
     color: #495057;
     margin-bottom: 30px !important;
 
+    span {
+      font-size: inherit;
+      font-weight: 500;
+    }
+
     .panel-icon-wrapper {
       width: 54px;
       height: 54px;
@@ -408,23 +413,34 @@
       border-color: #d5d9eb !important;
     }
 
-    .bg-badge {
-      background-color: rgba(115, 168, 57, .2); //rgba(220, 92, 16, .2);
+    .b-badge {
+      .bg {
+        background-color: rgba(115, 168, 57, .2);
+      }
+
+      .text {
+        color: rgba(115, 168, 57, .85);
+      }
     }
 
-    .bg-page {
-      background-color: rgba(49, 53, 85,.2);
+    .b-user {
+      .bg {
+        background-color: rgba(51, 122, 183, .2);
+      }
+      .text {
+        color: #033C73 !important;
+      }
     }
 
-
-    .bg-users {
-      background-color: rgba(51, 122, 183, .2); //#033C73 !important;
+    .b-page {
+      .bg {
+        background-color: rgba(49, 53, 85,.2);
+      }
+      .text {
+        background-color: #d5d7ea;
+      }
     }
 
-
-    .text-users{
-      color: #033C73 !important;
-    }
 
     .text-badges, .text-success {
       color: rgba(115, 168, 57, .85); //#DC5C10;
@@ -432,10 +448,6 @@
 
     span.text-success {
       font-size: inherit;
-    }
-
-    .text-pages {
-      background-color: #d5d7ea;
     }
 
     .panel-numbers {
