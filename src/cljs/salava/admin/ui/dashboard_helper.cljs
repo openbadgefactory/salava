@@ -12,11 +12,11 @@
 ;(def Cell (adapt-react-class js/window.Recharts.Cell.))
 ;(def Legend (adapt-react-class js/window.Recharts.Legend.))
 ;(def ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.))
-(def BarChart (adapt-react-class js/window.Recharts.BarChart.))
-(def Bar (adapt-react-class js/window.Recharts.Bar.))
+;(def BarChart (adapt-react-class js/window.Recharts.BarChart.))
+;(def Bar (adapt-react-class js/window.Recharts.Bar.))
 ;(def CartesianGrid (adapt-react-class js/window.Recharts.CartesianGrid.))
-(def XAxis (adapt-react-class js/window.Recharts.XAxis.))
-(def YAxis (adapt-react-class js/window.Recharts.YAxis.))
+;(def XAxis (adapt-react-class js/window.Recharts.XAxis.))
+;(def YAxis (adapt-react-class js/window.Recharts.YAxis.))
 
 
 (def colors
@@ -64,7 +64,12 @@
         ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
         ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
         Legend (adapt-react-class js/window.Recharts.Legend.)
-        Cell (adapt-react-class js/window.Recharts.Cell.)]
+        Cell (adapt-react-class js/window.Recharts.Cell.)
+        BarChart (adapt-react-class js/window.Recharts.BarChart.)
+        Bar (adapt-react-class js/window.Recharts.Bar.)
+        XAxis (adapt-react-class js/window.Recharts.XAxis.)
+        YAxis (adapt-react-class js/window.Recharts.YAxis.)]
+
    [:div {:style {:width "100%"}}
     [ResponsiveContainer
      {:height 155}
@@ -79,6 +84,60 @@
       [Bar {:dataKey (session/get :site-name) :fill (:yellow colors) :stackId "a"}]
       [Bar {:dataKey (keyword (t :page/Private)) :fill (:purple colors) :stackId "a"}]
       [Bar {:dataKey (keyword (t :admin/Notactivated)) :fill (:danger colors) :stackId "a"}]]]]))
+
+
+(defn make-visibility-bar [{:keys [width height data]}]
+  (let [{:keys [default-width default-height aspect bar-settings]} settings
+        ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
+        ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
+        Legend (adapt-react-class js/window.Recharts.Legend.)
+        Cell (adapt-react-class js/window.Recharts.Cell.)
+        BarChart (adapt-react-class js/window.Recharts.BarChart.)
+        Bar (adapt-react-class js/window.Recharts.Bar.)
+        XAxis (adapt-react-class js/window.Recharts.XAxis.)
+        YAxis (adapt-react-class js/window.Recharts.YAxis.)]
+   [:div {:style {:width "100%"}}
+    [ResponsiveContainer
+     {:height 155}
+     [BarChart
+      {:data data}
+       ;:margin {:top 20 :right 30 :left 20}}
+      [XAxis {:dataKey :name}]
+      [YAxis]
+      [ToolTip]
+      [Legend {:icon-size 8}]
+      [Bar {:dataKey (keyword (t :page/Public)) :fill (:default colors) :stackId "a"}]
+      [Bar {:dataKey (session/get :site-name) :fill (:yellow colors) :stackId "a"}]
+      [Bar {:dataKey (keyword (t :page/Private)) :fill (:purple colors) :stackId "a"}]
+      [Bar {:dataKey (keyword (t :admin/Notactivated)) :fill (:danger colors) :stackId "a"}]]]]))
+
+(defn user-growth-chart [{:keys [width height data]}]
+  (let [{:keys [default-width default-height aspect bar-settings]} settings
+        ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
+        ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
+        Legend (adapt-react-class js/window.Recharts.Legend.)
+        Cell (adapt-react-class js/window.Recharts.Cell.)
+        BarChart (adapt-react-class js/window.Recharts.BarChart.)
+        Bar (adapt-react-class js/window.Recharts.Bar.)
+        XAxis (adapt-react-class js/window.Recharts.XAxis.)
+        YAxis (adapt-react-class js/window.Recharts.YAxis.)]
+   [:div {:style {:width "100%"}}
+    [ResponsiveContainer
+     {:height 155}
+     [BarChart
+      {:data data
+       :margin {:bottom 25}} ;:right 30 :left 20}}
+      [XAxis {:dataKey :name}]
+      [YAxis]
+      [ToolTip]
+      [Legend {:icon-size 8}]
+      [Bar {:dataKey :total :fill (:default colors) :stackId "a"}]
+      [Bar {:dataKey :existing-users :fill (:purple colors) :stackId "a"}]
+      [Bar {:dataKey :growth :fill (:yellow colors) :stackId "a"}]
+      [Bar {:dataKey :active-users :fill (:danger colors) :stackId "b"}]]]]))
+
+      ;[Bar {:dataKey (keyword (t :page/Private)) :fill (:purple colors) :stackId "a"}]
+      ;[Bar {:dataKey (keyword (t :admin/Notactivated)) :fill (:danger colors) :stackId "a"}]]]]))
 
 
 (defn panel-box [data]
@@ -119,4 +178,5 @@
        (case chart-type
          :pie (make-pie {:width 200 :data chart-data})
          :visibility-bar (make-visibility-bar {:width 500 :data chart-data})
+         :user-growth-chart (user-growth-chart {:width 500 :data chart-data})
          [:div])]]])))

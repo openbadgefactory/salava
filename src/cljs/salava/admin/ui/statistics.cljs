@@ -81,32 +81,61 @@
        [dh/panel-box {:heading (t :page/Pages) :icon "fa-file-text-o" :info users :type "b-page"}]]
       [:div.row
        [dh/panel-box-chart {:heading (t :admin/BadgeAcceptance)
-                            :icon "fa-certificate"
+                            :icon "fa-pie-chart"
                             :type "b-badge"
                             :chart-type :pie
                             :chart-data [{:name (t :social/pending) :value (:pending badges) :fill (:info colors)}
                                          {:name (t :social/accepted) :value (:accepted badges) :fill (:success colors)}
                                          {:name (t :social/declined) :value (:declined badges) :fill (:danger colors)}]}]
        [dh/panel-box-chart {:size :md
-                            :heading (t :badge/Visibility)
-                            :icon "fa-eye"
+                            :heading (t :admin/Sharing)
+                            :icon "fa-bar-chart"
                             :type "b-page"
                             :chart-type :visibility-bar
                             :chart-data [{:name (t :admin/Users)
                                           (keyword (t :page/Public)) (:public users)
                                           (keyword (t :admin/Notactivated)) (:not-activated users)
-                                          (session/get :site-name) (:internal users)
-                                          :amt (:total users)}
+                                          (session/get :site-name) (:internal users)}
+                                          ;:amt (:total users)}
                                          {:name (t :badge/Badges)
                                           (keyword (t :page/Public)) (:public badges)
                                           (keyword (t :page/Private)) (:private badges)
-                                          (session/get :site-name) (:internal badges)
-                                          :amt (:total badges)}
+                                          (session/get :site-name) (:internal badges)}
+                                          ;:amt (:total badges)}
                                          {:name (t :page/Pages)
                                           (keyword (t :page/Public)) (:public pages)
                                           (keyword (t :page/Private)) (:private pages)
-                                          (session/get :site-name) (:internal pages)
-                                          :amt (:total pages)}]}]]]]))
+                                          (session/get :site-name) (:internal pages)}]}]]
+                                          ;:amt (:total pages)}]}]]
+
+      [:div.row
+       [dh/panel-box-chart {:size :md
+                            :heading (t :admin/Usergrowth)
+                            :icon "fa-bar-chart-o"
+                            :type "b-user"
+                            :chart-type :user-growth-chart
+                            :chart-data [{:name (str "1 " (t :admin/month))
+                                          :growth (:since-last-month users)
+                                          :existing-users (- (:total users) (:since-last-month users))
+                                          :total (:total users)
+                                          :active-users (:last-month-login-count users)}
+                                         {:name (str "3 " (t :admin/months))
+                                          :growth (:since-3-month users)
+                                          :existing-users (- (:total users) (:since-3-month users))
+                                          :total (:total users)
+                                          :active-users (:3-month-login-count users)}
+                                         {:name (str "6 " (t :admin/months))
+                                          :growth (:since-6-month users)
+                                          :existing-users (- (:total users) (:since-6-month users))
+                                          :total (:total users)
+                                          :active-users (:6-month-login-count users)}
+                                         {:name (str "1 " (t :admin/year))
+                                          :growth (:since-1-year users)
+                                          :existing-users (- (:total users) (:since-1-year users))
+                                          :total (:total users)
+                                          :active-users (:1-year-login-count users)}]}]]]]))
+
+
 
 
 

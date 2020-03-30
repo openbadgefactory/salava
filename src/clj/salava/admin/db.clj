@@ -44,7 +44,13 @@
    :not-activated (not-activated-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :since-last-login (count-registered-users-after-date-fix {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :since-last-month (count-registered-users-after-date-fix {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :since-3-month (count-registered-users-after-date-fix {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :since-6-month (count-registered-users-after-date-fix {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :since-1-year (count-registered-users-after-date-fix {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :last-month-login-count (count-logged-users-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :3-month-login-count (count-logged-users-after-date {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :6-month-login-count (count-logged-users-after-date {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :1-year-login-count (count-logged-users-after-date {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :internal (internal-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :public (public-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
 
