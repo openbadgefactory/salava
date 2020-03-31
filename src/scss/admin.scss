@@ -366,6 +366,7 @@
     position: relative;
     color: #495057;
     margin-bottom: 30px !important;
+    font-family: monospace;
 
     span {
       font-size: inherit;
@@ -505,5 +506,21 @@
 
   .panel-subheading.pad {
     padding-top: 1rem;
+  }
+
+  .flex-container {
+    display: flex;
+    font-size: smaller !important;
+    font-weight: 600;
+    font-family:  monospace;
+    flex-wrap: wrap;
+    //width: auto;
+    //min-width: 250px;
+    //height: auto;
+    //max-height: 150px;
+
+    @media(min-width: 768px) {
+      //flex-direction: column;
+    }
   }
 }

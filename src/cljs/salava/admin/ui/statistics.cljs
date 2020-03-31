@@ -57,11 +57,15 @@
       [ToolTip]
       [Legend {:icon-size 8}]]]))
 
-(def colors {:primary "#0275d8"
-             :success "#5cb85c"
-             :info "#5bc0de"
-             :warning "#f0ad4e"
-             :danger "#d9534f"})
+(def colors
+ {:default "#82ca9d"
+  :primary "#0275d8"
+  :success "#5cb85c"
+  :info "#5bc0de"
+  :warning "#f0ad4e"
+  :danger "#d9534f"
+  :yellow "#FFC658"
+  :purple "#8884D8"})
 
 (defn chart-box-pie [data]
   (let [{:keys []} data]
@@ -84,32 +88,29 @@
                             :icon "fa-pie-chart"
                             :type "b-badge"
                             :chart-type :pie
-                            :chart-data [{:name (t :social/pending) :value (:pending badges) :fill (:info colors)}
-                                         {:name (t :social/accepted) :value (:accepted badges) :fill (:success colors)}
-                                         {:name (t :social/declined) :value (:declined badges) :fill (:danger colors)}]}]
+                            :chart-data [{:slices [{:name (t :social/pending) :value (:pending badges) :fill (:info colors)}
+                                                   {:name (t :social/accepted) :value (:accepted badges) :fill (:default colors)}
+                                                   {:name (t :social/declined) :value (:declined badges) :fill (:danger colors)}]}]}]
        [dh/panel-box-chart {:size :md
                             :heading (t :admin/Sharing)
-                            :icon "fa-bar-chart"
+                            :icon "fa-pie-chart"
                             :type "b-page"
-                            :chart-type :visibility-bar
-                            :chart-data [{:name (t :admin/Users)
-                                          (keyword (t :page/Public)) (:public users)
-                                          (keyword (t :admin/Notactivated)) (:not-activated users)
-                                          (session/get :site-name) (:internal users)}
-                                          ;:amt (:total users)}
-                                         {:name (t :badge/Badges)
-                                          (keyword (t :page/Public)) (:public badges)
-                                          (keyword (t :page/Private)) (:private badges)
-                                          (session/get :site-name) (:internal badges)}
-                                          ;:amt (:total badges)}
-                                         {:name (t :page/Pages)
-                                          (keyword (t :page/Public)) (:public pages)
-                                          (keyword (t :page/Private)) (:private pages)
-                                          (session/get :site-name) (:internal pages)}]}]]
-                                          ;:amt (:total pages)}]}]]
-
+                            :chart-type :pie ;:visibility-bar
+                            :split? true
+                            :chart-data [{:title (t :admin/Users)
+                                          :slices [{:name (t :page/Public) :value (:public users) :fill (:default colors)}
+                                                   {:name (t :admin/Notactivated) :value (:not-activated users) :fill (:danger colors)}
+                                                   {:name (t :core/Internal) :value (:internal users) :fill (:yellow colors)}]}
+                                         {:title (t :badge/Badges)
+                                          :slices [{:name (t :page/Public) :value (:public badges) :fill (:default colors)}
+                                                   {:name (t :page/Private) :value (:private badges) :fill (:purple colors)}
+                                                   {:name (t :core/Internal) :value (:internal badges) :fill (:yellow colors)}]}
+                                         {:title (t :page/Pages)
+                                          :slices [{:name (t :page/Public) :value (:public badges) :fill (:default colors)}
+                                                   {:name (t :page/Private) :value (:private badges) :fill (:purple colors)}
+                                                   {:name (t :core/Internal) :value (:internal badges) :fill (:yellow colors)}]}]}]]
       [:div.row
-       [dh/panel-box-chart {:size :md
+       [dh/panel-box-chart {:size :lg
                             :heading (t :admin/Usergrowth)
                             :icon "fa-bar-chart-o"
                             :type "b-user"
@@ -118,28 +119,26 @@
                                           :growth (:since-last-month users)
                                           :existing-users (- (:total users) (:since-last-month users))
                                           :total (:total users)
-                                          :active-users (:last-month-login-count users)}
+                                          :active-users (:last-month-login-count users)
+                                          :order 4}
                                          {:name (str "3 " (t :admin/months))
                                           :growth (:since-3-month users)
                                           :existing-users (- (:total users) (:since-3-month users))
                                           :total (:total users)
-                                          :active-users (:3-month-login-count users)}
+                                          :active-users (:3-month-login-count users)
+                                          :order 3}
                                          {:name (str "6 " (t :admin/months))
                                           :growth (:since-6-month users)
                                           :existing-users (- (:total users) (:since-6-month users))
                                           :total (:total users)
-                                          :active-users (:6-month-login-count users)}
+                                          :active-users (:6-month-login-count users)
+                                          :order 2}
                                          {:name (str "1 " (t :admin/year))
                                           :growth (:since-1-year users)
                                           :existing-users (- (:total users) (:since-1-year users))
                                           :total (:total users)
-                                          :active-users (:1-year-login-count users)}]}]]]]))
-
-
-
-
-
-
+                                          :active-users (:1-year-login-count users)
+                                          :order 1}]}]]]]))
 
 (defn init-data [state]
   (ajax/GET
