@@ -39,7 +39,8 @@
                              :since-last-month (s/maybe s/Int)
                              :since-3-month (s/maybe s/Int)
                              :since-6-month (s/maybe s/Int)
-                             :since-1-year (s/maybe s/Int)}
+                             :since-1-year (s/maybe s/Int)
+                             :factory-badges (s/maybe s/Int)}
 
                     ;:last-month-added-badges (s/maybe s/Int)
                     :pages {:since-last-login (s/maybe s/Int)
@@ -50,7 +51,13 @@
                             :total (s/maybe s/Int)
                             :internal (s/maybe s/Int)
                             :private (s/maybe s/Int)
-                            :public (s/maybe s/Int)}})
+                            :public (s/maybe s/Int)}
+                     (s/optional-key :issued) {:total (s/maybe s/Int)
+                                               :since-last-login (s/maybe s/Int)
+                                               :since-last-month (s/maybe s/Int)}
+                     (s/optional-key :created) {:total (s/maybe s/Int)
+                                                :since-last-login (s/maybe s/Int)
+                                                :since-last-month (s/maybe s/Int)}})
 
 (s/defschema User-name-and-email {:name s/Str
                                   :email s/Str})

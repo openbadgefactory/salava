@@ -30,19 +30,19 @@ SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND ctime > :ti
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE ctime > :time;
 
 --name: count-all-badges
-SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status != 'declined';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND revoked = 0 AND status != 'declined';
 
 --name: count-all-badges-fix
-SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0;
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0  AND revoked = 0;
 
 --name: count-pending-badges
-SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'pending';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'pending' AND revoked = 0;
 
 --name: count-declined-badges
-SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'declined';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'declined' AND revoked = 0;
 
 --name: count-accepted-badges
-SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'accepted';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'accepted' AND revoked = 0;
 
 --name: count-all-badges-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE ctime > :time AND deleted = 0 AND status != 'declined';
@@ -66,7 +66,7 @@ SELECT COUNT(DISTINCT id) AS count FROM page WHERE deleted = 0 AND visibility = 
 SELECT COUNT(DISTINCT id) AS count FROM page WHERE deleted = 0 AND visibility = 'public';
 
 --name: count-all-badges-after-date-fix
-SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE ctime > :time AND deleted = 0;
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE ctime > :time AND deleted = 0 AND revoked = 0;
 
 --name: count-all-pages
 SELECT COUNT(DISTINCT id) AS count FROM page WHERE  deleted = 0;
@@ -220,3 +220,6 @@ UPDATE user SET role = 'admin' WHERE id = :id
 
 --name: select-admin-count
 SELECT COUNT(*) AS count FROM user WHERE role = 'admin' AND activated = 1 AND deleted = 0;
+
+--name: count-badges-issued-from-url
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND revoked = 0 AND assertion_url LIKE :url;

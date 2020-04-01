@@ -74,7 +74,7 @@
 
 
 (defn content [state]
-  (let [{:keys [users badges last-month-active-users last-month-registered-users all-badges last-month-added-badges pages]} @state]
+  (let [{:keys [users badges last-month-active-users last-month-registered-users all-badges last-month-added-badges pages created issued]} @state]
 
     [:div {:class "admin-stats"}
      [m/modal-window]
@@ -82,35 +82,45 @@
       [:div.row
        [dh/panel-box {:heading (t :admin/Users) :icon "fa-user-o" :info users :type "b-user"}]
        [dh/panel-box {:heading (t :badge/Badges) :icon "fa-certificate" :info badges :type "b-badge"}]
-       [dh/panel-box {:heading (t :page/Pages) :icon "fa-file-text-o" :info users :type "b-page"}]]
+       [dh/panel-box {:heading (t :page/Pages) :icon "fa-file-text-o" :info users :type "b-page"}]
+       (when created [dh/panel-box {:heading (t :badgeIssuer/Selfiebadges) :icon "fa-user-plus" :info created :type "b-user"}])]
       [:div.row
-       [dh/panel-box-chart {:heading (t :admin/BadgeAcceptance)
-                            :icon "fa-pie-chart"
-                            :type "b-badge"
-                            :chart-type :pie
-                            :chart-data [{:slices [{:name (t :social/pending) :value (:pending badges) :fill (:info colors)}
-                                                   {:name (t :social/accepted) :value (:accepted badges) :fill (:default colors)}
-                                                   {:name (t :social/declined) :value (:declined badges) :fill (:danger colors)}]}]}]
-       [dh/panel-box-chart {:size :md
-                            :heading (t :admin/Sharing)
+       #_[dh/panel-box-chart {:heading (t :admin/BadgeAcceptance)
+                              :icon "fa-pie-chart"
+                              :type "b-badge"
+                              :chart-type :pie
+                              :chart-data [{:slices [{:name (t :social/pending) :value (:pending badges) :fill (:info colors)}
+                                                     {:name (t :social/accepted) :value (:accepted badges) :fill (:default colors)}
+                                                     {:name (t :social/declined) :value (:declined badges) :fill (:danger colors)}]}]}]
+       [dh/panel-box-chart {:size :lg
+                            ;:heading (t :admin/Sharing)
                             :icon "fa-pie-chart"
                             :type "b-page"
                             :chart-type :pie ;:visibility-bar
                             :split? true
-                            :chart-data [{:title (t :admin/Users)
+                            :chart-data [{:title "Issuing"
+                                          :slices [{:name "factory" :value (:factory-badges badges) :fill (:primary colors)}
+                                                   {:name "Passport" :value (:total issued) :fill (:default colors)}
+                                                   {:name "Other" :value (- (:total badges)(+ (:factory-badges badges) (:total issued))) :fill (:yellow colors)}]}
+                                         {:title (t :admin/BadgeAcceptance)
+                                          :slices [{:name (t :social/pending) :value (:pending badges) :fill (:info colors)}
+                                                   {:name (t :social/accepted) :value (:accepted badges) :fill (:default colors)}
+                                                   {:name (t :social/declined) :value (:declined badges) :fill (:danger colors)}]}
+                                         {:title "User distribution"#_(t :admin/Users)
                                           :slices [{:name (t :page/Public) :value (:public users) :fill (:default colors)}
                                                    {:name (t :admin/Notactivated) :value (:not-activated users) :fill (:danger colors)}
                                                    {:name (t :core/Internal) :value (:internal users) :fill (:yellow colors)}]}
-                                         {:title (t :badge/Badges)
+
+                                         {:title "Badge distribution" #_(t :badge/Badges)
                                           :slices [{:name (t :page/Public) :value (:public badges) :fill (:default colors)}
                                                    {:name (t :page/Private) :value (:private badges) :fill (:purple colors)}
                                                    {:name (t :core/Internal) :value (:internal badges) :fill (:yellow colors)}]}
-                                         {:title (t :page/Pages)
-                                          :slices [{:name (t :page/Public) :value (:public badges) :fill (:default colors)}
-                                                   {:name (t :page/Private) :value (:private badges) :fill (:purple colors)}
-                                                   {:name (t :core/Internal) :value (:internal badges) :fill (:yellow colors)}]}]}]]
+                                         {:title "Page distribution" #_(t :page/Pages)
+                                          :slices [{:name (t :page/Public) :value (:public pages) :fill (:default colors)}
+                                                   {:name (t :page/Private) :value (:private pages) :fill (:purple colors)}
+                                                   {:name (t :core/Internal) :value (:internal pages) :fill (:yellow colors)}]}]}]]
       [:div.row
-       [dh/panel-box-chart {:size :lg
+       [dh/panel-box-chart {:size :md
                             :heading (t :admin/Usergrowth)
                             :icon "fa-bar-chart-o"
                             :type "b-user"
@@ -138,7 +148,29 @@
                                           :existing-users (- (:total users) (:since-1-year users))
                                           :total (:total users)
                                           :active-users (:1-year-login-count users)
-                                          :order 1}]}]]]]))
+                                          :order 1}]}]
+       [dh/panel-box-chart {:size :md
+                            :heading (t :admin/Growth)
+                            :icon "fa-line-chart"
+                            :type "b-user"
+                            :chart-type :line
+                            :chart-data [{:name (str "1 " (t :admin/year))
+                                          :users (:since-1-year users)
+                                          :badges (:since-1-year badges)
+                                          :pages (:since-1-year pages)}
+                                         {:name (str "3 " (t :admin/months))
+                                          :users (:since-3-month users)
+                                          :badges (:since-3-month badges)
+                                          :pages (:since-3-month pages)}
+                                         {:name (str "6 " (t :admin/months))
+                                          :users (:since-6-month users)
+                                          :badges (:since-6-month badges)
+                                          :pages (:since-6-month pages)}
+                                         {:name (str "1 " (t :admin/month))
+                                          :users (:since-last-month users)
+                                          :badges (:since-last-month badges)
+                                          :pages (:since-last-month pages)}]}]]]]))
+
 
 (defn init-data [state]
   (ajax/GET

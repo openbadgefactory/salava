@@ -11,7 +11,8 @@
    [salava.core.util :refer [publish get-site-url get-site-name bytes->base64 hex-digest now get-full-path get-db get-db-1 file-from-url-fix md->html get-db-col plugin-fun get-plugins]]
    [salava.profile.db :refer [user-information]]
    [salava.user.db :refer [primary-email]]
-   [slingshot.slingshot :refer :all]))
+   [slingshot.slingshot :refer :all]
+   [salava.core.time :refer [get-date-from-today]]))
 
 (defn badge-assertion
   "Return Assertion as response body with appropriate status codes
@@ -205,3 +206,11 @@
                                         (= (:selfie_id %) (:selfie_id b))))
                           gallery_ids))
              (take 5))))
+
+(defn selfie_stats [ctx last-login]
+  {:created {:total (db/created-badges-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+             :since-last-login (db/created-badges-count-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+             :since-last-month (db/created-badges-count-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))}
+   :issued {:total (db/issued-badges-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+            :since-last-login (db/issued-badges-count-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+            :since-last-month (db/issued-badges-count-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))}})

@@ -74,18 +74,21 @@
 (defn badge-stats
   "Get badge statistics"
   [ctx last-login]
-  {:total (count-all-badges-fix {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :pending (count-pending-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :accepted (count-accepted-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :declined (count-declined-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :since-last-login (count-all-badges-after-date-fix {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :since-last-month (count-all-badges-after-date-fix {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :since-3-month (count-all-badges-after-date-fix {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :since-6-month (count-all-badges-after-date-fix {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :since-1-year (count-all-badges-after-date-fix {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :private (count-private-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :public (count-public-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :internal (count-internal-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
+  (let [url-pattern (str (util/get-factory-url ctx) "%")]
+   (prn url-pattern)
+   {:total (count-all-badges-fix {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :pending (count-pending-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :accepted (count-accepted-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :declined (count-declined-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-last-login (count-all-badges-after-date-fix {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-last-month (count-all-badges-after-date-fix {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-3-month (count-all-badges-after-date-fix {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-6-month (count-all-badges-after-date-fix {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-1-year (count-all-badges-after-date-fix {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :private (count-private-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :public (count-public-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :internal (count-internal-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :factory-badges (count-badges-issued-from-url {:url url-pattern} (into {:result-set-fn first :row-fn :count} (get-db ctx)))}))
 
 #_(defn last-month-added-badges-count
     "Get count from all last month added badges"
@@ -111,6 +114,10 @@
    :public (count-public-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :internal (count-internal-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
 
+(defn selfie-stats [ctx last-login]
+  (as-> (first (plugin-fun (get-plugins ctx) "main" "selfie_stats")) $
+        (if (ifn? $) ($ ctx last-login) nil)))
+
 #_(defn get-stats [ctx last-login]
       (try+
        {:register-users (register-users-count ctx last-login)
@@ -124,9 +131,10 @@
 
 (defn get-stats [ctx last-login]
   (try+
-   {:users (user-stats ctx last-login)
-    :badges (badge-stats ctx last-login)
-    :pages (pages-stats ctx last-login)}
+   (-> {:users (user-stats ctx last-login)
+        :badges (badge-stats ctx last-login)
+        :pages (pages-stats ctx last-login)}
+       (merge (selfie-stats ctx last-login)))
    (catch Object _
      (log/error (.getMessage _))
      "error")))

@@ -22,10 +22,10 @@
   :aspect 1.3
   :pie-settings
   {:fill (:default colors)
-   :inner-radius 20
-   ;:outer-radius 80
+   :inner-radius 15
+   ;:outer-radius 40
    :padding-angle 1
-   ;:label false
+   :label false
    :label-line false
    :legend-type "wye"
    :dataKey :value}})
@@ -37,18 +37,21 @@
         Cell (adapt-react-class js/window.Recharts.Cell.)
         Legend (adapt-react-class js/window.Recharts.Legend.)
         Label (adapt-react-class js/window.Recharts.Label.)
+        Text (adapt-react-class js/window.Recharts.Text.)
         ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
         {:keys [default-width default-height aspect pie-settings]} settings
-        {:keys [title slices]} (first data)]
-    [ResponsiveContainer
-     {:width (or width default-width)  :aspect aspect}
-     [PieChart
-      (reduce (fn [r c] (conj r [Cell {:fill (:fill c)}]))
-       [Pie (assoc pie-settings :data slices)
-        (when-not (blank? title) [Label {:value title :position "outside"}])]
-       slices)
-      [ToolTip]
-      [Legend {:icon-size 8}]]]))
+        {:keys [title slices legend]} (first data)]
+    [:div
+     (when-not (blank? title)[:span [:b title]])
+     [ResponsiveContainer
+      {:width (or width default-width)  :aspect aspect}
+      [PieChart
+       (reduce (fn [r c] (conj r [Cell {:fill (:fill c)}]))
+        [Pie (assoc pie-settings :data slices)]
+        ;(when-not (blank? title) [Label {:value title :position "outside"}])]
+        slices)
+       [ToolTip]
+       [Legend {:icon-size 8}]]]]))
 
 #_(defn make-pie [{:keys [width height data]}]
     (let [PieChart (adapt-react-class js/window.Recharts.PieChart.)
@@ -67,7 +70,7 @@
          (let [index (.indexOf data p)]
           (conj r (reduce (fn [y c] (conj y [Cell {:fill (:fill c)}]))
                    [Pie (assoc pie-settings :data (:slices p) :cy "50%") ;:cy (120)) ;(:slices p))
-                     (when-not (blank? (:title p)) [Label {:value (:title p) :position "outside"}])]
+                     (when-not (blank? (:title p)) [Label {:value (:title p) :position "bottom"}])]
                    (:slices p)))))
         [PieChart
          [ToolTip]
@@ -160,12 +163,20 @@
         LineChart (adapt-react-class js/window.Recharts.LineChart.)
         XAxis (adapt-react-class js/window.Recharts.XAxis.)
         YAxis (adapt-react-class js/window.Recharts.YAxis.)
-        Line (adapt-react-class js/window.Recharts.Line.)]))
-
-
-
-
-
+        Line (adapt-react-class js/window.Recharts.Line.)]
+     [:div {:style {:width "100%"}}
+      [ResponsiveContainer
+        {:height 155}
+        [LineChart
+         {:data data}
+         [CartesianGrid {:strokeDasharray "3 3"}]
+         [XAxis {:dataKey :name}]
+         [YAxis {:interval "preserveStart"}]
+         [ToolTip]
+         [Legend {:icon-size 8}]
+         [Line {:dataKey "users" :type "monotone" :stroke (:yellow colors) :activeDot {:r 10}}]
+         [Line {:dataKey "badges" :type "monotone" :stroke (:primary colors)}]
+         [Line {:dataKey "pages" :type "monotone" :stroke (:purple colors)}]]]]))
 
 (defn panel-box [data]
  (when data
@@ -193,7 +204,7 @@
   (let [{:keys [type heading icon chart-type chart-data size split?]} data
         size-class (case size
                      :lg "col-md-12 col-sm-12 col-xs-12"
-                     :md "col-md-9 col-sm-9 col-xs-12"
+                     :md "col-md-6 col-sm-6 col-xs-12"
                     "col-md-3 col-sm-6 col-xs-12")]
     [:div {:class size-class}
      [:div.panel-box.panel-chart
@@ -204,7 +215,7 @@
        [:div.panel-subheading.pad heading]]
       [:div.panel-chart-wrapper.panel-chart-wrapper-relative
        (case chart-type
-         :pie #_[:div.flex-container (make-pie {:data chart-data})] (if split? (reduce (fn [r p] (conj r [make-pie {:width 225 :data [p]}])) [:div.flex-container] chart-data) (make-pie {:width 225 :data chart-data}))
+         :pie #_[:div.flex-container (make-pie {:data chart-data})] (if split? (reduce (fn [r p] (conj r [make-pie {:width 200 :data [p]}])) [:div.flex-container] chart-data) (make-pie {:width 200 :data chart-data}))
          :visibility-bar (make-visibility-bar {:width 500 :data chart-data})
          :user-growth-chart (user-growth-chart {:width 500 :data (sort-by :order < chart-data)})
          :line (draw-line {:width 500 :data chart-data})
