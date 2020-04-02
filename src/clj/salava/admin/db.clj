@@ -47,6 +47,7 @@
    :since-3-month (count-registered-users-after-date-fix {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :since-6-month (count-registered-users-after-date-fix {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :since-1-year (count-registered-users-after-date-fix {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :login-count-since-last-login (count-logged-users-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :last-month-login-count (count-logged-users-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :3-month-login-count (count-logged-users-after-date {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :6-month-login-count (count-logged-users-after-date {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
@@ -75,7 +76,6 @@
   "Get badge statistics"
   [ctx last-login]
   (let [url-pattern (str (util/get-factory-url ctx) "%")]
-   (prn url-pattern)
    {:total (count-all-badges-fix {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
      :pending (count-pending-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
      :accepted (count-accepted-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
@@ -118,6 +118,14 @@
   (as-> (first (plugin-fun (get-plugins ctx) "main" "selfie_stats")) $
         (if (ifn? $) ($ ctx last-login) nil)))
 
+(defn issuer-stats [ctx last-login]
+ {:total (count-badge-issuers {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+  :since-last-login 0
+  :since-last-month 0
+  :since-3-month 0
+  :since-6-month 0
+  :since-1-year 0})
+
 #_(defn get-stats [ctx last-login]
       (try+
        {:register-users (register-users-count ctx last-login)
@@ -133,7 +141,8 @@
   (try+
    (-> {:users (user-stats ctx last-login)
         :badges (badge-stats ctx last-login)
-        :pages (pages-stats ctx last-login)}
+        :pages (pages-stats ctx last-login)
+        :issuers (issuer-stats ctx last-login)}
        (merge (selfie-stats ctx last-login)))
    (catch Object _
      (log/error (.getMessage _))

@@ -74,7 +74,7 @@
 
 
 (defn content [state]
-  (let [{:keys [users badges last-month-active-users last-month-registered-users all-badges last-month-added-badges pages created issued]} @state]
+  (let [{:keys [issuers users badges last-month-active-users last-month-registered-users all-badges last-month-added-badges pages created issued]} @state]
 
     [:div {:class "admin-stats"}
      [m/modal-window]
@@ -83,15 +83,9 @@
        [dh/panel-box {:heading (t :admin/Users) :icon "fa-user-o" :info users :type "b-user"}]
        [dh/panel-box {:heading (t :badge/Badges) :icon "fa-certificate" :info badges :type "b-badge"}]
        [dh/panel-box {:heading (t :page/Pages) :icon "fa-file-text-o" :info users :type "b-page"}]
-       (when created [dh/panel-box {:heading (t :badgeIssuer/Selfiebadges) :icon "fa-user-plus" :info created :type "b-user"}])]
+       [dh/panel-box {:heading "issuers" :icon "fa-building-o" :info issuers :type "b-page"}]
+       (when created [dh/panel-box {:heading (t :badgeIssuer/Selfiebadges) :icon "fa-plus-square" :info created :type "b-user"}])]
       [:div.row
-       #_[dh/panel-box-chart {:heading (t :admin/BadgeAcceptance)
-                              :icon "fa-pie-chart"
-                              :type "b-badge"
-                              :chart-type :pie
-                              :chart-data [{:slices [{:name (t :social/pending) :value (:pending badges) :fill (:info colors)}
-                                                     {:name (t :social/accepted) :value (:accepted badges) :fill (:default colors)}
-                                                     {:name (t :social/declined) :value (:declined badges) :fill (:danger colors)}]}]}]
        [dh/panel-box-chart {:size :lg
                             ;:heading (t :admin/Sharing)
                             :icon "fa-pie-chart"
@@ -120,56 +114,39 @@
                                                    {:name (t :page/Private) :value (:private pages) :fill (:purple colors)}
                                                    {:name (t :core/Internal) :value (:internal pages) :fill (:yellow colors)}]}]}]]
       [:div.row
-       [dh/panel-box-chart {:size :md
-                            :heading (t :admin/Usergrowth)
-                            :icon "fa-bar-chart-o"
-                            :type "b-user"
-                            :chart-type :user-growth-chart
-                            :chart-data [{:name (str "1 " (t :admin/month))
-                                          :growth (:since-last-month users)
-                                          :existing-users (- (:total users) (:since-last-month users))
-                                          :total (:total users)
-                                          :active-users (:last-month-login-count users)
-                                          :order 4}
-                                         {:name (str "3 " (t :admin/months))
-                                          :growth (:since-3-month users)
-                                          :existing-users (- (:total users) (:since-3-month users))
-                                          :total (:total users)
-                                          :active-users (:3-month-login-count users)
-                                          :order 3}
-                                         {:name (str "6 " (t :admin/months))
-                                          :growth (:since-6-month users)
-                                          :existing-users (- (:total users) (:since-6-month users))
-                                          :total (:total users)
-                                          :active-users (:6-month-login-count users)
-                                          :order 2}
-                                         {:name (str "1 " (t :admin/year))
-                                          :growth (:since-1-year users)
-                                          :existing-users (- (:total users) (:since-1-year users))
-                                          :total (:total users)
-                                          :active-users (:1-year-login-count users)
-                                          :order 1}]}]
-       [dh/panel-box-chart {:size :md
-                            :heading (t :admin/Growth)
+       [dh/panel-box-chart {:size :lg
+                            ;:heading (t :admin/Growth)
                             :icon "fa-line-chart"
                             :type "b-user"
                             :chart-type :line
-                            :chart-data [{:name (str "1 " (t :admin/year))
-                                          :users (:since-1-year users)
-                                          :badges (:since-1-year badges)
-                                          :pages (:since-1-year pages)}
-                                         {:name (str "3 " (t :admin/months))
-                                          :users (:since-3-month users)
-                                          :badges (:since-3-month badges)
-                                          :pages (:since-3-month pages)}
-                                         {:name (str "6 " (t :admin/months))
-                                          :users (:since-6-month users)
-                                          :badges (:since-6-month badges)
-                                          :pages (:since-6-month pages)}
-                                         {:name (str "1 " (t :admin/month))
-                                          :users (:since-last-month users)
-                                          :badges (:since-last-month badges)
-                                          :pages (:since-last-month pages)}]}]]]]))
+                            :chart-data [{:info [{:name (str "1 " (t :admin/year) " ago") :total  (- (:total users) (:since-1-year users)) :active-users (:1-year-login-count users)};:badges (:since-1-year badges)
+                                                 {:name (str "6 " (t :admin/months) " ago") :total (- (:total users) (:since-6-month users)) :active-users (:6-month-login-count users)}
+                                                 {:name (str "3 " (t :admin/months) " ago") :total (- (:total users) (:since-3-month users)) :active-users (:3-month-login-count users)}
+                                                 {:name (str "1 " (t :admin/month) " ago") :total (- (:total users) (:since-last-month users)) :active-users (:last-month-login-count users)}
+                                                 {:name (t :admin/now) :total (:total users) :active-users (:login-count-since-last-login users)}]
+                                           :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}
+                                                   {:key "active-users" :stroke (:danger colors)}]
+                                           :title (t :admin/Usergrowth)
+                                           :xlabel (t :admin/noofmonths)
+                                           :ylabel (t :admin/noofbadges)}
+                                         {:info [{:name (str "1 " (t :admin/year) " ago") :total (- (:total badges) (:since-1-year badges))}
+                                                 {:name (str "6 " (t :admin/months) " ago") :total (- (:total badges) (:since-6-month badges))}
+                                                 {:name (str "3 " (t :admin/months) " ago") :total (- (:total badges) (:since-3-month badges))}
+                                                 {:name (str "1 " (t :admin/months) " ago") :total (- (:total badges) (:since-1-month badges))}
+                                                 {:name (t :admin/now) :total (:total badges)}]
+                                          :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                          :title (t :admin/Badgegrowth)
+                                          :xlabel (t :admin/noofmonths)}
+                                         {:info [{:name (str "12 " (t :admin/year) " ago") :total (- (:total pages) (:since-1-year pages))}
+                                                 {:name (str "6 " (t :admin/months) " ago") :total (- (:total pages) (:since-6-month pages))}
+                                                 {:name (str "3 " (t :admin/months) " ago") :total (- (:total pages) (:since-3-month pages))}
+                                                 {:name (str "1 " (t :admin/months) " ago") :total (- (:total pages) (:since-1-month pages))}
+                                                 {:name (t :admin/now) :total (:total pages)}]
+                                          :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                          :title (t :admin/Pagegrowth)
+                                          :xlabel (t :admin/noofmonths)}]}]]]]))
+
+
 
 
 (defn init-data [state]
@@ -189,3 +166,35 @@
     #_(fn [] (layout/dashboard site-navi [content state]))
     (fn []
       (layout/default site-navi (content state)))))
+
+
+(comment
+  #_[dh/panel-box-chart {:size :md
+                         :heading (t :admin/Usergrowth)
+                         :icon "fa-bar-chart-o"
+                         :type "b-user"
+                         :chart-type :user-growth-chart
+                         :chart-data [{:name (str "1 " (t :admin/month))
+                                       :growth (:since-last-month users)
+                                       :existing-users (- (:total users) (:since-last-month users))
+                                       :total (:total users)
+                                       :active-users (:last-month-login-count users)
+                                       :order 4}
+                                      {:name (str "3 " (t :admin/months))
+                                       :growth (:since-3-month users)
+                                       :existing-users (- (:total users) (:since-3-month users))
+                                       :total (:total users)
+                                       :active-users (:3-month-login-count users)
+                                       :order 3}
+                                      {:name (str "6 " (t :admin/months))
+                                       :growth (:since-6-month users)
+                                       :existing-users (- (:total users) (:since-6-month users))
+                                       :total (:total users)
+                                       :active-users (:6-month-login-count users)
+                                       :order 2}
+                                      {:name (str "1 " (t :admin/year))
+                                       :growth (:since-1-year users)
+                                       :existing-users (- (:total users) (:since-1-year users))
+                                       :total (:total users)
+                                       :active-users (:1-year-login-count users)
+                                       :order 1}]}])

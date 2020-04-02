@@ -223,3 +223,6 @@ SELECT COUNT(*) AS count FROM user WHERE role = 'admin' AND activated = 1 AND de
 
 --name: count-badges-issued-from-url
 SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND revoked = 0 AND assertion_url LIKE :url;
+
+--name: count-badge-issuers
+SELECT COUNT(DISTINCT name) AS count FROM issuer_content;

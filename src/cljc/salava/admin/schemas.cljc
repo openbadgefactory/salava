@@ -20,6 +20,8 @@
                             :since-3-month (s/maybe s/Int)
                             :since-6-month (s/maybe s/Int)
                             :since-1-year (s/maybe s/Int)
+                            ;:login-count-now (s/maybe s/Int)
+                            :login-count-since-last-login (s/maybe s/Int)
                             :last-month-login-count (s/maybe s/Int)
                             :3-month-login-count (s/maybe s/Int)
                             :6-month-login-count (s/maybe s/Int)
@@ -41,6 +43,13 @@
                              :since-6-month (s/maybe s/Int)
                              :since-1-year (s/maybe s/Int)
                              :factory-badges (s/maybe s/Int)}
+                    :issuers {:since-last-login (s/maybe s/Int)
+                              :since-last-month (s/maybe s/Int)
+                              :since-3-month (s/maybe s/Int)
+                              :since-6-month (s/maybe s/Int)
+                              :since-1-year (s/maybe s/Int)
+                              :total (s/maybe s/Int)}
+
 
                     ;:last-month-added-badges (s/maybe s/Int)
                     :pages {:since-last-login (s/maybe s/Int)

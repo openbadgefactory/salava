@@ -22,7 +22,7 @@
   :aspect 1.3
   :pie-settings
   {:fill (:default colors)
-   :inner-radius 15
+   ;:inner-radius 15
    ;:outer-radius 40
    :padding-angle 1
    :label false
@@ -30,104 +30,6 @@
    :legend-type "wye"
    :dataKey :value}})
 
-(defn make-pie [{:keys [width height data]}]
-  (let [PieChart (adapt-react-class js/window.Recharts.PieChart.)
-        Pie (adapt-react-class js/window.Recharts.Pie.)
-        ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
-        Cell (adapt-react-class js/window.Recharts.Cell.)
-        Legend (adapt-react-class js/window.Recharts.Legend.)
-        Label (adapt-react-class js/window.Recharts.Label.)
-        Text (adapt-react-class js/window.Recharts.Text.)
-        ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
-        {:keys [default-width default-height aspect pie-settings]} settings
-        {:keys [title slices legend]} (first data)]
-    [:div
-     (when-not (blank? title)[:span [:b title]])
-     [ResponsiveContainer
-      {:width (or width default-width)  :aspect aspect}
-      [PieChart
-       (reduce (fn [r c] (conj r [Cell {:fill (:fill c)}]))
-        [Pie (assoc pie-settings :data slices)]
-        ;(when-not (blank? title) [Label {:value title :position "outside"}])]
-        slices)
-       [ToolTip]
-       [Legend {:icon-size 8}]]]]))
-
-#_(defn make-pie [{:keys [width height data]}]
-    (let [PieChart (adapt-react-class js/window.Recharts.PieChart.)
-          Pie (adapt-react-class js/window.Recharts.Pie.)
-          ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
-          Cell (adapt-react-class js/window.Recharts.Cell.)
-          Legend (adapt-react-class js/window.Recharts.Legend.)
-          Label (adapt-react-class js/window.Recharts.Label.)
-          ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
-          {:keys [default-width default-height aspect pie-settings]} settings]
-         ; {:keys [title slices]} (first data)]
-      [ResponsiveContainer
-       {:width "100%" :aspect aspect}
-       (reduce
-        (fn [r p]
-         (let [index (.indexOf data p)]
-          (conj r (reduce (fn [y c] (conj y [Cell {:fill (:fill c)}]))
-                   [Pie (assoc pie-settings :data (:slices p) :cy "50%") ;:cy (120)) ;(:slices p))
-                     (when-not (blank? (:title p)) [Label {:value (:title p) :position "bottom"}])]
-                   (:slices p)))))
-        [PieChart
-         [ToolTip]
-         [Legend {:icon-size 8 :payload [{:value (t :page/Public)}]}]]
-        data)]))
-
-#_(defn make-visibility-bar [{:keys [width height data]}]
-      (let [{:keys [default-width default-height aspect bar-settings]} settings
-            ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
-            ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
-            Legend (adapt-react-class js/window.Recharts.Legend.)
-            Cell (adapt-react-class js/window.Recharts.Cell.)
-            BarChart (adapt-react-class js/window.Recharts.BarChart.)
-            Bar (adapt-react-class js/window.Recharts.Bar.)
-            XAxis (adapt-react-class js/window.Recharts.XAxis.)
-            YAxis (adapt-react-class js/window.Recharts.YAxis.)]
-
-       [:div {:style {:width "100%"}}
-        [ResponsiveContainer
-         {:height 155}
-         [BarChart
-          {:data data}
-           ;:margin {:top 20 :right 30 :left 20}}
-          [XAxis {:dataKey :name}]
-          [YAxis]
-          [ToolTip]
-          [Legend {:icon-size 8}]
-          [Bar {:dataKey (keyword (t :page/Public)) :fill (:default colors) :stackId "a"}]
-          [Bar {:dataKey (session/get :site-name) :fill (:yellow colors) :stackId "a"}]
-          [Bar {:dataKey (keyword (t :page/Private)) :fill (:purple colors) :stackId "a"}]
-          [Bar {:dataKey (keyword (t :admin/Notactivated)) :fill (:danger colors) :stackId "a"}]]]]))
-
-
-(defn make-visibility-bar [{:keys [width height data]}]
-  (let [{:keys [default-width default-height aspect bar-settings]} settings
-        ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
-        ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
-        Legend (adapt-react-class js/window.Recharts.Legend.)
-        Cell (adapt-react-class js/window.Recharts.Cell.)
-        BarChart (adapt-react-class js/window.Recharts.BarChart.)
-        Bar (adapt-react-class js/window.Recharts.Bar.)
-        XAxis (adapt-react-class js/window.Recharts.XAxis.)
-        YAxis (adapt-react-class js/window.Recharts.YAxis.)]
-   [:div {:style {:width "100%"}}
-    [ResponsiveContainer
-     {:height 155}
-     [BarChart
-      {:data data}
-       ;:margin {:top 20 :right 30 :left 20}}
-      [XAxis {:dataKey :name}]
-      [YAxis]
-      [ToolTip]
-      [Legend {:icon-size 8}]
-      [Bar {:dataKey (keyword (t :page/Public)) :fill (:default colors) :stackId "a"}]
-      [Bar {:dataKey (session/get :site-name) :fill (:yellow colors) :stackId "a"}]
-      [Bar {:dataKey (keyword (t :page/Private)) :fill (:purple colors) :stackId "a"}]
-      [Bar {:dataKey (keyword (t :admin/Notactivated)) :fill (:danger colors) :stackId "a"}]]]]))
 
 (defn user-growth-chart [{:keys [width height data]}]
   (let [{:keys [default-width default-height aspect bar-settings]} settings
@@ -163,27 +65,65 @@
         LineChart (adapt-react-class js/window.Recharts.LineChart.)
         XAxis (adapt-react-class js/window.Recharts.XAxis.)
         YAxis (adapt-react-class js/window.Recharts.YAxis.)
-        Line (adapt-react-class js/window.Recharts.Line.)]
-     [:div {:style {:width "100%"}}
-      [ResponsiveContainer
-        {:height 155}
-        [LineChart
-         {:data data}
-         [CartesianGrid {:strokeDasharray "3 3"}]
-         [XAxis {:dataKey :name}]
-         [YAxis {:interval "preserveStart"}]
-         [ToolTip]
-         [Legend {:icon-size 8}]
-         [Line {:dataKey "users" :type "monotone" :stroke (:yellow colors) :activeDot {:r 10}}]
-         [Line {:dataKey "badges" :type "monotone" :stroke (:primary colors)}]
-         [Line {:dataKey "pages" :type "monotone" :stroke (:purple colors)}]]]]))
+        Line (adapt-react-class js/window.Recharts.Line.)
+        Label (adapt-react-class js/window.Recharts.Label.)]
+     (reduce
+      (fn [r d]
+        (let [{:keys [info lines title xlabel ylabel]} d]
+         (conj r
+          [:div {:style {:width "50%" :margin-bottom "20px"}}
+           (when-not (blank? title) [:div [:span [:b title]]])
+           [ResponsiveContainer
+            {:height 180}
+            (into
+             [LineChart
+              {:data info}
+              [XAxis {:dataKey :name}
+               (when xlabel [Label {:value xlabel :offset 0 :position "insideBottom"}])]
+              [YAxis
+               (when ylabel [Label {:value ylabel :position "outside" :angle -90}])]
+              [ToolTip]
+              [Legend {:icon-size 8  :verticalAlign "top"}]]
+             (for [l lines]
+               [Line {:dataKey (:key l) :type "monotone" :stroke (:stroke l) :activeDot (:activeDot l) :strokeWidth (:strokeWidth l)}]))]])))
+      [:div.flex-container]
+      data)))
+
+(defn make-pie [{:keys [width data]}]
+  (let [PieChart (adapt-react-class js/window.Recharts.PieChart.)
+        Pie (adapt-react-class js/window.Recharts.Pie.)
+        ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
+        Cell (adapt-react-class js/window.Recharts.Cell.)
+        Legend (adapt-react-class js/window.Recharts.Legend.)
+        Label (adapt-react-class js/window.Recharts.Label.)
+        Text (adapt-react-class js/window.Recharts.Text.)
+        ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
+        {:keys [default-width default-height aspect pie-settings]} settings]
+      (reduce
+        (fn [r d]
+         (let [{:keys [slices title]} d]
+           (conj r
+             [:div
+              [ResponsiveContainer
+               {:width (or width default-width) :aspect aspect}
+               [PieChart
+                {:margin {:top 30 :left 20}}
+                (reduce (fn [r c] (conj r [Cell {:fill (:fill c)}]))
+                 [Pie (assoc pie-settings :data slices)]
+                 slices)
+                [ToolTip]
+                [Legend {:icon-size 8}]]]
+              (when-not (blank? title)[:div.row [:span [:b title]]])])))
+        [:div.flex-container]
+        data)))
+
 
 (defn panel-box [data]
  (when data
   (let [
         {:keys [type heading info icon]} data
         {:keys [since-last-login since-last-month total]} info]
-   [:div.col-md-3.col-sm-4.col-xs-6
+   [:div.col-md-4.col-sm-4.col-xs-6
     [:div.panel-box.panel-chart
      [:div.panel-chart-content
       [:div.panel-icon-wrapper.rounded-circle {:class type}
@@ -197,7 +137,8 @@
          [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b since-last-login]] " " (t :admin/Increasesincelastlogin)]
          (pos? since-last-month)
          [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b since-last-month]] " " (t :admin/Increasesincelastmonth)]
-         :else [:span])]]]])))
+         :else [:div [:span {:aria-hidden "true"
+                             :dangerouslySetInnerHTML {:__html "&nbsp;"}}]])]]]])))
 
 (defn panel-box-chart [data]
  (when data
@@ -205,7 +146,7 @@
         size-class (case size
                      :lg "col-md-12 col-sm-12 col-xs-12"
                      :md "col-md-6 col-sm-6 col-xs-12"
-                    "col-md-3 col-sm-6 col-xs-12")]
+                    "col-md-4 col-sm-6 col-xs-12")]
     [:div {:class size-class}
      [:div.panel-box.panel-chart
       [:div.panel-chart-content
@@ -215,8 +156,8 @@
        [:div.panel-subheading.pad heading]]
       [:div.panel-chart-wrapper.panel-chart-wrapper-relative
        (case chart-type
-         :pie #_[:div.flex-container (make-pie {:data chart-data})] (if split? (reduce (fn [r p] (conj r [make-pie {:width 200 :data [p]}])) [:div.flex-container] chart-data) (make-pie {:width 200 :data chart-data}))
-         :visibility-bar (make-visibility-bar {:width 500 :data chart-data})
+         :pie   (make-pie {:width 210 :data chart-data}) ;(if split? (reduce (fn [r p] (conj r [make-pie {:width 200 :data [p]}])) [:div.flex-container] chart-data) (make-pie {:width 200 :data chart-data}))
+         ;:visibility-bar (make-visibility-bar {:width 500 :data chart-data})
          :user-growth-chart (user-growth-chart {:width 500 :data (sort-by :order < chart-data)})
          :line (draw-line {:width 500 :data chart-data})
          [:div])]]])))

@@ -861,3 +861,6 @@ WHERE ub.id = :id AND ub.deleted = 0 AND ub.status = 'accepted';
 -- check if user-badge-id exists
 SELECT id, mtime FROM user_badge
 WHERE id = :id AND revoked = 0 AND deleted = 0;
+
+--name: select-badge-issuers
+SELECT DISTINCT name FROM issuer_content;
