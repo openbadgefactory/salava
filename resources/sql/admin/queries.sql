@@ -226,3 +226,11 @@ SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND revoked
 
 --name: count-badge-issuers
 SELECT COUNT(DISTINCT name) AS count FROM issuer_content;
+
+--name: count-badge-issuers-after-date
+SELECT COUNT(*) AS count FROM new_issuer_history WHERE ctime > :time;
+
+--name:select-user-ids-and-badge-count
+SELECT u.id, COUNT(ub.id) AS badge_count FROM user u
+LEFT JOIN user_badge ub ON u.id=ub.user_id WHERE u.activated = 1 AND ub.status != "declined" AND ub.revoked = 0 AND ub.deleted = 0
+GROUP BY u.id;

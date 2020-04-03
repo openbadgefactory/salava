@@ -74,7 +74,7 @@
 
 
 (defn content [state]
-  (let [{:keys [issuers users badges last-month-active-users last-month-registered-users all-badges last-month-added-badges pages created issued]} @state]
+  (let [{:keys [issuers users badges last-month-active-users last-month-registered-users all-badges last-month-added-badges pages created issued user-badge-correlation]} @state]
 
     [:div {:class "admin-stats"}
      [m/modal-window]
@@ -127,12 +127,11 @@
                                            :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}
                                                    {:key "active-users" :stroke (:danger colors)}]
                                            :title (t :admin/Usergrowth)
-                                           :xlabel (t :admin/noofmonths)
-                                           :ylabel (t :admin/noofbadges)}
+                                           :xlabel (t :admin/noofmonths)}
                                          {:info [{:name (str "1 " (t :admin/year) " ago") :total (- (:total badges) (:since-1-year badges))}
                                                  {:name (str "6 " (t :admin/months) " ago") :total (- (:total badges) (:since-6-month badges))}
                                                  {:name (str "3 " (t :admin/months) " ago") :total (- (:total badges) (:since-3-month badges))}
-                                                 {:name (str "1 " (t :admin/months) " ago") :total (- (:total badges) (:since-1-month badges))}
+                                                 {:name (str "1 " (t :admin/months) " ago") :total (- (:total badges) (:since-last-month badges))}
                                                  {:name (t :admin/now) :total (:total badges)}]
                                           :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
                                           :title (t :admin/Badgegrowth)
@@ -140,11 +139,27 @@
                                          {:info [{:name (str "12 " (t :admin/year) " ago") :total (- (:total pages) (:since-1-year pages))}
                                                  {:name (str "6 " (t :admin/months) " ago") :total (- (:total pages) (:since-6-month pages))}
                                                  {:name (str "3 " (t :admin/months) " ago") :total (- (:total pages) (:since-3-month pages))}
-                                                 {:name (str "1 " (t :admin/months) " ago") :total (- (:total pages) (:since-1-month pages))}
+                                                 {:name (str "1 " (t :admin/months) " ago") :total (- (:total pages) (:since-last-month pages))}
                                                  {:name (t :admin/now) :total (:total pages)}]
                                           :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
                                           :title (t :admin/Pagegrowth)
-                                          :xlabel (t :admin/noofmonths)}]}]]]]))
+                                          :xlabel (t :admin/noofmonths)}]}]]
+      [:div.row
+       [dh/panel-box-chart {:size :lg
+                            :icon "fa-bar-chart"
+                            :type "b-page"
+                            :chart-type :bar
+                            :chart-data [{:info (sort-by :badge_count < #_(repeatedly 50 #(hash-map :badge_count (rand-int 185) :user_count (rand-int 500))) user-badge-correlation)
+                                          :title (t :admin/userBadgeDistribution)
+                                          :bars [{:key :user_count :fill (:primary colors) :stackId "a"}]
+                                          :dataKeyX "badge_count"
+                                          :dataKeyY "user_count"
+                                          :xlabel (t :admin/noofbadges)
+                                          :ylabel (t :admin/noofusers)}]}]]]]))
+
+
+
+
 
 
 

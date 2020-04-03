@@ -120,11 +120,17 @@
 
 (defn issuer-stats [ctx last-login]
  {:total (count-badge-issuers {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-  :since-last-login 0
-  :since-last-month 0
-  :since-3-month 0
-  :since-6-month 0
-  :since-1-year 0})
+  :since-last-login (count-badge-issuers-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+  :since-last-month (count-badge-issuers-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+  :since-3-month (count-badge-issuers-after-date {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+  :since-6-month (count-badge-issuers-after-date {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+  :since-1-year (count-badge-issuers-after-date {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
+
+(defn user-badge-correlation [ctx]
+ (let [data (select-user-ids-and-badge-count {} (util/get-db ctx))]
+  (->> data
+       (group-by :badge_count)
+       (reduce-kv (fn [r k v] (conj r {:badge_count k :user_count (count v)})) []))))
 
 #_(defn get-stats [ctx last-login]
       (try+
@@ -142,7 +148,8 @@
    (-> {:users (user-stats ctx last-login)
         :badges (badge-stats ctx last-login)
         :pages (pages-stats ctx last-login)
-        :issuers (issuer-stats ctx last-login)}
+        :issuers (issuer-stats ctx last-login)
+        :user-badge-correlation (user-badge-correlation ctx)}
        (merge (selfie-stats ctx last-login)))
    (catch Object _
      (log/error (.getMessage _))

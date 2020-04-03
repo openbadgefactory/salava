@@ -61,6 +61,8 @@
                             :internal (s/maybe s/Int)
                             :private (s/maybe s/Int)
                             :public (s/maybe s/Int)}
+
+                     :user-badge-correlation [{:badge_count (s/maybe s/Int) :user_count (s/maybe s/Int)}]
                      (s/optional-key :issued) {:total (s/maybe s/Int)
                                                :since-last-login (s/maybe s/Int)
                                                :since-last-month (s/maybe s/Int)}
