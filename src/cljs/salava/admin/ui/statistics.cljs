@@ -17,7 +17,7 @@
 #_(defn content [state]
     (let [{:keys [register-users last-month-active-users last-month-registered-users all-badges last-month-added-badges pages]} @state]
       [:div {:class "admin-stats"}
-       [m/modal-window]
+       ;[m/modal-window]
        [:h1 {:class "uppercase-header"} (t :admin/Statistics)]
        [:div.row
         [:div {:class "col-md-12"}
@@ -31,32 +31,6 @@
          [:h2.sectionheading (t :page/Pages)]
          [:div [:span._label.stats (t :admin/Totalpages)]  pages]]]]))
 
-(defn make-pie-chart
-  ""
-  [{:keys [width height data]}]
-  (let [PieChart (adapt-react-class js/window.Recharts.PieChart.)
-        Pie (adapt-react-class js/window.Recharts.Pie.)
-        ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
-        Cell (adapt-react-class js/window.Recharts.Cell.)
-        Legend (adapt-react-class js/window.Recharts.Legend.)
-        ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)]
-    [ResponsiveContainer
-     {:width width  :aspect 1.3}
-     [PieChart {:margin {:top 5}}
-      (reduce (fn [r c] (conj r [Cell {:fill (:fill c)}]))
-       [Pie {:fill "#82ca9d"
-             :data data
-             :inner-radius 20
-             :padding-angle 1
-             :label false
-             :label-line false
-             :legend-type "circle"
-             :dataKey :value}]
-
-       data)
-      [ToolTip]
-      [Legend {:icon-size 8}]]]))
-
 (def colors
  {:default "#82ca9d"
   :primary "#0275d8"
@@ -67,23 +41,65 @@
   :yellow "#FFC658"
   :purple "#8884D8"})
 
-(defn chart-box-pie [data]
-  (let [{:keys []} data]
-    [:div.panel-box.panel-chart
-     [:div.panel-chart-content]]))
+(def sample-data
+ [{:badge_count 182 :user_count 1}{:badge_count 122 :user_count 1}{:badge_count 116 :user_count 1}{:badge_count 115 :user_count 2}
+  {:badge_count 110 :user_count 2}{:badge_count 107 :user_count 1}{:badge_count 103 :user_count 3}{:badge_count 101 :user_count 2}
+  {:badge_count 99 :user_count 3}{:badge_count 93 :user_count 1}{:badge_count 86 :user_count 1}{:badge_count 83 :user_count 1}
+  {:badge_count 82 :user_count 1}{:badge_count 81 :user_count 1}{:badge_count 80 :user_count 2}{:badge_count 79 :user_count 1}
+  {:badge_count 78 :user_count 1}{:badge_count 77 :user_count 1}{:badge_count 76 :user_count 3}{:badge_count 74 :user_count 3}
+  {:badge_count 73 :user_count 2}{:badge_count 72 :user_count 2}{:badge_count 71 :user_count 4}{:badge_count 70 :user_count 1}
+  {:badge_count 69 :user_count 2}{:badge_count 68 :user_count 1}{:badge_count 67 :user_count 3}{:badge_count 66 :user_count 4}
+  {:badge_count 65 :user_count 4}{:badge_count 64 :user_count 2}{:badge_count 63 :user_count 2}{:badge_count 62 :user_count 3}
+  {:badge_count 61 :user_count 2}{:badge_count 60 :user_count 8}{:badge_count 59 :user_count 4}{:badge_count 58 :user_count 3}
+  {:badge_count 55 :user_count 1}{:badge_count 54 :user_count 3}{:badge_count 53 :user_count 1}{:badge_count 52 :user_count 3}
+  {:badge_count 51 :user_count 2}{:badge_count 50 :user_count 3}{:badge_count 49 :user_count 6}{:badge_count 48 :user_count 4}
+  {:badge_count 47 :user_count 7}{:badge_count 46 :user_count 4}{:badge_count 45 :user_count 8}{:badge_count 44 :user_count 3}
+  {:badge_count 43 :user_count 6}{:badge_count 42 :user_count 6}{:badge_count 41 :user_count 13}{:badge_count 40 :user_count 7}
+  {:badge_count 39 :user_count 12}{:badge_count 38 :user_count 13}{:badge_count 37 :user_count 17}{:badge_count 36 :user_count 13}
+  {:badge_count 35 :user_count 15}{:badge_count 34 :user_count 21}{:badge_count 33 :user_count 26}{:badge_count 32 :user_count 23}
+  {:badge_count 31 :user_count 21}{:badge_count 30 :user_count 28}
+  {:badge_count 29 :user_count 24}{:badge_count 28 :user_count 12}{:badge_count 27 :user_count 36} {:badge_count 26 :user_count 47}
+  {:badge_count 25 :user_count 57}{:badge_count 24 :user_count 100} {:badge_count 23 :user_count 49} {:badge_count 22 :user_count 55}
+  {:badge_count 21 :user_count 80} {:badge_count 20 :user_count 58} {:badge_count 19 :user_count 52} {:badge_count 18 :user_count 101}
+  {:badge_count 17 :user_count 139} {:badge_count 16 :user_count 248} {:badge_count 15 :user_count 434} {:badge_count 14 :user_count 263}
+  {:badge_count 13 :user_count 383} {:badge_count 12 :user_count 401} {:badge_count 11 :user_count 397} {:badge_count 10 :user_count 503}
+  {:badge_count 9 :user_count 734} {:badge_count 8 :user_count 1102} {:badge_count 7 :user_count 1927} {:badge_count 6 :user_count 1146}
+  {:badge_count 5 :user_count 1761} {:badge_count 4 :user_count 1740} {:badge_count 3 :user_count 2492}{:badge_count 2 :user_count 5459}
+  {:badge_count 1 :user_count 25968}])
+
+(defn text-content [state]
+  (reduce-kv
+   (fn [r k v]
+     (conj r
+      [:div.row
+       [:h2.sectionheading (t (keyword (str "admin/" (name k))))]
+       (when (map? v)
+         (reduce-kv
+            (fn [x y z]
+              (conj x
+               [:div
+                [:span._label.stats (t (keyword (str "admin/" (name y))))] z]))
+
+            [:div]
+            v))]))
+   [:div.admin-stats]
+   (-> @state (dissoc :user-badge-correlation :visible))))
 
 
-(defn content [state]
+(defn graphic-content [state]
   (let [{:keys [issuers users badges last-month-active-users last-month-registered-users all-badges last-month-added-badges pages created issued user-badge-correlation]} @state]
-
     [:div {:class "admin-stats"}
-     [m/modal-window]
+
+     ;[m/modal-window]
+     [:div.row
+      [:div.btn-toolbar]]
+       ;[:button]]]
      [:div#panel-boxes
       [:div.row
        [dh/panel-box {:heading (t :admin/Users) :icon "fa-user-o" :info users :type "b-user"}]
        [dh/panel-box {:heading (t :badge/Badges) :icon "fa-certificate" :info badges :type "b-badge"}]
        [dh/panel-box {:heading (t :page/Pages) :icon "fa-file-text-o" :info users :type "b-page"}]
-       [dh/panel-box {:heading "issuers" :icon "fa-building-o" :info issuers :type "b-page"}]
+       [dh/panel-box {:heading (t :admin/Issuers) :icon "fa-building-o" :info issuers :type "b-page"}]
        (when created [dh/panel-box {:heading (t :badgeIssuer/Selfiebadges) :icon "fa-plus-square" :info created :type "b-user"}])]
       [:div.row
        [dh/panel-box-chart {:size :lg
@@ -92,24 +108,24 @@
                             :type "b-page"
                             :chart-type :pie ;:visibility-bar
                             :split? true
-                            :chart-data [{:title "Issuing"
-                                          :slices [{:name "factory" :value (:factory-badges badges) :fill (:primary colors)}
-                                                   {:name "Passport" :value (:total issued) :fill (:default colors)}
-                                                   {:name "Other" :value (- (:total badges)(+ (:factory-badges badges) (:total issued))) :fill (:yellow colors)}]}
-                                         {:title (t :admin/BadgeAcceptance)
+                            :chart-data [{:title (t :admin/badgeSource)
+                                          :slices [{:name "Open Badge Factory " :value (:factory-badges badges) :fill (:primary colors)}
+                                                   {:name (session/get :site-name "Passport") :value (:total issued) :fill (:default colors)}
+                                                   {:name (t :admin/Other) :value (- (:total badges)(+ (:factory-badges badges) (:total issued))) :fill (:yellow colors)}]}
+                                         {:title (t :admin/badgeStatus)
                                           :slices [{:name (t :social/pending) :value (:pending badges) :fill (:info colors)}
                                                    {:name (t :social/accepted) :value (:accepted badges) :fill (:default colors)}
                                                    {:name (t :social/declined) :value (:declined badges) :fill (:danger colors)}]}
-                                         {:title "User distribution"#_(t :admin/Users)
+                                         {:title (t :admin/userProfile)
                                           :slices [{:name (t :page/Public) :value (:public users) :fill (:default colors)}
                                                    {:name (t :admin/Notactivated) :value (:not-activated users) :fill (:danger colors)}
                                                    {:name (t :core/Internal) :value (:internal users) :fill (:yellow colors)}]}
 
-                                         {:title "Badge distribution" #_(t :badge/Badges)
+                                         {:title (t :admin/badgeVisibility)
                                           :slices [{:name (t :page/Public) :value (:public badges) :fill (:default colors)}
                                                    {:name (t :page/Private) :value (:private badges) :fill (:purple colors)}
                                                    {:name (t :core/Internal) :value (:internal badges) :fill (:yellow colors)}]}
-                                         {:title "Page distribution" #_(t :page/Pages)
+                                         {:title (t :admin/pageVisibility)
                                           :slices [{:name (t :page/Public) :value (:public pages) :fill (:default colors)}
                                                    {:name (t :page/Private) :value (:private pages) :fill (:purple colors)}
                                                    {:name (t :core/Internal) :value (:internal pages) :fill (:yellow colors)}]}]}]]
@@ -126,7 +142,7 @@
                                                  {:name (t :admin/now) :total (:total users) :active-users (:login-count-since-last-login users)}]
                                            :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}
                                                    {:key "active-users" :stroke (:danger colors)}]
-                                           :title (t :admin/Usergrowth)
+                                           :title (t :admin/userGrowth)
                                            :xlabel (t :admin/noofmonths)}
                                          {:info [{:name (str "1 " (t :admin/year) " ago") :total (- (:total badges) (:since-1-year badges))}
                                                  {:name (str "6 " (t :admin/months) " ago") :total (- (:total badges) (:since-6-month badges))}
@@ -134,7 +150,7 @@
                                                  {:name (str "1 " (t :admin/months) " ago") :total (- (:total badges) (:since-last-month badges))}
                                                  {:name (t :admin/now) :total (:total badges)}]
                                           :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
-                                          :title (t :admin/Badgegrowth)
+                                          :title (t :admin/badgeGrowth)
                                           :xlabel (t :admin/noofmonths)}
                                          {:info [{:name (str "12 " (t :admin/year) " ago") :total (- (:total pages) (:since-1-year pages))}
                                                  {:name (str "6 " (t :admin/months) " ago") :total (- (:total pages) (:since-6-month pages))}
@@ -142,33 +158,50 @@
                                                  {:name (str "1 " (t :admin/months) " ago") :total (- (:total pages) (:since-last-month pages))}
                                                  {:name (t :admin/now) :total (:total pages)}]
                                           :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
-                                          :title (t :admin/Pagegrowth)
+                                          :title (t :admin/pageGrowth)
                                           :xlabel (t :admin/noofmonths)}]}]]
       [:div.row
        [dh/panel-box-chart {:size :lg
                             :icon "fa-bar-chart"
                             :type "b-page"
-                            :chart-type :bar
-                            :chart-data [{:info (sort-by :badge_count < #_(repeatedly 50 #(hash-map :badge_count (rand-int 185) :user_count (rand-int 500))) user-badge-correlation)
+                            :chart-type :mixed
+                            :chart-data [{:info (sort-by :badge_count < sample-data #_(repeatedly 50 #(hash-map :badge_count (rand-int 185) :user_count (rand-int 500))) #_user-badge-correlation)
                                           :title (t :admin/userBadgeDistribution)
-                                          :bars [{:key :user_count :fill (:primary colors) :stackId "a"}]
+                                          ;:bars [{:key :user_count :fill (:primary colors) :stackId "a"}]
+                                          :elements [{:unit (str " " (t :admin/Users)) :legendType "none" :name (t :admin/users) :key "user_count" :fill (:purple colors) :stackId "a" :type "bar"}
+                                                     {:name "" :key "user_count" :type "line" :stroke (:primary colors) :activeDot {:r 8} :strokeWidth 3 :dot false}]
                                           :dataKeyX "badge_count"
                                           :dataKeyY "user_count"
                                           :xlabel (t :admin/noofbadges)
                                           :ylabel (t :admin/noofusers)}]}]]]]))
+(defn export-stats [state])
 
-
-
-
-
-
+(defn content [state]
+ (let [visible-content (cursor state [:visible])]
+  [:div
+   [m/modal-window]
+   [:div {:style {:margin-bottom "20px"}}
+    [:div.btn-toolbar.pull-right
+     [:a.btn.btn-primary.btn-bulky
+      {:href "#"
+       :on-click #(if (= "text" @visible-content) (reset! visible-content "graphic") (reset! visible-content "text"))}
+      (if (= "graphic" @visible-content) (t :admin/Plaintext) (t :admin/Showgraphicalui))]
+     [:a.btn.btn-primary.btn-bulky
+      {:href "#"
+       :on-click #(export-stats state)}
+      (t :admin/ExportCSV)]]
+    [:div.row
+     [:div.col-md-12
+      (if (= "text" @visible-content)
+         [text-content state]
+         [graphic-content state])]]]]))
 
 
 (defn init-data [state]
   (ajax/GET
    (path-for "/obpv1/admin/stats")
    {:handler (fn [data]
-               (reset! state data))}))
+               (reset! state (assoc data :visible "graphic")))}))
 
 (defn handler [site-navi]
   (let [state (atom {:register-users nil
@@ -176,11 +209,11 @@
                      :last-month-registered-users nil
                      :all-badges nil
                      :last-month-added-badges nil
-                     :pages nil})]
+                     :pages nil
+                     :visible "graphic"})]
     (init-data state)
-    #_(fn [] (layout/dashboard site-navi [content state]))
     (fn []
-      (layout/default site-navi (content state)))))
+      (layout/default site-navi (content state #_(content state))))))
 
 
 (comment

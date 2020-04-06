@@ -31,30 +31,30 @@
    :dataKey :value}})
 
 
-(defn user-growth-chart [{:keys [width height data]}]
-  (let [{:keys [default-width default-height aspect bar-settings]} settings
-        ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
-        ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
-        Legend (adapt-react-class js/window.Recharts.Legend.)
-        Cell (adapt-react-class js/window.Recharts.Cell.)
-        BarChart (adapt-react-class js/window.Recharts.BarChart.)
-        Bar (adapt-react-class js/window.Recharts.Bar.)
-        XAxis (adapt-react-class js/window.Recharts.XAxis.)
-        YAxis (adapt-react-class js/window.Recharts.YAxis.)]
-   [:div {:style {:width "100%"}}
-    [ResponsiveContainer
-     {:height 155}
-     [BarChart
-      {:data data
-       :margin {:bottom 25}} ;:right 30 :left 20}}
-      [XAxis {:dataKey :name}]
-      [YAxis]
-      [ToolTip]
-      [Legend {:icon-size 8}]
-      ;[Bar {:dataKey :total :fill (:default colors) :stackId "a"}]
-      [Bar {:dataKey :existing-users :fill (:purple colors) :stackId "a"}]
-      [Bar {:dataKey :growth :fill (:yellow colors) :stackId "a"}]
-      [Bar {:dataKey :active-users :fill (:danger colors) :stackId "b"}]]]]))
+#_(defn user-growth-chart [{:keys [width height data]}]
+    (let [{:keys [default-width default-height aspect bar-settings]} settings
+          ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
+          ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
+          Legend (adapt-react-class js/window.Recharts.Legend.)
+          Cell (adapt-react-class js/window.Recharts.Cell.)
+          BarChart (adapt-react-class js/window.Recharts.BarChart.)
+          Bar (adapt-react-class js/window.Recharts.Bar.)
+          XAxis (adapt-react-class js/window.Recharts.XAxis.)
+          YAxis (adapt-react-class js/window.Recharts.YAxis.)]
+     [:div {:style {:width "100%"}}
+      [ResponsiveContainer
+       {:height 155}
+       [BarChart
+        {:data data
+         :margin {:bottom 25}} ;:right 30 :left 20}}
+        [XAxis {:dataKey :name}]
+        [YAxis]
+        [ToolTip]
+        [Legend {:icon-size 8}]
+        ;[Bar {:dataKey :total :fill (:default colors) :stackId "a"}]
+        [Bar {:dataKey :existing-users :fill (:purple colors) :stackId "a"}]
+        [Bar {:dataKey :growth :fill (:yellow colors) :stackId "a"}]
+        [Bar {:dataKey :active-users :fill (:danger colors) :stackId "b"}]]]]))
 
 (defn make-bar [{:keys [width data]}]
   (let [{:keys [default-width default-height aspect bar-settings]} settings
@@ -82,14 +82,12 @@
                            (when dataKeyX (merge $ {:dataKey dataKeyX})))
                 (when xlabel [Label {:value xlabel  :position "insideBottom" :dy 8}])]
 
-              [YAxis (as-> {} $
+              [YAxis (as-> {:interval 0} $
                            (when dataKeyY (merge $ {:dataKey dataKeyY})))
                (when ylabel [Label {:value ylabel  :position "outside" :angle -90 :dx -20}])]
-
               [ToolTip]]
              (for [b bars]
                [Bar {:dataKey (:key b) :fill (:fill b) :stackId (:stackId b)}]))]])))
-
       [:div.flex-container]
       data)))
 
@@ -102,9 +100,37 @@
        BarChart (adapt-react-class js/window.Recharts.BarChart.)
        Bar (adapt-react-class js/window.Recharts.Bar.)
        XAxis (adapt-react-class js/window.Recharts.XAxis.)
-       YAxis (adapt-react-class js/window.Recharts.YAxis.)]))
+       YAxis (adapt-react-class js/window.Recharts.YAxis.)
+       ComposedChart (adapt-react-class js/window.Recharts.ComposedChart.)
+       Label (adapt-react-class js/window.Recharts.Label.)
+       Line (adapt-react-class js/window.Recharts.Line.)]
+    (reduce
+      (fn [r d]
+        (let [{:keys [info elements title xlabel ylabel dataKeyY dataKeyX xlabel ylabel nameX nameY]} d]
+         (conj r
+          [:div {:style {:width (or width "50%") :margin-bottom "20px"}}
+           (when-not (blank? title) [:div [:span [:b title]]])
+           [ResponsiveContainer
+            {:height 185}
+            (into
+             [ComposedChart
+              {:data info}
+              [XAxis (as-> {} $
+                           (when dataKeyX (merge $ {:dataKey dataKeyX})))
+                (when xlabel [Label {:value xlabel  :position "insideBottom" :dy 8}])]
 
-
+              [YAxis (as-> {:interval 0} $
+                           (when dataKeyY (merge $ {:dataKey dataKeyY})))
+               (when ylabel [Label {:value ylabel  :position "outside" :angle -90 :dx -20}])]
+              [ToolTip {:payload [{:name "test"}]}]
+              [Legend {:icon-size 8  :verticalAlign "top"}]]
+             (for [e elements]
+               (case (:type e)
+                 "bar" [Bar {:unit (:unit e) :legendType (:legendType e) :name (:name e) :dataKey (:key e) :fill (:fill e) :stackId (:stackId e)}]
+                 "line" [Line {:dot (:dot e) :dataKey (:key e) :type "monotone" :stroke (:stroke e) :activeDot (:activeDot e) :strokeWidth (:strokeWidth e)}]
+                 nil)))]])))
+      [:div.flex-container]
+      data)))
 
 (defn draw-line [{:keys [width data]}]
   (let [ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
@@ -153,6 +179,7 @@
          (let [{:keys [slices title]} d]
            (conj r
              [:div
+              (when-not (blank? title)[:div.row [:span [:b title]]])
               [ResponsiveContainer
                {:width (or width default-width) :aspect aspect}
                [PieChart
@@ -161,11 +188,10 @@
                  [Pie (assoc pie-settings :data slices)]
                  slices)
                 [ToolTip]
-                [Legend {:icon-size 8}]]]
-              (when-not (blank? title)[:div.row [:span [:b title]]])])))
+                [Legend {:icon-size 8}]]]])))
+              ;(when-not (blank? title)[:div.row [:span [:b title]]])])))
         [:div.flex-container]
         data)))
-
 
 (defn panel-box [data]
  (when data
@@ -205,9 +231,8 @@
        [:div.panel-subheading.pad heading]]
       [:div.panel-chart-wrapper.panel-chart-wrapper-relative
        (case chart-type
-         :pie   (make-pie {:width 200 :data chart-data}) ;(if split? (reduce (fn [r p] (conj r [make-pie {:width 200 :data [p]}])) [:div.flex-container] chart-data) (make-pie {:width 200 :data chart-data}))
-         ;:visibility-bar (make-visibility-bar {:width 500 :data chart-data})
-         ;:user-growth-chart (user-growth-chart {:width 500 :data (sort-by :order < chart-data)})
+         :pie   (make-pie {:width 190 :data chart-data})
          :line (draw-line {:width 500 :data chart-data})
          :bar (make-bar {:width "100%" :data chart-data})
+         :mixed (composed-chart {:width "100%" :data chart-data})
          [:div])]]])))
