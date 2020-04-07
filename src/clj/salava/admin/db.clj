@@ -12,7 +12,8 @@
             [salava.badge.main :as b]
             [salava.page.main :as p]
             [salava.mail.mail :as m]
-            [salava.gallery.db :as g]))
+            [salava.gallery.db :as g]
+            [salava.admin.helper :refer [make-csv]]))
 
 (defqueries "sql/admin/queries.sql")
 
@@ -155,6 +156,28 @@
      (log/error (.getMessage _))
      "error")))
 
+
+(defn export-admin-statistics [ctx last-login]
+  (let [data (-> (get-stats ctx last-login) (dissoc :user-badge-correlation))
+        data->csvformat (reduce-kv
+                          (fn [r k v]
+                           (do
+                            (when v
+                             (conj r
+                              [(name k)]))
+                            (when (map? v)
+                             (reduce-kv (fn [_ y z] (conj _ [(name y) z])) r v))))
+                          []
+                          data)]
+    (clojure.pprint/pprint data->csvformat)
+    (make-csv ctx data->csvformat)))
+
+#_(defn export-admin-statistics [ctx last-login]
+    (let [data (-> (get-stats ctx last-login) (dissoc :user-badge-correlation))
+          data->csvformat (clojure.walk/postwalk (fn [x]
+                                                   (let [c []]
+                                                     (conj c [k]))) data)]
+      (clojure.pprint/pprint data->csvformat)))
 
 (defn private-badge! [ctx id]
   (try+

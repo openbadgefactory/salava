@@ -6,7 +6,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for js-navigate-to]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [cljsjs.recharts]
@@ -68,11 +68,22 @@
   {:badge_count 1 :user_count 25968}])
 
 (defn text-content [state]
+ (let [data (clojure.walk/postwalk-replace
+              {:6-month-login-count :6monthlogincount
+               :3-month-login-count :3monthlogincount
+               :1-year-login-count :1yearlogincount
+               :last-month-login-count :1monthlogincount
+               :login-count-since-last-login :logincountsincelastlogin
+               :not-activated :notactivatedusercount
+               :activated :activatedusers
+               :badges :userbadges}
+               ;:public :publicusers}
+              @state)] ;#(clojure.set/rename-keys @state {:6-month-login-count :6monthlogincount}))]
   (reduce-kv
    (fn [r k v]
      (conj r
       [:div.row
-       [:h2.sectionheading (t (keyword (str "admin/" (name k))))]
+       (when v [:h2.sectionheading (t (keyword (str "admin/" (name k))))])
        (when (map? v)
          (reduce-kv
             (fn [x y z]
@@ -83,7 +94,7 @@
             [:div]
             v))]))
    [:div.admin-stats]
-   (-> @state (dissoc :user-badge-correlation :visible))))
+   (-> data (dissoc :user-badge-correlation :visible))))) ;(clojure.walk/postwalk #(clojure.set/rename-keys % {:6-month-login-count :6monthlogincount}))))))
 
 
 (defn graphic-content [state]
@@ -152,7 +163,7 @@
                                           :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
                                           :title (t :admin/badgeGrowth)
                                           :xlabel (t :admin/noofmonths)}
-                                         {:info [{:name (str "12 " (t :admin/year) " ago") :total (- (:total pages) (:since-1-year pages))}
+                                         {:info [{:name (str "1 " (t :admin/year) " ago") :total (- (:total pages) (:since-1-year pages))}
                                                  {:name (str "6 " (t :admin/months) " ago") :total (- (:total pages) (:since-6-month pages))}
                                                  {:name (str "3 " (t :admin/months) " ago") :total (- (:total pages) (:since-3-month pages))}
                                                  {:name (str "1 " (t :admin/months) " ago") :total (- (:total pages) (:since-last-month pages))}
@@ -165,23 +176,25 @@
                             :icon "fa-bar-chart"
                             :type "b-page"
                             :chart-type :mixed
-                            :chart-data [{:info (sort-by :badge_count < sample-data #_(repeatedly 50 #(hash-map :badge_count (rand-int 185) :user_count (rand-int 500))) #_user-badge-correlation)
+                            :chart-data [{:info (sort-by :badge_count < #_sample-data #_(repeatedly 50 #(hash-map :badge_count (rand-int 185) :user_count (rand-int 500))) user-badge-correlation)
                                           :title (t :admin/userBadgeDistribution)
                                           ;:bars [{:key :user_count :fill (:primary colors) :stackId "a"}]
-                                          :elements [{:unit (str " " (t :admin/Users)) :legendType "none" :name (t :admin/users) :key "user_count" :fill (:purple colors) :stackId "a" :type "bar"}
+                                          :elements [{#_:unit #_(str " " (t :admin/Users)) :legendType "none" :name (t :admin/users) :key "user_count" :fill (:purple colors) :stackId "a" :type "bar"}
                                                      {:name "" :key "user_count" :type "line" :stroke (:primary colors) :activeDot {:r 8} :strokeWidth 3 :dot false}]
                                           :dataKeyX "badge_count"
                                           :dataKeyY "user_count"
                                           :xlabel (t :admin/noofbadges)
                                           :ylabel (t :admin/noofusers)}]}]]]]))
-(defn export-stats [state])
+(defn export-stats [state]
+  (let [url (str "/obpv1/admin/export_statistics")]
+    (js-navigate-to url)))
 
 (defn content [state]
  (let [visible-content (cursor state [:visible])]
   [:div
    [m/modal-window]
-   [:div {:style {:margin-bottom "20px"}}
-    [:div.btn-toolbar.pull-right
+   [:div
+    [:div.btn-toolbar.pull-right {:style {:margin-bottom "20px"}}
      [:a.btn.btn-primary.btn-bulky
       {:href "#"
        :on-click #(if (= "text" @visible-content) (reset! visible-content "graphic") (reset! visible-content "text"))}
