@@ -3,8 +3,9 @@
    [cljsjs.recharts]
    [clojure.string :refer [blank? lower-case]]
    [salava.core.i18n :refer [t]]
-   [reagent.core :refer [atom cursor adapt-react-class create-class]]
+   [reagent.core :refer [atom cursor adapt-react-class create-class create-element props current-component children argv]]
    [reagent.session :as session]))
+   ;[recharts/lib/component/DefaultTooltipContent :refer [DefaultTooltipContent]]))
 
 (def colors
  {:default "#82ca9d"
@@ -29,7 +30,6 @@
    :label-line false
    :legend-type "wye"
    :dataKey :value}})
-
 
 #_(defn user-growth-chart [{:keys [width height data]}]
     (let [{:keys [default-width default-height aspect bar-settings]} settings
@@ -66,7 +66,8 @@
         Bar (adapt-react-class js/window.Recharts.Bar.)
         XAxis (adapt-react-class js/window.Recharts.XAxis.)
         YAxis (adapt-react-class js/window.Recharts.YAxis.)
-        Label (adapt-react-class js/window.Recharts.Label.)]
+        Label (adapt-react-class js/window.Recharts.Label.)
+        DefaultTooltipContent (adapt-react-class js/window.Recharts.DefaultTooltipContent.)]
      (reduce
       (fn [r d]
        (let [{:keys [info bars title xlabel ylabel dataKeyY dataKeyX xlabel ylabel]} d]
@@ -91,7 +92,16 @@
       [:div.flex-container]
       data)))
 
-(defn composed-chart [{:keys [width data]}]
+(defn customtooltip []
+  (let [this (current-component)
+        p (argv this)]
+   (create-element "div"
+                   #js{:className "custom-tooltip"}
+                   (create-element "p"
+                                   #js{:className "intro"}
+                                   "this"))))
+
+(defn composed-chart [{:keys [width data tooltipLabel]}]
  (let [{:keys [default-width default-height aspect bar-settings]} settings
        ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
        ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
@@ -104,6 +114,7 @@
        ComposedChart (adapt-react-class js/window.Recharts.ComposedChart.)
        Label (adapt-react-class js/window.Recharts.Label.)
        Line (adapt-react-class js/window.Recharts.Line.)]
+
     (reduce
       (fn [r d]
         (let [{:keys [info elements title xlabel ylabel dataKeyY dataKeyX xlabel ylabel nameX nameY]} d]
@@ -111,7 +122,7 @@
           [:div {:style {:width (or width "50%") :margin-bottom "20px"}}
            (when-not (blank? title) [:div [:span [:b title]]])
            [ResponsiveContainer
-            {:height 185}
+            {:height 500}
             (into
              [ComposedChart
               {:data info}
@@ -119,20 +130,21 @@
                            (when dataKeyX (merge $ {:dataKey dataKeyX})))
                 (when xlabel [Label {:value xlabel  :position "insideBottom" :dy 8}])]
 
-              [YAxis (as-> {:interval 0} $
+              [YAxis (as-> {:interval "preserveStart" :scale "log" :domain ["auto" "auto"] } $
                            (when dataKeyY (merge $ {:dataKey dataKeyY})))
                (when ylabel [Label {:value ylabel  :position "outside" :angle -90 :dx -20}])]
-              [ToolTip {:payload [{:name "test"}]}]
-              [Legend {:icon-size 8  :verticalAlign "top"}]]
+              [ToolTip (as-> {:label :badge_count} $
+                             (when tooltipLabel (merge $ {:labelFormatter (fn [name] (str  name " " tooltipLabel))})))]]
+
              (for [e elements]
                (case (:type e)
                  "bar" [Bar {:unit (:unit e) :legendType (:legendType e) :name (:name e) :dataKey (:key e) :fill (:fill e) :stackId (:stackId e)}]
-                 "line" [Line {:dot (:dot e) :dataKey (:key e) :type "monotone" :stroke (:stroke e) :activeDot (:activeDot e) :strokeWidth (:strokeWidth e)}]
+                 "line" [Line {:name (:name e)  :dot (:dot e) :dataKey (:key e) :type "monotone" :stroke (:stroke e) :activeDot (:activeDot e) :strokeWidth (:strokeWidth e)}]
                  nil)))]])))
       [:div.flex-container]
       data)))
 
-(defn draw-line [{:keys [width data]}]
+(defn draw-line [{:keys [width data tooltipLabel]}]
   (let [ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
         ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
         Legend (adapt-react-class js/window.Recharts.Legend.)
@@ -144,7 +156,7 @@
         Label (adapt-react-class js/window.Recharts.Label.)]
      (reduce
       (fn [r d]
-        (let [{:keys [info lines title xlabel ylabel]} d]
+        (let [{:keys [info lines title xlabel ylabel ]} d]
          (conj r
           [:div {:style {:width "50%" :margin-bottom "20px"}}
            (when-not (blank? title) [:div [:span [:b title]]])
@@ -157,10 +169,11 @@
                (when xlabel [Label {:value xlabel :offset 0 :position "outside" :dy 15}])]
               [YAxis
                (when ylabel [Label {:value ylabel :position "outside" :angle -90}])]
-              [ToolTip]
+              [ToolTip (as-> {} $
+                             (when tooltipLabel  (merge $ {:labelFormatter (fn [name] (str name " " tooltipLabel))})))]
               [Legend {:icon-size 8  :verticalAlign "top"}]]
              (for [l lines]
-               [Line {:dataKey (:key l) :type "monotone" :stroke (:stroke l) :activeDot (:activeDot l) :strokeWidth (:strokeWidth l)}]))]])))
+               [Line {:name (:name l) :dataKey (:key l) :type "monotone" :stroke (:stroke l) :activeDot (:activeDot l) :strokeWidth (:strokeWidth l)}]))]])))
       [:div.flex-container]
       data)))
 
@@ -217,11 +230,12 @@
 
 (defn panel-box-chart [data]
  (when data
-  (let [{:keys [type heading icon chart-type chart-data size split?]} data
+  (let [{:keys [type heading icon chart-type chart-data size split? tooltipLabel]} data
         size-class (case size
                      :lg "col-md-12 col-sm-12 col-xs-12"
                      :md "col-md-6 col-sm-6 col-xs-12"
                     "col-md-4 col-sm-6 col-xs-12")]
+    ;(prn DefaultTooltipContent)
     [:div {:class size-class}
      [:div.panel-box.panel-chart
       [:div.panel-chart-content
@@ -232,7 +246,7 @@
       [:div.panel-chart-wrapper.panel-chart-wrapper-relative
        (case chart-type
          :pie   (make-pie {:width 190 :data chart-data})
-         :line (draw-line {:width 500 :data chart-data})
+         :line (draw-line {:width 500 :data chart-data :tooltipLabel tooltipLabel})
          :bar (make-bar {:width "100%" :data chart-data})
-         :mixed (composed-chart {:width "100%" :data chart-data})
+         :mixed (composed-chart {:width "100%" :data chart-data :tooltipLabel tooltipLabel})
          [:div])]]])))

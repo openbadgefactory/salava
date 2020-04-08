@@ -94,23 +94,18 @@
             [:div]
             v))]))
    [:div.admin-stats]
-   (-> data (dissoc :user-badge-correlation :visible))))) ;(clojure.walk/postwalk #(clojure.set/rename-keys % {:6-month-login-count :6monthlogincount}))))))
+   (-> data (dissoc :user-badge-correlation :visible))))) 
 
 
 (defn graphic-content [state]
   (let [{:keys [issuers users badges last-month-active-users last-month-registered-users all-badges last-month-added-badges pages created issued user-badge-correlation]} @state]
     [:div {:class "admin-stats"}
-
-     ;[m/modal-window]
-     [:div.row
-      [:div.btn-toolbar]]
-       ;[:button]]]
      [:div#panel-boxes
       [:div.row
-       [dh/panel-box {:heading (t :admin/Users) :icon "fa-user-o" :info users :type "b-user"}]
-       [dh/panel-box {:heading (t :badge/Badges) :icon "fa-certificate" :info badges :type "b-badge"}]
-       [dh/panel-box {:heading (t :page/Pages) :icon "fa-file-text-o" :info users :type "b-page"}]
-       [dh/panel-box {:heading (t :admin/Issuers) :icon "fa-building-o" :info issuers :type "b-page"}]
+       [dh/panel-box {:heading (t :admin/Totalusersno) :icon "fa-user-o" :info users :type "b-user"}]
+       [dh/panel-box {:heading (t :badge/Totalbadgesno) :icon "fa-certificate" :info badges :type "b-badge"}]
+       [dh/panel-box {:heading (t :page/Totalpagesno) :icon "fa-file-text-o" :info users :type "b-page"}]
+       [dh/panel-box {:heading (t :admin/Totalissuersno) :icon "fa-building-o" :info issuers :type "b-page"}]
        (when created [dh/panel-box {:heading (t :badgeIssuer/Selfiebadges) :icon "fa-plus-square" :info created :type "b-user"}])]
       [:div.row
        [dh/panel-box-chart {:size :lg
@@ -146,45 +141,48 @@
                             :icon "fa-line-chart"
                             :type "b-user"
                             :chart-type :line
-                            :chart-data [{:info [{:name (str "1 " (t :admin/year) " ago") :total  (- (:total users) (:since-1-year users)) :active-users (:1-year-login-count users)};:badges (:since-1-year badges)
-                                                 {:name (str "6 " (t :admin/months) " ago") :total (- (:total users) (:since-6-month users)) :active-users (:6-month-login-count users)}
-                                                 {:name (str "3 " (t :admin/months) " ago") :total (- (:total users) (:since-3-month users)) :active-users (:3-month-login-count users)}
-                                                 {:name (str "1 " (t :admin/month) " ago") :total (- (:total users) (:since-last-month users)) :active-users (:last-month-login-count users)}
+                            :chart-data [{:info [{:name 12 #_(str "1 " (t :admin/year) " ago") :total  (- (:total users) (:since-1-year users)) :active-users (:1-year-login-count users)};:badges (:since-1-year badges)
+                                                 {:name 6 #_(str "6 " (t :admin/months) " ago") :total (- (:total users) (:since-6-month users)) :active-users (:6-month-login-count users)}
+                                                 {:name 3 #_(str "3 " (t :admin/months) " ago") :total (- (:total users) (:since-3-month users)) :active-users (:3-month-login-count users)}
+                                                 {:name 1 #_(str "1 " (t :admin/month) " ago") :total (- (:total users) (:since-last-month users)) :active-users (:last-month-login-count users)}
                                                  {:name (t :admin/now) :total (:total users) :active-users (:login-count-since-last-login users)}]
-                                           :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}
-                                                   {:key "active-users" :stroke (:danger colors)}]
+                                           :lines [{:name (t :admin/Totalusersno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}
+                                                   {:name (t :admin/Activeusers ) :key "active-users" :stroke (:danger colors)}]
                                            :title (t :admin/userGrowth)
                                            :xlabel (t :admin/noofmonths)}
-                                         {:info [{:name (str "1 " (t :admin/year) " ago") :total (- (:total badges) (:since-1-year badges))}
-                                                 {:name (str "6 " (t :admin/months) " ago") :total (- (:total badges) (:since-6-month badges))}
-                                                 {:name (str "3 " (t :admin/months) " ago") :total (- (:total badges) (:since-3-month badges))}
-                                                 {:name (str "1 " (t :admin/months) " ago") :total (- (:total badges) (:since-last-month badges))}
+                                         {:info [{:name 12 #_(str "1 " (t :admin/year) " ago") :total (- (:total badges) (:since-1-year badges))}
+                                                 {:name 6 #_(str "6 " (t :admin/months) " ago") :total (- (:total badges) (:since-6-month badges))}
+                                                 {:name 3 #_(str "3 " (t :admin/months) " ago") :total (- (:total badges) (:since-3-month badges))}
+                                                 {:name 1 #_(str "1 " (t :admin/months) " ago") :total (- (:total badges) (:since-last-month badges))}
                                                  {:name (t :admin/now) :total (:total badges)}]
-                                          :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                          :lines [{:name (t :admin/Totalbadgesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
                                           :title (t :admin/badgeGrowth)
                                           :xlabel (t :admin/noofmonths)}
-                                         {:info [{:name (str "1 " (t :admin/year) " ago") :total (- (:total pages) (:since-1-year pages))}
-                                                 {:name (str "6 " (t :admin/months) " ago") :total (- (:total pages) (:since-6-month pages))}
-                                                 {:name (str "3 " (t :admin/months) " ago") :total (- (:total pages) (:since-3-month pages))}
-                                                 {:name (str "1 " (t :admin/months) " ago") :total (- (:total pages) (:since-last-month pages))}
+                                         {:info [{:name 12 #_(str "1 " (t :admin/year) " ago") :total (- (:total pages) (:since-1-year pages))}
+                                                 {:name 6 #_(str "6 " (t :admin/months) " ago") :total (- (:total pages) (:since-6-month pages))}
+                                                 {:name 3 #_(str "3 " (t :admin/months) " ago") :total (- (:total pages) (:since-3-month pages))}
+                                                 {:name 1 #_(str "1 " (t :admin/months) " ago") :total (- (:total pages) (:since-last-month pages))}
                                                  {:name (t :admin/now) :total (:total pages)}]
-                                          :lines [{:key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                          :lines [{:name (t :admin/Totalpagesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
                                           :title (t :admin/pageGrowth)
-                                          :xlabel (t :admin/noofmonths)}]}]]
+                                          :xlabel (t :admin/noofmonths)}]
+                             :tooltipLabel (t :admin/monthsago)}]]
       [:div.row
        [dh/panel-box-chart {:size :lg
                             :icon "fa-bar-chart"
                             :type "b-page"
                             :chart-type :mixed
-                            :chart-data [{:info (sort-by :badge_count < #_sample-data #_(repeatedly 50 #(hash-map :badge_count (rand-int 185) :user_count (rand-int 500))) user-badge-correlation)
+                            :chart-data [{:info (sort-by :badge_count < sample-data #_(repeatedly 50 #(hash-map :badge_count (rand-int 185) :user_count (rand-int 500))) #_user-badge-correlation)
                                           :title (t :admin/userBadgeDistribution)
                                           ;:bars [{:key :user_count :fill (:primary colors) :stackId "a"}]
-                                          :elements [{#_:unit #_(str " " (t :admin/Users)) :legendType "none" :name (t :admin/users) :key "user_count" :fill (:purple colors) :stackId "a" :type "bar"}
-                                                     {:name "" :key "user_count" :type "line" :stroke (:primary colors) :activeDot {:r 8} :strokeWidth 3 :dot false}]
+                                          :elements [{:legendType "none" :name (t :admin/users) :key "user_count" :fill (:warning colors) :stackId "a" :type "bar"}
+                                                     {:legendType "none" :name (t :admin/users) :key "user_count" :type "line" :stroke (:primary colors) :activeDot {:r 8} :strokeWidth 3 :dot false}]
                                           :dataKeyX "badge_count"
                                           :dataKeyY "user_count"
                                           :xlabel (t :admin/noofbadges)
-                                          :ylabel (t :admin/noofusers)}]}]]]]))
+                                          :ylabel (t :admin/noofusers)}]
+                            :tooltipLabel (t :admin/userbadges)}]]]]))
+
 (defn export-stats [state]
   (let [url (str "/obpv1/admin/export_statistics")]
     (js-navigate-to url)))
