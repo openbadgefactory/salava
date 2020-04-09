@@ -208,9 +208,9 @@
              (take 5))))
 
 (defn selfie_stats [ctx last-login]
-  {:created {:total (db/created-badges-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-             :since-last-login (db/created-badges-count-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-             :since-last-month (db/created-badges-count-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))}
-   :issued {:total (db/issued-badges-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-            :since-last-login (db/issued-badges-count-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-            :since-last-month (db/issued-badges-count-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))}})
+  {:created {:Totalcreatedno (db/created-badges-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+             :createdsincelastlogin (db/created-badges-count-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+             :createdsincelastmonth (db/created-badges-count-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))}
+   :issued {:Totalissuedno (db/issued-badges-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+            :issuedsincelastlogin (db/issued-badges-count-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+            :issuedsincelastmonth (db/issued-badges-count-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))}})

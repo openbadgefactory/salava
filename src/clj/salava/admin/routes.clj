@@ -30,8 +30,7 @@
                   :summary "Get statistics"
                   :auth-rules access/admin
                   :current-user current-user
-                  (do
-                    (ok (a/get-stats ctx (:last-visited current-user)))))
+                  (ok (a/get-stats ctx (:last-visited current-user))))
 
              (POST "/private_badge/:user_badge_id" []
                    :return (s/enum "success" "error")
@@ -225,7 +224,7 @@
                    :summary "Export admin stats to csv format"
                    :auth-rules access/admin
                    :current-user current-user
-                   (-> (io/piped-input-stream (a/export-admin-statistics ctx (:last-visited current-user)))
+                   (-> (io/piped-input-stream (a/export-admin-statistics ctx current-user))
                        ok
                        (header "Content-Disposition" (str "attachment; filename=\"statistics.csv\""))
                        (header "Content-Type" "text/csv")))

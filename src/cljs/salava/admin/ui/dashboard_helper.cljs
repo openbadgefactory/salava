@@ -210,7 +210,7 @@
  (when data
   (let [
         {:keys [type heading info icon]} data
-        {:keys [since-last-login since-last-month total]} info]
+        {:keys [lastlogin lastmonth total]} info]
    [:div.col-md-4.col-sm-4.col-xs-6
     [:div.panel-box.panel-chart
      [:div.panel-chart-content
@@ -221,10 +221,10 @@
       [:div.panel-subheading heading]
       [:div.panel-description
        (cond
-         (pos? since-last-login)
-         [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b since-last-login]] " " (t :admin/Increasesincelastlogin)]
-         (pos? since-last-month)
-         [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b since-last-month]] " " (t :admin/Increasesincelastmonth)]
+         (pos? lastlogin)
+         [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b lastlogin]] " " (t :admin/Increasesincelastlogin)]
+         (pos? lastmonth)
+         [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b lastmonth]] " " (t :admin/Increasesincelastmonth)]
          :else [:div [:span {:aria-hidden "true"
                              :dangerouslySetInnerHTML {:__html "&nbsp;"}}]])]]]])))
 

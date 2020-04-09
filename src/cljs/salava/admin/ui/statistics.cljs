@@ -68,45 +68,42 @@
   {:badge_count 1 :user_count 25968}])
 
 (defn text-content [state]
- (let [data (clojure.walk/postwalk-replace
-              {:6-month-login-count :6monthlogincount
-               :3-month-login-count :3monthlogincount
-               :1-year-login-count :1yearlogincount
-               :last-month-login-count :1monthlogincount
-               :login-count-since-last-login :logincountsincelastlogin
-               :not-activated :notactivatedusercount
-               :activated :activatedusers
-               :badges :userbadges}
-               ;:public :publicusers}
-              @state)] ;#(clojure.set/rename-keys @state {:6-month-login-count :6monthlogincount}))]
-  (reduce-kv
-   (fn [r k v]
-     (conj r
-      [:div.row
-       (when v [:h2.sectionheading (t (keyword (str "admin/" (name k))))])
-       (when (map? v)
-         (reduce-kv
-            (fn [x y z]
-              (conj x
-               [:div
-                [:span._label.stats (t (keyword (str "admin/" (name y))))] z]))
+ (reduce-kv
+  (fn [r k v]
+    (conj r
+     [:div.row
+      (when v [:h2.sectionheading (t (keyword (str "admin/" (name k))))])
+      (when (map? v)
+        (reduce-kv
+           (fn [x y z]
+             (conj x
+              [:div
+               [:span._label.stats (t (keyword (str "admin/" (name y))))] z]))
 
-            [:div]
-            v))]))
-   [:div.admin-stats]
-   (-> data (dissoc :user-badge-correlation :visible))))) 
+           [:div]
+           v))]))
+  [:div.admin-stats]
+  (-> @state (dissoc :user-badge-correlation :visible))))
 
 
 (defn graphic-content [state]
-  (let [{:keys [issuers users badges last-month-active-users last-month-registered-users all-badges last-month-added-badges pages created issued user-badge-correlation]} @state]
+  (let [{:keys [issuers users userbadges pages created issued user-badge-correlation]} @state
+        {:keys [factorybadges Totalbadgesno pendingbadgescount acceptedbadgescount declinedbadgescount privatebadgescount publicbadgescount internalbadgescount badgessincelastlogin
+                badgessincelastmonth badgessince3month badgessince6month badgessince1year]} userbadges
+        {:keys [notactivatedusers internalusers publicusers Totalusersno userssincelastlogin userssincelastmonth
+                userssince3month userssince6month userssince1year logincountsincelastlogin]} users
+        {:keys [pagessincelastlogin pagessince1year pagessince6month pagessince3month pagessincelastmonth internalpagescount privatepagescount publicpagescount Totalpagesno]} pages
+        {:keys [issuerssince1year issuerssince6month issuerssince3month issuerssincelastmonth issuerssincelastlogin Totalissuersno]} issuers
+        {:keys [Totalissuedno issuedsincelastmonth issuedsincelastlogin]} issued
+        {:keys [Totalcreatedno createdsincelastmonth createdsincelastlogin]} created]
     [:div {:class "admin-stats"}
      [:div#panel-boxes
       [:div.row
-       [dh/panel-box {:heading (t :admin/Totalusersno) :icon "fa-user-o" :info users :type "b-user"}]
-       [dh/panel-box {:heading (t :badge/Totalbadgesno) :icon "fa-certificate" :info badges :type "b-badge"}]
-       [dh/panel-box {:heading (t :page/Totalpagesno) :icon "fa-file-text-o" :info users :type "b-page"}]
-       [dh/panel-box {:heading (t :admin/Totalissuersno) :icon "fa-building-o" :info issuers :type "b-page"}]
-       (when created [dh/panel-box {:heading (t :badgeIssuer/Selfiebadges) :icon "fa-plus-square" :info created :type "b-user"}])]
+       [dh/panel-box {:heading (t :admin/Totalusersno) :icon "fa-user-o" :info {:total Totalusersno :lastlogin userssincelastlogin :lastmonth userssincelastmonth} :type "b-user"}]
+       [dh/panel-box {:heading (t :admin/Totalbadgesno) :icon "fa-certificate" :info {:total Totalbadgesno :lastlogin badgessincelastlogin :lastmonth badgessincelastmonth}  :type "b-badge"}]
+       [dh/panel-box {:heading (t :admin/Totalpagesno) :icon "fa-file-text-o" :info {:total Totalpagesno :lastlogin pagessincelastlogin :lastmonth pagessincelastmonth} :type "b-page"}]
+       [dh/panel-box {:heading (t :admin/Totalissuersno) :icon "fa-building-o" :info {:total Totalissuersno :lastlogin issuerssincelastlogin :lastmonth issuerssincelastmonth} :type "b-page"}]
+       (when created [dh/panel-box {:heading (t :badgeIssuer/Selfiebadges) :icon "fa-plus-square" :info {:total Totalcreatedno :lastlogin createdsincelastlogin :lastmonth createdsincelastmonth} :type "b-user"}])]
       [:div.row
        [dh/panel-box-chart {:size :lg
                             ;:heading (t :admin/Sharing)
@@ -115,57 +112,67 @@
                             :chart-type :pie ;:visibility-bar
                             :split? true
                             :chart-data [{:title (t :admin/badgeSource)
-                                          :slices [{:name "Open Badge Factory " :value (:factory-badges badges) :fill (:primary colors)}
-                                                   {:name (session/get :site-name "Passport") :value (:total issued) :fill (:default colors)}
-                                                   {:name (t :admin/Other) :value (- (:total badges)(+ (:factory-badges badges) (:total issued))) :fill (:yellow colors)}]}
+                                          :slices [{:name "Open Badge Factory " :value factorybadges :fill (:primary colors)}
+                                                   {:name (session/get :site-name "Passport") :value Totalissuedno :fill (:default colors)}
+                                                   {:name (t :admin/Other) :value (- Totalbadgesno (+ factorybadges Totalissuedno)) :fill (:yellow colors)}]}
                                          {:title (t :admin/badgeStatus)
-                                          :slices [{:name (t :social/pending) :value (:pending badges) :fill (:info colors)}
-                                                   {:name (t :social/accepted) :value (:accepted badges) :fill (:default colors)}
-                                                   {:name (t :social/declined) :value (:declined badges) :fill (:danger colors)}]}
+                                          :slices [{:name (t :social/pending) :value pendingbadgescount :fill (:info colors)}
+                                                   {:name (t :social/accepted) :value acceptedbadgescount :fill (:default colors)}
+                                                   {:name (t :social/declined) :value declinedbadgescount :fill (:danger colors)}]}
                                          {:title (t :admin/userProfile)
-                                          :slices [{:name (t :page/Public) :value (:public users) :fill (:default colors)}
-                                                   {:name (t :admin/Notactivated) :value (:not-activated users) :fill (:danger colors)}
-                                                   {:name (t :core/Internal) :value (:internal users) :fill (:yellow colors)}]}
+                                          :slices [{:name (t :page/Public) :value publicusers :fill (:default colors)}
+                                                   {:name (t :admin/Notactivated) :value notactivatedusers :fill (:danger colors)}
+                                                   {:name (t :core/Internal) :value internalusers :fill (:yellow colors)}]}
 
                                          {:title (t :admin/badgeVisibility)
-                                          :slices [{:name (t :page/Public) :value (:public badges) :fill (:default colors)}
-                                                   {:name (t :page/Private) :value (:private badges) :fill (:purple colors)}
-                                                   {:name (t :core/Internal) :value (:internal badges) :fill (:yellow colors)}]}
+                                          :slices [{:name (t :page/Public) :value publicbadgescount :fill (:default colors)}
+                                                   {:name (t :page/Private) :value privatebadgescount :fill (:purple colors)}
+                                                   {:name (t :core/Internal) :value internalbadgescount :fill (:yellow colors)}]}
                                          {:title (t :admin/pageVisibility)
-                                          :slices [{:name (t :page/Public) :value (:public pages) :fill (:default colors)}
-                                                   {:name (t :page/Private) :value (:private pages) :fill (:purple colors)}
-                                                   {:name (t :core/Internal) :value (:internal pages) :fill (:yellow colors)}]}]}]]
+                                          :slices [{:name (t :page/Public) :value publicpagescount :fill (:default colors)}
+                                                   {:name (t :page/Private) :value privatepagescount :fill (:purple colors)}
+                                                   {:name (t :core/Internal) :value internalpagescount :fill (:yellow colors)}]}]}]]
       [:div.row
        [dh/panel-box-chart {:size :lg
-                            ;:heading (t :admin/Growth)
                             :icon "fa-line-chart"
                             :type "b-user"
                             :chart-type :line
-                            :chart-data [{:info [{:name 12 #_(str "1 " (t :admin/year) " ago") :total  (- (:total users) (:since-1-year users)) :active-users (:1-year-login-count users)};:badges (:since-1-year badges)
-                                                 {:name 6 #_(str "6 " (t :admin/months) " ago") :total (- (:total users) (:since-6-month users)) :active-users (:6-month-login-count users)}
-                                                 {:name 3 #_(str "3 " (t :admin/months) " ago") :total (- (:total users) (:since-3-month users)) :active-users (:3-month-login-count users)}
-                                                 {:name 1 #_(str "1 " (t :admin/month) " ago") :total (- (:total users) (:since-last-month users)) :active-users (:last-month-login-count users)}
-                                                 {:name (t :admin/now) :total (:total users) :active-users (:login-count-since-last-login users)}]
+                            :chart-data [{:info [{:name 12  :total  (- Totalusersno userssince1year) :active-users (:1yearlogincount users)}
+                                                 {:name 6  :total (- Totalusersno userssince6month) :active-users (:6monthlogincount users)}
+                                                 {:name 3  :total (- Totalusersno userssince3month) :active-users (:3monthlogincount users)}
+                                                 {:name 1  :total (- Totalusersno userssincelastmonth) :active-users (:1monthlogincount users)}
+                                                 {:name 0 #_(t :admin/Lastlogin) :total Totalusersno :active-users logincountsincelastlogin}]
                                            :lines [{:name (t :admin/Totalusersno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}
-                                                   {:name (t :admin/Activeusers ) :key "active-users" :stroke (:danger colors)}]
+                                                   {:name (t :admin/Activeusers) :key "active-users" :stroke (:danger colors)}]
                                            :title (t :admin/userGrowth)
                                            :xlabel (t :admin/noofmonths)}
-                                         {:info [{:name 12 #_(str "1 " (t :admin/year) " ago") :total (- (:total badges) (:since-1-year badges))}
-                                                 {:name 6 #_(str "6 " (t :admin/months) " ago") :total (- (:total badges) (:since-6-month badges))}
-                                                 {:name 3 #_(str "3 " (t :admin/months) " ago") :total (- (:total badges) (:since-3-month badges))}
-                                                 {:name 1 #_(str "1 " (t :admin/months) " ago") :total (- (:total badges) (:since-last-month badges))}
-                                                 {:name (t :admin/now) :total (:total badges)}]
+                                         {:info [{:name 12  :total (- Totalbadgesno badgessince1year)}
+                                                 {:name 6  :total (- Totalbadgesno badgessince6month)}
+                                                 {:name 3 :total (- Totalbadgesno badgessince3month)}
+                                                 {:name 1  :total (- Totalbadgesno badgessincelastmonth)}
+                                                 {:name 0 #_(t :admin/now) :total Totalbadgesno}]
                                           :lines [{:name (t :admin/Totalbadgesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
                                           :title (t :admin/badgeGrowth)
                                           :xlabel (t :admin/noofmonths)}
-                                         {:info [{:name 12 #_(str "1 " (t :admin/year) " ago") :total (- (:total pages) (:since-1-year pages))}
-                                                 {:name 6 #_(str "6 " (t :admin/months) " ago") :total (- (:total pages) (:since-6-month pages))}
-                                                 {:name 3 #_(str "3 " (t :admin/months) " ago") :total (- (:total pages) (:since-3-month pages))}
-                                                 {:name 1 #_(str "1 " (t :admin/months) " ago") :total (- (:total pages) (:since-last-month pages))}
-                                                 {:name (t :admin/now) :total (:total pages)}]
+                                         {:info [{:name 12  :total (- Totalpagesno pagessince1year)}
+                                                 {:name 6  :total (- Totalpagesno pagessince6month)}
+                                                 {:name 3  :total (- Totalpagesno pagessince3month)}
+                                                 {:name 1  :total (- Totalpagesno pagessincelastmonth)}
+                                                 {:name 0 #_(t :admin/now) :total Totalpagesno}]
                                           :lines [{:name (t :admin/Totalpagesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
                                           :title (t :admin/pageGrowth)
+                                          :xlabel (t :admin/noofmonths)}
+
+                                         {:info [{:name 12 :total (- Totalissuersno issuerssince1year)}
+                                                 {:name 6 :total (- Totalissuersno issuerssince6month)}
+                                                 {:name 3 :total (- Totalissuersno issuerssince3month)}
+                                                 {:name 1 :total (- Totalissuersno issuerssincelastmonth)}
+                                                 {:name 0 #_(t :admin/now) :total Totalissuersno}]
+                                          :lines [{:name (t :admin/Totalissuersno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                          :title (t :admin/issuerGrowth)
                                           :xlabel (t :admin/noofmonths)}]
+
+
                              :tooltipLabel (t :admin/monthsago)}]]
       [:div.row
        [dh/panel-box-chart {:size :lg
@@ -174,7 +181,6 @@
                             :chart-type :mixed
                             :chart-data [{:info (sort-by :badge_count < sample-data #_(repeatedly 50 #(hash-map :badge_count (rand-int 185) :user_count (rand-int 500))) #_user-badge-correlation)
                                           :title (t :admin/userBadgeDistribution)
-                                          ;:bars [{:key :user_count :fill (:primary colors) :stackId "a"}]
                                           :elements [{:legendType "none" :name (t :admin/users) :key "user_count" :fill (:warning colors) :stackId "a" :type "bar"}
                                                      {:legendType "none" :name (t :admin/users) :key "user_count" :type "line" :stroke (:primary colors) :activeDot {:r 8} :strokeWidth 3 :dot false}]
                                           :dataKeyX "badge_count"
@@ -224,36 +230,4 @@
                      :visible "graphic"})]
     (init-data state)
     (fn []
-      (layout/default site-navi (content state #_(content state))))))
-
-
-(comment
-  #_[dh/panel-box-chart {:size :md
-                         :heading (t :admin/Usergrowth)
-                         :icon "fa-bar-chart-o"
-                         :type "b-user"
-                         :chart-type :user-growth-chart
-                         :chart-data [{:name (str "1 " (t :admin/month))
-                                       :growth (:since-last-month users)
-                                       :existing-users (- (:total users) (:since-last-month users))
-                                       :total (:total users)
-                                       :active-users (:last-month-login-count users)
-                                       :order 4}
-                                      {:name (str "3 " (t :admin/months))
-                                       :growth (:since-3-month users)
-                                       :existing-users (- (:total users) (:since-3-month users))
-                                       :total (:total users)
-                                       :active-users (:3-month-login-count users)
-                                       :order 3}
-                                      {:name (str "6 " (t :admin/months))
-                                       :growth (:since-6-month users)
-                                       :existing-users (- (:total users) (:since-6-month users))
-                                       :total (:total users)
-                                       :active-users (:6-month-login-count users)
-                                       :order 2}
-                                      {:name (str "1 " (t :admin/year))
-                                       :growth (:since-1-year users)
-                                       :existing-users (- (:total users) (:since-1-year users))
-                                       :total (:total users)
-                                       :active-users (:1-year-login-count users)
-                                       :order 1}]}])
+      (layout/default site-navi (content state)))))
