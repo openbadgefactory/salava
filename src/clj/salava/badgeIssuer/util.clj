@@ -47,15 +47,18 @@
   (some #(= height %) (range (- width 10) (+ width 10)))))
 
 (defn upload-image [ctx user file]
-  (let [{:keys [tempfile content-type]} file]
+  (let [{:keys [size tempfile content-type]} file
+        max-size 250000] ;;250kb
     (try+
      (when-not (= "image/png" content-type)
-       (throw+ {:status "error" :message (t :badgeIssuer/FilenotPNG)}))
+       (throw+ {:status "error" :message "badgeIssuer/FilenotPNG"}))
+     (when (> size max-size)
+       (throw+ {:status "error" :message "badgeIssuer/Filetoobig"}))
      (let [image (ImageIO/read tempfile) ;;NB Reading image with ImageIO/read strips metadata -> https://stackoverflow.com/questions/31075444/how-to-remove-exif-content-from-a-image-file-of-tiff-png-using-a-java-api
            width (.getWidth image)
            height (.getHeight image)]
        (when-not (check-image width height) ;(= width height)
-         (throw+ {:status "error" :message (t :badgeIssuer/Imagemustbesquare)}))
+         (throw+ {:status "error" :message "badgeIssuer/Imagemustbesquare"}))
        {:status "success" :url (image->base64str image)})
      (catch Object _
        (log/error _)

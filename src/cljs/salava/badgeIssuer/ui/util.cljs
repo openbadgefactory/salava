@@ -96,7 +96,7 @@
                         (when reload-fn (reload-fn)))
                       (reset! (cursor state [:error-msg]) (t :core/Errorpage))))
          :finally (fn []
-                    (js/setTimeout (fn [] (reset! (cursor state [:success-alert]) false)) 6000))})))
+                    (js/setTimeout (fn [] (reset! (cursor state [:success-alert]) false)) 20000))})))
 
 
 (defn delete-selfie-badge [state]

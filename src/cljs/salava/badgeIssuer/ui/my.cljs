@@ -9,7 +9,6 @@
    [salava.core.ui.helper :refer [path-for navigate-to private? unique-values not-activated?]]
    [salava.core.ui.grid :as g]
    [salava.core.ui.notactivated :refer [not-activated-banner]]
-  ; [salava.core.ui.popover :refer [about-page]]
    [salava.core.i18n :refer [t translate-text]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]))
@@ -20,7 +19,8 @@
    {:handler (fn [data]
                (swap! state assoc :badges (:badges data)
                       :initializing false
-                      :order "mtime"))}))
+                      :order "mtime"
+                      :alert (session/get! :issue-event)))}))
 
 (defn element-visible? [element state]
   (if (and
@@ -68,7 +68,6 @@
         [:div.media-issuer
          [:p creator_name]]]]]]))
 
-
 (defn grid [state]
   (let [badges @(cursor state [:badges])
         order (keyword (:order @state))
@@ -92,6 +91,19 @@
              (if (element-visible? element-data state)
                (grid-element element-data state)))))))
 
+(defn issue-alert [state]
+  (let [alert @(cursor state [:alert])
+        {:keys [badge recipient_count]} alert]
+   (.scrollTo js/window 0 0)
+   [:div#badge-creator.alert.alert-success.alert-dismissable
+    [:button.close
+     {:type "button"
+      :data-dismiss "alert"
+      :aria-label (t :core/Close)}
+     [:span {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]
+    [:div
+     [:p (str (t :badgeIssuer/Badgesuccessfullyissuedto) " " recipient_count)]]]))
+
 (defn content [state]
   [:div#selfie-badges.my-selfie-badges
    [m/modal-window]
@@ -100,6 +112,7 @@
       [:i {:class "fa fa-cog fa-spin fa-2x "}]
       [:span (str (t :core/Loading) "...")]]
      [:div
+      (when @(cursor state [:alert]) (issue-alert state))
       [grid-form state]
       (if (not-activated?)
         [not-activated-banner]
@@ -109,7 +122,8 @@
   (let [state (atom {:badges []
                      :initializing false
                      :tags-all true
-                     :tags-selected []})]
+                     :tags-selected []
+                     :alert nil})]
     (init-data state)
     (fn []
       (layout/default site-navi [content state]))))

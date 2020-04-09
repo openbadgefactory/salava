@@ -7,7 +7,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for plugin-fun]]
             [salava.core.i18n :refer [t]]
             [clojure.walk :refer [keywordize-keys]]
             [salava.core.helper :refer [dump]]
@@ -56,7 +56,8 @@
 (defn fetch-badges [state]
   (let [{:keys [user-id country-selected badge-name recipient-name issuer-name tags order full-tags tags-badge-ids value]} @state
         ajax-message-atom (cursor state [:ajax-message])
-        page-count-atom (cursor state [:params :page_count])]
+        page-count-atom (cursor state [:params :page_count])
+        selfie-badges-atom (cursor state [:only-selfie?])]
     (reset! ajax-message-atom (t :gallery/Searchingbadges))
     (reset! page-count-atom 0)
     (ajax/GET
@@ -249,7 +250,10 @@
            [text-field :badge-name (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
            [text-field :recipient-name (t :gallery/Recipient) (t :gallery/Searchbyrecipient) state]
            [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])])
-     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) [:params :order] state fetch-badges]]))
+     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) [:params :order] state fetch-badges]
+     #_(into [:div]
+        (for [f (plugin-fun (session/get :plugins) "block" "gallery_checkbox")]
+         (when (ifn? f) [f state (fn [] (fetch-badges state))])))]))
 
 (defn load-more [state]
   (if (pos? (:badge_count @state))
@@ -339,7 +343,8 @@
                       :autocomplete           {:tags {:value #{} :items #{}}}
                       :advanced-search        false
                       :timer                  nil
-                      :ajax-message           nil})]
+                      :ajax-message           nil
+                      :only-selfie? false})]
     (init-data params state)
     (fn []
       (if (session/get :user)

@@ -1,6 +1,9 @@
 @import 'variables';
 
 #badge-creator {
+  .user-item {
+    margin: 5px;
+  }
 
   .panel-heading {
     img {
@@ -278,3 +281,18 @@
      color: white;
    }
  }
+
+.confirm-issue {
+  margin-top: 10px;
+  padding-bottom: 0;
+  .info-text {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .panel-footer {
+    text-align: center;
+    .fa {
+      color: white !important;
+    }
+  }
+}

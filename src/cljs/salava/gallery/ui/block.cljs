@@ -218,7 +218,9 @@
                                                      (->> @(cursor data-atom [:users])
                                                            (remove #(= (:id %) (session/get-in [:user :id])))
                                                            (filter #(every? nil? (-> % :endorsement vals))))
-                                                     @(cursor data-atom [:users])))]
+                                                     (if (= "selfie_issue" context)
+                                                      (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id]))))
+                                                      @(cursor data-atom [:users]))))]
 
                                            [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
                                             (when (or (= context "endorsement") (= context "endorsement_selfie"))
@@ -226,11 +228,15 @@
                                                                        :disabled (empty? @selected-users-atom)}
                                                  (t :core/Continue)])
                                             (when (= context "selfie_issue")
-                                             [:button.btn.btn-primary.btn-bulky
-                                              {:on-click #(func)
-                                               :disabled (empty? @selected-users-atom)}
-                                              [:span [:i.fa.fa-lg.fa-paper-plane] (t :badgeIssuer/Issuebadge)]])])])]])
-
+                                             [:div
+                                              [:button.btn.btn-primary.btn-bulky
+                                               {:on-click #(mo/previous-view) #_(func)
+                                                :disabled (empty? @selected-users-atom)}
+                                               (t :core/Continue)
+                                               #_[:span [:i.fa.fa-lg.fa-paper-plane] (t :badgeIssuer/Issuebadge)]]
+                                              [:button.btn.btn-danger.btn-bulky
+                                               {:on-click #(do (reset! selected-users-atom []) (mo/previous-view))}
+                                               (t :core/Cancel)]])])])]])
 
 
                    :component-will-mount (fn []

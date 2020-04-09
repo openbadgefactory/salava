@@ -154,7 +154,7 @@
   ([state modal?]
    (let [order-atom (cursor state [:order_by])]
      [:div.form-group
-      [:span._label {:class "control-label col-sm-2"} (str (t :core/Order) ":")]
+      [:span._label {:class "control-label filter-opt col-sm-2"} (str (t :core/Order) ":")]
       [:div.col-sm-10
        [:label.radio-inline {:for "radio-date_"}
         [:input {:id "radio-date_"

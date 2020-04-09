@@ -597,7 +597,7 @@
 
 (defmethod verify-assertion :default [url asr]
   (if-not (nil? url)
-    (if (not= (get-in asr [:verify :url]) url)
+    (if (and (not= (get-in asr [:verify :url]) url) (not (string/starts-with? (get-in asr [:verify :url]) url)))
       (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
   (if (not= (domain (get-in asr [:verify :url])) (domain (:badge asr)))
     (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
