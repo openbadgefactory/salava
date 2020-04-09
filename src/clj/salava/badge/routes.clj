@@ -55,13 +55,10 @@
                        badge (b/get-badge-p ctx user-badge-id user-id)
                        badge-owner-id (:owner badge)
                        visibility (:visibility badge)
-                       owner? (= user-id badge-owner-id)]
-                   (if (or (and user-id badge-owner-id owner?)
-                           (= visibility "public")
-                           (and user-id
-                                (= visibility "internal")))
+                       owner? (and user-id badge-owner-id (= user-id badge-owner-id))]
+                   (if (or (= visibility "public") owner? (and user-id (= visibility "internal")))
                      (do
-                       (if (and badge (not owner?))
+                       (when (and badge (not owner?))
                          (b/badge-viewed ctx user-badge-id user-id))
                        (ok badge))
                      (if (and (not user-id) (= visibility "internal"))

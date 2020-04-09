@@ -74,7 +74,7 @@
             new-user            (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language :email_notifications email_notifications :pass (hash-password password)} (get-db ctx))
             user-id             (:generated_key new-user)]
         (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
-        (u/publish ctx :new-user {:user-id user-id})
+        ;(u/publish ctx :new-user {:user-id user-id})
         {:status "success" :message ""}))))
 
 (defn set-password-and-activate

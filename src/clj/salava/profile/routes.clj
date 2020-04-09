@@ -5,6 +5,7 @@
             [salava.core.util :refer [get-base-path]]
             [schema.core :as s]
             [salava.profile.db :as p]
+            [salava.user.db :as user]
             [salava.core.access :as access]
             [salava.profile.schemas :as schemas]
             salava.core.restructure))
@@ -17,6 +18,14 @@
 
     (context "/obpv1/profile" []
              :tags ["user_profile"]
+
+             (GET "/my" []
+                  :return schemas/current-user
+                  :summary "Get user information and profile fields for current user"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (-> (p/user-information ctx (:id current-user))
+                          (assoc :email (user/primary-email  ctx (:id current-user))))))
 
              (GET "/:userid" []
                   :return schemas/user-profile

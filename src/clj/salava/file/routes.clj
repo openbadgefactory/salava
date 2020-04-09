@@ -49,9 +49,12 @@
                   (let [bytes (f/svg->png ctx image)]
                     (if bytes
                       {:status 200
-                       :headers {"Content-Type" "image/png"}
+                       :headers {"Content-Type"  "image/png"
+                                 "Cache-Control" "public, max-age=604800"}
                        :body bytes}
-                      (not-found))))
+                      {:status 404
+                       :headers {"Content-Type" "text/plain"}
+                       :body "404 Not Found"})))
 
 
              (DELETE "/:fileid" []

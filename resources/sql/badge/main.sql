@@ -258,7 +258,7 @@ GROUP BY ub.id
 
 --name: select-multi-language-user-badge-p
 --get badge by id, for public route
-SELECT  ub.id, ub.badge_id, ub.gallery_id,
+SELECT  ub.id, ub.user_id AS owner, ub.badge_id, ub.gallery_id,
 ub.assertion_url, ub.assertion_json, ub.assertion_jws, b.remote_url,
 ub.issued_on, ub.expires_on, ub.revoked,
 ub.visibility, ub.show_recipient_name,
@@ -304,6 +304,20 @@ JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code)
 WHERE badge.id = :id
 GROUP BY badge.id, bc.language_code, cc.language_code, ic.language_code
+
+--name: select-badge-detail-count-p
+--get badge endorsement, evicence and congratulation counts by id
+SELECT
+(COUNT(DISTINCT ube.id) + COUNT(DISTINCT be.endorsement_content_id)) AS endorsement_count,
+COUNT(DISTINCT ue.id) AS evidence_count,
+COUNT(DISTINCT c.user_id) AS congratulation_count
+FROM user_badge ub
+LEFT JOIN badge_endorsement_content be ON be.badge_id = ub.badge_id
+LEFT JOIN user_badge_endorsement ube ON (ube.user_badge_id = ub.id AND ube.status = 'accepted')
+LEFT JOIN user_badge_evidence ue ON ue.user_badge_id = ub.id
+LEFT JOIN badge_congratulation c ON c.user_badge_id = ub.id
+WHERE ub.id = :id
+GROUP BY ub.id
 
 --name: select-badge-endorsements
 SELECT e.id, e.content, e.issued_on,
