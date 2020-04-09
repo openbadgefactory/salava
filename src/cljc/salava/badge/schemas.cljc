@@ -86,6 +86,7 @@
                             (s/optional-key :default_language_code)  (s/maybe s/Str)
                             (s/optional-key :endorsement_count)      (s/maybe s/Int)
                             (s/optional-key :alignment)              (s/maybe [alignment])
+                            (s/optional-key :png_image_file)         (describe (s/maybe s/Str) "png version of svg badge image")
                             :badge_id                                (describe (s/maybe s/Str) "used internally to group user badges with same content")
                             :name                                    s/Str
                             :image_file                              (s/maybe s/Str)
@@ -126,10 +127,13 @@
                                              :content                                 [badge-content]
                                              :first_name                              (describe (s/maybe s/Str) "badge earner's first name")
                                              :last_name                               (describe (s/maybe s/Str) "badge earner's last name")
+                                             :owner                                   (describe s/Int "internal id of badge owner")
+                                             :endorsement_count    s/Int
+                                             :evidence_count       s/Int
+                                             :congratulation_count s/Int
                                              ;:issuer_verified                         (describe (s/maybe s/Int) "issuer verified by OBF?")
                                              ;:issued_by_obf                           (describe s/Bool "badge issued by OBF?")
                                              ;:verified_by_obf                         (describe s/Bool "badge verified by OBF?")
-                                             ;:owner                                   (describe s/Int "internal id of badge owner")
                                              (s/optional-key :assertion_url)          (s/maybe s/Str)
                                              (s/optional-key :assertion_jws)          (s/maybe s/Str)
                                              (s/optional-key :gallery_id)             (describe s/Int "internal gallery badge id")

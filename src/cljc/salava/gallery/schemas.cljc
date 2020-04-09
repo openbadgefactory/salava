@@ -43,6 +43,7 @@
                             :issuer_content_name s/Str
                             :name                s/Str
                             :recipients          s/Int
+                            (s/optional-key :png_image_file) s/Str
                             (s/optional-key :selfie_id) (s/maybe s/Str)})
 
 
@@ -95,6 +96,7 @@
                                                                      :description s/Str})]
                                    :endorsement_count     (s/maybe s/Int)
                                    :remote_url            (s/maybe s/Str)
+                                   (s/optional-key :png_image_file) s/Str
                                    (s/optional-key :last_received) (s/maybe s/Int)})
 
 (s/defschema BadgeContent {:badge {:badge_id        s/Str
