@@ -49,7 +49,7 @@ INNER JOIN oauth2_token t ON u.id = t.user_id
 WHERE t.client_id = :client_id AND t.auth_code = :auth_code AND t.refresh_token IS NULL;
 
 --name: select-oauth2-refresh-token-user
-SELECT u.*, t.refresh_token FROM user u
+SELECT u.*, t.id AS token_id, t.refresh_token FROM user u
 INNER JOIN oauth2_token t ON u.id = t.user_id
 WHERE t.client_id = :client_id AND t.user_id = :user_id AND t.refresh_token IS NOT NULL;
 
@@ -69,4 +69,4 @@ WHERE client_id = :client_id AND auth_code = :auth_code;
 
 -- name: update-oauth2-refresh-token!
 UPDATE oauth2_token SET refresh_token = :rtoken, mtime = UNIX_TIMESTAMP()
-WHERE client_id = :client_id AND refresh_token = :refresh_token AND auth_code IS NULL;
+WHERE client_id = :client_id AND id = :id AND user_id = :user_id AND auth_code IS NULL;
