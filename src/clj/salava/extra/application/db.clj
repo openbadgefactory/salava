@@ -18,6 +18,11 @@
 (defqueries "sql/extra/application/queries.sql")
 
 
+(defn- png-convert-url [ctx image]
+  (if (re-find #"\w+\.svg$" image)
+    (str (u/get-full-path ctx) "/obpv1/file/as-png?image=" image)
+    (str (u/get-site-url ctx) "/" image)))
+
 (defn add-badge-advert [ctx advert]
   (let [{:keys [remote_url remote_id remote_issuer_id info application_url issuer_content_id badge_content_id criteria_content_id kind country not_before not_after]} advert]
     (insert-badge-advert<! {:remote_url remote_url :remote_id remote_id :remote_issuer_id remote_issuer_id :info info :application_url application_url :issuer_content_id issuer_content_id :badge_content_id badge_content_id :criteria_content_id criteria_content_id :kind kind :country country :not_before not_before :not_after not_after} (u/get-db ctx))))
@@ -84,7 +89,9 @@
 
 (defn get-badge-advert [ctx id user_id]
   (let [badge-advert (select-badge-advert {:id id :user_id user_id} (into {:result-set-fn first} (u/get-db ctx)))]
-    (update badge-advert :info u/md->html)))
+    (some-> badge-advert
+            (assoc :png_image_file (png-convert-url ctx (:image_file badge-advert)))
+            (update :info u/md->html))))
 
 (defn user-country
   "Return user's country id"
@@ -230,7 +237,8 @@
     (filter #(false? (:hidden %)) adverts)))
 
 (defn get-applications [ctx country tags name issuer-name order id user-id followed]
-  (let [applications (get-badge-adverts ctx country tags name issuer-name order id user-id (if (= "true" followed) true false))
+  (let [applications (map #(assoc % :png_image_file (png-convert-url ctx (:image_file %)))
+                          (get-badge-adverts ctx country tags name issuer-name order id user-id (if (= "true" followed) true false)))
         countries (badge-adverts-countries ctx user-id)
         current-country (if (empty? country) (:user-country countries) country)]
     (into {:applications applications} countries)))
