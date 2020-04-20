@@ -172,15 +172,16 @@
    [m/modal-window]
    [:div
     [:div.row
-     [:div.btn-toolbar.pull-right {:style {:margin-bottom "20px"}}
-      [:a.btn.btn-primary.btn-bulky
-       {:href "#"
-        :on-click #(if (= "text" @visible-content) (reset! visible-content "graphic") (reset! visible-content "text"))}
-       (if (= "graphic" @visible-content) (t :admin/Plaintext) (t :admin/Showgraphicalui))]
-      [:a.btn.btn-primary.btn-bulky
-       {:href "#"
-        :on-click #(export-stats state)}
-       (t :admin/ExportCSV)]]]
+     [:div.col-md-12
+      [:div.btn-toolbar.pull-right {:style {:margin-bottom "20px"}}
+       [:a.btn.btn-primary.btn-bulky
+        {:href "#"
+         :on-click #(if (= "text" @visible-content) (reset! visible-content "graphic") (reset! visible-content "text"))}
+        (if (= "graphic" @visible-content) (t :admin/Plaintext) (t :admin/Showgraphicalui))]
+       [:a.btn.btn-primary.btn-bulky
+        {:href "#"
+         :on-click #(export-stats state)}
+        (t :admin/ExportCSV)]]]]
     [:div.row
      [:div.col-md-12
       (if (= "text" @visible-content)
