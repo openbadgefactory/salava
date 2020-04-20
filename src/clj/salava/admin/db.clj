@@ -12,7 +12,9 @@
             [salava.badge.main :as b]
             [salava.page.main :as p]
             [salava.mail.mail :as m]
-            [salava.gallery.db :as g]))
+            [salava.gallery.db :as g]
+            [salava.admin.helper :refer [make-csv]]
+            [salava.core.i18n :refer [t]]))
 
 (defqueries "sql/admin/queries.sql")
 
@@ -31,49 +33,196 @@
   (let [events (get-user-admin-events ctx user_id)]
     events))
 
-(defn register-users-count
-  "Get count from all active and registered users"
-  [ctx]
-  (total-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
+#_(defn register-users-count
+      "Get count from all active and registered users"
+      [ctx]
+      (total-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
 
-(defn last-month-users-login-count
-  "Get count from all last month logged in users"
-  [ctx]
-  (let [date (get-date-from-today -1 0 0)]
-    (count-logged-users-after-date {:time date} (into {:result-set-fn first :row-fn :count} (get-db ctx)))))
+#_(defn user-stats
+    "Get user statistics"
+    [ctx last-login]
+    {:total (total-user-count-fix {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :activated (activated-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :not-activated (not-activated-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-last-login (count-registered-users-after-date-fix {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-last-month (count-registered-users-after-date-fix {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-3-month (count-registered-users-after-date-fix {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-6-month (count-registered-users-after-date-fix {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-1-year (count-registered-users-after-date-fix {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :login-count-since-last-login (count-logged-users-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :last-month-login-count (count-logged-users-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :3-month-login-count (count-logged-users-after-date {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :6-month-login-count (count-logged-users-after-date {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :1-year-login-count (count-logged-users-after-date {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :internal (internal-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :public (public-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
 
-(defn last-month-users-registered-count
-  "Get count form all last month registered users"
-  [ctx]
-  (let [date (get-date-from-today -1 0 0)]
-    (count-registered-users-after-date {:time date} (into {:result-set-fn first :row-fn :count} (get-db ctx)))))
+(defn user-stats
+  "Get user statistics"
+  [ctx last-login]
+  {:Totalusersno (total-user-count-fix {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :activatedusers (activated-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :notactivatedusers (not-activated-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :userssincelastlogin (count-registered-users-after-date-fix {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :userssincelastmonth (count-registered-users-after-date-fix {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :userssince3month (count-registered-users-after-date-fix {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :userssince6month (count-registered-users-after-date-fix {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :userssince1year (count-registered-users-after-date-fix {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :logincountsincelastlogin (count-logged-users-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :1monthlogincount (count-logged-users-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :3monthlogincount (count-logged-users-after-date {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :6monthlogincount (count-logged-users-after-date {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :1yearlogincount (count-logged-users-after-date {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :internalusers (internal-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :publicusers (public-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
 
-(defn badges-count
-  "Get count from all badges"
-  [ctx]
-  (count-all-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
+#_(defn last-month-users-login-count
+    "Get count from all last month logged in users"
+    [ctx]
+    (let [date (get-date-from-today -1 0 0)]
+      (count-logged-users-after-date {:time date} (into {:result-set-fn first :row-fn :count} (get-db ctx)))))
 
-(defn last-month-added-badges-count
-  "Get count from all last month added badges"
-  [ctx]
-  (let [date (get-date-from-today -1 0 0)]
-    (count-all-badges-after-date {:time date} (into {:result-set-fn first :row-fn :count} (get-db ctx)))))
+#_(defn last-month-users-registered-count
+    "Get count form all last month registered users"
+    [ctx]
+    (let [date (get-date-from-today -1 0 0)]
+      (count-registered-users-after-date {:time date} (into {:result-set-fn first :row-fn :count} (get-db ctx)))))
 
-(defn pages-count
-  "Get count from all pages have been created"
-  [ctx]
-  (count-all-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
+#_(defn badges-count
+    "Get count from all badges"
+    [ctx]
+    (count-all-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
 
-(defn get-stats [ctx]
+#_(defn badge-stats
+    "Get badge statistics"
+    [ctx last-login]
+    (let [url-pattern (str (util/get-factory-url ctx) "%")]
+     {:total (count-all-badges-fix {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :pending (count-pending-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :accepted (count-accepted-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :declined (count-declined-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :since-last-login (count-all-badges-after-date-fix {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :since-last-month (count-all-badges-after-date-fix {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :since-3-month (count-all-badges-after-date-fix {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :since-6-month (count-all-badges-after-date-fix {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :since-1-year (count-all-badges-after-date-fix {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :private (count-private-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :public (count-public-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :internal (count-internal-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :factory-badges (count-badges-issued-from-url {:url url-pattern} (into {:result-set-fn first :row-fn :count} (get-db ctx)))}))
+
+(defn badge-stats
+    "Get badge statistics"
+    [ctx last-login]
+    (let [url-pattern (str (util/get-factory-url ctx) "%")]
+     {:Totalbadgesno (count-all-badges-fix {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :pendingbadgescount (count-pending-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :acceptedbadgescount (count-accepted-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :declinedbadgescount (count-declined-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :badgessincelastlogin (count-all-badges-after-date-fix {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :badgessincelastmonth (count-all-badges-after-date-fix {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :badgessince3month (count-all-badges-after-date-fix {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :badgessince6month (count-all-badges-after-date-fix {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :badgessince1year (count-all-badges-after-date-fix {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :privatebadgescount (count-private-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :publicbadgescount (count-public-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :internalbadgescount (count-internal-badges {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+       :factorybadges (count-badges-issued-from-url {:url url-pattern} (into {:result-set-fn first :row-fn :count} (get-db ctx)))}))
+
+#_(defn last-month-added-badges-count
+    "Get count from all last month added badges"
+    [ctx]
+    (let [date (get-date-from-today -1 0 0)]
+      (count-all-badges-after-date {:time date} (into {:result-set-fn first :row-fn :count} (get-db ctx)))))
+
+#_(defn pages-count
+    "Get count from all pages have been created"
+    [ctx]
+    (count-all-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
+
+#_(defn pages-stats
+    "get page statistics"
+    [ctx last-login]
+    {:total (count-all-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-last-login (count-all-pages-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-last-month (count-all-pages-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-3-month (count-all-pages-after-date {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-6-month (count-all-pages-after-date {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :since-1-year (count-all-pages-after-date {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :private (count-private-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :public (count-public-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+     :internal (count-internal-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
+
+(defn pages-stats
+  "get page statistics"
+   [ctx last-login]
+   {:Totalpagesno (count-all-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+    :pagessincelastlogin (count-all-pages-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+    :pagessincelastmonth (count-all-pages-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+    :pagessince3month (count-all-pages-after-date {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+    :pagessince6month (count-all-pages-after-date {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+    :pagessince1year (count-all-pages-after-date {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+    :privatepagescount (count-private-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+    :publicpagescount (count-public-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+    :internalpagescount (count-internal-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
+
+(defn selfie-stats [ctx last-login]
+  (as-> (first (plugin-fun (get-plugins ctx) "main" "selfie_stats")) $
+        (if (ifn? $) ($ ctx last-login) nil)))
+
+(defn issuer-stats [ctx last-login]
+ {:Totalissuersno (count-badge-issuers {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+  :issuerssincelastlogin (count-badge-issuers-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+  :issuerssincelastmonth (count-badge-issuers-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+  :issuerssince3month (count-badge-issuers-after-date {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+  :issuerssince6month (count-badge-issuers-after-date {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+  :issuerssince1year (count-badge-issuers-after-date {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
+
+(defn user-badge-correlation [ctx]
+ (let [data (select-user-ids-and-badge-count {} (util/get-db ctx))]
+  (->> data
+       (group-by :badge_count)
+       (reduce-kv (fn [r k v] (conj r {:badge_count k :user_count (count v)})) []))))
+
+#_(defn get-stats [ctx last-login]
+      (try+
+       {:register-users (register-users-count ctx last-login)
+        :last-month-active-users (last-month-users-login-count ctx)
+        :last-month-registered-users (last-month-users-registered-count ctx)
+        :all-badges (badges-count ctx)
+        :last-month-added-badges (last-month-added-badges-count ctx)
+        :pages (pages-count ctx)}
+       (catch Object _
+         "error")))
+
+(defn get-stats [ctx last-login]
   (try+
-   {:register-users (register-users-count ctx)
-    :last-month-active-users (last-month-users-login-count ctx)
-    :last-month-registered-users (last-month-users-registered-count ctx)
-    :all-badges (badges-count ctx)
-    :last-month-added-badges (last-month-added-badges-count ctx)
-    :pages (pages-count ctx)}
+   (-> {:users (user-stats ctx last-login)
+        :userbadges (badge-stats ctx last-login)
+        :pages (pages-stats ctx last-login)
+        :issuers (issuer-stats ctx last-login)
+        :user-badge-correlation (user-badge-correlation ctx)}
+       (merge (selfie-stats ctx last-login)))
    (catch Object _
+     (log/error (.getMessage _))
      "error")))
+
+
+(defn export-admin-statistics [ctx user]
+  (let [{:keys [id last-visited]} user
+        ul (select-user-language {:id id} (into {:result-set-fn first :row-fn :language} (get-db ctx)))
+        data (-> (get-stats ctx last-visited) (dissoc :user-badge-correlation))
+        data->csvformat (reduce-kv
+                          (fn [r k v]
+                           (do
+                            (when v
+                             (conj r
+                              [(t (keyword (str "admin/" (name k))) ul)]))
+                            (when (map? v)
+                             (reduce-kv (fn [_ y z] (conj _ [(t (keyword (str "admin/" (name y))) ul) z])) r v))))
+                          []
+                          data)]
+    (make-csv ctx data->csvformat)))
 
 (defn private-badge! [ctx id]
   (try+

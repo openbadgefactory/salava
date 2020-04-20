@@ -4,20 +4,75 @@ SELECT language FROM user WHERE id = :id
 --name: total-user-count
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND deleted = 0;
 
+--name: total-user-count-fix
+-- Count all users both activated and not
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE deleted = 0;
+
+--name: activated-user-count
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND deleted = 0;
+
+--name: not-activated-user-count
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 0 AND deleted = 0;
+
+--name: public-user-count
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND profile_visibility = "public";
+
+--name: internal-user-count
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND profile_visibility = "internal";
+
 --name: count-logged-users-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login > :time AND deleted = 0;
 
 --name: count-registered-users-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND ctime > :time;
 
+--name: count-registered-users-after-date-fix
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE ctime > :time;
+
 --name: count-all-badges
-SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status != 'declined';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND revoked = 0 AND status != 'declined';
+
+--name: count-all-badges-fix
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0  AND revoked = 0;
+
+--name: count-pending-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'pending' AND revoked = 0;
+
+--name: count-declined-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'declined' AND revoked = 0;
+
+--name: count-accepted-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status = 'accepted' AND revoked = 0;
 
 --name: count-all-badges-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE ctime > :time AND deleted = 0 AND status != 'declined';
 
+--name: count-private-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'private';
+
+--name: count-internal-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'internal';
+
+--name: count-public-badges
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'public';
+
+--name: count-private-pages
+SELECT COUNT(DISTINCT id) AS count FROM page WHERE deleted = 0 AND visibility = 'private';
+
+--name: count-internal-pages
+SELECT COUNT(DISTINCT id) AS count FROM page WHERE deleted = 0 AND visibility = 'internal';
+
+--name: count-public-pages
+SELECT COUNT(DISTINCT id) AS count FROM page WHERE deleted = 0 AND visibility = 'public';
+
+--name: count-all-badges-after-date-fix
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE ctime > :time AND deleted = 0 AND revoked = 0;
+
 --name: count-all-pages
 SELECT COUNT(DISTINCT id) AS count FROM page WHERE  deleted = 0;
+
+--name: count-all-pages-after-date
+SELECT COUNT(DISTINCT id) AS count FROM page WHERE ctime > :time AND deleted = 0;
 
 --name: select-user-admin
 SELECT role FROM user WHERE id= :id;
@@ -165,3 +220,17 @@ UPDATE user SET role = 'admin' WHERE id = :id
 
 --name: select-admin-count
 SELECT COUNT(*) AS count FROM user WHERE role = 'admin' AND activated = 1 AND deleted = 0;
+
+--name: count-badges-issued-from-url
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND revoked = 0 AND assertion_url LIKE :url;
+
+--name: count-badge-issuers
+SELECT COUNT(DISTINCT name) AS count FROM issuer_content;
+
+--name: count-badge-issuers-after-date
+SELECT COUNT(*) AS count FROM new_issuer_history WHERE ctime > :time;
+
+--name:select-user-ids-and-badge-count
+SELECT u.id, COUNT(ub.id) AS badge_count FROM user u
+LEFT JOIN user_badge ub ON u.id=ub.user_id WHERE u.activated = 1 AND ub.status != "declined" AND ub.revoked = 0 AND ub.deleted = 0
+GROUP BY u.id;

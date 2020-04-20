@@ -5,12 +5,67 @@
             [salava.core.countries :refer [all-countries]]
             [salava.user.schemas :as u]))
 
-(s/defschema Stats {:register-users (s/maybe s/Int)
-                    :last-month-active-users (s/maybe s/Int)
-                    :last-month-registered-users (s/maybe s/Int)
-                    :all-badges (s/maybe s/Int)
-                    :last-month-added-badges (s/maybe s/Int)
-                    :pages (s/maybe s/Int)})
+#_(s/defschema Stats {:register-users (s/maybe s/Int)
+                      :last-month-active-users (s/maybe s/Int)
+                      :last-month-registered-users (s/maybe s/Int)
+                      :all-badges (s/maybe s/Int)
+                      :last-month-added-badges (s/maybe s/Int)
+                      :pages (s/maybe s/Int)})
+
+(s/defschema Stats {:users {:Totalusersno (s/maybe s/Int)
+                            :activatedusers (s/maybe s/Int)
+                            :notactivatedusers (s/maybe s/Int)
+                            :internalusers (s/maybe s/Int)
+                            :publicusers (s/maybe s/Int)
+                            :userssincelastlogin (s/maybe s/Int)
+                            :userssincelastmonth (s/maybe s/Int)
+                            :userssince3month (s/maybe s/Int)
+                            :userssince6month (s/maybe s/Int)
+                            :userssince1year (s/maybe s/Int)
+                            :logincountsincelastlogin (s/maybe s/Int)
+                            :1monthlogincount (s/maybe s/Int)
+                            :3monthlogincount (s/maybe s/Int)
+                            :6monthlogincount (s/maybe s/Int)
+                            :1yearlogincount (s/maybe s/Int)}
+
+                     :userbadges {:Totalbadgesno (s/maybe s/Int)
+                                     :acceptedbadgescount (s/maybe s/Int)
+                                      :pendingbadgescount (s/maybe s/Int)
+                                      :declinedbadgescount (s/maybe s/Int)
+                                      :privatebadgescount (s/maybe s/Int)
+                                      :publicbadgescount (s/maybe s/Int)
+                                      :internalbadgescount (s/maybe s/Int)
+                                      :badgessincelastlogin (s/maybe s/Int)
+                                      :badgessincelastmonth (s/maybe s/Int)
+                                      :badgessince3month (s/maybe s/Int)
+                                      :badgessince6month (s/maybe s/Int)
+                                      :badgessince1year (s/maybe s/Int)
+                                      :factorybadges (s/maybe s/Int)}
+
+                    :issuers {:issuerssincelastlogin (s/maybe s/Int)
+                              :issuerssincelastmonth (s/maybe s/Int)
+                              :issuerssince3month (s/maybe s/Int)
+                              :issuerssince6month (s/maybe s/Int)
+                              :issuerssince1year (s/maybe s/Int)
+                              :Totalissuersno (s/maybe s/Int)}
+
+                     :pages {:pagessincelastlogin (s/maybe s/Int)
+                             :pagessincelastmonth (s/maybe s/Int)
+                             :pagessince3month (s/maybe s/Int)
+                             :pagessince6month (s/maybe s/Int)
+                             :pagessince1year (s/maybe s/Int)
+                             :Totalpagesno (s/maybe s/Int)
+                             :internalpagescount (s/maybe s/Int)
+                             :privatepagescount (s/maybe s/Int)
+                             :publicpagescount (s/maybe s/Int)}
+
+                     :user-badge-correlation [{:badge_count (s/maybe s/Int) :user_count (s/maybe s/Int)}]
+                     (s/optional-key :issued) {:Totalissuedno (s/maybe s/Int)
+                                               :issuedsincelastmonth (s/maybe s/Int)
+                                               :issuedsincelastlogin (s/maybe s/Int)}
+                     (s/optional-key :created) {:Totalcreatedno (s/maybe s/Int)
+                                                :createdsincelastlogin (s/maybe s/Int)
+                                                :createdsincelastmonth (s/maybe s/Int)}})
 
 (s/defschema User-name-and-email {:name s/Str
                                   :email s/Str})

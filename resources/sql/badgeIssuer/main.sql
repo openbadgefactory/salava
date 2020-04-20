@@ -152,3 +152,15 @@ LIMIT 1000
 
 --name:check-badge-issued
 SELECT id FROM user_badge WHERE status != "declined" AND revoked = 0 AND selfie_id = :id
+
+--name: created-badges-count
+SELECT COUNT(DISTINCT id) AS count FROM selfie_badge WHERE deleted = 0;
+
+--name: issued-badges-count
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND revoked = 0 AND status != 'declined' AND selfie_id IS NOT NULL;
+
+--name: created-badges-count-after-date
+SELECT COUNT(DISTINCT id) AS count FROM selfie_badge WHERE deleted = 0 AND ctime > :time;
+
+--name: issued-badges-count-after-date
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND revoked = 0 AND status != 'declined' AND selfie_id IS NOT NULL AND ctime > :time;
