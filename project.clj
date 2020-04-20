@@ -84,7 +84,6 @@
                            [org.webjars/es5-shim "4.5.9"]
                            [org.webjars/es6-shim "0.20.2"]
                            [org.webjars/leaflet "1.4.0"]
-                           [cljsjs/recharts "1.6.2-0"]
 
                  ; Logging: use logback with slf4j, redirect JUL, JCL and Log4J:
                            [org.clojure/tools.logging "0.4.1"]
@@ -93,6 +92,7 @@
                            [org.slf4j/jul-to-slf4j "1.7.26"]        ; JUL to SLF4J
                            [org.slf4j/jcl-over-slf4j "1.7.26"]      ; JCL to SLF4J
                            [org.slf4j/log4j-over-slf4j "1.7.26"]    ; Log4j to SLF4J
+                           [cljsjs/recharts "1.6.2-0"]
 
                  ; Testing
                            [midje "1.9.8" :exclusions [org.clojure/tools.namespace clj-time]]

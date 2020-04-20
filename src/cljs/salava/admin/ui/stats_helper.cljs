@@ -201,7 +201,7 @@
   (let [
         {:keys [type heading info icon]} data
         {:keys [lastlogin lastmonth total]} info]
-   [:div.col-md-4.col-sm-6.col-xs-6
+   [:div.col-md-4.col-sm-6.col-xs-12
     [:div.panel-box.panel-chart
      [:div.panel-chart-content
       [:div.panel-icon-wrapper.rounded-circle {:class type}
