@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.10.1
+- Revamped admin statistics page
+
 ## 3.9.1
 - Fixed sharing badge to LinkedIn issue
 - badgeIssuer plugin usability improvements

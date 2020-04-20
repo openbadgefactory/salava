@@ -1,4 +1,4 @@
-(defproject salava "3.9.1"
+(defproject salava "3.10.0"
             :description "Salava application server"
             :url "http://salava.org"
             :license {:name "Apache 2.0"
@@ -26,8 +26,8 @@
                            [http-kit "2.3.0"]
                            [ring/ring-core "1.7.1"]
                            [ring/ring-devel "1.7.1" :exclusions [clj-stacktrace]]
-                           [ring/ring-defaults "0.3.2"
-                             [ring-webjars "0.2.0" :exclusions [com.fasterxml.jackson.core/jackson-databind]]]
+                           [ring/ring-defaults "0.3.2"]
+                           [ring-webjars "0.2.0" :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                            [ring/ring-mock "0.4.0"]
                            [compojure "1.6.1"]
                            [cheshire "5.8.1"]
@@ -41,8 +41,8 @@
                            [com.draines/postal "2.0.3"]
                            [org.clojure/core.async "0.4.490"]
 
-                           [clj-http "3.10.0"
-                            [enlive "1.1.6" :exclusions [org.jsoup/jsoup]]]
+                           [clj-http "3.10.0"]
+                           [enlive "1.1.6" :exclusions [org.jsoup/jsoup]]
                            [markdown-clj "1.10.0"]
                            [ar.com.hjg/pngj "2.1.0"]
                            [com.novemberain/pantomime "2.11.0" :exclusions [org.apache.tika/tika-parsers javax.activation/activation]]
@@ -62,6 +62,7 @@
 
                            [pdfboxing "0.1.13" :exclusions [org.apache.pdfbox/pdfbox]]
                            [org.clojure/data.zip "0.1.1"]
+                           [org.clojure/data.csv "1.0.0"]
 
                  ; Client side
                            [org.clojure/clojurescript "1.10.520" :exclusions [com.google.errorprone/error_prone_annotations]]
