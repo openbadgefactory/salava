@@ -11,8 +11,7 @@
             [salava.core.helper :refer [dump]]
             [cljsjs.recharts]
             [clojure.string :refer [lower-case]]
-            [salava.admin.ui.dashboard-helper :as dh]))
-
+            [salava.admin.ui.stats-helper :as dh]))
 
 #_(defn content [state]
     (let [{:keys [register-users last-month-active-users last-month-registered-users all-badges last-month-added-badges pages]} @state]
@@ -40,32 +39,6 @@
   :danger "#d9534f"
   :yellow "#FFC658"
   :purple "#8884D8"})
-
-(def sample-data
- [{:badge_count 182 :user_count 1}{:badge_count 122 :user_count 1}{:badge_count 116 :user_count 1}{:badge_count 115 :user_count 2}
-  {:badge_count 110 :user_count 2}{:badge_count 107 :user_count 1}{:badge_count 103 :user_count 3}{:badge_count 101 :user_count 2}
-  {:badge_count 99 :user_count 3}{:badge_count 93 :user_count 1}{:badge_count 86 :user_count 1}{:badge_count 83 :user_count 1}
-  {:badge_count 82 :user_count 1}{:badge_count 81 :user_count 1}{:badge_count 80 :user_count 2}{:badge_count 79 :user_count 1}
-  {:badge_count 78 :user_count 1}{:badge_count 77 :user_count 1}{:badge_count 76 :user_count 3}{:badge_count 74 :user_count 3}
-  {:badge_count 73 :user_count 2}{:badge_count 72 :user_count 2}{:badge_count 71 :user_count 4}{:badge_count 70 :user_count 1}
-  {:badge_count 69 :user_count 2}{:badge_count 68 :user_count 1}{:badge_count 67 :user_count 3}{:badge_count 66 :user_count 4}
-  {:badge_count 65 :user_count 4}{:badge_count 64 :user_count 2}{:badge_count 63 :user_count 2}{:badge_count 62 :user_count 3}
-  {:badge_count 61 :user_count 2}{:badge_count 60 :user_count 8}{:badge_count 59 :user_count 4}{:badge_count 58 :user_count 3}
-  {:badge_count 55 :user_count 1}{:badge_count 54 :user_count 3}{:badge_count 53 :user_count 1}{:badge_count 52 :user_count 3}
-  {:badge_count 51 :user_count 2}{:badge_count 50 :user_count 3}{:badge_count 49 :user_count 6}{:badge_count 48 :user_count 4}
-  {:badge_count 47 :user_count 7}{:badge_count 46 :user_count 4}{:badge_count 45 :user_count 8}{:badge_count 44 :user_count 3}
-  {:badge_count 43 :user_count 6}{:badge_count 42 :user_count 6}{:badge_count 41 :user_count 13}{:badge_count 40 :user_count 7}
-  {:badge_count 39 :user_count 12}{:badge_count 38 :user_count 13}{:badge_count 37 :user_count 17}{:badge_count 36 :user_count 13}
-  {:badge_count 35 :user_count 15}{:badge_count 34 :user_count 21}{:badge_count 33 :user_count 26}{:badge_count 32 :user_count 23}
-  {:badge_count 31 :user_count 21}{:badge_count 30 :user_count 28}
-  {:badge_count 29 :user_count 24}{:badge_count 28 :user_count 12}{:badge_count 27 :user_count 36} {:badge_count 26 :user_count 47}
-  {:badge_count 25 :user_count 57}{:badge_count 24 :user_count 100} {:badge_count 23 :user_count 49} {:badge_count 22 :user_count 55}
-  {:badge_count 21 :user_count 80} {:badge_count 20 :user_count 58} {:badge_count 19 :user_count 52} {:badge_count 18 :user_count 101}
-  {:badge_count 17 :user_count 139} {:badge_count 16 :user_count 248} {:badge_count 15 :user_count 434} {:badge_count 14 :user_count 263}
-  {:badge_count 13 :user_count 383} {:badge_count 12 :user_count 401} {:badge_count 11 :user_count 397} {:badge_count 10 :user_count 503}
-  {:badge_count 9 :user_count 734} {:badge_count 8 :user_count 1102} {:badge_count 7 :user_count 1927} {:badge_count 6 :user_count 1146}
-  {:badge_count 5 :user_count 1761} {:badge_count 4 :user_count 1740} {:badge_count 3 :user_count 2492}{:badge_count 2 :user_count 5459}
-  {:badge_count 1 :user_count 25968}])
 
 (defn text-content [state]
  (reduce-kv
@@ -179,7 +152,7 @@
                             :icon "fa-bar-chart"
                             :type "b-page"
                             :chart-type :mixed
-                            :chart-data [{:info (sort-by :badge_count < sample-data #_(repeatedly 50 #(hash-map :badge_count (rand-int 185) :user_count (rand-int 500))) #_user-badge-correlation)
+                            :chart-data [{:info (sort-by :badge_count < user-badge-correlation)
                                           :title (t :admin/userBadgeDistribution)
                                           :elements [{:legendType "none" :name (t :admin/users) :key "user_count" :fill (:warning colors) :stackId "a" :type "bar"}
                                                      {:legendType "none" :name (t :admin/users) :key "user_count" :type "line" :stroke (:primary colors) :activeDot {:r 8} :strokeWidth 3 :dot false}]
@@ -198,21 +171,21 @@
   [:div
    [m/modal-window]
    [:div
-    [:div.btn-toolbar.pull-right {:style {:margin-bottom "20px"}}
-     [:a.btn.btn-primary.btn-bulky
-      {:href "#"
-       :on-click #(if (= "text" @visible-content) (reset! visible-content "graphic") (reset! visible-content "text"))}
-      (if (= "graphic" @visible-content) (t :admin/Plaintext) (t :admin/Showgraphicalui))]
-     [:a.btn.btn-primary.btn-bulky
-      {:href "#"
-       :on-click #(export-stats state)}
-      (t :admin/ExportCSV)]]
+    [:div.row
+     [:div.btn-toolbar.pull-right {:style {:margin-bottom "20px"}}
+      [:a.btn.btn-primary.btn-bulky
+       {:href "#"
+        :on-click #(if (= "text" @visible-content) (reset! visible-content "graphic") (reset! visible-content "text"))}
+       (if (= "graphic" @visible-content) (t :admin/Plaintext) (t :admin/Showgraphicalui))]
+      [:a.btn.btn-primary.btn-bulky
+       {:href "#"
+        :on-click #(export-stats state)}
+       (t :admin/ExportCSV)]]]
     [:div.row
      [:div.col-md-12
       (if (= "text" @visible-content)
          [text-content state]
          [graphic-content state])]]]]))
-
 
 (defn init-data [state]
   (ajax/GET
@@ -231,3 +204,31 @@
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
+
+(comment
+ (def sample-data2 (repeatedly 50 #(hash-map :badge_count (rand-int 185) :user_count (rand-int 500))))
+ (def sample-data
+  [{:badge_count 182 :user_count 1}{:badge_count 122 :user_count 1}{:badge_count 116 :user_count 1}{:badge_count 115 :user_count 2}
+   {:badge_count 110 :user_count 2}{:badge_count 107 :user_count 1}{:badge_count 103 :user_count 3}{:badge_count 101 :user_count 2}
+   {:badge_count 99 :user_count 3}{:badge_count 93 :user_count 1}{:badge_count 86 :user_count 1}{:badge_count 83 :user_count 1}
+   {:badge_count 82 :user_count 1}{:badge_count 81 :user_count 1}{:badge_count 80 :user_count 2}{:badge_count 79 :user_count 1}
+   {:badge_count 78 :user_count 1}{:badge_count 77 :user_count 1}{:badge_count 76 :user_count 3}{:badge_count 74 :user_count 3}
+   {:badge_count 73 :user_count 2}{:badge_count 72 :user_count 2}{:badge_count 71 :user_count 4}{:badge_count 70 :user_count 1}
+   {:badge_count 69 :user_count 2}{:badge_count 68 :user_count 1}{:badge_count 67 :user_count 3}{:badge_count 66 :user_count 4}
+   {:badge_count 65 :user_count 4}{:badge_count 64 :user_count 2}{:badge_count 63 :user_count 2}{:badge_count 62 :user_count 3}
+   {:badge_count 61 :user_count 2}{:badge_count 60 :user_count 8}{:badge_count 59 :user_count 4}{:badge_count 58 :user_count 3}
+   {:badge_count 55 :user_count 1}{:badge_count 54 :user_count 3}{:badge_count 53 :user_count 1}{:badge_count 52 :user_count 3}
+   {:badge_count 51 :user_count 2}{:badge_count 50 :user_count 3}{:badge_count 49 :user_count 6}{:badge_count 48 :user_count 4}
+   {:badge_count 47 :user_count 7}{:badge_count 46 :user_count 4}{:badge_count 45 :user_count 8}{:badge_count 44 :user_count 3}
+   {:badge_count 43 :user_count 6}{:badge_count 42 :user_count 6}{:badge_count 41 :user_count 13}{:badge_count 40 :user_count 7}
+   {:badge_count 39 :user_count 12}{:badge_count 38 :user_count 13}{:badge_count 37 :user_count 17}{:badge_count 36 :user_count 13}
+   {:badge_count 35 :user_count 15}{:badge_count 34 :user_count 21}{:badge_count 33 :user_count 26}{:badge_count 32 :user_count 23}
+   {:badge_count 31 :user_count 21}{:badge_count 30 :user_count 28}
+   {:badge_count 29 :user_count 24}{:badge_count 28 :user_count 12}{:badge_count 27 :user_count 36} {:badge_count 26 :user_count 47}
+   {:badge_count 25 :user_count 57}{:badge_count 24 :user_count 100} {:badge_count 23 :user_count 49} {:badge_count 22 :user_count 55}
+   {:badge_count 21 :user_count 80} {:badge_count 20 :user_count 58} {:badge_count 19 :user_count 52} {:badge_count 18 :user_count 101}
+   {:badge_count 17 :user_count 139} {:badge_count 16 :user_count 248} {:badge_count 15 :user_count 434} {:badge_count 14 :user_count 263}
+   {:badge_count 13 :user_count 383} {:badge_count 12 :user_count 401} {:badge_count 11 :user_count 397} {:badge_count 10 :user_count 503}
+   {:badge_count 9 :user_count 734} {:badge_count 8 :user_count 1102} {:badge_count 7 :user_count 1927} {:badge_count 6 :user_count 1146}
+   {:badge_count 5 :user_count 1761} {:badge_count 4 :user_count 1740} {:badge_count 3 :user_count 2492}{:badge_count 2 :user_count 5459}
+   {:badge_count 1 :user_count 25968}]))

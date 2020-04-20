@@ -1,11 +1,10 @@
-(ns salava.admin.ui.dashboard-helper
+(ns salava.admin.ui.stats-helper
   (:require
    [cljsjs.recharts]
    [clojure.string :refer [blank? lower-case]]
    [salava.core.i18n :refer [t]]
-   [reagent.core :refer [atom cursor adapt-react-class create-class create-element props current-component children argv]]
+   [reagent.core :refer [atom cursor adapt-react-class create-class]]
    [reagent.session :as session]))
-   ;[recharts/lib/component/DefaultTooltipContent :refer [DefaultTooltipContent]]))
 
 (def colors
  {:default "#82ca9d"
@@ -91,15 +90,6 @@
                [Bar {:dataKey (:key b) :fill (:fill b) :stackId (:stackId b)}]))]])))
       [:div.flex-container]
       data)))
-
-(defn customtooltip []
-  (let [this (current-component)
-        p (argv this)]
-   (create-element "div"
-                   #js{:className "custom-tooltip"}
-                   (create-element "p"
-                                   #js{:className "intro"}
-                                   "this"))))
 
 (defn composed-chart [{:keys [width data tooltipLabel]}]
  (let [{:keys [default-width default-height aspect bar-settings]} settings
@@ -211,7 +201,7 @@
   (let [
         {:keys [type heading info icon]} data
         {:keys [lastlogin lastmonth total]} info]
-   [:div.col-md-4.col-sm-4.col-xs-6
+   [:div.col-md-4.col-sm-6.col-xs-6
     [:div.panel-box.panel-chart
      [:div.panel-chart-content
       [:div.panel-icon-wrapper.rounded-circle {:class type}
@@ -235,7 +225,6 @@
                      :lg "col-md-12 col-sm-12 col-xs-12"
                      :md "col-md-6 col-sm-6 col-xs-12"
                     "col-md-4 col-sm-6 col-xs-12")]
-    ;(prn DefaultTooltipContent)
     [:div {:class size-class}
      [:div.panel-box.panel-chart
       [:div.panel-chart-content
