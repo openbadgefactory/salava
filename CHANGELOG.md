@@ -1,6 +1,9 @@
 # Changelog
 
 ## 3.10.1
+- Fixed active users count in admin statistics
+
+## 3.10.0
 - Revamped admin statistics page
 
 ## 3.9.1

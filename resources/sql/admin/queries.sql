@@ -23,6 +23,9 @@ SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND profile_vis
 --name: count-logged-users-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login > :time AND deleted = 0;
 
+--name: count-logged-users-after-date-range
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login > :from AND last_login < :to AND deleted = 0;
+
 --name: count-registered-users-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND ctime > :time;
 
