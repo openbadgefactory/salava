@@ -70,9 +70,9 @@
    :userssince1year (count-registered-users-after-date-fix {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :logincountsincelastlogin (count-logged-users-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :1monthlogincount (count-logged-users-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :3monthlogincount (count-logged-users-after-date {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :6monthlogincount (count-logged-users-after-date {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
-   :1yearlogincount (count-logged-users-after-date {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :3monthlogincount (count-logged-users-after-date-range {:from (get-date-from-today -3 0 0) :to (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :6monthlogincount (count-logged-users-after-date-range {:from (get-date-from-today -6 0 0) :to (get-date-from-today -3 0 0) } (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :1yearlogincount (count-logged-users-after-date-range {:from (get-date-from-today -12 0 0) :to (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :internalusers (internal-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
    :publicusers (public-user-count {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
 
