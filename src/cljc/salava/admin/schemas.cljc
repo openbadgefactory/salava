@@ -21,12 +21,12 @@
                             :userssincelastmonth (s/maybe s/Int)
                             :userssince3month (s/maybe s/Int)
                             :userssince6month (s/maybe s/Int)
-                            :userssince1year (s/maybe s/Int)
-                            :logincountsincelastlogin (s/maybe s/Int)
-                            :1monthlogincount (s/maybe s/Int)
-                            :3monthlogincount (s/maybe s/Int)
-                            :6monthlogincount (s/maybe s/Int)
-                            :1yearlogincount (s/maybe s/Int)}
+                            :userssince1year (s/maybe s/Int)}
+                            ;:logincountsincelastlogin (s/maybe s/Int)
+                            ;:1monthlogincount (s/maybe s/Int)
+                            ;:3monthlogincount (s/maybe s/Int)
+                            ;:6monthlogincount (s/maybe s/Int)
+                            ;:1yearlogincount (s/maybe s/Int)}
 
                      :userbadges {:Totalbadgesno (s/maybe s/Int)
                                      :acceptedbadgescount (s/maybe s/Int)
