@@ -48,6 +48,13 @@
                  :current-user current-user
                  (ok (p/profile-metrics ctx (:id current-user))))
 
+            (GET "/user/visibility/:id" []
+                  :no-doc true
+                  :return (s/enum "internal" "public")
+                  :summary "get user's profile visibility"
+                  :path-params [id :- s/Int]
+                  (ok (-> (p/user-information ctx id) :profile_visibility)))
+
             (POST "/user/edit" []
                   :no-doc true
                   :return {:status (s/enum "success" "error") :message s/Str}

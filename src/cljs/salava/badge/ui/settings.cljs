@@ -58,7 +58,7 @@
      (path-for (str "/obpv1/badge/settings/" id))
      {:params  {:settings {:visibility   visibility
                            :rating       (if (pos? rating) rating nil)
-                           :show_recipient_name show_recipient_name} 
+                           :show_recipient_name show_recipient_name}
                 :tags tags}
       :handler (fn [] (update-settings id state))
       :finally (fn [] (when reload-fn (reload-fn)))})))
@@ -131,7 +131,10 @@
                                                                               :id        "show-name"
                                                                               :on-change #(toggle-recipient-name state)
                                                                               :checked   @show-recipient-name-atom}]
-                                                                     (t :badge/Showyourname)]]]]
+                                                                     (t :badge/Showyourname)]]
+                                                    (when (pos? @show-recipient-name-atom)
+                                                     [:div.col-md-12 {:style {:margin "5px 25px"}}
+                                                      [:span {:style {:color "#8c2e0b"}}  (t :badge/Aboutrecipientname)]])]]
                                                   [:div.form-group
                                                    [:fieldset {:class "col-md-9 checkbox"}
                                                     [:legend.col-md-9 ""]
