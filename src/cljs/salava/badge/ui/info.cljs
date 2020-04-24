@@ -268,8 +268,8 @@
            (if (pos? @show-recipient-name-atom)
              (if (and user-logged-in? (not owner?))
                [:div [:span._label (t :badge/Recipient) ": "] [:a.link {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
-               (if (= "public" @(cursor state [:profile_visibility]))
-                 [:div [:span._label (translate lng :badge/Recipient) ": "] [:a.link {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
+               (if (and (= "public" @(cursor state [:profile_visibility])) (= 2 @show-recipient-name-atom))
+                 [:div [:span._label (translate lng :badge/Recipient) ": "] [:a.link {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:profile :view] {:user-id owner}))} #_{:href (path-for (str "/profile/" owner))} first_name " " last_name]]
                  [:div [:span._label (translate lng :badge/Recipient) ": "]  first_name " " last_name])))
 
            #_[:div [metabadge (:assertion_url @state)]]

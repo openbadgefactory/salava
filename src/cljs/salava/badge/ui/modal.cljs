@@ -26,6 +26,12 @@
    [salava.social.ui.badge-message-modal :refer [badge-message-link]]
    [salava.translator.ui.helper :refer [translate]]))
 
+
+(defn- init-owner-profile-visibility [user-id state]
+  (ajax/GET
+   (path-for (str "/obpv1/profile/user/visibility/" user-id))
+   {:handler (fn [data] (reset! (cursor state [:profile_visibility]) data))}))
+
 (defn- init-badge-connection [state badge-id]
   (ajax/GET
    (path-for (str "/obpv1/social/connected/" badge-id))
@@ -45,6 +51,7 @@
 
 (defn- init-more [state]
   (init-endorsement-count (:id @state) state)
+  (init-owner-profile-visibility (:user_id @state) state)
   (when (:owner? @state)
     (init-new-message-count state)
     (ajax/GET
@@ -318,7 +325,9 @@
         (if (pos? @show-recipient-name-atom)
           (if (and user-logged-in? (not owner?))
             [:div [:span._label (t :badge/Recipient) ": "]  [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:profile :view] {:user-id owner}))} #_{:href (path-for (str "/profile/" owner))} first_name " " last_name]]
-            [:div [:span._label (t :badge/Recipient) ": "]  first_name " " last_name]))
+            (if (and (= "public" @(cursor state [:profile_visibility])) (= 2 @show-recipient-name-atom))
+              [:div [:span._label (t  :badge/Recipient) ": "] [:a.link {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:profile :view] {:user-id owner})) #_(path-for (str "/profile/" owner))} first_name " " last_name]]
+              [:div [:span._label (t  :badge/Recipient) ": "]  first_name " " last_name])))
 
         ;metabadges
         (when owner?

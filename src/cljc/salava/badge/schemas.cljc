@@ -321,7 +321,7 @@
 
 (s/defschema badge-settings {(s/optional-key :visibility)         (describe (s/maybe (s/enum "private" "internal" "public")) "internal user-badge visibility")
                              (s/optional-key :rating)              (s/maybe (s/enum 5 10 15 20 25 30 35 40 45 50))
-                             (s/optional-key :show_recipient_name) (s/maybe (describe (s/enum 0 1) "used internally; when set, earner's name is shown in badge "))})
+                             (s/optional-key :show_recipient_name) (s/maybe (describe (s/enum 0 1 2) "used internally; when set, earner's name is shown in badge; 1-> show name as plain text to external users; 2-> show name to external users as link to badge owner's profile"))})
 
 (s/defschema update-badge-settings {(s/optional-key :settings) badge-settings
                                     (s/optional-key :tags)     (describe (s/maybe [s/Str]) "Adding tags overrides previously added tags, To preserve previously added tags include them in the list of tags. Pass empty vector to delete all tags")})

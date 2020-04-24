@@ -66,7 +66,8 @@
 (defn toggle-recipient-name [state]
   (let [show-recipient-name-atom (cursor state [:show_recipient_name])
         _ (cursor state [:badge-settings :show_recipient_name])
-        new-value (if (pos? @show-recipient-name-atom) 0 1)]
+        new-value @show-recipient-name-atom] ;(if (pos? @show-recipient-name-atom) 0 1)]
+    (prn new-value)
     (reset! _ new-value)
     (save-settings state (fn [] (reset! show-recipient-name-atom new-value)))))
 
@@ -126,13 +127,39 @@
                                                   [:div.form-group
                                                    [:fieldset {:class "col-md-9 checkbox"}
                                                     [:legend.md-9 ""]
-                                                    [:div.col-md-12 [:label {:for "show-name"}
+                                                    [:div.col-md-12 [:label.form-check-label {:for "show-name"}
                                                                      [:input {:type      "checkbox"
                                                                               :id        "show-name"
-                                                                              :on-change #(toggle-recipient-name state)
-                                                                              :checked   @show-recipient-name-atom}]
-                                                                     (t :badge/Showyourname)]]
-                                                    (when (pos? @show-recipient-name-atom)
+                                                                              :on-change #(do
+                                                                                            (reset! show-recipient-name-atom (if (pos? @show-recipient-name-atom) 0 1))
+                                                                                            (toggle-recipient-name state))
+                                                                              :checked   (pos? @show-recipient-name-atom)}]
+                                                                     (t :badge/Showyourname)]
+                                                     (when (pos? @show-recipient-name-atom)
+                                                      [:div.col-md-12
+                                                       [:div.form-check {:style {:padding "5px"}}
+                                                        [:input.form-check-input {:type "radio"
+                                                                                  :id "show-name-plain"
+                                                                                  :on-change #(do
+                                                                                                (reset! show-recipient-name-atom 1)
+                                                                                                (toggle-recipient-name state))
+                                                                                  :checked   (= 1 @show-recipient-name-atom)}]
+                                                        [:label.form-check-label {:for "show-name-plain"} (t :badge/Shownameastext)]]
+
+                                                       [:div.form-check {:style {:padding "5px"}}
+                                                        [:input.form-check-input {:type "radio"
+                                                                                  :id "show-name-link"
+                                                                                  :on-change #(do
+                                                                                                (reset! show-recipient-name-atom 2)
+                                                                                                (toggle-recipient-name state))
+                                                                                  :checked   (= 2 @show-recipient-name-atom)}]
+                                                        [:label {:for "show-name-link"} (t :badge/Shownameaslink)]]])]
+
+                                                    (when (= 1 @show-recipient-name-atom)
+                                                     [:div.col-md-12 {:style {:margin "5px 25px"}}
+                                                      [:span {:style {:color "#8c2e0b"}}  (t :badge/Aboutrecipientnameplain)]])
+
+                                                    (when (= 2 @show-recipient-name-atom)
                                                      [:div.col-md-12 {:style {:margin "5px 25px"}}
                                                       [:span {:style {:color "#8c2e0b"}}  (t :badge/Aboutrecipientname)]])]]
                                                   [:div.form-group
