@@ -6,6 +6,9 @@
    [reagent.core :refer [atom cursor adapt-react-class create-class]]
    [reagent.session :as session]))
 
+(defn %percentage [v t]
+  (str (Math/round (double (* (/ v t) 100))) "%"))
+
 (def colors
  {:default "#82ca9d"
   :primary "#0275d8"
@@ -190,7 +193,9 @@
                 (reduce (fn [r c] (conj r [Cell {:fill (:fill c)}]))
                  [Pie (assoc pie-settings :data slices)]
                  slices)
-                [ToolTip]
+                [ToolTip {:formatter (fn [name value props]
+                                       (let [{:keys [percentage]} (-> (js->clj props :keywordize-keys true) :payload :payload)]
+                                         (str name "; " percentage)))}]
                 [Legend {:icon-size 8}]]]])))
               ;(when-not (blank? title)[:div.row [:span [:b title]]])])))
         [:div.flex-container]

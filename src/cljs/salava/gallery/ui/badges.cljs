@@ -25,7 +25,8 @@
    :issuer-name (get base :issuer-name "")
    :order (get base :order "mtime")
    :recipient-name (get base :recipient-name "")
-   :page_count 0})
+   :page_count 0
+   :only-selfie? false})
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -251,9 +252,9 @@
            [text-field :recipient-name (t :gallery/Recipient) (t :gallery/Searchbyrecipient) state]
            [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])])
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) [:params :order] state fetch-badges]
-     #_(into [:div]
-        (for [f (plugin-fun (session/get :plugins) "block" "gallery_checkbox")]
-         (when (ifn? f) [f state (fn [] (fetch-badges state))])))]))
+     (into [:div]
+      (for [f (plugin-fun (session/get :plugins) "block" "gallery_checkbox")]
+       (when (ifn? f) [f state (fn [] (fetch-badges state))])))]))
 
 (defn load-more [state]
   (if (pos? (:badge_count @state))

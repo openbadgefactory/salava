@@ -85,45 +85,45 @@
                             :chart-type :pie ;:visibility-bar
                             :split? true
                             :chart-data [{:title (t :admin/badgeSource)
-                                          :slices [{:name "Open Badge Factory " :value factorybadges :fill (:primary colors)}
-                                                   {:name (session/get :site-name "Passport") :value Totalissuedno :fill (:default colors)}
-                                                   {:name (t :admin/Other) :value (- Totalbadgesno (+ factorybadges Totalissuedno)) :fill (:yellow colors)}]}
+                                          :slices [{:name "Open Badge Factory " :value factorybadges :fill (:primary colors) :percentage (dh/%percentage factorybadges Totalbadgesno)}
+                                                   {:name (session/get :site-name "Passport") :value Totalissuedno :fill (:default colors) :percentage (dh/%percentage Totalissuedno Totalbadgesno)}
+                                                   {:name (t :admin/Other) :value (- Totalbadgesno (+ factorybadges Totalissuedno)) :fill (:yellow colors) :percentage (dh/%percentage (- Totalbadgesno (+ factorybadges Totalissuedno)) Totalbadgesno)}]}
                                          {:title (t :admin/badgeStatus)
-                                          :slices [{:name (t :social/pending) :value pendingbadgescount :fill (:info colors)}
-                                                   {:name (t :social/accepted) :value acceptedbadgescount :fill (:default colors)}
-                                                   {:name (t :social/declined) :value declinedbadgescount :fill (:danger colors)}]}
+                                          :slices [{:name (t :social/pending) :value pendingbadgescount :fill (:info colors) :percentage (dh/%percentage pendingbadgescount Totalbadgesno)}
+                                                   {:name (t :social/accepted) :value acceptedbadgescount :fill (:default colors) :percentage (dh/%percentage acceptedbadgescount Totalbadgesno)}
+                                                   {:name (t :social/declined) :value declinedbadgescount :fill (:danger colors) :percentage (dh/%percentage declinedbadgescount Totalbadgesno)}]}
                                          {:title (t :admin/userProfile)
-                                          :slices [{:name (t :page/Public) :value publicusers :fill (:default colors)}
-                                                   {:name (t :admin/Notactivated) :value notactivatedusers :fill (:danger colors)}
-                                                   {:name (t :core/Internal) :value internalusers :fill (:yellow colors)}]}
+                                          :slices [{:name (t :page/Public) :value publicusers :fill (:default colors) :percentage (dh/%percentage publicusers Totalusersno)}
+                                                   {:name (t :admin/Notactivated) :value notactivatedusers :fill (:danger colors) :percentage (dh/%percentage notactivatedusers Totalusersno)}
+                                                   {:name (t :core/Internal) :value internalusers :fill (:yellow colors) :percentage (dh/%percentage internalusers Totalusersno)}]}
 
                                          {:title (t :admin/badgeVisibility)
-                                          :slices [{:name (t :page/Public) :value publicbadgescount :fill (:default colors)}
-                                                   {:name (t :page/Private) :value privatebadgescount :fill (:purple colors)}
-                                                   {:name (t :core/Internal) :value internalbadgescount :fill (:yellow colors)}]}
+                                          :slices [{:name (t :page/Public) :value publicbadgescount :fill (:default colors) :percentage (dh/%percentage publicbadgescount Totalbadgesno)}
+                                                   {:name (t :page/Private) :value privatebadgescount :fill (:purple colors) :percentage (dh/%percentage privatebadgescount Totalbadgesno)}
+                                                   {:name (t :core/Internal) :value internalbadgescount :fill (:yellow colors) :percentage (dh/%percentage internalbadgescount Totalbadgesno)}]}
                                          {:title (t :admin/pageVisibility)
-                                          :slices [{:name (t :page/Public) :value publicpagescount :fill (:default colors)}
-                                                   {:name (t :page/Private) :value privatepagescount :fill (:purple colors)}
-                                                   {:name (t :core/Internal) :value internalpagescount :fill (:yellow colors)}]}]}]]
+                                          :slices [{:name (t :page/Public) :value publicpagescount :fill (:default colors) :percentage (dh/%percentage publicpagescount Totalpagesno)}
+                                                   {:name (t :page/Private) :value privatepagescount :fill (:purple colors) :percentage (dh/%percentage privatepagescount Totalpagesno)}
+                                                   {:name (t :core/Internal) :value internalpagescount :fill (:yellow colors) :percentage (dh/%percentage internalpagescount Totalpagesno)}]}]}]]
       [:div.row
        [dh/panel-box-chart {:size :lg
                             :icon "fa-line-chart"
                             :type "b-user"
                             :chart-type :line
-                            :chart-data [{:info [{:name 12  :total  (- Totalusersno userssince1year) :active-users (:1yearlogincount users)}
-                                                 {:name 6  :total (- Totalusersno userssince6month) :active-users (:6monthlogincount users)}
-                                                 {:name 3  :total (- Totalusersno userssince3month) :active-users (:3monthlogincount users)}
-                                                 {:name 1  :total (- Totalusersno userssincelastmonth) :active-users (:1monthlogincount users)}
-                                                 {:name 0 #_(t :admin/Lastlogin) :total Totalusersno :active-users logincountsincelastlogin}]
-                                           :lines [{:name (t :admin/Totalusersno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}
-                                                   {:name (t :admin/Activeusers) :key "active-users" :stroke (:danger colors)}]
+                            :chart-data [{:info [{:name 12  :total  (- Totalusersno userssince1year)} ;:active-users (:1yearlogincount users)}
+                                                 {:name 6  :total (- Totalusersno userssince6month)} ;:active-users (:6monthlogincount users)}
+                                                 {:name 3  :total (- Totalusersno userssince3month)} ;:active-users (:3monthlogincount users)}
+                                                 {:name 1  :total (- Totalusersno userssincelastmonth)} ;:active-users (:1monthlogincount users)}
+                                                 {:name 0  :total Totalusersno}] ;:active-users logincountsincelastlogin}]
+                                           :lines [{:name (t :admin/Totalusersno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                                   ;{:name (t :admin/Activeusers) :key "active-users" :stroke (:danger colors)}]
                                            :title (t :admin/userGrowth)
                                            :xlabel (t :admin/noofmonths)}
                                          {:info [{:name 12  :total (- Totalbadgesno badgessince1year)}
                                                  {:name 6  :total (- Totalbadgesno badgessince6month)}
                                                  {:name 3 :total (- Totalbadgesno badgessince3month)}
                                                  {:name 1  :total (- Totalbadgesno badgessincelastmonth)}
-                                                 {:name 0 #_(t :admin/now) :total Totalbadgesno}]
+                                                 {:name 0  :total Totalbadgesno}]
                                           :lines [{:name (t :admin/Totalbadgesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
                                           :title (t :admin/badgeGrowth)
                                           :xlabel (t :admin/noofmonths)}
@@ -131,7 +131,7 @@
                                                  {:name 6  :total (- Totalpagesno pagessince6month)}
                                                  {:name 3  :total (- Totalpagesno pagessince3month)}
                                                  {:name 1  :total (- Totalpagesno pagessincelastmonth)}
-                                                 {:name 0 #_(t :admin/now) :total Totalpagesno}]
+                                                 {:name 0  :total Totalpagesno}]
                                           :lines [{:name (t :admin/Totalpagesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
                                           :title (t :admin/pageGrowth)
                                           :xlabel (t :admin/noofmonths)}
@@ -140,7 +140,7 @@
                                                  {:name 6 :total (- Totalissuersno issuerssince6month)}
                                                  {:name 3 :total (- Totalissuersno issuerssince3month)}
                                                  {:name 1 :total (- Totalissuersno issuerssincelastmonth)}
-                                                 {:name 0 #_(t :admin/now) :total Totalissuersno}]
+                                                 {:name 0 :total Totalissuersno}]
                                           :lines [{:name (t :admin/Totalissuersno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
                                           :title (t :admin/issuerGrowth)
                                           :xlabel (t :admin/noofmonths)}]

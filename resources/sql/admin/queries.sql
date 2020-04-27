@@ -23,7 +23,7 @@ SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND profile_vis
 --name: count-logged-users-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login > :time AND deleted = 0;
 
---name: count-logged-users-after-date-range
+--name: count-logged-users-after-date-range-REMOVE
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login > :from AND last_login < :to AND deleted = 0;
 
 --name: count-registered-users-after-date
@@ -51,13 +51,13 @@ SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status 
 SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE ctime > :time AND deleted = 0 AND status != 'declined';
 
 --name: count-private-badges
-SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'private';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'private' AND revoked = 0;
 
 --name: count-internal-badges
-SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'internal';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'internal' AND revoked = 0;
 
 --name: count-public-badges
-SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'public';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND visibility = 'public' AND revoked = 0;
 
 --name: count-private-pages
 SELECT COUNT(DISTINCT id) AS count FROM page WHERE deleted = 0 AND visibility = 'private';

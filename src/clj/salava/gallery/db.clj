@@ -51,7 +51,7 @@
 
 (defn get-gallery-ids
   "Get gallery-ids with search params"
-  [ctx tags badge-name issuer-name recipient-name]
+  [ctx tags badge-name issuer-name recipient-name only-selfie? country]
   (let [filters ;; Build a list of filter sets from query parameters
         (cond-> []
           (not (string/blank? badge-name))
@@ -64,7 +64,10 @@
           (conj (set (select-gallery-ids-recipient {:recipient (str "%" recipient-name "%")} (get-db-col ctx :gallery_id))))
 
           (not (string/blank? tags))
-          (conj (set (select-gallery-ids-tags {:tags (->> (string/split tags #",") (map string/trim))} (get-db-col ctx :gallery_id)))))]
+          (conj (set (select-gallery-ids-tags {:tags (->> (string/split tags #",") (map string/trim))} (get-db-col ctx :gallery_id))))
+
+          (true? only-selfie?)
+          (conj (set (select-gallery-ids-selfie {:country country} (get-db-col ctx :gallery_id)))))]
     ;; Get final filtered gallery_id list
     (when (seq filters)
       (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))
@@ -74,7 +77,7 @@
          (if (nil? (schema/check g/GalleryBadges b))
            b
            (do
-             (log/error (str "Gallery Badge Errgallery_idsor: ") (into (sorted-map) (assoc (schema/check g/GalleryBadges b) :badge_id (:badge_id b))))
+             (log/error (str "Gallery Badge Error: ") (into (sorted-map) (assoc (schema/check g/GalleryBadges b) :badge_id (:badge_id b))))
              nil)))
        badges))
 
@@ -87,9 +90,9 @@
 
 (defn gallery-badges
   "Get badges for gallery grid"
-  [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count]}]
+  [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count only-selfie?]}]
   (let [offset (string->number page_count)
-        gallery-ids (get-gallery-ids ctx tags badge-name issuer-name recipient-name)
+        gallery-ids (get-gallery-ids ctx tags badge-name issuer-name recipient-name only-selfie? country)
         badges (some->> (select-badges ctx country gallery-ids order offset) (badge-checker) (remove nil?) (selfie-checker ctx gallery-ids))]
     {:badges badges
      :badge_count (badge-count (if (nil? gallery-ids)
