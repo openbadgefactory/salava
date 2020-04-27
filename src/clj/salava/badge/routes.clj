@@ -469,12 +469,13 @@
             (POST "/request/:user-badge-id" []
                   :return {:status (s/enum "success" "error")}
                   :path-params [user-badge-id :- Long]
-                  :body-params [content :- s/Str
-                                user-ids :- [s/Int]]
+                  :body [request endoschemas/request-endorsement] #_[content :- s/Str
+                                                                     user-ids :- [s/Int]
+                                                                     emails :- [(s/maybe s/Int)]]
                   :auth-rules access/authenticated
                   :summary "Send endorsement request"
                   :current-user current-user
-                  (ok (e/request-endorsement! ctx user-badge-id (:id current-user) user-ids content)))
+                  (ok (e/request-endorsement! ctx user-badge-id (:id current-user) request))) ;user-ids emails content)))
 
             (POST "/request/update_status/:request_id" []
                   :return {:status (s/enum "success" "error")}

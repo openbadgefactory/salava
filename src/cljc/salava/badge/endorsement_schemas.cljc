@@ -100,3 +100,7 @@
                                                                  (dissoc :name :image_file :description)))]})
 
 (s/defschema pending-user-endorsements {:endorsements [(-> received-user-endorsement (assoc :ctime s/Int) (dissoc :status :mtime))]})
+
+(s/defschema request-endorsement {:content content
+                                  (s/optional-key :user-ids) [(s/maybe s/Int)]
+                                  (s/optional-key :emails) [(s/maybe s/Str)]})
