@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.10.2
+- Fixed French translations
+- Added option to show name as link to owner profile in shared badges
+- Added show only badges issued by users filter in explore badges
+
 ## 3.10.1
 - Fixed active users count in admin statistics
 
