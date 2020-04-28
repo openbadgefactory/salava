@@ -163,26 +163,8 @@
  [ctx user-badge-id user-id]
  (select-user-badge-endorsement-request-by-issuer-id {:user_badge_id user-badge-id :issuer_id user-id } (into {:result-set-fn first} (get-db ctx))))
 
-(defn- ext-request-sent?
- [ctx user-badge-id email]
- (select-external-request-by-email {:user_badge_id user-badge-id :email email} (into {:result-set-fn first :row-fn :issuer_email} (get-db ctx))))
-
-(defn- request-external-endorsements [ctx user-badge-id owner-id emails content]
-  (doseq [email emails]
-    (log/info "preparing to send request to email: " email)
-    (if-let [check (-> (request-sent? ctx user-badge-id email))]
-      (throw+ {:status "error" :message "Request already sent to email"})
-      (let [issuer-id (-> (digest "sha256" email) (bytes->base64))]
-       (request-endorsement-ext! {:id user-badge-id
-                                  :content content
-                                  :email email
-                                  :issuer_id issuer-id} (get-db ctx))))))
-       ;()))))
-
-
-
 (defn request-endorsement! [ctx user-badge-id owner-id {:keys [user-ids emails content]}]
- (posti/send-request ctx "Endorsement request!" [:div [:b "Something has been discovered"]] "isaac.ogunlolu@obfsolutions.com")
+ (posti/send-request ctx user-badge-id owner-id content "isaac.ogunlolu@obfsolutions.com")
  (try+
   (if-not (badge-owner? ctx user-badge-id owner-id)
    (throw+ {:status "error" :message "User cannot request endorsement for a badge they do not own"})
@@ -204,7 +186,7 @@
         (publish ctx :request_endorsement {:verb "request_endorsement" :type "badge" :subject owner-id :object request-id})
         (when-not user-connection (as-> (first (plugin-fun (get-plugins ctx) "db" "create-connections-user!")) $   ;;create user connection if not existing
                                         (when $ ($ ctx owner-id id)))))))
-    (when (seq emails) (request-external-endorsements ctx user-badge-id owner-id emails content))))
+    (when (seq emails) (posti/request-external-endorsements ctx user-badge-id owner-id emails content))))
   {:status "success"}
   (catch Object ex
     (log/error ex)
