@@ -273,4 +273,10 @@ p {
     .emailCustomerNote {
         padding-top: 10px !important;
     }
+
+    .emailPoweredBy p {
+      color:#00838f !important;
+      font-style: 15px !important;
+      text-align: center !important;
+    }
 }

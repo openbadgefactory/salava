@@ -56,6 +56,49 @@
    (ImageIO/write img "png" out)
    (str "data:image/png;base64," (bytes->base64 (.toByteArray out)))))
 
+(defn html-mail-header-title [text]
+  [:table
+   {:width "100%", :border "0", :cellspacing "0", :cellpadding "0"}
+   [:tr
+    [:td
+     {:valign "top", :align "left"}
+     [:table
+      {:width "100%", :border "0", :cellspacing "0", :cellpadding "0"}
+      [:tr.emailTitle
+       [:td
+        [:h1
+         {:style
+          "font-family: Arial,Helvetica,sans-serif;font-size: 30px;font-weight: normal;line-height: 40px;color: #333333;margin-top: 0;margin-bottom: 0;padding-top: 0;padding-bottom: 0;"}
+         text]]]]]]])
+
+(defn html-mail-signature [ctx lng]
+  (let [];site-name (get-site-name ctx)]
+    [:table
+     {:style       "max-width: 640px;margin-left:auto;margin-right: auto;",
+      :align       "center",
+      :cellspacing "0",
+      :cellpadding "0",
+      :width       "100%",
+      :border      "0"}
+     [:tr [:td {:style "font-size: 1px;line-height: 15px;"} " "]]
+     [:tr
+      [:td
+       [:table
+        {:style       "max-width: 640px;margin-left:auto;margin-right: auto;",
+         :align       "center",
+         :cellspacing "0",
+         :cellpadding "0",
+         :width       "100%",
+         :border      "0"}
+        [:tr
+         [:td.emailPoweredBy
+          {:style  "padding: 10px; font-family: Arial,sans-serif; background-color: #f9f9f9;",
+           :valign "top",
+           :align  "center"}
+          [:p {:style "font-size: 14px !important; color: #00838f !important; text-align: center !important;"} "Powered by " [:img {:style "vertical-align: bottom; " :width "110px" :height "auto" :src "cid:012345678"}]]]]]]]])) ;(str (t :user/Emailnotificationtext4 lng) ",")]
+          ;[:p site-name " - "(t :core/Team lng)]]]]]]]))
+
+
 (defn- request-template [ctx message badge-info]
  (let [{:keys [name image_file language]} (-> badge-info :content first)]
   (html5
@@ -90,35 +133,24 @@
          :width       "640",
          :border      "0"}
         [:tr
-         [:td
-          {:style "padding-top: 12px", :valign "top", :align "left"}
-          "<!-- Email header : start -->"
-          (html-mail-header ctx)
-          ;(html-mail-header-title (str (t :user/Emailnotificationtext1 lng) " " full-name ","))
-          "<!-- Email header : end -->"]]
-        [:tr
          [:td.emailBody.emailTile
           {:style "padding-top: 30px;", :valign "top", :align "center"}
-          [:div
-           [:img.text-center {:src "cid:0123456789"  :alt name}] ;:height "200px" :width "200px"}]
-           [:div message]]]]
+
+          [:div {:style "padding: 10px; border-radius: 4px; background-color: ghostwhite !important;"}
+           [:img {:style "max-width: 100%; max-height: 200px;" :src "cid:0123456789"  :alt name}] ;:height "200px" :width "200px"}]
+           [:div {:style "margin: 20px auto;"} message]
+           [:p {:style "font-size: 18px !important; color: #039be5 !important; text-align: center !important; padding-top: 10px;"} "Endorse this badge"]]]]
 
         "<!-- Footer : start -->"
         [:tr
          [:td.emailTile
-          {:valign "top", :align "left"}
-          [:br]
-          [:br]]]
-          ;(html-mail-signature ctx lng)]]
+          {:valign "top", :align "center"}
+          (html-mail-signature ctx language)]]
         "<!-- Footer : end -->"]]]
      [:br]]
-    [:br]
     ;footer
-    "<!-- Email wrapper : END -->"
+    "<!-- Email wrapper : END -->"])))
 
-    #_[:div.container
-       [:img.text-cemter {:src "cid:0123456789" #_(image->base64str  (str (get-data-dir ctx) "/" image_file)) :alt name}] ;:height "200px" :width "200px"}]
-       [:div message]]])))
 
 (defn send-request [ctx user-badge-id owner-id message to]
   (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
@@ -137,7 +169,7 @@
                          :content-id "0123456789"}
                         {:content-type "image/png"
                          :type :inline
-                         :content (io/file "/img/logo.png") ;(str (get-data-dir ctx) "/" image_file))
+                         :content (io/file  "resources/public/img/logo.png") ;(str (get-data-dir ctx) "/" image_file))
                          :content-id "012345678"}]}]
 
 
