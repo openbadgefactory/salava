@@ -801,18 +801,19 @@
   (let [{:keys [state reload-fn context]} params
         request-comment (cursor state [:request-comment])
         context (if (blank? context) "endorsement" context)
-        selected-users (if (= "endorsement_selfie" context)  (cursor state [:send_request_to]) (cursor state [:selected-users]))]
+        selected-users (if (= "endorsement_selfie" context)  (cursor state [:send_request_to]) (cursor state [:selected-users]))
+        external-users (cursor state [:external-users])]
     (reset! request-comment (t :badge/Defaultrequestbadge))
     (fn []
       [:div.col-md-12 {:id "social-tab"}
        [:div.editor
         [:div.form-group {:style {:display "block"}}
-         [:label {:for (str "editor" (-> (session/get :user) :id)) #_"claim"} [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
+         [:label {:for (str "editor" (-> (session/get :user) :id)) } [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
          [:div.editor  [markdown-editor request-comment (str "editor" (-> (session/get :user) :id))]]]
-        (when (seq @selected-users)
+        (when (or (seq @selected-users) (seq @external-users))
           [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw.fa-3x]
            [:a {:href "#"
-                :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state)})}
+                :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state) :external-users-atom external-users})}
             (t :badge/Editselectedusers)]])
         (reduce (fn [r u]
                   (let [{:keys [id first_name last_name profile_picture]} u]
@@ -820,6 +821,12 @@
                              [:a {:href "#" :on-click (fn [] (reset! selected-users (->> @selected-users (remove #(= id (:id %))) vec)))}
                               [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
                 [:div.selected-users-container] @selected-users)
+        (reduce (fn [r e]
+                 (conj r [:div.user-item [:span {:style {:font-weight "500" }} e]
+                          [:a {:href "#" :on-click (fn [] (reset!  external-users (->> @ external-users (remove #(= e %)) vec)))}
+                           [:span.close {:style {:position "unset"} :aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]]))
+                [:div.selected-users-container]
+                @external-users)
         [:div.confirmusers {:style {:margin "20px auto"}}
          (if-not (empty? @selected-users)
            [:button.btn.btn-primary {:on-click #(do
@@ -830,7 +837,7 @@
                                      :disabled (empty? @selected-users)}
             (if (= context "endorsement_selfie") (t :core/Continue) (t :badge/Sendrequest))]
            [:button.btn.btn-primary.select-users-link {:href "#"
-                                                       :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state)})
+                                                       :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state) :external-users-atom external-users})
                                                        :disabled (< (count @request-comment) 15)}
             [:i.fa.fa-users.fa-fw.fa-3x] (t :badge/Selectusers)])
          (when (and (= context "endorsement_selfie") (empty? @selected-users))

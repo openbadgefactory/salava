@@ -5,7 +5,7 @@
   [hiccup.core :refer [html]]
   [hiccup.page :refer [html5 include-css]]
   [postal.core :refer [send-message]]
-  [salava.core.util :refer [digest bytes->base64 get-db plugin-fun get-plugins get-site-url get-data-dir]]
+  [salava.core.util :refer [digest bytes->base64 get-db plugin-fun get-plugins get-site-url get-data-dir md->html]]
   [salava.core.i18n :refer [t]]
   [slingshot.slingshot :refer :all]
   [yesql.core :refer [defqueries]])
@@ -100,7 +100,8 @@
 
 
 (defn- request-template [ctx message badge-info]
- (let [{:keys [name image_file language]} (-> badge-info :content first)]
+ (let [{:keys [name image_file language]} (-> badge-info :content first)
+       message (md->html message)]
   (html5
    [:head
     [:meta {:http-equiv "Content-Type" :content "text/html; charset=UTF-8"}]

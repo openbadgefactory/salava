@@ -74,6 +74,7 @@
                                          :evidence {:url nil}
                                          :request-comment " "
                                          :selected-users []
+                                         :external-users []
                                          :request-mode false))
                     (init-more state)
                     (if (or (:user-logged-in @state) (:owner? @state))  (init-badge-connection state (:badge_id data)))))}
@@ -88,6 +89,7 @@
                             :permission "success"
                             :request-comment " "
                             :selected-users []
+                            :external-users []
                             :request-mode false))
        (init-more state)
        (if (or (:user-logged-in @state) (:owner? @state)) (init-badge-connection state (:badge_id data))))))
