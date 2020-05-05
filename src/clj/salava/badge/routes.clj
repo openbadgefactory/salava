@@ -19,6 +19,7 @@
             [salava.badge.evidence :as evidence]
             [salava.badge.endorsement-schemas :as endoschemas]
             [salava.badge.pending :as p]
+            [salava.badge.ext-endorsement :as ext]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -446,6 +447,29 @@
                  :current-user current-user
                  (ok (e/user-badge-pending-requests ctx user-badge-id (:id current-user))))
 
+            (GET "/ext_request/pending/:user-badge-id" []
+                  :no-doc true
+                  :return endoschemas/pending-ext-requests
+                  :auth-rules access/authenticated
+                  :path-params [user-badge-id :- Long]
+                  :summary "Return user's externally sent pending requests"
+                  :current-user current-user
+                  (ok (ext/ext-pending-requests ctx user-badge-id)))
+
+            (GET "/ext_request/endorser/:id" []
+                  :no-doc true
+                  :return endoschemas/ext-endorser
+                  :path-params [id :- s/Str]
+                  :summary "Return external endorser's information if found"
+                  (ok (ext/ext-endorser ctx id)))
+
+            (POST "/ext_request/endorser/upload_image" []
+                  :no-doc true
+                  :return {:status (s/enum "success" "error") :url s/Str (s/optional-key :message) (s/maybe s/Str)}
+                  :multipart-params [file :- upload/TempFileUpload]
+                  :summary "Upload external endorser image (PNG)"
+                  (ok (ext/upload-image ctx file)))
+
             (POST "/edit/:endorsement-id" []
                   :return {:status (s/enum "success" "error")}
                   :path-params [endorsement-id :- Long]
@@ -470,8 +494,7 @@
                   :return {:status (s/enum "success" "error")}
                   :path-params [user-badge-id :- Long]
                   :body [request endoschemas/request-endorsement] #_[content :- s/Str
-                                                                     user-ids :- [s/Int]
-                                                                     emails :- [(s/maybe s/Int)]]
+                                                                     user-ids :- [s/Int]]
                   :auth-rules access/authenticated
                   :summary "Send endorsement request"
                   :current-user current-user

@@ -58,7 +58,8 @@
   (js/setTimeout (fn [] (.value @editor @value)) 200)
   (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor)))))
 
-(defn markdown-editor [value]
+(defn markdown-editor
+ ([value]
   (create-class
    {:component-did-mount
     (fn []
@@ -71,3 +72,16 @@
          :id (str "editor" (-> (session/get :user) :id))
          :defaultValue @value
          :on-change #(reset! value (.-target.value %))}]])}))
+ ([value element-id]
+  (create-class
+   {:component-did-mount
+    (fn []
+     (init-editor element-id value))
+    :reagent-render
+    (fn []
+      [:div.form-group {:style {:display "block"}}
+       [:textarea
+        {:class "form-control"
+         :id element-id
+         :defaultValue @value
+         :on-change #(reset! value (.-target.value %))}]])})))

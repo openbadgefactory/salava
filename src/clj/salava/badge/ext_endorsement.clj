@@ -5,7 +5,7 @@
   [hiccup.core :refer [html]]
   [hiccup.page :refer [html5 include-css]]
   [postal.core :refer [send-message]]
-  [salava.core.util :refer [digest bytes->base64 get-db plugin-fun get-plugins get-site-url get-data-dir md->html]]
+  [salava.core.util :refer [get-db-1 hex-digest digest bytes->base64 get-db plugin-fun get-plugins get-site-url get-data-dir md->html get-full-path get-db-col]]
   [salava.core.i18n :refer [t]]
   [slingshot.slingshot :refer :all]
   [yesql.core :refer [defqueries]])
@@ -49,12 +49,33 @@
          [:td
           banner]]]]]]))
 
+(defn image->base64str [canvas]
+  (let [out (ByteArrayOutputStream.)]
+    (ImageIO/write canvas "png" out)
+    (str "data:image/png;base64," (bytes->base64 (.toByteArray out)))))
 
-(defn- image->base64str [file]
- (let [img (ImageIO/read (io/file file))
-       out (ByteArrayOutputStream.)]
-   (ImageIO/write img "png" out)
-   (str "data:image/png;base64," (bytes->base64 (.toByteArray out)))))
+(defn- check-image [width height]
+ (and
+  (some #(= width %) (range (- height 10) (+ height 10)))
+  (some #(= height %) (range (- width 10) (+ width 10)))))
+
+(defn upload-image [ctx file]
+  (let [{:keys [size tempfile content-type]} file
+        max-size 250000] ;;250kb
+    (try+
+     (when-not (= "image/png" content-type)
+       (throw+ {:status "error" :message "badgeIssuer/FilenotPNG"}))
+     (when (> size max-size)
+       (throw+ {:status "error" :message "badgeIssuer/Filetoobig"}))
+     (let [image (ImageIO/read tempfile)
+           width (.getWidth image)
+           height (.getHeight image)]
+       (when-not (check-image width height) ;(= width height)
+         (throw+ {:status "error" :message "badgeIssuer/Imagemustbesquare"}))
+       {:status "success" :url (image->base64str image)})
+     (catch Object _
+       (log/error _)
+       {:url "" :status "error" :message (:message _)}))))
 
 (defn html-mail-header-title [text]
   [:table
@@ -99,9 +120,10 @@
           ;[:p site-name " - "(t :core/Team lng)]]]]]]]))
 
 
-(defn- request-template [ctx message badge-info]
+(defn- request-template [ctx message badge-info issuer-id]
  (let [{:keys [name image_file language]} (-> badge-info :content first)
-       message (md->html message)]
+       message (md->html message)
+       full-path (get-full-path ctx)]
   (html5
    [:head
     [:meta {:http-equiv "Content-Type" :content "text/html; charset=UTF-8"}]
@@ -134,13 +156,17 @@
          :width       "640",
          :border      "0"}
         [:tr
-         [:td.emailBody.emailTile
+         [:td.emailBody.emailTile.emailMarkdown
           {:style "padding-top: 30px;", :valign "top", :align "center"}
 
           [:div {:style "padding: 10px; border-radius: 4px; background-color: ghostwhite !important;"}
            [:img {:style "max-width: 100%; max-height: 200px;" :src "cid:0123456789"  :alt name}] ;:height "200px" :width "200px"}]
-           [:div {:style "margin: 20px auto;"} message]
-           [:p {:style "font-size: 18px !important; color: #039be5 !important; text-align: center !important; padding-top: 10px;"} "Endorse this badge"]]]]
+           [:div {:style "margin: 20px auto; text-align: center !important;"} message]
+           [:p {:style "font-size: 18px !important; color: #039be5 !important; text-align: center !important; padding-top: 10px;"}
+            [:a {:href (str full-path "/badge/info/" (:id badge-info)"?endorser="issuer-id)
+                 :target "_blank"
+                 :style "text-decoration: none;"}
+              (t :badge/Endorsethisbadge language)]]]]]
 
         "<!-- Footer : start -->"
         [:tr
@@ -152,8 +178,10 @@
     ;footer
     "<!-- Email wrapper : END -->"])))
 
+(defn ext-endorser [ctx id]
+  (get-external-endorser {:id id} (get-db-1 ctx)))
 
-(defn send-request [ctx user-badge-id owner-id message to]
+(defn send-request [ctx user-badge-id owner-id message to issuer-id]
   (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
         {:keys [last_name first_name]} (as-> (first (plugin-fun (get-plugins ctx) "db" "user-information")) $
                                              (if $ ($ ctx owner-id) {}))
@@ -163,16 +191,15 @@
         data {:from    (get-in ctx [:config :core :mail-sender])
               :subject (str first_name " " last_name " " (t :badge/requestsendorsement language) " " name)
               :body    [{:type    "text/html"
-                         :content (request-template ctx message badge-info)}
-                        {:content-type "image/png"
+                         :content (request-template ctx message badge-info issuer-id)}
+                        {;:content-type "image/png, image/svg+xml"
                          :type :inline
                          :content (io/file (str (get-data-dir ctx) "/" image_file))
                          :content-id "0123456789"}
-                        {:content-type "image/png"
+                        {;:content-type "image/png"
                          :type :inline
                          :content (io/file  "resources/public/img/logo.png") ;(str (get-data-dir ctx) "/" image_file))
                          :content-id "012345678"}]}]
-
 
     (try+
       (log/info "sending to" to)
@@ -180,21 +207,29 @@
             (send-message (assoc data :to to))
             (send-message mail-host-config (assoc data :to to)))
           log/info)
+      (when-let [check (empty? (ext-endorser ctx issuer-id))]
+        (insert-external-user! {:ext_id issuer-id :email to} (get-db ctx)))
       (catch Object ex
         (log/error ex)))))
 
 (defn- ext-request-sent?
  [ctx user-badge-id email]
- (select-external-request-by-email {:user_badge_id user-badge-id :email email} (into {:result-set-fn first :row-fn :issuer_email} (get-db ctx))))
+ (select-external-request-by-email {:user_badge_id user-badge-id :email email} (into {:result-set-fn first :row-fn :id} (get-db ctx))))
 
 (defn request-external-endorsements [ctx user-badge-id owner-id emails content]
+ (let [user-emails (select-badge-owner-emails {:id owner-id} (get-db-col ctx :email))]
   (doseq [email emails]
     (log/info "preparing to send request to email: " email)
-    (if-let [check (-> (ext-request-sent? ctx user-badge-id email))]
-      (throw+ {:status "error" :message "Request already sent to email"})
-      (let [issuer-id (-> (digest "sha256" email) (bytes->base64))]
-       (request-endorsement-ext! {:id user-badge-id
-                                  :content content
-                                  :email email
-                                  :issuer_id issuer-id} (get-db ctx))))))
-       ;()))))
+    (when-let [check  (ext-request-sent? ctx user-badge-id email)]
+      (throw+ {:status "error" :message "Request already sent to email"}))
+    (when-let [check (some #(= % email) user-emails)]
+      (throw+ {:status "error" :message "Users cannot request endorsements from themselves"}))
+    (let [issuer-id (hex-digest "md5" (clojure.string/trim email))]
+     (request-endorsement-ext! {:id user-badge-id
+                                :content content
+                                :email email
+                                :issuer_id issuer-id} (get-db ctx))
+     (send-request ctx user-badge-id owner-id content email issuer-id)))))
+
+(defn ext-pending-requests [ctx user-badge-id]
+  (sent-pending-ext-requests-by-badge-id {:id user-badge-id} (get-db ctx)))

@@ -785,11 +785,13 @@
 
 (defn send-endorsement-request [state reload-fn]
   (let [request-comment (cursor state [:request-comment])
-        selected-users (cursor state [:selected-users])]
+        selected-users (cursor state [:selected-users])
+        external-users (cursor state [:external-users])]
     (ajax/POST
      (path-for (str "/obpv1/badge/user_endorsement/request/" (:id @state)) true)
      {:params {:user-ids (mapv :id @selected-users)
-               :content @request-comment}
+               :content @request-comment
+               :emails @external-users}
       :handler (fn [data]
                  (when (= "success" (:status data))
                    (reload-fn)
@@ -828,13 +830,13 @@
                 [:div.selected-users-container]
                 @external-users)
         [:div.confirmusers {:style {:margin "20px auto"}}
-         (if-not (empty? @selected-users)
+         (if (or (seq @selected-users) (seq @external-users)) ;-not (empty? @selected-users)
            [:button.btn.btn-primary {:on-click #(do
                                                   (.preventDefault %)
                                                   (if (= context "endorsement_selfie")
                                                     (mo/previous-view)
                                                     (send-endorsement-request state reload-fn)))
-                                     :disabled (empty? @selected-users)}
+                                     :disabled (and (empty? @external-users)(empty? @selected-users))}
             (if (= context "endorsement_selfie") (t :core/Continue) (t :badge/Sendrequest))]
            [:button.btn.btn-primary.select-users-link {:href "#"
                                                        :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state) :external-users-atom external-users})

@@ -80,7 +80,7 @@ p {
     margin-left: 0;
     padding-top: 0;
     padding-left: 0;
-    text-align: left;
+    text-align: left;*/
 }
 
 .emailAdmin .emailLogo img {
@@ -277,6 +277,10 @@ p {
     .emailPoweredBy p {
       color:#00838f !important;
       font-style: 15px !important;
+      text-align: center !important;
+    }
+    
+    .emailMarkdown p {
       text-align: center !important;
     }
 }

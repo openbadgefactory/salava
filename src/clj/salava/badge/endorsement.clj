@@ -5,7 +5,7 @@
             [clojure.tools.logging :as log]
             [salava.badge.main :refer [send-badge-info-to-obf badge-exists?]]
             [salava.core.time :as time]
-            [salava.badge.ext-endorsement :as posti]))
+            [salava.badge.ext-endorsement :as ext]))
 
 (defqueries "sql/badge/main.sql")
 (defqueries "sql/badge/endorsement.sql")
@@ -164,7 +164,6 @@
  (select-user-badge-endorsement-request-by-issuer-id {:user_badge_id user-badge-id :issuer_id user-id } (into {:result-set-fn first} (get-db ctx))))
 
 (defn request-endorsement! [ctx user-badge-id owner-id {:keys [user-ids emails content]}]
- (posti/send-request ctx user-badge-id owner-id content "isaac.ogunlolu@obfsolutions.com")
  (try+
   (if-not (badge-owner? ctx user-badge-id owner-id)
    (throw+ {:status "error" :message "User cannot request endorsement for a badge they do not own"})
@@ -186,7 +185,7 @@
         (publish ctx :request_endorsement {:verb "request_endorsement" :type "badge" :subject owner-id :object request-id})
         (when-not user-connection (as-> (first (plugin-fun (get-plugins ctx) "db" "create-connections-user!")) $   ;;create user connection if not existing
                                         (when $ ($ ctx owner-id id)))))))
-    (when (seq emails) (posti/request-external-endorsements ctx user-badge-id owner-id emails content))))
+    (when (seq emails) (ext/request-external-endorsements ctx user-badge-id owner-id emails content))))
   {:status "success"}
   (catch Object ex
     (log/error ex)

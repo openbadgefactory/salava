@@ -104,3 +104,27 @@
 (s/defschema request-endorsement {:content content
                                   (s/optional-key :user-ids) [(s/maybe s/Int)]
                                   (s/optional-key :emails) [(s/maybe s/Str)]})
+
+(s/defschema ext-request {:content content
+                          :id s/Int
+                          :user_badge_id s/Int
+                          :status (s/enum "pending" "endorsed" "declined")
+                          :mtime s/Int
+                          :issuer_email s/Str
+                          (s/optional-key :issuer_id) (s/maybe s/Int)
+                          (s/optional-key :url) (s/maybe s/Str)
+                          (s/optional-key :description) (s/maybe s/Str)
+                          (s/optional-key :name) (s/maybe s/Str)
+                          (s/optional-key :image_file) (s/maybe s/Str)})
+
+
+(s/defschema pending-ext-requests [(s/maybe ext-request)])
+(s/defschema ext-endorser {:id s/Int
+                           :ext_id s/Str
+                           :name (s/maybe _name)
+                           :url (s/maybe s/Str)
+                           :description (s/maybe s/Str)
+                           :image_file (s/maybe s/Str)
+                           :email s/Str
+                           :ctime s/Int
+                           :mtime s/Int})
