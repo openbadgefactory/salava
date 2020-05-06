@@ -26,3 +26,7 @@ VALUES (:ext_id, :url, :name, :description, :image_file, UNIX_TIMESTAMP())
 
 --name: get-external-endorser
 SELECT * FROM user_ext WHERE ext_id = :id
+
+--name: insert-external-endorsement<!
+INSERT INTO user_badge_endorsement_ext (external_id,user_badge_id, issuer_id, issuer_name, issuer_url, content, status, ctime, mtime)
+VALUES (:external_id, :user_badge_id, :issuer_id, :issuer_name, :issuer_url, :content, 'pending', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()

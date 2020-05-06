@@ -2,20 +2,24 @@
  (:require
   [clojure.java.io :as io]
   [clojure.tools.logging :as log]
-  [hiccup.core :refer [html]]
-  [hiccup.page :refer [html5 include-css]]
+  [hiccup.page :refer [html5]]
   [postal.core :refer [send-message]]
-  [salava.core.util :refer [get-db-1 hex-digest digest bytes->base64 get-db plugin-fun get-plugins get-site-url get-data-dir md->html get-full-path get-db-col]]
+  [salava.badge.main :refer [badge-exists?]]
+  [salava.core.util :as util :refer [get-db-1 hex-digest digest bytes->base64 get-db plugin-fun get-plugins get-site-url get-data-dir md->html get-full-path get-db-col]]
   [salava.core.i18n :refer [t]]
   [slingshot.slingshot :refer :all]
   [yesql.core :refer [defqueries]])
  (:import
    [java.io ByteArrayOutputStream]
+
    [javax.imageio ImageIO]))
 
 (defqueries "sql/badge/ext_endorsement.sql")
 
 (def style-string (slurp (io/resource "public/css/email.css")))
+
+(defn generate-external-id []
+  (str "urn:uuid:" (java.util.UUID/randomUUID)))
 
 (defn get-fragments
   ([ctx type] (get-fragments ctx nil nil type))
@@ -92,37 +96,35 @@
           "font-family: Arial,Helvetica,sans-serif;font-size: 30px;font-weight: normal;line-height: 40px;color: #333333;margin-top: 0;margin-bottom: 0;padding-top: 0;padding-bottom: 0;"}
          text]]]]]]])
 
-(defn html-mail-signature [ctx lng]
-  (let [];site-name (get-site-name ctx)]
-    [:table
-     {:style       "max-width: 640px;margin-left:auto;margin-right: auto;",
-      :align       "center",
-      :cellspacing "0",
-      :cellpadding "0",
-      :width       "100%",
-      :border      "0"}
-     [:tr [:td {:style "font-size: 1px;line-height: 15px;"} " "]]
-     [:tr
-      [:td
-       [:table
-        {:style       "max-width: 640px;margin-left:auto;margin-right: auto;",
-         :align       "center",
-         :cellspacing "0",
-         :cellpadding "0",
-         :width       "100%",
-         :border      "0"}
-        [:tr
-         [:td.emailPoweredBy
-          {:style  "padding: 10px; font-family: Arial,sans-serif; background-color: #f9f9f9;",
-           :valign "top",
-           :align  "center"}
-          [:p {:style "font-size: 14px !important; color: #00838f !important; text-align: center !important;"} "Powered by " [:img {:style "vertical-align: bottom; " :width "110px" :height "auto" :src "cid:012345678"}]]]]]]]])) ;(str (t :user/Emailnotificationtext4 lng) ",")]
-          ;[:p site-name " - "(t :core/Team lng)]]]]]]]))
+(defn html-mail-signature [ctx lng id]
+  [:table
+   {:style       "max-width: 640px;margin-left:auto;margin-right: auto;",
+    :align       "center",
+    :cellspacing "0",
+    :cellpadding "0",
+    :width       "100%",
+    :border      "0"}
+   [:tr [:td {:style "font-size: 1px;line-height: 15px;"} " "]]
+   [:tr
+    [:td
+     [:table
+      {:style       "max-width: 640px;margin-left:auto;margin-right: auto;",
+       :align       "center",
+       :cellspacing "0",
+       :cellpadding "0",
+       :width       "100%",
+       :border      "0"}
+      [:tr
+       [:td.emailPoweredBy
+        {:style  "padding: 10px; font-family: Arial,sans-serif; background-color: #f9f9f9;",
+         :valign "top",
+         :align  "center"}
+        [:p {:style "font-size: 14px !important; color: #00838f !important; text-align: center !important;"}
+            "Powered by " [:img {:style "vertical-align: bottom; " :width "110px" :height "auto" :src (str "cid:"id)}]]]]]]]])
 
 
-(defn- request-template [ctx message badge-info issuer-id]
+(defn- request-template [ctx message badge-info issuer-id {:keys [bid lid]}]
  (let [{:keys [name image_file language]} (-> badge-info :content first)
-       message (md->html message)
        full-path (get-full-path ctx)]
   (html5
    [:head
@@ -160,7 +162,7 @@
           {:style "padding-top: 30px;", :valign "top", :align "center"}
 
           [:div {:style "padding: 10px; border-radius: 4px; background-color: ghostwhite !important;"}
-           [:img {:style "max-width: 100%; max-height: 200px;" :src "cid:0123456789"  :alt name}] ;:height "200px" :width "200px"}]
+           [:img {:style "max-width: 100%; max-height: 200px;" :src (str "cid:" bid)  :alt name}] ;:height "200px" :width "200px"}]
            [:div {:style "margin: 20px auto; text-align: center !important;"} message]
            [:p {:style "font-size: 18px !important; color: #039be5 !important; text-align: center !important; padding-top: 10px;"}
             [:a {:href (str full-path "/badge/info/" (:id badge-info)"?endorser="issuer-id)
@@ -172,7 +174,7 @@
         [:tr
          [:td.emailTile
           {:valign "top", :align "center"}
-          (html-mail-signature ctx language)]]
+          (html-mail-signature ctx language lid)]]
         "<!-- Footer : end -->"]]]
      [:br]]
     ;footer
@@ -188,18 +190,24 @@
         badge-info (as-> (first (plugin-fun (get-plugins ctx) "main" "get-badge-p")) $
                          (if $ ($ ctx user-badge-id owner-id)))
         {:keys [name image_file language]} (-> badge-info :content first)
+        image (as-> (first (plugin-fun (get-plugins ctx) "main" "png-convert-url")) $
+                    (if (ifn? $) ($ ctx image_file) image_file))
+        logo (if-let [path (first (mapcat #(get-in ctx [:config % :logo] []) (get-plugins ctx)))]
+               path
+               "resources/public/img/logo.png")
+        lid (util/random-token)
+        bid (util/random-token)
         data {:from    (get-in ctx [:config :core :mail-sender])
               :subject (str first_name " " last_name " " (t :badge/requestsendorsement language) " " name)
               :body    [{:type    "text/html"
-                         :content (request-template ctx message badge-info issuer-id)}
-                        {;:content-type "image/png, image/svg+xml"
-                         :type :inline
-                         :content (io/file (str (get-data-dir ctx) "/" image_file))
-                         :content-id "0123456789"}
-                        {;:content-type "image/png"
-                         :type :inline
-                         :content (io/file  "resources/public/img/logo.png") ;(str (get-data-dir ctx) "/" image_file))
-                         :content-id "012345678"}]}]
+                         :content (request-template ctx message badge-info issuer-id {:lid lid :bid bid})}
+                        {:type :inline
+                         :content (io/file (str (get-data-dir ctx) "/" (util/file-from-url-fix ctx image)))
+                         :content-id bid
+                         :file-name (str name ".png")}
+                        {:type :inline
+                         :content (io/file logo)
+                         :content-id lid}]}]
 
     (try+
       (log/info "sending to" to)
@@ -224,7 +232,7 @@
       (throw+ {:status "error" :message "Request already sent to email"}))
     (when-let [check (some #(= % email) user-emails)]
       (throw+ {:status "error" :message "Users cannot request endorsements from themselves"}))
-    (let [issuer-id (hex-digest "md5" (clojure.string/trim email))]
+    (let [issuer-id (hex-digest "md5" (clojure.string/trim email))] ;;TODO use a stronger algorithm
      (request-endorsement-ext! {:id user-badge-id
                                 :content content
                                 :email email
@@ -233,3 +241,30 @@
 
 (defn ext-pending-requests [ctx user-badge-id]
   (sent-pending-ext-requests-by-badge-id {:id user-badge-id} (get-db ctx)))
+
+(defn endorse! [ctx user-badge-id data]
+ (let [{:keys [content endorser]} data]
+  (try+
+    (when-not (badge-exists? ctx user-badge-id)
+     (throw+ {:status "error" :message (str "badge with id " user-badge-id " does not exist")}))
+    ;;check if user tries to endorse himself
+    (let [{:keys [ext_id name url description image_file]} endorser
+          existing-info (ext-endorser ctx ext_id)]
+      (when-let [id (->> (insert-external-endorsement<! {:user_badge_id user-badge-id
+                                                         :external_id (generate-external-id)
+                                                         :issuer_id ext_id
+                                                         :issuer_name name
+                                                         :issuer_url url
+                                                         :content content} (get-db ctx))
+                         :generated_key)]
+          (when-not (= (select-keys existing-info [:name :url :image_file :description]) (select-keys endorser [:name :url :image_file :description]))
+           (update-external-user! {:ext_id ext_id
+                                   :name name
+                                   :url url
+                                   :image_file (if (re-find #"^data:image" image_file)
+                                                 (util/file-from-url-fix ctx image_file)
+                                                 image_file)} (get-db ctx)))
+          {:id id :status "success"}))
+    (catch Object _
+      (log/error _)
+      _))))

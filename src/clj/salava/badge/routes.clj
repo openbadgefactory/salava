@@ -518,6 +518,15 @@
                   :current-user current-user
                   (ok (e/endorse! ctx user-badge-id (:id current-user) content)))
 
+            (POST "/ext/endorse/:user-badge-id" []
+                   :no-doc true
+                   :return {(s/optional-key :id) s/Int :status (s/enum "success" "error") (s/optional-key :message) (s/maybe s/Str)}
+                   :path-params [user-badge-id :- Long]
+                   :body [data endoschemas/ext-endorsement]
+                   :summary "Endorse user badge externally"
+                   (ok (ext/endorse! ctx user-badge-id data)))
+
+
             (DELETE "/:user-badge-id/:endorsement-id" []
                     :return {:status (s/enum "success" "error")}
                     :path-params [user-badge-id :- Long

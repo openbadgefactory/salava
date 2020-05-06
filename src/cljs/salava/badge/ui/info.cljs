@@ -303,7 +303,9 @@
 
           ;check-badge-link
            (check-badge id lng)
-           (when-not (and user-logged-in? (nil? (:endorser-id @state)) [ext/ext-endorse-form (:endorser-id @state) state]))
+           ;(prn (:endorser-id @state) user-logged-in?)
+           (when (and (false? user-logged-in?) (not (nil? (:endorser-id @state))))
+             [ext/ext-endorse-form (:endorser-id @state) state])
 
            (when-not (empty? alignment)
              [:div.row

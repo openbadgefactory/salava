@@ -11,6 +11,17 @@
   [salava.core.ui.input :refer [editor markdown-editor text-field file-input]]))
 
 
+(defn save-ext-endorsement [user-badge-id state]
+  (ajax/POST
+   (path-for (str "/obpv1/badge/user_endorsement/ext/endorse/" user-badge-id))
+   {:body {:content @(cursor state [:endorsement-comment])
+           :endorser (-> @(cursor state [:ext-endorser]) (select-keys [:name :url :description :ext_id :image_file]))}
+    :handler (fn [{:keys [status]}]
+               (when (= "success" status)
+                 (swap! state assoc :show-link "none"
+                                    :show-content "none")))}))
+
+
 (defn upload-modal [{:keys [status message reason]}]
   [:div
    [:div.modal-header
@@ -139,8 +150,8 @@
       [endorser-info ext_id state]
       [:div.text-center
        [:button.btn.btn-primary.btn-bulky {:on-click #(do
-                                                        (.preventDefault %))
-                                                        ;(save-endorsement state))
+                                                        (.preventDefault %)
+                                                        (save-ext-endorsement (:id @state) state))
                                            :disabled (or (blank? @(cursor state [:endorsement-comment])) (blank? @(cursor state [:ext-endorser :name])))}
 
         (t :badge/Endorsebadge)]
@@ -154,6 +165,7 @@
 
 
 (defn init-ext-endorser [id state]
+  (prn "called")
   (ajax/GET
    (path-for (str "/obpv1/badge/user_endorsement/ext_request/endorser/" id))
    {:handler (fn [data]
@@ -163,10 +175,11 @@
 
 
 (defn ext-endorse-form [id state]
-  (let [{:keys [ext_id image_file name url description]} @(cursor state [:ext-endorser])]
+  ;(let [{:keys [ext_id image_file name url description]} @(cursor state [:ext-endorser])]
    (swap! state assoc :endorsement-comment "" :show-content "block" :show-link "none")
+   (prn "herere")
    (init-ext-endorser id state)
    (fn []
      [:div#endorsebadge {:style {:margin "20px auto"}}
        ;[m/modal-window]
-       [endorse-badge-content state]])))
+       [endorse-badge-content state]]))

@@ -128,3 +128,6 @@
                            :email s/Str
                            :ctime s/Int
                            :mtime s/Int})
+
+(s/defschema ext-endorsement {:content content
+                              :endorser (-> ext-endorser (select-keys [:ext_id :name :url :description :image_file :email]))})
