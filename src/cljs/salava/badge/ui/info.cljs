@@ -43,13 +43,6 @@
    (path-for (str "/obpv1/badge/user_endorsement/count/" id))
    {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
 
-(defn init-ext-endorser [id state]
-  (ajax/GET
-   (path-for (str "/obpv1/badge/user_endorsement/ext_request/endorser/" id))
-   {:handler (fn [data]
-               (reset! (cursor state [:ext-endorser]) data)
-               (reset! (cursor state [:endorser-id]) (:ext_id data)))}))
-
 (defn init-data
  ([state id]
   (ajax/GET
@@ -304,8 +297,9 @@
           ;check-badge-link
            (check-badge id lng)
            ;(prn (:endorser-id @state) user-logged-in?)
-           (when (and (false? user-logged-in?) (not (nil? (:endorser-id @state))))
-             [ext/ext-endorse-form (:endorser-id @state) state])
+           #_(when (and (false? user-logged-in?) (not (nil? (:endorser-id @state))))
+               [ext/ext-endorse-form (:endorser-id @state) state])
+            [ext/ext-endorse-badge state]
 
            (when-not (empty? alignment)
              [:div.row

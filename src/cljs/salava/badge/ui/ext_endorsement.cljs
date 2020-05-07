@@ -4,22 +4,30 @@
   [reagent.core :refer [atom cursor]]
   [reagent-modals.modals :as m]
   [reagent.session :as session]
-  [salava.badge.ui.endorsement :as end :refer [process-text]]
+  [salava.badge.ui.endorsement :as end :refer [process-text profile]]
   [salava.core.ui.ajax-utils :as ajax]
   [salava.core.i18n :refer [t translate-text]]
   [salava.core.ui.helper :refer [path-for]]
   [salava.core.ui.input :refer [editor markdown-editor text-field file-input]]))
 
 
+(defn init-endorsement [user-badge-id state]
+  (ajax/GET
+   (path-for (str "/obpv1/badge/user_endorsement/ext/" user-badge-id "/"(:endorser-id @state)))
+   {:handler (fn [data]
+               (prn data)
+               (reset! (cursor state [:ext-endorsement]) data))}))
+
 (defn save-ext-endorsement [user-badge-id state]
   (ajax/POST
    (path-for (str "/obpv1/badge/user_endorsement/ext/endorse/" user-badge-id))
-   {:body {:content @(cursor state [:endorsement-comment])
-           :endorser (-> @(cursor state [:ext-endorser]) (select-keys [:name :url :description :ext_id :image_file]))}
+   {:params {:content @(cursor state [:endorsement-comment])
+             :endorser (-> @(cursor state [:ext-endorser]) (select-keys [:name :url :email :description :ext_id :image_file]))}
     :handler (fn [{:keys [status]}]
                (when (= "success" status)
                  (swap! state assoc :show-link "none"
-                                    :show-content "none")))}))
+                                    :show-content "none")
+                 (init-endorsement user-badge-id state)))}))
 
 
 (defn upload-modal [{:keys [status message reason]}]
@@ -165,21 +173,58 @@
 
 
 (defn init-ext-endorser [id state]
-  (prn "called")
   (ajax/GET
    (path-for (str "/obpv1/badge/user_endorsement/ext_request/endorser/" id))
    {:handler (fn [data]
                (reset! (cursor state [:ext-endorser]) data))}))
 
 
+(defn init-request [endorser-id state]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/user_endorsement/ext_request/info/" (:id @state) "/"endorser-id))
+    {:handler (fn [data]
+                (when-not (empty? data)
+                  (reset! (cursor state [:request]) data)
+                  (init-ext-endorser endorser-id state)
+                  (init-endorsement (:id @state) state)))}))
 
 
 (defn ext-endorse-form [id state]
-  ;(let [{:keys [ext_id image_file name url description]} @(cursor state [:ext-endorser])]
    (swap! state assoc :endorsement-comment "" :show-content "block" :show-link "none")
-   (prn "herere")
-   (init-ext-endorser id state)
+   ;(init-ext-endorser id state)
    (fn []
      [:div#endorsebadge {:style {:margin "20px auto"}}
-       ;[m/modal-window]
        [endorse-badge-content state]]))
+
+(defn endorsement [state]
+ (let [{:keys [first_name last_name profile_picture status]} @(cursor state [:ext-endorsement])
+       ext_id @(cursor state [:ext-endorser :ext_id])]
+   [:div.well.well-lg {:style {:margin "10px auto" :background-image "none"}}
+    [:div#badge-info
+     [:div;.col-md-12
+      [:p [:b (t :badge/Manageendorsementtext1)]]
+      [:hr.border]
+      [:div.row
+       [:div.col-md-4.col-md-push-8  " "]
+       [:div.col-md-8.col-md-pull-4  [profile {:status status :label (t :social/pending) :profile_picture profile_picture} (str first_name " " last_name)]]]
+      [:div {:style {:margin-top "15px"}}
+       [:div.editor
+        [:div.form-group
+         [:label {:for (str "editor" :ext_id)} (str (t :badge/Composeyourendorsement) ":") [:span.form-required " *"]]
+
+         [:div [markdown-editor  (cursor state [:ext-endorsement :content]) (str "editor" ext_id)]]]]]]]]))
+       ;[:div.row.flip.control-buttons]]]]]))
+
+
+(defn ext-endorse-badge [state]
+  (let [{:keys [endorser-id user-logged-in?]} @state]
+   (when (and (false? user-logged-in?) (not (nil? endorser-id)))
+       (swap! state assoc :endorsement-comment "" :show-content "block" :show-link "none")
+       (init-request endorser-id state)
+       (fn []
+        (if-not (empty?  @(cursor state [:ext-endorsement]))
+         [endorsement state]
+         (case @(cursor state [:request :status])
+           "pending" [ext-endorse-form endorser-id state]
+           "endorsed" [:div "test"]
+           [:div ""]))))))

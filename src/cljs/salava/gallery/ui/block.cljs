@@ -219,8 +219,8 @@
 
                                                      (when (= "endorsement" context)
                                                        [:div.col-md-12 {:style {:margin "20px auto" :padding "10px" :background-color "ghostwhite"}}
-
-                                                        [:span {:style {:display "block" :font-weight "600" :font-size "14px" :margin "10px auto"}} [:i.fa.fa-lg.fa-users] "External endorsers"]
+                                                        [:p (t :badge/Aboutexternalendorsements)]
+                                                        [:span {:style {:display "block" :font-weight "600" :font-size "14px" :margin "10px auto"}} [:i.fa.fa-lg.fa-envelope] (t :badge/Externalendorsers)]
 
                                                         (when (seq @external-users-atom)
                                                          (reduce (fn [r e]
@@ -232,15 +232,16 @@
 
                                                         [:div.col-md-6 {:style {:padding "unset"}}
                                                           [:div.input-group
-                                                           [input/text-field {:name "email" :placeholder "input email" :atom (cursor data-atom [:email]) :aria-label "input email"}]
+                                                           [input/text-field {:name "email" :placeholder (t :badge/Inputemail) :atom (cursor data-atom [:email]) :aria-label (t :badge/Inputemail)}]
                                                            [:span.input-group-btn
                                                             [:button.btn.btn-primary
                                                                {:disabled (not (email-valid? @(cursor data-atom [:email])))
                                                                 :type "button"
                                                                 :style {:margin-top "unset"}
                                                                 :on-click #(when-not (some (fn [e] (= e @(cursor data-atom [:email]))) @external-users-atom)
-                                                                             (reset! external-users-atom (conj @external-users-atom @(cursor data-atom [:email]))))}
-                                                               [:i.fa.fa-lg.fa-user-plus {:style {:color "inherit" :font-size "medium" :vertical-align "baseline"}}] "Add"]]]]])]
+                                                                             (reset! external-users-atom (conj @external-users-atom @(cursor data-atom [:email])))
+                                                                             (reset! (cursor data-atom [:email]) ""))}
+                                                               [:i.fa.fa-lg.fa-user-plus {:style {:color "inherit" :font-size "medium" :vertical-align "baseline"}}] (t :core/Add)]]]]])]
 
                                                     (if (or (= context "endorsement") (= context "endorsement_selfie"))
                                                      (->> @(cursor data-atom [:users])

@@ -129,5 +129,8 @@
                            :ctime s/Int
                            :mtime s/Int})
 
-(s/defschema ext-endorsement {:content content
-                              :endorser (-> ext-endorser (select-keys [:ext_id :name :url :description :image_file :email]))})
+(s/defschema save-ext-endorsement {:content content
+                                   :endorser (-> ext-endorser (select-keys [:ext_id :name :url :description :image_file :email]))})
+
+(s/defschema issued-ext-endorsement (-> endorsement
+                                        (merge {:first_name s/Str :last_name s/Str :profile_picture (s/maybe s/Str)})))

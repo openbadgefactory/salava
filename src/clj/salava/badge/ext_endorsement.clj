@@ -123,7 +123,7 @@
             "Powered by " [:img {:style "vertical-align: bottom; " :width "110px" :height "auto" :src (str "cid:"id)}]]]]]]]])
 
 
-(defn- request-template [ctx message badge-info issuer-id {:keys [bid lid]}]
+(defn- request-template [ctx message badge-info issuer-id {:keys [bid lid fname lname]}]
  (let [{:keys [name image_file language]} (-> badge-info :content first)
        full-path (get-full-path ctx)]
   (html5
@@ -139,6 +139,11 @@
      :marginwidth  "0",
      :topmargin    "0",
      :leftmargin   "0"}
+    [:div {:style "margin: 10px auto;"}
+     [:p (str fname " " lname " " (t :badge/Externalrequestmail1 language) [:b (t :badge/Endorsethisbadge language)] " " (t :badge/linkbelow language))] ;(t :badge/requestsendorsement language) " " name)]
+     [:p (t :badge/Externalrequestmail2 language)]
+     [:p (t :badge/Externalrequestmail3 language) [:a {:href (str full-path "/external/mydata/" issuer-id) :target "_blank"}]]]
+
     [:table#bodyTable
      {:style       "border-collapse: collapse;table-layout: fixed;margin:0 auto;",
       ;:bgcolor     background-color,
@@ -163,7 +168,8 @@
 
           [:div {:style "padding: 10px; border-radius: 4px; background-color: ghostwhite !important;"}
            [:img {:style "max-width: 100%; max-height: 200px;" :src (str "cid:" bid)  :alt name}] ;:height "200px" :width "200px"}]
-           [:div {:style "margin: 20px auto; text-align: center !important;"} message]
+           [:p {:style "font-family: Arial,Helvetica,sans-serif;font-size: 25px;font-weight: 600; color: #333333;margin-top: 0;margin-bottom: 0;padding-top: 0;padding-bottom: 0; "} name]
+           [:div {:style "margin: 30px auto; text-align: center !important;"} message]
            [:p {:style "font-size: 18px !important; color: #039be5 !important; text-align: center !important; padding-top: 10px;"}
             [:a {:href (str full-path "/badge/info/" (:id badge-info)"?endorser="issuer-id)
                  :target "_blank"
@@ -198,9 +204,9 @@
         lid (util/random-token)
         bid (util/random-token)
         data {:from    (get-in ctx [:config :core :mail-sender])
-              :subject (str first_name " " last_name " " (t :badge/requestsendorsement language) " " name)
+              :subject (t :badge/Endorsementrequest language) ;(str first_name " " last_name " " (t :badge/requestsendorsement language) " " name)
               :body    [{:type    "text/html"
-                         :content (request-template ctx message badge-info issuer-id {:lid lid :bid bid})}
+                         :content (request-template ctx message badge-info issuer-id {:lid lid :bid bid :fname first_name :lname last_name})}
                         {:type :inline
                          :content (io/file (str (get-data-dir ctx) "/" (util/file-from-url-fix ctx image)))
                          :content-id bid
@@ -224,7 +230,11 @@
  [ctx user-badge-id email]
  (select-external-request-by-email {:user_badge_id user-badge-id :email email} (into {:result-set-fn first :row-fn :id} (get-db ctx))))
 
+(defn external-request-by-issuerid [ctx user-badge-id issuer-id]
+ (if-let [_ (select-external-badge-request-by-issuerid {:ubid user-badge-id :isid issuer-id}  (get-db-1 ctx))] _ {}))
+
 (defn request-external-endorsements [ctx user-badge-id owner-id emails content]
+ ;;TODO check badge visibility and set to public
  (let [user-emails (select-badge-owner-emails {:id owner-id} (get-db-col ctx :email))]
   (doseq [email emails]
     (log/info "preparing to send request to email: " email)
@@ -232,7 +242,13 @@
       (throw+ {:status "error" :message "Request already sent to email"}))
     (when-let [check (some #(= % email) user-emails)]
       (throw+ {:status "error" :message "Users cannot request endorsements from themselves"}))
-    (let [issuer-id (hex-digest "md5" (clojure.string/trim email))] ;;TODO use a stronger algorithm
+    (let [issuer-id (util/hmac-sha256-hex email (get-in ctx [:config :factory :secret]))
+          badge-info (as-> (first (plugin-fun (get-plugins ctx) "main" "get-badge-p")) $
+                           (if $ ($ ctx user-badge-id owner-id)))
+          {:keys [name image_file language visibility]} (-> badge-info :content first)]
+     (when-not (= "public" visibility)
+       (as-> (first (plugin-fun (get-plugins ctx) "main" "set-visibility!")) $
+             (when (ifn? $) ($ ctx user-badge-id "public" owner-id))))
      (request-endorsement-ext! {:id user-badge-id
                                 :content content
                                 :email email
@@ -242,14 +258,23 @@
 (defn ext-pending-requests [ctx user-badge-id]
   (sent-pending-ext-requests-by-badge-id {:id user-badge-id} (get-db ctx)))
 
+(defn update-request-status [ctx user-badge-id issuer-email status]
+ (try+
+  (update-request-status! {:e issuer-email :ubid user-badge-id :status status} (get-db ctx))
+  {:status "success"}
+  (catch Object _
+   (log/error _)
+   {:status "error"})))
+
 (defn endorse! [ctx user-badge-id data]
  (let [{:keys [content endorser]} data]
   (try+
     (when-not (badge-exists? ctx user-badge-id)
      (throw+ {:status "error" :message (str "badge with id " user-badge-id " does not exist")}))
     ;;check if user tries to endorse himself
-    (let [{:keys [ext_id name url description image_file]} endorser
+    (let [{:keys [ext_id name url description image_file email]} endorser
           existing-info (ext-endorser ctx ext_id)]
+      (clojure.pprint/pprint endorser)
       (when-let [id (->> (insert-external-endorsement<! {:user_badge_id user-badge-id
                                                          :external_id (generate-external-id)
                                                          :issuer_id ext_id
@@ -258,13 +283,21 @@
                                                          :content content} (get-db ctx))
                          :generated_key)]
           (when-not (= (select-keys existing-info [:name :url :image_file :description]) (select-keys endorser [:name :url :image_file :description]))
-           (update-external-user! {:ext_id ext_id
+           (update-external-user! {:id (:id existing-info)
+                                   :ext_id ext_id
                                    :name name
                                    :url url
+                                   :email email
+                                   :ctime (:ctime existing-info)
+                                   :description description
                                    :image_file (if (re-find #"^data:image" image_file)
                                                  (util/file-from-url-fix ctx image_file)
                                                  image_file)} (get-db ctx)))
+          (update-request-status ctx user-badge-id email "endorsed")
           {:id id :status "success"}))
     (catch Object _
       (log/error _)
       _))))
+
+(defn given-user-badge-endorsement [ctx user-badge-id issuer-id]
+ (select-user-badge-issuer-endorsement {:ubid user-badge-id :issuer issuer-id} (get-db-1 ctx)))

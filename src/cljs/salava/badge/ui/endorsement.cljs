@@ -17,7 +17,7 @@
             [salava.translator.ui.helper :refer [translate]]
             [salava.core.ui.popover :refer [info]]
             [dommy.core :as dommy :refer-macros [sel1 sel]]
-            [salava.core.ui.input :refer [editor markdown-editor]]))
+            [salava.core.ui.input :refer [editor markdown-editor textarea]]))
 
 (defn endorsement-row [endorsement & lang]
   (let [{:keys [issuer content issued_on]} endorsement]
@@ -811,7 +811,7 @@
        [:div.editor
         [:div.form-group {:style {:display "block"}}
          [:label {:for (str "editor" (-> (session/get :user) :id)) } [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
-         [:div.editor  [markdown-editor request-comment (str "editor" (-> (session/get :user) :id))]]]
+         [:div.editor  [textarea {:name "request_endorsement" :atom request-comment :rows 8} ] #_[markdown-editor request-comment (str "editor" (-> (session/get :user) :id))]]]
         (when (or (seq @selected-users) (seq @external-users))
           [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw.fa-3x]
            [:a {:href "#"

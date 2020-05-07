@@ -32,6 +32,17 @@
       :style style
       :id id}]))
 
+(defn textarea [opts]
+ (let [{:keys [rows cols atom name]} opts]
+   [:textarea
+    {:class "form-control"
+     :id    (str "textArea_" name)
+     :name (or name "textArea")
+     :rows (or rows 5)
+     :cols (or cols 60)
+     :value @atom
+     :on-change #(reset! atom (.-target.value %))}]))
+
 (def simplemde-toolbar
   #js ["bold"
        "italic"
