@@ -1,4 +1,4 @@
-(defproject salava "3.9.1"
+(defproject salava "3.10.2"
             :description "Salava application server"
             :url "http://salava.org"
             :license {:name "Apache 2.0"
@@ -62,6 +62,7 @@
 
                            [pdfboxing "0.1.13" :exclusions [org.apache.pdfbox/pdfbox]]
                            [org.clojure/data.zip "0.1.1"]
+                           [org.clojure/data.csv "1.0.0"]
 
                  ; Client side
                            [org.clojure/clojurescript "1.10.520" :exclusions [com.google.errorprone/error_prone_annotations]]
@@ -91,6 +92,7 @@
                            [org.slf4j/jul-to-slf4j "1.7.26"]        ; JUL to SLF4J
                            [org.slf4j/jcl-over-slf4j "1.7.26"]      ; JCL to SLF4J
                            [org.slf4j/log4j-over-slf4j "1.7.26"]    ; Log4j to SLF4J
+                           [cljsjs/recharts "1.6.2-0"]
 
                  ; Testing
                            [midje "1.9.8" :exclusions [org.clojure/tools.namespace clj-time]]

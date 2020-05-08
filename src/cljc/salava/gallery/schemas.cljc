@@ -68,7 +68,8 @@
                          (s/optional-key :issuer-name)(describe constrained-str "Filter by issuer name")
                          (s/optional-key :order) (describe (s/enum "recipients" "mtime" "name" "issuer_content_name") "Select order, default mtime")
                          (s/optional-key :recipient-name) (describe constrained-str "Filter by badge earner")
-                         :page_count (describe constrained-str "Page offset. 0 for first page, Each page returns 20 badges")})
+                         :page_count (describe constrained-str "Page offset. 0 for first page, Each page returns 20 badges")
+                         (s/optional-key :only-selfie?) (describe s/Bool "show only badges issued in passport")})
 
 (s/defschema MultilanguageContent {:default_language_code s/Str
                                    :language_code         s/Str

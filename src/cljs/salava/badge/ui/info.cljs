@@ -30,6 +30,11 @@
             [dommy.core :as dommy :refer-macros [sel1]]
             [salava.translator.ui.helper :refer [translate]]))
 
+(defn init-owner-profile-visibility [user-id state]
+  (ajax/GET
+   (path-for (str "/obpv1/profile/user/visibility/" user-id))
+   {:handler (fn [data] (reset! (cursor state [:profile_visibility]) data))}))
+
 (defn init-endorsement-count [id state]
   (ajax/GET
    (path-for (str "/obpv1/badge/user_endorsement/count/" id))
@@ -44,7 +49,8 @@
                                     :initializing false
                                     :content-language (init-content-language (:content data))
                                     :permission "success"))
-               (init-endorsement-count id state))}
+               (init-endorsement-count id state)
+               (init-owner-profile-visibility (:user_id data) state))}
    (fn [] (swap! state assoc :permission "error"))))
 
 (comment
@@ -262,7 +268,9 @@
            (if (pos? @show-recipient-name-atom)
              (if (and user-logged-in? (not owner?))
                [:div [:span._label (t :badge/Recipient) ": "] [:a.link {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
-               [:div [:span._label (translate lng :badge/Recipient) #_(t :badge/Recipient) ": "]  first_name " " last_name]))
+               (if (and (= "public" @(cursor state [:profile_visibility])) (= 2 @show-recipient-name-atom))
+                 [:div [:span._label (translate lng :badge/Recipient) ": "] [:a.link {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:profile :view] {:user-id owner}))} #_{:href (path-for (str "/profile/" owner))} first_name " " last_name]]
+                 [:div [:span._label (translate lng :badge/Recipient) ": "]  first_name " " last_name])))
 
            #_[:div [metabadge (:assertion_url @state)]]
 

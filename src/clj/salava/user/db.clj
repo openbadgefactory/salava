@@ -392,8 +392,8 @@
            (delete-user! {:id user-id} {:connection tr-cn})
            (update-user-set-deleted! {:first_name "deleted" :last_name "deleted" :id user-id} {:connection tr-cn}))
 
-       (delete-user! {:id user-id} {:connection tr-cn});delete user anyway
-       ){:status "success"})
+       (delete-user! {:id user-id} {:connection tr-cn}));delete user anyway
+      {:status "success"})
     (catch Object _
       {:status "error"}))))
 
