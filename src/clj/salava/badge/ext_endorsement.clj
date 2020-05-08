@@ -140,9 +140,9 @@
      :topmargin    "0",
      :leftmargin   "0"}
     [:div {:style "margin: 10px auto;"}
-     [:p (str fname " " lname " " (t :badge/Externalrequestmail1 language) [:b (t :badge/Endorsethisbadge language)] " " (t :badge/linkbelow language))] ;(t :badge/requestsendorsement language) " " name)]
+     [:p (str fname " " lname " " (t :badge/Externalrequestmail1 language)) " " [:b (t :badge/Endorsethisbadge language)]  (str " " (t :badge/linkbelow language))] ;(t :badge/requestsendorsement language) " " name)]
      [:p (t :badge/Externalrequestmail2 language)]
-     [:p (t :badge/Externalrequestmail3 language) [:a {:href (str full-path "/external/mydata/" issuer-id) :target "_blank"}]]]
+     [:p (t :badge/Externalrequestmail3 language) " " [:a {:href (str full-path "/external/mydata/" issuer-id) :target "_blank"} (str full-path "/external/mydata/" issuer-id)]]]
 
     [:table#bodyTable
      {:style       "border-collapse: collapse;table-layout: fixed;margin:0 auto;",
@@ -157,7 +157,7 @@
        "<!-- Email wrapper : BEGIN -->"
        [:table.emailContainer
         {:style       "max-width: 640px;margin: auto;",
-         :align       "center",
+         :align       "left",
          :cellspacing "0",
          :cellpadding "0",
          :width       "640",

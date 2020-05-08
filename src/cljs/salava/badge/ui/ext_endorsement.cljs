@@ -85,8 +85,8 @@
        {:name "url"
         :atom (cursor state [:ext-endorser :url])}]]
      [:div.form-group
-      [:label {:for "input-image"} "logo or picture"]
-      [:p "Upload a square PNG image (e.g. 200px * 200px), max-size 250kB "]
+      [:label {:for "input-image"} (t :badge/Logoorpicture)]
+      [:p (t :badge/Uploadimginstructions)]
       [:div {:style {:margin "5px"}}
        (if-not @(cursor state [:uploading-image])
          (if-not (blank? image_file)
@@ -212,9 +212,18 @@
         [:div.form-group
          [:label {:for (str "editor" :ext_id)} (str (t :badge/Composeyourendorsement) ":") [:span.form-required " *"]]
 
-         [:div [markdown-editor  (cursor state [:ext-endorsement :content]) (str "editor" ext_id)]]]]]]]]))
-       ;[:div.row.flip.control-buttons]]]]]))
-
+         [:div [markdown-editor  (cursor state [:ext-endorsement :content]) (str "editor" ext_id)]]
+         [endorser-info ext_id state]
+         [:div.btn-toolbar
+          [:div.btn-group
+           [:button.btn.btn-primary.btn-bulky
+            {:on-click #()
+             :disabled (or (blank? @(cursor state [:ext-endorsement :content]))
+                           (blank? @(cursor state [:ext-endorser :name])))}
+            (t :badge/Save)]
+           [:button.btn.btn-danger.btn-bulky
+            {:on-click #()}
+            [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]]]]]]]))
 
 (defn ext-endorse-badge [state]
   (let [{:keys [endorser-id user-logged-in?]} @state]
@@ -226,5 +235,5 @@
          [endorsement state]
          (case @(cursor state [:request :status])
            "pending" [ext-endorse-form endorser-id state]
-           "endorsed" [:div "test"]
+           "endorsed" [:div ""]
            [:div ""]))))))

@@ -139,7 +139,8 @@
             [:div.row.panel-title {:id "endorsebadge" :style {:margin-bottom "auto" :margin-top "10px"}}
              [:div.col-md-12.request-link [:a {:href "#"
                                                :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :reload-fn (do (toggle-panel panel-identity visible-area-atom) (fn [] (get-pending-requests dataatom state)))} {:shown (fn [] (reset! (cursor state [:external-users]) []))})}
-                                           [:span {:style {:font-size "14.5px" :font-weight "600"}} [:i {:class (str "fa fa-fw " hand-icon)}] (t :badge/Requestendorsement)]]]]]
+                                           [:span {:style {:font-size "14.5px" :font-weight "600"}} [:i {:class (str "fa fa-fw " hand-icon)}] (t :badge/Requestendorsement)]]]
+             [:div.col-md-12 [:b (t :badge/Requestendorsementtip)]]]]
            (when (= @(cursor state [:visible-area]) panel-identity)
              [:div.panel-body.endorsements
               #_[:div.col-md-12.request-link {:id "endorsebadge"} [:a {:href "#"
