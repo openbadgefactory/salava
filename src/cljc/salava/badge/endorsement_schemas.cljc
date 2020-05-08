@@ -119,18 +119,24 @@
 
 
 (s/defschema pending-ext-requests [(s/maybe ext-request)])
-(s/defschema ext-endorser {:id s/Int
-                           :ext_id s/Str
-                           :name (s/maybe _name)
-                           :url (s/maybe s/Str)
-                           :description (s/maybe s/Str)
-                           :image_file (s/maybe s/Str)
-                           :email s/Str
-                           :ctime s/Int
-                           :mtime s/Int})
+(s/defschema ext-endorser (s/maybe {:id s/Int
+                                    :ext_id s/Str
+                                    :name (s/maybe _name)
+                                    :url (s/maybe s/Str)
+                                    :description (s/maybe s/Str)
+                                    :image_file (s/maybe s/Str)
+                                    :email s/Str
+                                    :ctime s/Int
+                                    :mtime s/Int}))
 
 (s/defschema save-ext-endorsement {:content content
-                                   :endorser (-> ext-endorser (select-keys [:ext_id :name :url :description :image_file :email]))})
+                                   :endorser {:ext_id s/Str
+                                              :name (s/maybe _name)
+                                              :url (s/maybe s/Str)
+                                              :description (s/maybe s/Str)
+                                              :image_file (s/maybe s/Str)
+                                              :email s/Str}})
+                                    ;(-> ext-endorser (select-keys [:ext_id :name :url :description :image_file :email]))})
 
-(s/defschema issued-ext-endorsement (-> endorsement
-                                        (merge {:first_name s/Str :last_name s/Str :profile_picture (s/maybe s/Str)})))
+(s/defschema issued-ext-endorsement (s/maybe (-> endorsement
+                                                 (merge {:first_name s/Str :last_name s/Str :profile_picture (s/maybe s/Str)}))))

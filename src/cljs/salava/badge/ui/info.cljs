@@ -166,6 +166,7 @@
      [m/modal-window]
      [:div.panel
       [:div.panel-body
+       [ext/language-switcher state]
        (comment
          (if (and owner? (not expired?) (not revoked))
            [:div {:class "row" :id "badge-share-inputs"}
@@ -296,10 +297,9 @@
 
           ;check-badge-link
            (check-badge id lng)
-           ;(prn (:endorser-id @state) user-logged-in?)
-           #_(when (and (false? user-logged-in?) (not (nil? (:endorser-id @state))))
-               [ext/ext-endorse-form (:endorser-id @state) state])
-            [ext/ext-endorse-badge state]
+
+           ;external endorsement
+           [ext/ext-endorse-badge state]
 
            (when-not (empty? alignment)
              [:div.row
@@ -356,6 +356,7 @@
         (= "initial" (:permission @state)) [:div]
         (and user (= "error" (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
         (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
+        (and (= "success" (:permission @state)) (:endorser-id @state) ) (layout/landing-page site-navi (content state))
         (and (= "success" (:permission @state)) (:owner? @state) user) (layout/default site-navi (content state))
         (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))
         :else (layout/landing-page site-navi (content state))))))

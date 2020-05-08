@@ -274,13 +274,14 @@ p {
         padding-top: 10px !important;
     }
 
-    .emailPoweredBy p {
+    .emailPoweredBy div {
       color:#00838f !important;
       font-style: 15px !important;
       text-align: center !important;
     }
-    
+
     .emailMarkdown p {
       text-align: center !important;
+      background-color: ghostwhite !important;
     }
 }

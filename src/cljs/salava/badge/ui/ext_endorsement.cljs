@@ -11,24 +11,82 @@
   [salava.core.ui.input :refer [editor markdown-editor text-field file-input]]))
 
 
+(defn status-modal [{:keys [message status]}]
+  (let [alert-class (if (= status "success") "alert-success" "alert-danger")]
+    [:div
+     [:div.modal-header
+      [:button {:type "button"
+                :class "close"
+                :data-dismiss "modal"
+                :aria-label "OK"}
+       [:span {:aria-hidden "true"
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]]
+     [:div.modal-body
+      [:div {:class (str "alert " alert-class)}
+       message]]
+     [:div.modal-footer
+      [:button {:type "button"
+                :class "btn btn-primary"
+                :data-dismiss "modal"}
+       "OK"]]]))
+
 (defn init-endorsement [user-badge-id state]
   (ajax/GET
    (path-for (str "/obpv1/badge/user_endorsement/ext/" user-badge-id "/"(:endorser-id @state)))
    {:handler (fn [data]
-               (prn data)
                (reset! (cursor state [:ext-endorsement]) data))}))
 
-(defn save-ext-endorsement [user-badge-id state]
+(defn init-ext-endorser [id state]
+  (ajax/GET
+   (path-for (str "/obpv1/badge/user_endorsement/ext_request/endorser/" id))
+   {:handler (fn [data]
+               (reset! (cursor state [:ext-endorser]) data))}))
+
+
+(defn init-request [endorser-id state]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/user_endorsement/ext_request/info/" (:id @state) "/"endorser-id))
+    {:handler (fn [data]
+                (when-not (empty? data)
+                  (reset! (cursor state [:request]) data)
+                  (init-ext-endorser endorser-id state)
+                  (init-endorsement (:id @state) state)))}))
+
+(defn delete-endorsement [state]
+  (let [id @(cursor state [:ext-endorsement :id])]
+    (ajax/DELETE
+      (path-for (str "/obpv1/badge/user_endorsement/ext/endorsement/" id))
+      {:handler (fn [data]
+                  (when (= (:status data) "success")
+                    (m/modal! [status-modal {:status "success" :message (t :badge/Endorsementdeletesuccess)}] {})
+                    (init-request (:id @state) state)))})))
+
+
+(defn decline-endorsement-request [user-badge-id state]
   (ajax/POST
-   (path-for (str "/obpv1/badge/user_endorsement/ext/endorse/" user-badge-id))
-   {:params {:content @(cursor state [:endorsement-comment])
+   (path-for (str "/obpv1/badge/user_endorsement/ext_request/update_status/" user-badge-id))
+   {:params {:status "declined"
+             :email @(cursor state [:ext-endorser :email])}
+    :handler (fn [data]
+               (when (= "success" (:status data))
+                 (m/modal! [status-modal {:status "success" :message (t :badge/Requestsuccessfullydeclined)}] {})
+                 (init-request (:endorser-id @state) state)))}))
+
+(defn save-ext-endorsement [user-badge-id state update?]
+ (let [path (if update?
+                (str "/obpv1/badge/user_endorsement/ext/edit/" @(cursor state [:ext-endorsement :id]) "/" user-badge-id)
+                (str "/obpv1/badge/user_endorsement/ext/endorse/" user-badge-id))]
+  (ajax/POST
+   (path-for path)
+   {:params {:content (if update? @(cursor state [:ext-endorsement :content]) @(cursor state [:endorsement-comment]))
              :endorser (-> @(cursor state [:ext-endorser]) (select-keys [:name :url :email :description :ext_id :image_file]))}
     :handler (fn [{:keys [status]}]
+               (when (= "error" status) (m/modal! [status-modal {:status "error" :message (t :core/Errorpage)}] {}))
                (when (= "success" status)
                  (swap! state assoc :show-link "none"
                                     :show-content "none")
-                 (init-endorsement user-badge-id state)))}))
-
+                 (init-endorsement user-badge-id state)
+                 (m/modal! [status-modal {:status "success" :message (t :badge/Endorsementsuccess)}] {})))})))
 
 (defn upload-modal [{:keys [status message reason]}]
   [:div
@@ -93,10 +151,11 @@
           [:img {:src (if (re-find #"^data:image" image_file)
                         image_file
                         (str "/" image_file))
-                 :alt "image"}]
+                 :alt "image"
+                 :style {:width "100px" :height "auto"}}]
           [:i.fa.fa-file-image-o {:style {:font-size "60px" :color "#757575"}}])
          [:span.fa.fa-spin.fa-cog.fa-2x])]
-      [:div {:style {:margin "5px"}}
+      [:div.text-center {:style {:margin "5px" :width "100px"}}
        [:span {:class "btn btn-primary btn-file btn-bulky"}
              [:input {:id "picture-upload"
                       :type       "file"
@@ -156,37 +215,22 @@
        [:div [markdown-editor  (cursor state [:endorsement-comment]) (str "editor" ext_id)]]]
 
       [endorser-info ext_id state]
-      [:div.text-center
-       [:button.btn.btn-primary.btn-bulky {:on-click #(do
-                                                        (.preventDefault %)
-                                                        (save-ext-endorsement (:id @state) state))
-                                           :disabled (or (blank? @(cursor state [:endorsement-comment])) (blank? @(cursor state [:ext-endorser :name])))}
+      [:div.text-center.btn-toolbar
+       [:div.btn-group {:style {:float "unset"}}
+        [:button.btn.btn-primary.btn-bulky {:on-click #(do
+                                                         (.preventDefault %)
+                                                         (save-ext-endorsement (:id @state) state nil))
+                                            :disabled (or (blank? @(cursor state [:endorsement-comment])) (blank? @(cursor state [:ext-endorser :name])))}
 
-        (t :badge/Endorsebadge)]
+         (t :badge/Endorsebadge)]
 
-       [:button.btn.btn-danger.btn-bulky {:on-click #(do
-                                                       (.preventDefault %))}
-         (t :badge/Declineendorsement)]]
+        [:button.btn.btn-danger.btn-bulky {:on-click #(do
+                                                        (decline-endorsement-request (:id @state) state)
+                                                        (.preventDefault %))}
+          (t :badge/Declineendorsement)]]]
 
 
       [:hr.border]]])))
-
-
-(defn init-ext-endorser [id state]
-  (ajax/GET
-   (path-for (str "/obpv1/badge/user_endorsement/ext_request/endorser/" id))
-   {:handler (fn [data]
-               (reset! (cursor state [:ext-endorser]) data))}))
-
-
-(defn init-request [endorser-id state]
-  (ajax/GET
-    (path-for (str "/obpv1/badge/user_endorsement/ext_request/info/" (:id @state) "/"endorser-id))
-    {:handler (fn [data]
-                (when-not (empty? data)
-                  (reset! (cursor state [:request]) data)
-                  (init-ext-endorser endorser-id state)
-                  (init-endorsement (:id @state) state)))}))
 
 
 (defn ext-endorse-form [id state]
@@ -214,15 +258,15 @@
 
          [:div [markdown-editor  (cursor state [:ext-endorsement :content]) (str "editor" ext_id)]]
          [endorser-info ext_id state]
-         [:div.btn-toolbar
-          [:div.btn-group
+         [:div.btn-toolbar.text-center
+          [:div.btn-group {:style {:float "unset"}}
            [:button.btn.btn-primary.btn-bulky
-            {:on-click #()
+            {:on-click #(save-ext-endorsement (:id @state) state true)
              :disabled (or (blank? @(cursor state [:ext-endorsement :content]))
                            (blank? @(cursor state [:ext-endorser :name])))}
             (t :badge/Save)]
            [:button.btn.btn-danger.btn-bulky
-            {:on-click #()}
+            {:on-click #(delete-endorsement state)}
             [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]]]]]]]))
 
 (defn ext-endorse-badge [state]
@@ -237,3 +281,17 @@
            "pending" [ext-endorse-form endorser-id state]
            "endorsed" [:div ""]
            [:div ""]))))))
+
+(defn language-switcher [state]
+ (let [{:keys [endorser-id user-logged-in?]} @state
+       current-lang (session/get-in [:user :language] "en")
+       languages (session/get :languages)]
+  (when (and (false? user-logged-in?) (not (nil? endorser-id)))
+    [:div.pull-right
+     (doall
+      (map (fn [lang]
+             ^{:key lang} [:a {:style (if (= current-lang lang) {:font-weight "bold" :text-decoration "underline"} {})
+                               :href "#"
+                               :on-click #(session/assoc-in! [:user :language] lang)}
+                           (clojure.string/upper-case lang) " "])
+           languages))])))
