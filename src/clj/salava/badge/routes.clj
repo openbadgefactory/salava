@@ -479,6 +479,20 @@
                   :summary "Return badge endorsement issued by external user"
                   (ok (ext/given-user-badge-endorsement ctx user-badge-id issuer-id)))
 
+            (POST "/ext/all/:issuer-id" []
+                  :no-doc true
+                  :return endoschemas/issued-ext-endorsement-all
+                  :path-params [issuer-id :- s/Str]
+                  :summary "Return all endorsements issued by external user"
+                  (ok (ext/all-endorsements ctx issuer-id)))
+
+            (POST "/ext_request/all/:issuer-id" []
+                  :no-doc true
+                  :return endoschemas/endorsement-requests-all
+                  :path-params [issuer-id :- s/Str]
+                  :summary "Return all external user's endorsement requests"
+                  (ok (ext/all-requests ctx issuer-id)))
+
             (POST "/ext_request/endorser/upload_image" []
                   :no-doc true
                   :return {:status (s/enum "success" "error") :url s/Str (s/optional-key :message) (s/maybe s/Str)}

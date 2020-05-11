@@ -42,14 +42,13 @@
    {:handler (fn [data]
                (reset! (cursor state [:ext-endorser]) data))}))
 
-
 (defn init-request [endorser-id state]
   (ajax/GET
-    (path-for (str "/obpv1/badge/user_endorsement/ext_request/info/" (:id @state) "/"endorser-id))
+    (path-for (str "/obpv1/badge/user_endorsement/ext_request/info/" (:id @state) "/" (:endorser-id @state)))
     {:handler (fn [data]
                 (when-not (empty? data)
                   (reset! (cursor state [:request]) data)
-                  (init-ext-endorser endorser-id state)
+                  (init-ext-endorser (:endorser-id @state) state)
                   (init-endorsement (:id @state) state)))}))
 
 (defn delete-endorsement [state]
@@ -59,8 +58,8 @@
       {:handler (fn [data]
                   (when (= (:status data) "success")
                     (m/modal! [status-modal {:status "success" :message (t :badge/Endorsementdeletesuccess)}] {})
-                    (init-request (:id @state) state)))})))
-
+                    (init-request (:endorser-id @state) state)
+                    (swap! state assoc :show-content "none")))})))
 
 (defn decline-endorsement-request [user-badge-id state]
   (ajax/POST
@@ -227,7 +226,7 @@
         [:button.btn.btn-danger.btn-bulky {:on-click #(do
                                                         (decline-endorsement-request (:id @state) state)
                                                         (.preventDefault %))}
-          (t :badge/Declineendorsement)]]]
+          (t :badge/Deleteendorsementrequest)]]]
 
 
       [:hr.border]]])))
@@ -243,7 +242,7 @@
 (defn endorsement [state]
  (let [{:keys [first_name last_name profile_picture status]} @(cursor state [:ext-endorsement])
        ext_id @(cursor state [:ext-endorser :ext_id])]
-   [:div.well.well-lg {:style {:margin "10px auto" :background-image "none"}}
+   [:div.well.well-lg {:style {:margin "10px auto" :background-image "none" :display @(cursor state [:show-content])}}
     [:div#badge-info
      [:div;.col-md-12
       [:p [:b (t :badge/Manageendorsementtext1)]]

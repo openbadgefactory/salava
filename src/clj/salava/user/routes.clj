@@ -42,6 +42,7 @@
             (layout/main ctx "/delete-user/:lang")
             (layout/main ctx "/terms")
             (layout/main ctx "/registration-complete")
+            (layout/main ctx "/external/data/:id")
 
             (GET "/verify_email/:verification_key" []
                  :no-doc true
@@ -306,4 +307,10 @@
                  :summary "Get dashboard information"
                  :auth-rules access/signed
                  :current-user current-user
-                 (ok (u/dashboard-info ctx (:id current-user)))))))
+                 (ok (u/dashboard-info ctx (:id current-user))))
+
+            (GET "/external/data/:id" []
+                 :no-doc true
+                 :path-params [id :- s/Str]
+                 :summary "Get external user's data"
+                 (ok (u/external-user-info ctx id))))))

@@ -468,7 +468,15 @@
      :pending-endorsements-requests (->> (end/endorsement-requests ctx user-id) (filter #(= "pending" (:status %))) count)
      :pending-endorsements (->> (end/received-pending-endorsements ctx user-id) count)
      :connections {:badges (->> (so/get-connections-badge ctx user-id) count)}
-   ;:pages_count (->> (p/user-pages-all ctx user-id) count)
-   ;:files_count (->> (f/user-files-all ctx user-id) :files count)
      :user-profile user-profile
      :published_badges_count public-badges-count}))
+
+(defn external-user-info [ctx id]
+  (as-> (first (plugin-fun (get-plugins ctx)  "ext-endorsement" "ext-endorser")) $
+        (if (ifn? $) ($ ctx id) {})))
+
+(defn delete-external-user! [ctx id])
+  ;; delete requests
+  ;; delete endorsements
+  ;; delete user info
+  

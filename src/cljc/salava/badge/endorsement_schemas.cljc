@@ -110,7 +110,7 @@
                           :user_badge_id s/Int
                           :status (s/enum "pending" "endorsed" "declined")
                           :mtime s/Int
-                          :issuer_email s/Str
+                          (s/optional-key :issuer_email) s/Str
                           (s/optional-key :issuer_id) (s/maybe s/Int)
                           (s/optional-key :url) (s/maybe s/Str)
                           (s/optional-key :description) (s/maybe s/Str)
@@ -139,4 +139,19 @@
                                     ;(-> ext-endorser (select-keys [:ext_id :name :url :description :image_file :email]))})
 
 (s/defschema issued-ext-endorsement (s/maybe (-> endorsement
-                                                 (merge {:first_name s/Str :last_name s/Str :profile_picture (s/maybe s/Str)}))))
+                                                 (merge {(s/optional-key :name) s/Str
+                                                         (s/optional-key :image_file) s/Str
+                                                         (s/optional-key :type) s/Str
+                                                         :first_name s/Str
+                                                         :last_name s/Str
+                                                         :profile_picture (s/maybe s/Str)}))))
+
+(s/defschema issued-ext-endorsement-all [issued-ext-endorsement])
+
+(s/defschema endorsement-requests-all [(s/maybe (-> ext-request
+                                                 (merge {(s/optional-key :name) s/Str
+                                                         (s/optional-key :image_file) s/Str
+                                                         (s/optional-key :type) s/Str
+                                                         :first_name s/Str
+                                                         :last_name s/Str
+                                                         :profile_picture (s/maybe s/Str)})))])

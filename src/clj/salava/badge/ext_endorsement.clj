@@ -107,7 +107,7 @@
            [:span [:a {:href (str full-path "/profile/" oid) :target "_blank"} [:b (str fname " " lname)]]  (str " " (t :badge/Externalrequestmail1 lng) " ") [:b (t :badge/Endorsethisbadge lng)] (str " " (t :badge/linkbelow lng) " " (t :user/or lng) " ")
             [:a {:href (str full-path "/badge/info/" (:id badge-info)"?endorser="issuer-id) :target "_blank"} (t :badge/here)]])]
      [:p (t :badge/Externalrequestmail2 lng)]
-     [:p (t :badge/Externalrequestmail3 lng) " " [:a {:href (str full-path "/external/mydata/" issuer-id) :target "_blank"} (str full-path "/external/mydata/" issuer-id)]]
+     [:p (t :badge/Externalrequestmail3 lng) " " [:a {:href (str full-path "/user/external/data/" issuer-id) :target "_blank"} (str full-path "/external/mydata/" issuer-id)]]
      [:p (str (t :badge/Requestsentby lng) " ") [:a {:href (get-site-url ctx) :target "_blank"} (get-site-name ctx)]]]
     [:table#bodyTable
      {:style       "border-collapse: collapse;table-layout: fixed;margin:0 auto;",
@@ -228,6 +228,11 @@
 (defn ext-pending-requests [ctx user-badge-id]
   (sent-pending-ext-requests-by-badge-id {:id user-badge-id} (get-db ctx)))
 
+(defn is-already-endorsed? [ctx user-badge-id issuer-id]
+  (if-let [id (select-existing-endorsement {:issuer issuer-id :ubid user-badge-id (into {:result-set-fn first :row-fn :id})})]
+    true
+    false))
+
 (defn update-request-status [ctx user-badge-id issuer-email status]
  (try+
   (update-request-status! {:e issuer-email :ubid user-badge-id :status status} (get-db ctx))
@@ -241,6 +246,8 @@
   (try+
     (when-not (badge-exists? ctx user-badge-id)
      (throw+ {:status "error" :message (str "badge with id " user-badge-id " does not exist")}))
+    (when (is-already-endorsed? ctx user-badge-id (:ext_id endorser))
+      (throw+ {:status "error" :message "badge already endorsed by user"}))
     ;;check if user tries to endorse himself
     (let [{:keys [ext_id name url description image_file email]} endorser
           existing-info (ext-endorser ctx ext_id)]
@@ -259,9 +266,12 @@
                                    :email email
                                    :ctime (:ctime existing-info)
                                    :description description
-                                   :image_file (if (re-find #"^data:image" image_file)
-                                                 (util/file-from-url-fix ctx image_file)
-                                                 image_file)} (get-db ctx)))
+                                   :image_file (if (clojure.string/blank? image_file)
+                                                   nil
+                                                   (if (re-find #"^data:image" image_file)
+                                                     (util/file-from-url-fix ctx image_file)
+                                                     image_file))}
+                                  (get-db ctx)))
           (update-request-status ctx user-badge-id email "endorsed")
           {:id id :status "success"}))
     (catch Object _
@@ -275,6 +285,7 @@
       (throw+ {:status "error" :message (str "badge with id " user-badge-id " does not exist")}))
      (let [{:keys [ext_id name url description image_file email]} endorser
            existing-info (ext-endorser ctx ext_id)]
+
        (update-external-endorsement! {:ubid user-badge-id
                                       :id id
                                       ;:external_id (generate-external-id)
@@ -290,9 +301,13 @@
                                 :email email
                                 :ctime (:ctime existing-info)
                                 :description description
-                                :image_file (if (re-find #"^data:image" image_file)
-                                              (util/file-from-url-fix ctx image_file)
-                                              image_file)} (get-db ctx))))
+                                :image_file (if (clojure.string/blank? image_file)
+                                               nil
+                                               (if (re-find #"^data:image" image_file)
+                                                   (util/file-from-url-fix ctx image_file)
+                                                   image_file))}
+
+                      (get-db ctx))))
      {:id id :status "success"}
      (catch Object _
        (log/error _)
@@ -307,14 +322,13 @@
    (log/error _)
    {:status "error"})))
 
-#_(defn decline-request! [ctx user-badge-id issuer-id]
-   (let [endorser (ext-endorser ctx ext_id)]
-    (try+
-     (update-request-status ctx user-badge-id (:email endorser) "declined")
-     {:status "success"}
-     (catch Object _
-      (log/error _)
-      {:status "error"}))))
-
 (defn given-user-badge-endorsement [ctx user-badge-id issuer-id]
  (select-user-badge-issuer-endorsement {:ubid user-badge-id :issuer issuer-id} (get-db-1 ctx)))
+
+(defn all-endorsements [ctx issuer-id]
+ (select-all-issuer-endorsements {:issuer issuer-id} (get-db ctx)))
+
+(defn all-requests [ctx issuer-id]
+ (->> (select-all-endorsement-requests {:issuer issuer-id} (get-db ctx))
+      (mapv #(assoc % :type "request"))
+      (filter #(= (:status %) "pending"))))

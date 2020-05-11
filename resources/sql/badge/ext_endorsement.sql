@@ -52,11 +52,29 @@ JOIN user u ON u.id = ub.user_id
 WHERE ubee.issuer_id = :issuer AND ubee.user_badge_id = :ubid
 
 --name: select-all-issuer-endorsements
-SELECT ubee.id, ubee.user_badge_id, ubee.status, ubee.content, ubee.mtime, u.first_name, u.last_name, u.profile_picture
+SELECT ubee.id, ubee.user_badge_id, ubee.status, ubee.content, ubee.mtime, u.first_name, u.last_name, u.profile_picture, bc.name, bc.image_file
 FROM user_badge_endorsement_ext ubee
 JOIN user_badge ub ON ub.id=ubee.user_badge_id
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 JOIN user u ON u.id = ub.user_id
 WHERE ubee.issuer_id = :issuer
 
+--name: select-all-endorsement-requests
+SELECT rext.id, rext.user_badge_id, rext.status, rext.content, rext.mtime, u.first_name, u.last_name, u.profile_picture, bc.name, bc.image_file
+FROM user_badge_endorsement_request_ext rext
+JOIN user_ext uext ON uext.email = rext.issuer_email
+JOIN user_badge ub ON ub.id=rext.user_badge_id
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+JOIN user u ON u.id = ub.user_id
+WHERE uext.ext_id = :issuer
+
 --name: delete-external-endorsement!
 DELETE FROM user_badge_endorsement_ext WHERE id = :id
+
+--name: select-existing-endorsement
+SELECT id FROM user_badge_endorsement_ext ubee
+WHERE issuer_id = :issuer AND user_badge_id = :ubid AND status != "declined"
