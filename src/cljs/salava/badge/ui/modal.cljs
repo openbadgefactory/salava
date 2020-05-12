@@ -24,8 +24,8 @@
    [salava.core.ui.tag :as tag]
    [salava.social.ui.follow :refer [follow-badge]]
    [salava.social.ui.badge-message-modal :refer [badge-message-link]]
-   [salava.translator.ui.helper :refer [translate]]))
-
+   [salava.translator.ui.helper :refer [translate]]
+   [salava.badge.ui.ext-endorsement :as ext]))
 
 (defn- init-owner-profile-visibility [user-id state]
   (ajax/GET
@@ -453,5 +453,6 @@
            :endorse endr/endorse-badge-content
            :userbadgeendorsement endr/user-badge-endorsement-content
            :userendorsement endr/user-endorsement-content
+           :extuserendorsement ext/ext-endorsement-content
            :requestendorsement endr/request-endorsement
            :my block/mybadgesmodal}})

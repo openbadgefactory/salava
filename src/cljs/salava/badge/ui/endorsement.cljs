@@ -390,7 +390,7 @@
            (when (= status "pending") [:p [:span.label.label-info label]])]])]))
 
 (defn profile [element-data name]
-  (let [{:keys [id profile_picture status label issuer_name]} element-data
+  (let [{:keys [id profile_picture status label issuer_name email]} element-data
         current-user (session/get-in [:user :id])]
     [:div.endorsement-profile.panel-default
      (if id
@@ -414,15 +414,16 @@
             :title name}]]]
         [:div.col-md-8
          [:span.profileowner name]
+         [:div (when-not (clojure.string/blank? email) [:span [:i.fa.fa-envelope.fa-fw] email])]
          (when (= status "pending") [:p [:span.label.label-info label]])]])]))
 
-(defn- toggle-delete-dialogue [state]
+(defn toggle-delete-dialogue [state]
   (let [show-delete-dialogue (cursor state [:show-delete-dialogue])]
     (if @show-delete-dialogue
       (reset! show-delete-dialogue false)
       (reset! show-delete-dialogue true))))
 
-(defn- confirm-delete [state delete-fn]
+(defn confirm-delete [state delete-fn]
   (when (and state @(cursor state [:show-delete-dialogue]))
     [:div.confirm-delete-block
      [:div {:class "alert alert-warning"}

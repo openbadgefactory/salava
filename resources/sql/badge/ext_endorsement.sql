@@ -78,3 +78,35 @@ DELETE FROM user_badge_endorsement_ext WHERE id = :id
 --name: select-existing-endorsement
 SELECT id FROM user_badge_endorsement_ext ubee
 WHERE issuer_id = :issuer AND user_badge_id = :ubid AND status != "declined"
+
+--name: delete-all-user-endorsements!
+DELETE FROM user_badge_endorsement_ext WHERE issuer_id = :issuer
+
+--name: delete-all-user-requests!
+DELETE FROM user_badge_endorsement_request_ext WHERE issuer_email = :issuer
+
+--name: insert-ext-endorsement-event<!
+INSERT INTO social_event (subject, verb, object, type, ctime, mtime) VALUES (:subject, 'endorse_badge_ext', :object, 'badge', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+
+--name: insert-event-owner!
+INSERT INTO social_event_owners (owner, event_id) VALUES (:object, :event_id)
+
+--name: select-ext-endorsement-receiver-by-badge-id
+SELECT ub.user_id AS id FROM user_badge_endorsement_ext AS ubee
+INNER JOIN user_badge AS ub ON (ub.id = ubee.user_badge_id)
+WHERE ubee.id = :id
+
+--name: select-ext-endorsement-events
+SELECT se.subject, se.verb, se.object, se.ctime, se.type, seo.event_id, seo.last_checked, u.image_file AS issuer_image,u.email,
+    bc.name, bc.image_file, seo.hidden, ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime
+FROM social_event_owners AS seo
+INNER JOIN social_event AS se ON seo.event_id = se.id
+INNER JOIN user_badge_endorsement_ext AS ube ON (ube.id = se.object)
+INNER JOIN user_badge AS ub ON (ub.id = ube.user_badge_id)
+INNER JOIN user_ext AS u ON (ube.issuer_id = u.ext_id)
+INNER JOIN badge AS badge ON (badge.id = ub.badge_id)
+INNER JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+INNER JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_code = badge.default_language_code)
+WHERE seo.owner = :user_id AND se.type = 'badge' AND se.verb = 'endorse_badge_ext' AND ube.status = 'pending'
+ORDER BY se.ctime DESC
+LIMIT 1000

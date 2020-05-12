@@ -4,7 +4,7 @@
   [reagent.core :refer [atom cursor]]
   [reagent-modals.modals :as m]
   [reagent.session :as session]
-  [salava.badge.ui.endorsement :as end :refer [process-text profile]]
+  [salava.badge.ui.endorsement :as end :refer [process-text profile toggle-delete-dialogue confirm-delete]]
   [salava.core.ui.ajax-utils :as ajax]
   [salava.core.i18n :refer [t translate-text]]
   [salava.core.ui.helper :refer [path-for]]
@@ -82,8 +82,8 @@
     :handler (fn [{:keys [status]}]
                (when (= "error" status) (m/modal! [status-modal {:status "error" :message (t :core/Errorpage)}] {}))
                (when (= "success" status)
-                 (swap! state assoc :show-link "none"
-                                    :show-content "none")
+                 #_(swap! state assoc :show-link "none"
+                                      :show-content "none")
                  (init-endorsement user-badge-id state)
                  (m/modal! [status-modal {:status "success" :message (t :badge/Endorsementsuccess)}] {})))})))
 
@@ -294,3 +294,55 @@
                                :on-click #(session/assoc-in! [:user :language] lang)}
                            (clojure.string/upper-case lang) " "])
            languages))])))
+
+(defn ext-endorsement-content [params]
+  (fn []
+    (let [{:keys [endorsement state]} @params
+          {:keys [id name image_file content user_badge_id issuer_id issuer_name email status type issued_on issuer_image]} endorsement]
+      [:div.row.flip {:id "badge-info"}
+       [:div.col-md-3
+        [:div.badge-image [:img.badge-image {:src (str "/" image_file) :alt name}]]]
+       [:div.col-md-9
+        [:div
+         [:h1.uppercase-header name]
+         [:div (t :badge/Manageendorsementtext2)]
+         [:hr.line]
+         [:div.row
+          [:div.col-md-4.col-md-push-8  " "]
+          [:div.col-md-8.col-md-pull-4 [profile {;:id (or endorsee_id issuer_id requester_id requestee_id)
+                                                 :profile_picture issuer_image
+                                                 :issuer_name issuer_name
+                                                 :status status
+                                                 :email email
+                                                 :label (t :social/pending)} issuer_name]]]
+         [:div {:style {:margin-top "15px"}}
+          [:div {:dangerouslySetInnerHTML {:__html content}}]
+
+          [:div.caption
+           [:hr.line]
+           (if (= "pending" status)
+             [:div.buttons
+              [:button.btn.btn-primary {:href "#"
+                                        :on-click #(do
+                                                     (.preventDefault %)
+                                                     #_(update-status id "accepted" user_badge_id state nil #_init-pending-endorsements))
+
+                                        :data-dismiss "modal"}  (t :badge/Acceptendorsement)]
+              [:button.btn.btn-warning.cancel {:href "#"
+                                               :on-click #(do
+                                                            (.preventDefault %)
+                                                            #_(update-status id "declined" user_badge_id state nil #_init-pending-endorsements))
+                                               :data-dismiss "modal"} (t :badge/Declineendorsement)]]
+             [:div.row.flip.control-buttons
+              (if-not @(cursor state [:show-delete-dialogue])
+                [:div.col-md-6.col-sm-6.col-xs-6  [:button.btn.btn-primary.cancel {:data-dismiss "modal"} (t :core/Cancel)]]
+                [:div.col-md-6.col-sm-6.col-xs-6  ""])
+              [:div.col-md-6.col-sm-6.col-xs-6 [:a.delete-btn {:style {:line-height "4" :cursor "pointer"}
+                                                               :on-click #(do
+                                                                            (.preventDefault %)
+
+                                                                            (toggle-delete-dialogue state)
+                                                                            #_(delete-endorsement id user_badge_id nil nil))
+                                                               :href "#"}
+                                                [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]])
+           [confirm-delete state nil #_(delete-endorsement id user_badge_id nil nil)]]]]]])))

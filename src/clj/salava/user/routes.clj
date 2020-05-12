@@ -313,4 +313,21 @@
                  :no-doc true
                  :path-params [id :- s/Str]
                  :summary "Get external user's data"
-                 (ok (u/external-user-info ctx id))))))
+                 (ok (u/external-user-info ctx id)))
+
+            (DELETE "/external/:id" []
+                 :no-doc true
+                 :return (s/enum "success" "error")
+                 :path-params [id :- s/Str]
+                 :summary "Delete external user data"
+                 (ok (u/delete-external-user! ctx id)))
+
+            (GET "/external/data/export/:lng/:id" []
+                 :no-doc true
+                 :summary "Export external user data"
+                 :path-params [id :- s/Str
+                               lng :- s/Str]
+                 (-> (io/piped-input-stream (u/export-external-user-data ctx id lng))
+                     ok
+                     (header "Content-Disposition" (str "attachment; filename=\"mydata.csv\""))
+                     (header "Content-Type" "text/csv"))))))

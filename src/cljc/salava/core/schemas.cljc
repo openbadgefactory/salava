@@ -28,7 +28,8 @@
                  "endorse_badge"
                  "issue"
                  "create"
-                 "delete")
+                 "delete"
+                 "endorse_badge_ext")
 
    :type (s/enum "badge"
                  "user"

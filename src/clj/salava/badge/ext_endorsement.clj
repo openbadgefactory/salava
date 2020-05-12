@@ -5,17 +5,16 @@
   [hiccup.page :refer [html5]]
   [postal.core :refer [send-message]]
   [salava.badge.main :refer [badge-exists?]]
-  [salava.core.util :as util :refer [get-site-name get-db-1 hex-digest digest bytes->base64 get-db plugin-fun get-plugins get-site-url get-data-dir md->html get-full-path get-db-col]]
+  [salava.core.util :as util :refer [publish get-site-name get-db-1 hex-digest digest bytes->base64 get-db plugin-fun get-plugins get-site-url get-data-dir md->html get-full-path get-db-col]]
   [salava.core.i18n :refer [t]]
   [slingshot.slingshot :refer :all]
   [yesql.core :refer [defqueries]])
  (:import
    [java.io ByteArrayOutputStream]
-
    [javax.imageio ImageIO]))
 
 (defqueries "sql/badge/ext_endorsement.sql")
-
+ 
 (def style-string (slurp (io/resource "public/css/email.css")))
 
 (defn generate-external-id []
@@ -229,7 +228,7 @@
   (sent-pending-ext-requests-by-badge-id {:id user-badge-id} (get-db ctx)))
 
 (defn is-already-endorsed? [ctx user-badge-id issuer-id]
-  (if-let [id (select-existing-endorsement {:issuer issuer-id :ubid user-badge-id (into {:result-set-fn first :row-fn :id})})]
+  (if-let [id (select-existing-endorsement {:issuer issuer-id :ubid user-badge-id} (into {:result-set-fn first :row-fn :id} (get-db ctx)))]
     true
     false))
 
@@ -273,6 +272,7 @@
                                                      image_file))}
                                   (get-db ctx)))
           (update-request-status ctx user-badge-id email "endorsed")
+          (publish ctx :endorse_badge_ext {:subject (:id existing-info) :verb "endorse_badge_ext" :object id :type "badge"})
           {:id id :status "success"}))
     (catch Object _
       (log/error _)
@@ -325,10 +325,30 @@
 (defn given-user-badge-endorsement [ctx user-badge-id issuer-id]
  (select-user-badge-issuer-endorsement {:ubid user-badge-id :issuer issuer-id} (get-db-1 ctx)))
 
-(defn all-endorsements [ctx issuer-id]
- (select-all-issuer-endorsements {:issuer issuer-id} (get-db ctx)))
+(defn all-endorsements
+ ([ctx issuer-id]
+  (select-all-issuer-endorsements {:issuer issuer-id} (get-db ctx)))
+ ([ctx issuer-id export?]
+  {:endorsements (->> (all-endorsements ctx issuer-id)
+                      (mapv #(hash-map :endorsement (:content %))))}))
 
-(defn all-requests [ctx issuer-id]
- (->> (select-all-endorsement-requests {:issuer issuer-id} (get-db ctx))
-      (mapv #(assoc % :type "request"))
-      (filter #(= (:status %) "pending"))))
+(defn all-requests
+ ([ctx issuer-id]
+  (->> (select-all-endorsement-requests {:issuer issuer-id} (get-db ctx))
+       (mapv #(assoc % :type "request"))
+       (filter #(= (:status %) "pending"))))
+ ([ctx issuer-id export?]
+  {:Endorsementrequests (->> (all-requests ctx issuer-id)
+                             (mapv #(hash-map :Endorsementrequest (:content %))))}))
+
+(defn delete-external-user-endorsements [ctx issuer-id]
+ (let [email (:email (ext-endorser ctx issuer-id))]
+  (delete-all-user-endorsements! {:issuer issuer-id} (get-db ctx))
+  (delete-all-user-requests! {:issuer email} (get-db ctx))))
+
+(defn insert-ext-endorse-event! [ctx data]
+  (insert-ext-endorsement-event<! data (get-db ctx)))
+
+(defn insert-ext-endorsement-owner! [ctx data]
+ (let [owner-id (select-ext-endorsement-receiver-by-badge-id {:id (:object data)} (into {:result-set-fn first :row-fn :id} (get-db ctx)))]
+   (insert-event-owner! (assoc data :object owner-id) (get-db ctx))))

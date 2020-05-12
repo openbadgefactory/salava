@@ -1,5 +1,8 @@
 (ns salava.user.db
   (:require [yesql.core :refer [defqueries]]
+            [clojure.tools.logging :as log]
+            [clojure.java.io :as io]
+            [clojure.data.csv :as csv]
             [clojure.java.jdbc :as jdbc]
             [clojure.string :refer [trim split]]
             [slingshot.slingshot :refer :all]
@@ -19,6 +22,7 @@
             [salava.badgeIssuer.db :as selfie]
             [salava.social.db :as so]
             [salava.profile.db :as up]))
+
 
 (defqueries "sql/user/main.sql")
 
@@ -475,8 +479,38 @@
   (as-> (first (plugin-fun (get-plugins ctx)  "ext-endorsement" "ext-endorser")) $
         (if (ifn? $) ($ ctx id) {})))
 
-(defn delete-external-user! [ctx id])
-  ;; delete requests
-  ;; delete endorsements
-  ;; delete user info
-  
+(defn delete-external-user! [ctx id]
+  (log/info "Request to delete external user id :" id)
+  (try+
+   (as-> (first (plugin-fun (get-plugins ctx) "ext-endorsement" "delete-external-user-endorsements")) $
+         (when (ifn? $) ($ ctx id)))
+   (delete-external-user-info! {:id id} (get-db ctx))
+   (log/info "External user info deleted!")
+   "success"
+   (catch Object _
+     (log/error _)
+     "error")))
+
+(defn export-external-user-data [ctx id lng]
+  (let [endorsements (as-> (first (plugin-fun (get-plugins ctx) "ext-endorsement" "all-endorsements")) $
+                       (if (ifn? $) ($ ctx id true) {}))
+        requests (as-> (first (plugin-fun (get-plugins ctx) "ext-endorsement" "all-requests")) $
+                         (if (ifn? $) ($ ctx id true) {}))
+        personal-info (external-user-info ctx id)
+        data (-> personal-info
+                 (assoc :image_file (str (u/get-site-url ctx) (:image_file personal-info)))
+                 (merge endorsements)
+                 (merge requests)
+                 (dissoc :mtime :ctime :id :ext_id)
+                 (clojure.set/rename-keys {:name :Name :url :URL :email :Email :image_file :Logoorpicture}))
+        data->csvformat (reduce-kv
+                          (fn [r k v]
+                            (when v
+                             (conj r
+                              [(t (keyword (str "badge/" (name k))) lng) (if (vector? v) (mapv vals v) v)])))
+
+                          []
+                          data)]
+       (fn [out]
+        (with-open [writer (io/writer out)]
+         (csv/write-csv writer data->csvformat :seperator \:)))))
