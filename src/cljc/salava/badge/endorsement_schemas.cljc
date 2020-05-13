@@ -20,7 +20,7 @@
 (s/defschema request (-> endorsement
                          (assoc
                           :status (s/enum "pending" "endorsed" "declined")
-                          (s/optional-key  :type) (s/enum "sent_request" "request")
+                          (s/optional-key  :type) (s/enum "sent_request" "request" "ext_request")
                           (s/optional-key :ctime) s/Int)))
 
 (s/defschema received-user-endorsement-p  (-> endorsement
@@ -87,10 +87,21 @@
                                  :sent-requests [(s/maybe sent-request-p)]
                                  :requests [(s/maybe received-request-p)]})
 
+
 (s/defschema all-endorsements {:given [(s/maybe given-user-endorsement)]
                                :received [(s/maybe received-user-endorsement)]
                                :sent-requests [(s/maybe sent-request)]
                                :requests [(s/maybe received-request)]
+                               (s/optional-key :ext-received) [(s/maybe (-> received-user-endorsement
+                                                                            (assoc :issuer_id s/Str
+                                                                                   :issuer_image (s/maybe s/Str)
+                                                                                   :email s/Str
+                                                                                   :type (s/eq "ext"))
+                                                                            (dissoc :profile_picture)))]
+                               (s/optional-key :ext-sent-requests) [(s/maybe (-> sent-request
+                                                                                 (dissoc :profile_picture :type :requestee_id)
+                                                                                 (assoc :issuer_image (s/maybe s/Str)
+                                                                                        :email s/Str)))]
                                :all-endorsements [(s/maybe s/Any)]})
 
 (s/defschema user-badge-endorsements-p {:endorsements [(s/maybe received-user-endorsement-p)]})

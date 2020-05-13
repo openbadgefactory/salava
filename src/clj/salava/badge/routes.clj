@@ -529,6 +529,16 @@
                   :current-user current-user
                   (ok (e/update-status! ctx (:id current-user) user_badge_id endorsement-id status)))
 
+            (POST "/ext/update_status/:endorsement-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [endorsement-id :- Long]
+                   :body-params [status :- (s/enum "accepted" "declined")
+                                 user_badge_id :- s/Int]
+                   :summary "Update external endorsement status"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (ext/update-endorsement-status! ctx (:id current-user) user_badge_id endorsement-id status)))
+
             (POST "/request/:user-badge-id" []
                   :return {:status (s/enum "success" "error")}
                   :path-params [user-badge-id :- Long]
@@ -580,6 +590,13 @@
                     :path-params [id :- Long]
                     :summary "Delete endorsement"
                     (ok (ext/delete-endorsement! ctx id)))
+
+            (DELETE "/ext_request/:id" []
+                    :no-doc true
+                    :return {:status (s/enum "error" "success")}
+                    :path-params [id :- Long]
+                    :summary "Delete external endorsement request"
+                    (ok (ext/delete-sent-request! ctx id)))
 
             (DELETE "/:user-badge-id/:endorsement-id" []
                     :return {:status (s/enum "success" "error")}

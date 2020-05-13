@@ -133,11 +133,16 @@
         given (endorsements-given ctx user-id)
         requests (->> (endorsement-requests ctx user-id) (filterv #(= (:status %) "pending")) (mapv #(assoc % :type "request")))
         sent-requests (some->> (select-sent-endorsement-requests {:id user-id} (get-db ctx)) (mapv #(assoc % :type "sent_request")))
-        all (->> (list* given received requests sent-requests) flatten (sort-by :mtime >))]
+        ext-received (some->> (if md? (ext/endorsements-received ctx user-id true)(ext/endorsements-received ctx user-id))
+                              (mapv #(assoc % :type "ext")))
+        ext-sent-requests (some->> (select-sent-ext-endorsement-requests {:id user-id} (get-db ctx)) (mapv #(assoc % :type "ext_request")))
+        all (->> (list* given received requests sent-requests ext-received ext-sent-requests) flatten (sort-by :mtime >))]
     {:given given
      :received received
      :requests requests
      :sent-requests sent-requests
+     :ext-received ext-received
+     :ext-sent-requests ext-sent-requests
      :all-endorsements all}))
 
 (defn all-user-endorsements-p [ctx user-id]

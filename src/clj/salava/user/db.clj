@@ -19,6 +19,7 @@
             [salava.core.time :refer [unix-time]]
             [salava.mail.mail :as m]
             [salava.badge.endorsement :as end]
+            [salava.badge.ext-endorsement :as ext]
             [salava.badgeIssuer.db :as selfie]
             [salava.social.db :as so]
             [salava.profile.db :as up]))
@@ -470,7 +471,7 @@
      :endorsers (->> (end/endorsements-received ctx user-id) count)
      :endorsement-requests (->> (end/endorsement-requests ctx user-id) count)
      :pending-endorsements-requests (->> (end/endorsement-requests ctx user-id) (filter #(= "pending" (:status %))) count)
-     :pending-endorsements (->> (end/received-pending-endorsements ctx user-id) count)
+     :pending-endorsements (->> (concat (end/received-pending-endorsements ctx user-id)  (ext/endorsements-received ctx user-id)) count)
      :connections {:badges (->> (so/get-connections-badge ctx user-id) count)}
      :user-profile user-profile
      :published_badges_count public-badges-count}))

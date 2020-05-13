@@ -30,6 +30,12 @@
                 :data-dismiss "modal"}
        "OK"]]]))
 
+(defn delete-sent-request! [id state]
+ (ajax/DELETE
+  (path-for (str "/obpv1/badge/user_endorsement/ext_request/" id) true)
+  {:handler (fn [data]
+              "")}))
+
 (defn init-endorsement [user-badge-id state]
   (ajax/GET
    (path-for (str "/obpv1/badge/user_endorsement/ext/" user-badge-id "/"(:endorser-id @state)))
@@ -51,15 +57,18 @@
                   (init-ext-endorser (:endorser-id @state) state)
                   (init-endorsement (:id @state) state)))}))
 
-(defn delete-endorsement [state]
-  (let [id @(cursor state [:ext-endorsement :id])]
+(defn delete-endorsement [id state reload-fn]
+  (let [id (if id id @(cursor state [:ext-endorsement :id]))]
     (ajax/DELETE
       (path-for (str "/obpv1/badge/user_endorsement/ext/endorsement/" id))
       {:handler (fn [data]
                   (when (= (:status data) "success")
-                    (m/modal! [status-modal {:status "success" :message (t :badge/Endorsementdeletesuccess)}] {})
-                    (init-request (:endorser-id @state) state)
-                    (swap! state assoc :show-content "none")))})))
+                    (if reload-fn
+                     (reload-fn)
+                     (do
+                       (m/modal! [status-modal {:status "success" :message (t :badge/Endorsementdeletesuccess)}] {})
+                       (init-request (:endorser-id @state) state)
+                       (swap! state assoc :show-content "none")))))})))
 
 (defn decline-endorsement-request [user-badge-id state]
   (ajax/POST
@@ -86,6 +95,15 @@
                                       :show-content "none")
                  (init-endorsement user-badge-id state)
                  (m/modal! [status-modal {:status "success" :message (t :badge/Endorsementsuccess)}] {})))})))
+
+(defn update-status [id status user_badge_id state reload-fn]
+  (ajax/POST
+   (path-for (str "/obpv1/badge/user_endorsement/ext/update_status/" id))
+   {:params {:user_badge_id user_badge_id
+             :status status}
+    :handler (fn [data]
+               (when (= "success" (:status data))
+                 (when reload-fn (reload-fn state))))}))
 
 (defn upload-modal [{:keys [status message reason]}]
   [:div
@@ -265,7 +283,7 @@
                            (blank? @(cursor state [:ext-endorser :name])))}
             (t :badge/Save)]
            [:button.btn.btn-danger.btn-bulky
-            {:on-click #(delete-endorsement state)}
+            {:on-click #(delete-endorsement nil state nil)}
             [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]]]]]]]))
 
 (defn ext-endorse-badge [state]
@@ -305,7 +323,7 @@
        [:div.col-md-9
         [:div
          [:h1.uppercase-header name]
-         [:div (t :badge/Manageendorsementtext2)]
+         [:div (if (= type "ext_request") (t :badge/Managesentendorsementrequest) (t :badge/Manageendorsementtext2))]
          [:hr.line]
          [:div.row
           [:div.col-md-4.col-md-push-8  " "]
@@ -315,34 +333,43 @@
                                                  :status status
                                                  :email email
                                                  :label (t :social/pending)} issuer_name]]]
-         [:div {:style {:margin-top "15px"}}
-          [:div {:dangerouslySetInnerHTML {:__html content}}]
+         (if-not (= type "ext_request")
+          [:div {:style {:margin-top "15px"}}
+           [:div {:dangerouslySetInnerHTML {:__html content}}]
 
-          [:div.caption
-           [:hr.line]
-           (if (= "pending" status)
-             [:div.buttons
-              [:button.btn.btn-primary {:href "#"
-                                        :on-click #(do
-                                                     (.preventDefault %)
-                                                     #_(update-status id "accepted" user_badge_id state nil #_init-pending-endorsements))
+           [:div.caption
+            [:hr.line]
+            (if (= "pending" status)
+              [:div.buttons
+               [:button.btn.btn-primary {:href "#"
+                                         :on-click #(do
+                                                      (.preventDefault %)
+                                                      (update-status id "accepted" user_badge_id state nil))
 
-                                        :data-dismiss "modal"}  (t :badge/Acceptendorsement)]
-              [:button.btn.btn-warning.cancel {:href "#"
-                                               :on-click #(do
-                                                            (.preventDefault %)
-                                                            #_(update-status id "declined" user_badge_id state nil #_init-pending-endorsements))
-                                               :data-dismiss "modal"} (t :badge/Declineendorsement)]]
-             [:div.row.flip.control-buttons
-              (if-not @(cursor state [:show-delete-dialogue])
-                [:div.col-md-6.col-sm-6.col-xs-6  [:button.btn.btn-primary.cancel {:data-dismiss "modal"} (t :core/Cancel)]]
-                [:div.col-md-6.col-sm-6.col-xs-6  ""])
-              [:div.col-md-6.col-sm-6.col-xs-6 [:a.delete-btn {:style {:line-height "4" :cursor "pointer"}
-                                                               :on-click #(do
-                                                                            (.preventDefault %)
-
-                                                                            (toggle-delete-dialogue state)
-                                                                            #_(delete-endorsement id user_badge_id nil nil))
-                                                               :href "#"}
-                                                [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]])
-           [confirm-delete state nil #_(delete-endorsement id user_badge_id nil nil)]]]]]])))
+                                         :data-dismiss "modal"}  (t :badge/Acceptendorsement)]
+               [:button.btn.btn-warning.cancel {:href "#"
+                                                :on-click #(do
+                                                             (.preventDefault %)
+                                                             (update-status id "declined" user_badge_id state nil))
+                                                :data-dismiss "modal"} (t :badge/Declineendorsement)]]
+              [:div.row.flip.control-buttons
+               (if-not @(cursor state [:show-delete-dialogue])
+                 [:div.col-md-6.col-sm-6.col-xs-6  [:button.btn.btn-primary.cancel {:data-dismiss "modal"} (t :core/Cancel)]]
+                 [:div.col-md-6.col-sm-6.col-xs-6  ""])
+               [:div.col-md-6.col-sm-6.col-xs-6 [:a.delete-btn {:style {:line-height "4" :cursor "pointer"}
+                                                                :on-click #(do
+                                                                             (.preventDefault %)
+                                                                             (toggle-delete-dialogue state))
+                                                                :href "#"}
+                                                 [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]])
+            [confirm-delete state #(delete-endorsement id state (fn []))]]]
+          [:div {:style {:margin-top "15px"}}
+           [:div {:dangerouslySetInnerHTML {:__html content}}]
+           [:div.caption
+            [:hr.line]
+            [:a {:href "#"
+                 :on-click #(do
+                              (.preventDefault %)
+                              (toggle-delete-dialogue state))}
+             [:span [:i.fa.fa-trash] (t :badge/Deleteendorsementrequest)]]
+            [confirm-delete state #(delete-sent-request! id state)]]])]]])))

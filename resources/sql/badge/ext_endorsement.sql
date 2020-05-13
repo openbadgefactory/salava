@@ -85,6 +85,9 @@ DELETE FROM user_badge_endorsement_ext WHERE issuer_id = :issuer
 --name: delete-all-user-requests!
 DELETE FROM user_badge_endorsement_request_ext WHERE issuer_email = :issuer
 
+--name: delete-sent-external-request! 
+DELETE FROM user_badge_endorsement_request_ext WHERE id = :id
+
 --name: insert-ext-endorsement-event<!
 INSERT INTO social_event (subject, verb, object, type, ctime, mtime) VALUES (:subject, 'endorse_badge_ext', :object, 'badge', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
@@ -110,3 +113,31 @@ INNER JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_
 WHERE seo.owner = :user_id AND se.type = 'badge' AND se.verb = 'endorse_badge_ext' AND ube.status = 'pending'
 ORDER BY se.ctime DESC
 LIMIT 1000
+
+--name: update-ext-endorsement-status!
+UPDATE user_badge_endorsement_ext SET status = :status, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: select-ext-received-endorsements
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,
+endorser.image_file AS issuer_image, endorser.email, bc.name, bc.image_file, bc.description
+FROM user_badge_endorsement_ext AS ube
+LEFT JOIN user_ext AS endorser ON endorser.ext_id = ube.issuer_id
+JOIN user_badge AS ub ON ub.id = ube.user_badge_id
+JOIN user AS recepient ON  ub.user_id = recepient.id
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE recepient.id = :user_id
+ORDER BY ube.mtime DESC
+
+--name: select-sent-ext-endorsement-requests
+--select all endorsement requests sent by user
+SELECT uber.id, uber.user_badge_id, uber.content, uber.status, issuer.name AS issuer_name, issuer.image_file AS issuer_image, issuer.email, uber.ctime, uber.mtime, bc.name, bc.image_file
+FROM user_badge_endorsement_request_ext AS uber
+JOIN user_badge AS ub ON ub.id= uber.user_badge_id
+JOIN user AS u ON u.id = ub.user_id
+JOIN user_ext AS issuer ON uber.issuer_email = issuer.email
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE uber.status = 'pending' AND u.id = :id

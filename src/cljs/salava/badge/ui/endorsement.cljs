@@ -579,9 +579,11 @@
   (let [endorsements (case @(cursor state [:show])
                        "all" @(cursor state [:all-endorsements])
                        "given" @(cursor state [:given])
-                       "received" @(cursor state [:received])
+                       "received" (-> (concat @(cursor state [:received]) @(cursor state [:ext-received])))
                        "requests" @(cursor state [:requests])
-                       "sent-requests" @(cursor state [:sent-requests])
+                       "sent-requests" (concat @(cursor state [:sent-requests]) @(cursor state [:ext-sent-requests]))
+                       "ext-received" @(cursor state [:ext-received])
+                       "ext-sent-requests" @(cursor state [:ext-sent-requests])
                        @(cursor state [:all-endorsements]))
         processed-endorsements (if (blank? @(cursor state [:search]))
                                  endorsements
@@ -609,17 +611,21 @@
               "received" (t :badge/Receivedendorsementstext)
               "requests" (t :badge/Endorsementrequesttext)
               "sent-requests" (t :badge/Sentendorsementrequesttext)
+              ;"ext-received" (t :badge/Extreceivedendorsementtext)
               (t :badge/Allendorsementstext))]]
 
      [:div.panel-body.endorsement-container
       [:div.table.endorsementlist  {:summary (t :badge/Endorsements)}
        (reduce (fn [r endorsement]
-                 (let [{:keys [id endorsee_id issuer_id requester_id profile_picture issuer_name first_name last_name name image_file content status user_badge_id mtime type]} endorsement
+                 (let [{:keys [id endorsee_id issuer_id requester_id profile_picture issuer_name first_name last_name name image_file content status user_badge_id mtime type issuer_image email]} endorsement
                        endorser (or issuer_name (str first_name " " last_name))]
                    (conj r [:div.list-item.row.flip
                             [:a {:href "#" :on-click #(do
                                                         (.preventDefault %)
-                                                        (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement :state state}) {:hidden (fn [] (init-user-endorsements state))}))}
+                                                        (if (or (= type "ext") (= type "ext_request"))
+                                                         (mo/open-modal [:badge :extuserendorsement] (atom {:endorsement endorsement :state state}) {:hidden (fn [] (init-user-endorsements state))})
+
+                                                         (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement :state state}) {:hidden (fn [] (init-user-endorsements state))})))}
 
                              [:div.col-md-4.col-md-push-8
                               [:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
@@ -628,12 +634,14 @@
                                [:div;.row
                                 [:div.labels
                                  (cond
+                                   (= type "ext") [:span.label.label-success (t :badge/Endorsedyou)]
                                    (= type "request") [:span.label.label-danger (t :badge/Endorsementrequest)]
                                    (= type "sent_request") [:span.label.label-info (t :badge/Endorsementrequest)]
+                                   (= type "ext_request") [:span.label.label-info (t :badge/Endorsementrequest)]
                                    issuer_id [:span.label.label-success (t :badge/Endorsedyou)]
                                    endorsee_id [:span.label.label-primary (t :badge/Youendorsed)]
                                    :else [:span.label.label-success (t :badge/Endorsedyou)])
-                                 (if (and (not= "sent_request" type) (= "pending" status))
+                                 (if (and (not= "sent_request" type) (not= "ext_request" type) (= "pending" status))
                                    [:span.label.label-info
                                     (t :social/pending)])]]
                                [:div.media-left.media-top.list-item-bodyv
@@ -643,9 +651,9 @@
                                 [:h3.media-heading.badge-name  name]
                                 [:div.media
                                  [:div.child-profile [:div.media-left.media-top
-                                                      [:img.media-object.small-img {:src (profile-picture profile_picture) :alt ""}]]
+                                                      [:img.media-object.small-img {:src (profile-picture (or profile_picture issuer_image)) :alt ""}]]
                                   [:div.media-body
-                                   [:p endorser]]]]]]]]])))
+                                   [:p (if (or (= type "ext") (= type "ext_request")) [:span [:i.fa.fa-envelope.fa-fw]]) (if-not (clojure.string/blank? endorser) endorser email)]]]]]]]]])))
                [:div] endorsements)]]]))
 
 (defn order-opts []
@@ -657,7 +665,12 @@
 (defn user-endorsements-content [state]
   (let [pending-requests-count (count (filter #(= "pending" (:status %)) @(cursor state [:requests])))
         pending-received-count (count (filter #(= "pending" (:status %)) @(cursor state [:received])))
-        sent-requests-count (count @(cursor state [:sent-requests]))]
+        pending-ext-received-count (count (filter #(= "pending" (:status %)) @(cursor state [:ext-received])))
+        pending-received-count (+ pending-received-count pending-ext-received-count)
+        sent-requests-count (count @(cursor state [:sent-requests]))
+        ext-requests-count (count @(cursor state [:ext-sent-requests]))
+        sent-requests-count (+ sent-requests-count ext-requests-count)]
+
     [:div
      [m/modal-window]
      [:div#badge-stats

@@ -4,7 +4,7 @@
   [clojure.tools.logging :as log]
   [hiccup.page :refer [html5]]
   [postal.core :refer [send-message]]
-  [salava.badge.main :refer [badge-exists?]]
+  [salava.badge.main :refer [badge-owner? badge-exists? send-badge-info-to-obf]]
   [salava.core.util :as util :refer [publish get-site-name get-db-1 hex-digest digest bytes->base64 get-db plugin-fun get-plugins get-site-url get-data-dir md->html get-full-path get-db-col]]
   [salava.core.i18n :refer [t]]
   [slingshot.slingshot :refer :all]
@@ -14,7 +14,7 @@
    [javax.imageio ImageIO]))
 
 (defqueries "sql/badge/ext_endorsement.sql")
- 
+
 (def style-string (slurp (io/resource "public/css/email.css")))
 
 (defn generate-external-id []
@@ -176,7 +176,6 @@
                           {:type :inline
                            :content (io/file (str (get-data-dir ctx) "/" (util/file-from-url-fix ctx image)))
                            :content-id bid
-                           ;:file-name (str name ".png")
                            :content-type "image/png"}
                           {:type :inline
                            :content (io/file logo)
@@ -322,6 +321,19 @@
    (log/error _)
    {:status "error"})))
 
+(defn update-endorsement-status! [ctx user-id user-badge-id id status]
+   (try+
+     (when (badge-owner? ctx user-badge-id user-id)
+       (update-ext-endorsement-status! {:id id :status status} (get-db ctx))
+       (case status
+         "accepted" (send-badge-info-to-obf ctx user-badge-id user-id)
+         "declined" (delete-endorsement! ctx id);(delete! ctx user-badge-id endorsement-id user-id)
+         nil)
+       {:status "success"})
+     (catch Object _
+       (log/error _)
+       {:status "error"})))
+
 (defn given-user-badge-endorsement [ctx user-badge-id issuer-id]
  (select-user-badge-issuer-endorsement {:ubid user-badge-id :issuer issuer-id} (get-db-1 ctx)))
 
@@ -352,3 +364,21 @@
 (defn insert-ext-endorsement-owner! [ctx data]
  (let [owner-id (select-ext-endorsement-receiver-by-badge-id {:id (:object data)} (into {:result-set-fn first :row-fn :id} (get-db ctx)))]
    (insert-event-owner! (assoc data :object owner-id) (get-db ctx))))
+
+(defn endorsements-received
+ ([ctx user-id]
+  (map (fn [e] (-> e (update :content md->html)))
+       (select-ext-received-endorsements {:user_id user-id} (get-db ctx))))
+ ([ctx user-id md?]
+  (select-ext-received-endorsements {:user_id user-id} (get-db ctx))))
+
+(defn sent-endorsement-requests [ctx user-id]
+  (map (fn [r] (-> r (update :content md->html))) (select-sent-ext-endorsement-requests {:user_id user-id} (get-db ctx))))
+
+(defn delete-sent-request! [ctx id]
+ (try+
+  (delete-sent-external-request!  {:id id} (get-db ctx))
+  {:status "success"}
+  (catch Object _
+   (log/error _)
+   {:status "error"})))
