@@ -1,4 +1,6 @@
 # Changelog
+## 3.11.0
+- External endorsements
 
 ## 3.10.2
 - Fixed French translations
