@@ -156,11 +156,11 @@ GROUP BY ube.user_badge_id
 SELECT COUNT(id) AS count FROM user_badge_endorsement_ext WHERE user_badge_id = :id AND status = 'pending';
 
 --name: select-user-badge-ext-endorsements
-SELECT ube.id, ube.user_badge_id, ube.issuer_id, u.name AS issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.image_file AS profile_picture
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, u.name AS issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.image_file AS issuer_image
 FROM user_badge_endorsement_ext AS ube
 LEFT JOIN user_ext AS u on u.ext_id = ube.issuer_id
 WHERE ube.user_badge_id = :user_badge_id
-ORDER BY ube.mtime DESC
+ORDER BY ube.mtime DESC 
 
 --name: accepted-ext-endorsement-count
 SELECT COUNT(id) AS count FROM user_badge_endorsement_ext WHERE user_badge_id = :id AND status = 'accepted';

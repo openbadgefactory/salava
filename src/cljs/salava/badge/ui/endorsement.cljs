@@ -271,15 +271,15 @@
 (defn profile-link-inline [id issuer_name picture name type]
   (if (= type "ext")
    [:div
-    [:img {:src (profile-picture picture) :alt (str issuer_name " " (t :user/Profilepicture))}
-     (str issuer_name " ")]]
+    [:img {:src (profile-picture picture) :alt (str issuer_name " " (t :user/Profilepicture))}]
+    (str issuer_name " ") (t :badge/Hasendorsedyou)]
    [:div [:a {:href "#"
               :on-click #(mo/open-modal [:profile :view] {:user-id id})}
           [:img {:src (profile-picture picture) :alt (str issuer_name " " (t :user/Profilepicture))}]
-          (str issuer_name " ")]  (case type
-                                    "endorse" (t :badge/Hasendorsedyou)
-                                    "request" (str (t :badge/requestsendorsement) " " name)
-                                    (t :badge/Hasendorsedyou))]))
+          (str issuer_name " ")  (case type
+                                   "endorse" (t :badge/Hasendorsedyou)
+                                   "request" (str (t :badge/requestsendorsement) " " name)
+                                   (t :badge/Hasendorsedyou))]]))
 
 (defn pending-endorsements []
   (let [state (atom {:user-id (-> (session/get :user) :id) :pending []})]
@@ -288,13 +288,12 @@
       [:div.endorsebadge
        (reduce (fn [r endorsement]
                  (let [{:keys [id user_badge_id image_file name content profile_picture issuer_id description issuer_name issuer_image type]} endorsement]
-                   (prn type "dd")
                    (conj r
                          [:div
                           [:div.col-md-12
                            [:div.thumbnail
                             [:div.endorser.col-md-12
-                             [profile-link-inline issuer_id issuer_name (or profile_picture issuer_image) nil "endorse"]
+                             [profile-link-inline issuer_id issuer_name (or profile_picture issuer_image) nil (if (= type "ext") "ext" "endorse")]
                              [:hr.line]]
 
                             [:div.caption.row.flip
@@ -346,7 +345,7 @@
         [:div
          [:div#endorsebadge
           (reduce (fn [r endorsement]
-                    (let [{:keys [id user_badge_id image_file name content issuer_name first_name last_name profile_picture issuer_id issuer_name status type]} endorsement]
+                    (let [{:keys [id user_badge_id image_file name content issuer_name first_name last_name profile_picture issuer_id issuer_image issuer_name status type]} endorsement]
                       (conj r [:div.panel.panel-default.endorsement
                                [:div.panel-heading {:id (str "heading" id)}
                                 [:div.panel-title
@@ -354,7 +353,7 @@
                                  [:div.row.flip.settings-endorsement
                                   [:div.col-md-9
                                    (if  (= type "ext")
-                                     [:div [:img.small-image {:src (profile-picture profile_picture) :alt ""}] [:i.fa.fa-envelope] issuer_name]
+                                     [:div [:img.small-image {:src (profile-picture issuer_image) :alt ""}] [:i.fa.fa-envelope] issuer_name]
 
                                      (if issuer_id
                                        [:a {:href "#"

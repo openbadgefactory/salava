@@ -108,7 +108,7 @@
                 (map #(update % :content md->html))
                 (map #(assoc % :type "ext"))))
       flatten
-      (sort-by :mtime >))) 
+      (sort-by :mtime >)))
 
 (defn endorsements-received
  ([ctx user-id]

@@ -40,8 +40,12 @@
                                             :image_file (s/maybe s/Str))))
 
 (s/defschema received-ext-endorsements (-> received-user-endorsement
-                                           (dissoc :issuer_id :profile_picture)
-                                           (assoc :issuer_id s/Str :type s/Str :issuer_image (s/maybe s/Str) :email s/Str)))
+                                           (dissoc :issuer_id :profile_picture :description :image_file :name)
+                                           (assoc :issuer_id s/Str
+                                                  :type s/Str
+                                                  (s/optional-key :issuer_image) (s/maybe s/Str)
+                                                  (s/optional-key :email) s/Str
+                                                  (s/optional-key :profile_picture) (s/maybe s/Str))))
 
 (s/defschema given-user-endorsement-p  (-> endorsement
                                            (assoc
@@ -120,8 +124,11 @@
                                                                      received-ext-endorsements))]})
 
 (s/defschema pending-user-endorsements {:endorsements [(s/maybe (either
-                                                                  (-> received-user-endorsement (dissoc :status :mtime) (assoc :ctime s/Int (s/optional-key :mtime) s/Int))
-                                                                  received-ext-endorsements))]})
+                                                                 (-> received-user-endorsement (dissoc :status :mtime) (assoc :ctime s/Int (s/optional-key :mtime) s/Int))
+                                                                 (-> received-ext-endorsements
+                                                                     (assoc :image_file (s/maybe s/Str)
+                                                                            :name s/Str
+                                                                            :description (s/maybe s/Str)))))]})
 
 (s/defschema request-endorsement {:content content
                                   (s/optional-key :user-ids) [(s/maybe s/Int)]

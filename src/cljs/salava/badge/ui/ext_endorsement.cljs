@@ -301,8 +301,9 @@
                            (not @(cursor state [:accept-terms])))}
             (t :badge/Save)]
            [:button.btn.btn-danger.btn-bulky
-            {:on-click #(delete-endorsement nil state nil)}
-            [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]]]]]]]))
+            {:on-click #(toggle-delete-dialogue state)} ;(delete-endorsement nil state nil)}
+            [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]
+         [confirm-delete state #(delete-endorsement nil state nil)]]]]]]]))
 
 
 
