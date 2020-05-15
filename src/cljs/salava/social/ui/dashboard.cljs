@@ -129,6 +129,24 @@
          [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
      (stream/hide-event event_id state)]))
 
+(defn ext-endorse-event-badge [event state]
+  (let [{:keys [event_id subject verb image_file message ctime event_id name object issuer_image issuer_name]}  event
+        endorsement (select-keys event [:id :email :issuer_image :name :issuer_name :image_file :content :user_badge_id :issuer_id :status])]
+
+    [:div {:style {:height "100%"}}
+     [:a {:href "#"
+          :on-click #(do
+                       (mo/open-modal [:badge :extuserendorsement] (atom {:endorsement endorsement}) {:hidden (fn [] (init-dashboard state))})
+                       (.preventDefault %))}
+      [:div {:class "media"}
+       [:div.media-left
+        [:img.small-image {:src (profile-picture issuer_image) :alt ""}]] ;(str first_name " " last_name)}]]
+       [:div.media-body
+        [:div.content-text
+         [:p.content-heading (str issuer_name " " (t :badge/Hasendorsedyou) " " name)]
+         [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
+     (stream/hide-event event_id state)]))
+
 (defn endorsement-request-event-badge [event state]
   (let [{:keys [event_id subject verb image_file message ctime event_id name object first_name last_name profile_picture]}  event
         endorsement (select-keys event [:id :profile_picture :first_name :last_name :name :image_file :content :user_badge_id :requester_id :status :description :issuer_name :issuer_content_id :issued_on])]
@@ -283,6 +301,7 @@
                                                                                 (and (= "badge" (:type event)) (= "endorse_badge" (:verb event))) (endorse-event-badge event state)
                                                                                 (and (= "badge" (:type event)) (= "request_endorsement" (:verb event))) (endorsement-request-event-badge event state)
                                                                                 (and (= "selfie" (:type event)) (= "issue" (:verb event))) (selfie-issue-event event state)
+                                                                                (and (= "badge" (:type event)) (= "endorse_badge_ext" (:verb event))) (ext-endorse-event-badge event state)
                                                                                 :else "")]))
 
                                                                    [:div (when (>= (count events) 4) [:div.clear_all [:a {:href "#" :on-click #(hide-all-events! state)} [:span [:i.fa.fa-remove.fa-fw] (t :social/clearall)]]])] events)

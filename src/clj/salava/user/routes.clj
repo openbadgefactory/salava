@@ -42,6 +42,7 @@
             (layout/main ctx "/delete-user/:lang")
             (layout/main ctx "/terms")
             (layout/main ctx "/registration-complete")
+            (layout/main ctx "/external/data/:id")
 
             (GET "/verify_email/:verification_key" []
                  :no-doc true
@@ -306,4 +307,27 @@
                  :summary "Get dashboard information"
                  :auth-rules access/signed
                  :current-user current-user
-                 (ok (u/dashboard-info ctx (:id current-user)))))))
+                 (ok (u/dashboard-info ctx (:id current-user))))
+
+            (GET "/external/data/:id" []
+                 :no-doc true
+                 :path-params [id :- s/Str]
+                 :summary "Get external user's data"
+                 (ok (u/external-user-info ctx id)))
+
+            (DELETE "/external/:id" []
+                 :no-doc true
+                 :return (s/enum "success" "error")
+                 :path-params [id :- s/Str]
+                 :summary "Delete external user data"
+                 (ok (u/delete-external-user! ctx id)))
+
+            (GET "/external/data/export/:lng/:id" []
+                 :no-doc true
+                 :summary "Export external user data"
+                 :path-params [id :- s/Str
+                               lng :- s/Str]
+                 (-> (io/piped-input-stream (u/export-external-user-data ctx id lng))
+                     ok
+                     (header "Content-Disposition" (str "attachment; filename=\"mydata.csv\""))
+                     (header "Content-Type" "text/csv"))))))

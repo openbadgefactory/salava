@@ -24,7 +24,7 @@
 (defqueries "sql/badge/main.sql")
 (defqueries "sql/badge/endorsement.sql")
 (defqueries "sql/badge/evidence.sql")
- 
+
 (defn badge-url [ctx badge-id]
   (str (u/get-site-url ctx) (u/get-base-path ctx) "/badge/info/" badge-id))
 

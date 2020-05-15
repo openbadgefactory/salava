@@ -1,13 +1,15 @@
 (ns salava.badge.endorsement
   (:require [yesql.core :refer [defqueries]]
-            [salava.core.util :refer [get-db md->html get-full-path plugin-fun get-plugins event publish]]
+            [salava.core.util :refer [get-db md->html get-full-path plugin-fun get-plugins event publish digest bytes->base64]]
             [slingshot.slingshot :refer :all]
             [clojure.tools.logging :as log]
             [salava.badge.main :refer [send-badge-info-to-obf badge-exists?]]
-            [salava.core.time :as time]))
+            [salava.core.time :as time]
+            [salava.badge.ext-endorsement :as ext]))
 
 (defqueries "sql/badge/main.sql")
 (defqueries "sql/badge/endorsement.sql")
+(defqueries "sql/badge/ext_endorsement.sql")
 
 (defn generate-external-id []
   (str "urn:uuid:" (java.util.UUID/randomUUID)))
@@ -131,11 +133,16 @@
         given (endorsements-given ctx user-id)
         requests (->> (endorsement-requests ctx user-id) (filterv #(= (:status %) "pending")) (mapv #(assoc % :type "request")))
         sent-requests (some->> (select-sent-endorsement-requests {:id user-id} (get-db ctx)) (mapv #(assoc % :type "sent_request")))
-        all (->> (list* given received requests sent-requests) flatten (sort-by :mtime >))]
+        ext-received (some->> (if md? (ext/endorsements-received ctx user-id true)(ext/endorsements-received ctx user-id))
+                              (mapv #(assoc % :type "ext")))
+        ext-sent-requests (some->> (select-sent-ext-endorsement-requests {:id user-id} (get-db ctx)) (mapv #(assoc % :type "ext_request")))
+        all (->> (list* given received requests sent-requests ext-received ext-sent-requests) flatten (sort-by :mtime >))]
     {:given given
      :received received
      :requests requests
      :sent-requests sent-requests
+     :ext-received ext-received
+     :ext-sent-requests ext-sent-requests
      :all-endorsements all}))
 
 (defn all-user-endorsements-p [ctx user-id]
@@ -161,27 +168,29 @@
  [ctx user-badge-id user-id]
  (select-user-badge-endorsement-request-by-issuer-id {:user_badge_id user-badge-id :issuer_id user-id } (into {:result-set-fn first} (get-db ctx))))
 
-(defn request-endorsement! [ctx user-badge-id owner-id user-ids content]
+(defn request-endorsement! [ctx user-badge-id owner-id {:keys [user-ids emails content]}]
  (try+
   (if-not (badge-owner? ctx user-badge-id owner-id)
    (throw+ {:status "error" :message "User cannot request endorsement for a badge they do not own"})
-   (doseq [id user-ids]
-    (if-let [check (-> (request-sent? ctx user-badge-id id) :id)]
-     (throw+ {:status "error" :message "Request already sent to user"})
-     (let [endorser-info (as-> (first (plugin-fun (get-plugins ctx) "db" "user-information")) $
-                              (if $ ($ ctx id) {}))
-           {:keys [first_name last_name]} endorser-info
-           user-connection (as-> (first (plugin-fun (get-plugins ctx) "db" "get-connections-user")) $
-                                 (if $ (some-> ($ ctx owner-id id) :status) nil))
-           request-id (-> (request-endorsement<! {:id user-badge-id
-                                                  :content content
-                                                  :issuer_name (str first_name " " last_name)
-                                                  :issuer_id id
-                                                  :issuer_url (str (get-full-path ctx) "/profile/" id)}  (get-db ctx))
-                          :generated_key)]
-       (publish ctx :request_endorsement {:verb "request_endorsement" :type "badge" :subject owner-id :object request-id})
-       (when-not user-connection (as-> (first (plugin-fun (get-plugins ctx) "db" "create-connections-user!")) $   ;;create user connection if not existing
-                                       (when $ ($ ctx owner-id id))))))))
+   (do
+    (doseq [id user-ids]
+     (if-let [check (-> (request-sent? ctx user-badge-id id) :id)]
+      (throw+ {:status "error" :message "Request already sent to user"})
+      (let [endorser-info (as-> (first (plugin-fun (get-plugins ctx) "db" "user-information")) $
+                               (if $ ($ ctx id) {}))
+            {:keys [first_name last_name]} endorser-info
+            user-connection (as-> (first (plugin-fun (get-plugins ctx) "db" "get-connections-user")) $
+                                  (if $ (some-> ($ ctx owner-id id) :status) nil))
+            request-id (-> (request-endorsement<! {:id user-badge-id
+                                                   :content content
+                                                   :issuer_name (str first_name " " last_name)
+                                                   :issuer_id id
+                                                   :issuer_url (str (get-full-path ctx) "/profile/" id)}  (get-db ctx))
+                           :generated_key)]
+        (publish ctx :request_endorsement {:verb "request_endorsement" :type "badge" :subject owner-id :object request-id})
+        (when-not user-connection (as-> (first (plugin-fun (get-plugins ctx) "db" "create-connections-user!")) $   ;;create user connection if not existing
+                                        (when $ ($ ctx owner-id id)))))))
+    (when (seq emails) (ext/request-external-endorsements ctx user-badge-id owner-id emails content))))
   {:status "success"}
   (catch Object ex
     (log/error ex)

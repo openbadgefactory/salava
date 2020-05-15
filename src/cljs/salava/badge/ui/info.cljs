@@ -28,7 +28,10 @@
             [salava.metabadge.ui.metabadge :refer [metabadge]]
             [salava.badge.ui.evidence :refer [evidence-icon]]
             [dommy.core :as dommy :refer-macros [sel1]]
-            [salava.translator.ui.helper :refer [translate]]))
+            [salava.translator.ui.helper :refer [translate]]
+            [cemerick.url :as url]
+            [clojure.walk :refer [keywordize-keys]]
+            [salava.badge.ui.ext-endorsement :as ext]))
 
 (defn init-owner-profile-visibility [user-id state]
   (ajax/GET
@@ -40,7 +43,8 @@
    (path-for (str "/obpv1/badge/user_endorsement/count/" id))
    {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
 
-(defn init-data [state id]
+(defn init-data
+ ([state id]
   (ajax/GET
    (path-for (str "/obpv1/badge/info/" id))
    {:handler (fn [data]
@@ -52,6 +56,20 @@
                (init-endorsement-count id state)
                (init-owner-profile-visibility (:user_id data) state))}
    (fn [] (swap! state assoc :permission "error"))))
+
+ ([state id endorser-id]
+  (ajax/GET
+   (path-for (str "/obpv1/badge/info/" id))
+   {:handler (fn [data]
+               (reset! state (assoc data :id id
+                                    :show-link-or-embed-code nil
+                                    :initializing false
+                                    :content-language (init-content-language (:content data))
+                                    :permission "success"))
+               (init-endorsement-count id state)
+               (init-owner-profile-visibility (:user_id data) state)
+               (reset! (cursor state [:endorser-id]) endorser-id))}
+   (fn [] (swap! state assoc :permission "error")))))
 
 (comment
   (defn toggle-visibility [state]
@@ -148,6 +166,7 @@
      [m/modal-window]
      [:div.panel
       [:div.panel-body
+       [ext/language-switcher state]
        (comment
          (if (and owner? (not expired?) (not revoked))
            [:div {:class "row" :id "badge-share-inputs"}
@@ -279,6 +298,9 @@
           ;check-badge-link
            (check-badge id lng)
 
+           ;external endorsement
+           [ext/ext-endorse-badge state]
+
            (when-not (empty? alignment)
              [:div.row
               [:div.col-md-12
@@ -318,17 +340,23 @@
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)
+        endorser-id (-> js/window .-location .-href url/url :query keywordize-keys :endorser)
         state (atom {:initializing true
-                     :permission "initial"})
+                     :permission "initial"
+                     :endorser-id endorser-id})
 
         user (session/get :user)]
-    (init-data state id)
+    (if endorser-id
+     (init-data state id endorser-id)
+     (init-data state id))
+
     (fn []
 
       (cond
         (= "initial" (:permission @state)) [:div]
         (and user (= "error" (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
         (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
+        (and (= "success" (:permission @state)) (:endorser-id @state) ) (layout/landing-page site-navi (content state))
         (and (= "success" (:permission @state)) (:owner? @state) user) (layout/default site-navi (content state))
         (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))
         :else (layout/landing-page site-navi (content state))))))

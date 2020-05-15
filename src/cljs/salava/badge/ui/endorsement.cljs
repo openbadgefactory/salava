@@ -17,7 +17,7 @@
             [salava.translator.ui.helper :refer [translate]]
             [salava.core.ui.popover :refer [info]]
             [dommy.core :as dommy :refer-macros [sel1 sel]]
-            [salava.core.ui.input :refer [editor markdown-editor]]))
+            [salava.core.ui.input :refer [editor markdown-editor textarea]]))
 
 (defn endorsement-row [endorsement & lang]
   (let [{:keys [issuer content issued_on]} endorsement]
@@ -165,91 +165,6 @@
    {:handler (fn [data]
                (when (= "success" (:status data))
                  (when reload-fn (reload-fn state))))}))
-
-#_(def simplemde-toolbar (array "bold" "italic" "heading-3"
-                                "quote" "unordered-list" "ordered-list"
-                                "link" "horizontal-rule"
-                                "preview"))
-
-#_(def editor (atom nil))
-
-;(def md-editor (atom {:editor nil :enabled? true}))
-
-#_(defn init-editor [element-id value]
-    (let [editor (cursor md-editor [:editor])
-          md? (cursor md-editor [:enabled?])]
-      (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
-                                              :toolbar simplemde-toolbar
-                                              :spellChecker false
-                                              :forceSync true})))
-      (reset! md? @md?)
-      (when-not @md? (.toTextArea @editor))
-      (.value @editor @value)
-      (js/setTimeout (fn [] (.value @editor @value)) 200)
-      (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor))))))
-
-#_(defn init-editor [element-id value]
-    (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
-                                            :toolbar simplemde-toolbar
-                                            :spellChecker false
-                                            :forceSync true})))
-    (-> (sel1 [".CodeMirror" :textarea])
-        (dommy/set-attr! :aria-label "CodeMirror textarea"))
-    (.value @editor @value)
-    (js/setTimeout (fn [] (.value @editor @value)) 200)
-    (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor)))))
-
-#_(defn markdown-editor [value]
-    (create-class {:component-did-mount (fn []
-                                          (init-editor (str "editor" (-> (session/get :user) :id)) value))
-                   :reagent-render (fn []
-                                     [:div.form-group {:style {:display "block"}}
-                                      [:textarea {:class "form-control"
-                                                  :id (str "editor" (-> (session/get :user) :id))
-                                                  :defaultValue @value
-                                                  :name "content"
-                                                  :on-change #(reset! value (.-target.value %))
-                                                  :cols 12
-                                                  :rows 12
-                                                  :aria-label "Compose text"}]])
-                   :component-did-update (fn [] #(reset! value (.-target.value %)))}))
-
-#_(defn markdown-editor [value]
-    (create-class {:component-did-mount (fn []
-                                          (init-editor (str "editor" (-> (session/get :user) :id)) value))
-                   :reagent-render (fn []
-                                     [:div.form-group {:style {:display "block"}}
-                                      [:textarea {:class "form-control"
-                                                  :id (str "editor" (-> (session/get :user) :id))
-                                                  :defaultValue @value
-                                                  :on-change #(reset! value (.-target.value %))}]])}))
-
-#_(defn toggle-markdown-editor [element-id value]
-    (let [md? (cursor md-editor [:enabled?])
-          editor (cursor md-editor [:editor])]
-      (if @md?
-        (do (reset! md? false) (.toTextArea @editor) (reset! editor nil))
-        (do (reset! md? true) (init-editor element-id value)))))
-
-#_(defn toggle-md-button [value]
-    (let [md? (cursor md-editor [:enabled?])]
-      [:div.pull-right [:span (str (if @md? (t :core/Disablemarkdowneditor) (t :core/Enablemarkdowneditor)) " ")]
-       [:button {:type "button"
-                 :aria-label "toggle markdown-editor"
-                 :class "close evidence-toggle"
-                 :on-click #(do (toggle-markdown-editor (str "editor" (-> (session/get :user) :id)) value))}
-
-        [:i.fa.show-more.fa-fw {:class (if @md? (str " fa-toggle-on") (str " fa-toggle-off"))}]]]))
-
-#_(defn process-text [s state]
-    (let [element (-> js/document (.getElementById (str "editor" (-> (session/get :user) :id))))
-          text (.-innerHTML element)
-          endorsement-claim (str text (if (blank? text) "" "\n\n") "* " s)
-          editor (cursor md-editor [:editor])
-          md? (cursor md-editor [:enabled?])]
-      (reset! (cursor state [:endorsement-comment]) endorsement-claim)
-      (when @md? (.value @editor  @(cursor state [:endorsement-comment])))
-      (when-not @md? (set! (.-value element)  @(cursor state [:endorsement-comment])))))
 
 (defn process-text [s state]
   (let [text (-> js/document
@@ -475,7 +390,7 @@
            (when (= status "pending") [:p [:span.label.label-info label]])]])]))
 
 (defn profile [element-data name]
-  (let [{:keys [id profile_picture status label issuer_name]} element-data
+  (let [{:keys [id profile_picture status label issuer_name email]} element-data
         current-user (session/get-in [:user :id])]
     [:div.endorsement-profile.panel-default
      (if id
@@ -499,15 +414,16 @@
             :title name}]]]
         [:div.col-md-8
          [:span.profileowner name]
+         [:div (when-not (clojure.string/blank? email) [:span [:i.fa.fa-envelope.fa-fw] email])]
          (when (= status "pending") [:p [:span.label.label-info label]])]])]))
 
-(defn- toggle-delete-dialogue [state]
+(defn toggle-delete-dialogue [state]
   (let [show-delete-dialogue (cursor state [:show-delete-dialogue])]
     (if @show-delete-dialogue
       (reset! show-delete-dialogue false)
       (reset! show-delete-dialogue true))))
 
-(defn- confirm-delete [state delete-fn]
+(defn confirm-delete [state delete-fn]
   (when (and state @(cursor state [:show-delete-dialogue]))
     [:div.confirm-delete-block
      [:div {:class "alert alert-warning"}
@@ -663,9 +579,11 @@
   (let [endorsements (case @(cursor state [:show])
                        "all" @(cursor state [:all-endorsements])
                        "given" @(cursor state [:given])
-                       "received" @(cursor state [:received])
+                       "received" (-> (concat @(cursor state [:received]) @(cursor state [:ext-received])))
                        "requests" @(cursor state [:requests])
-                       "sent-requests" @(cursor state [:sent-requests])
+                       "sent-requests" (concat @(cursor state [:sent-requests]) @(cursor state [:ext-sent-requests]))
+                       "ext-received" @(cursor state [:ext-received])
+                       "ext-sent-requests" @(cursor state [:ext-sent-requests])
                        @(cursor state [:all-endorsements]))
         processed-endorsements (if (blank? @(cursor state [:search]))
                                  endorsements
@@ -693,17 +611,21 @@
               "received" (t :badge/Receivedendorsementstext)
               "requests" (t :badge/Endorsementrequesttext)
               "sent-requests" (t :badge/Sentendorsementrequesttext)
+              ;"ext-received" (t :badge/Extreceivedendorsementtext)
               (t :badge/Allendorsementstext))]]
 
      [:div.panel-body.endorsement-container
       [:div.table.endorsementlist  {:summary (t :badge/Endorsements)}
        (reduce (fn [r endorsement]
-                 (let [{:keys [id endorsee_id issuer_id requester_id profile_picture issuer_name first_name last_name name image_file content status user_badge_id mtime type]} endorsement
+                 (let [{:keys [id endorsee_id issuer_id requester_id profile_picture issuer_name first_name last_name name image_file content status user_badge_id mtime type issuer_image email]} endorsement
                        endorser (or issuer_name (str first_name " " last_name))]
                    (conj r [:div.list-item.row.flip
                             [:a {:href "#" :on-click #(do
                                                         (.preventDefault %)
-                                                        (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement :state state}) {:hidden (fn [] (init-user-endorsements state))}))}
+                                                        (if (or (= type "ext") (= type "ext_request"))
+                                                         (mo/open-modal [:badge :extuserendorsement] (atom {:endorsement endorsement :state state}) {:hidden (fn [] (init-user-endorsements state))})
+
+                                                         (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement :state state}) {:hidden (fn [] (init-user-endorsements state))})))}
 
                              [:div.col-md-4.col-md-push-8
                               [:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
@@ -712,12 +634,14 @@
                                [:div;.row
                                 [:div.labels
                                  (cond
+                                   (= type "ext") [:span.label.label-success (t :badge/Endorsedyou)]
                                    (= type "request") [:span.label.label-danger (t :badge/Endorsementrequest)]
                                    (= type "sent_request") [:span.label.label-info (t :badge/Endorsementrequest)]
+                                   (= type "ext_request") [:span.label.label-info (t :badge/Endorsementrequest)]
                                    issuer_id [:span.label.label-success (t :badge/Endorsedyou)]
                                    endorsee_id [:span.label.label-primary (t :badge/Youendorsed)]
                                    :else [:span.label.label-success (t :badge/Endorsedyou)])
-                                 (if (and (not= "sent_request" type) (= "pending" status))
+                                 (if (and (not= "sent_request" type) (not= "ext_request" type) (= "pending" status))
                                    [:span.label.label-info
                                     (t :social/pending)])]]
                                [:div.media-left.media-top.list-item-bodyv
@@ -727,9 +651,9 @@
                                 [:h3.media-heading.badge-name  name]
                                 [:div.media
                                  [:div.child-profile [:div.media-left.media-top
-                                                      [:img.media-object.small-img {:src (profile-picture profile_picture) :alt ""}]]
+                                                      [:img.media-object.small-img {:src (profile-picture (or profile_picture issuer_image)) :alt ""}]]
                                   [:div.media-body
-                                   [:p endorser]]]]]]]]])))
+                                   [:p (if (or (= type "ext") (= type "ext_request")) [:span [:i.fa.fa-envelope.fa-fw]]) (if-not (clojure.string/blank? endorser) endorser email)]]]]]]]]])))
                [:div] endorsements)]]]))
 
 (defn order-opts []
@@ -741,7 +665,12 @@
 (defn user-endorsements-content [state]
   (let [pending-requests-count (count (filter #(= "pending" (:status %)) @(cursor state [:requests])))
         pending-received-count (count (filter #(= "pending" (:status %)) @(cursor state [:received])))
-        sent-requests-count (count @(cursor state [:sent-requests]))]
+        pending-ext-received-count (count (filter #(= "pending" (:status %)) @(cursor state [:ext-received])))
+        pending-received-count (+ pending-received-count pending-ext-received-count)
+        sent-requests-count (count @(cursor state [:sent-requests]))
+        ext-requests-count (count @(cursor state [:ext-sent-requests]))
+        sent-requests-count (+ sent-requests-count ext-requests-count)]
+
     [:div
      [m/modal-window]
      [:div#badge-stats
@@ -785,11 +714,13 @@
 
 (defn send-endorsement-request [state reload-fn]
   (let [request-comment (cursor state [:request-comment])
-        selected-users (cursor state [:selected-users])]
+        selected-users (cursor state [:selected-users])
+        external-users (cursor state [:external-users])]
     (ajax/POST
      (path-for (str "/obpv1/badge/user_endorsement/request/" (:id @state)) true)
      {:params {:user-ids (mapv :id @selected-users)
-               :content @request-comment}
+               :content @request-comment
+               :emails @external-users}
       :handler (fn [data]
                  (when (= "success" (:status data))
                    (reload-fn)
@@ -801,18 +732,19 @@
   (let [{:keys [state reload-fn context]} params
         request-comment (cursor state [:request-comment])
         context (if (blank? context) "endorsement" context)
-        selected-users (if (= "endorsement_selfie" context)  (cursor state [:send_request_to]) (cursor state [:selected-users]))]
+        selected-users (if (= "endorsement_selfie" context)  (cursor state [:send_request_to]) (cursor state [:selected-users]))
+        external-users (cursor state [:external-users])]
     (reset! request-comment (t :badge/Defaultrequestbadge))
     (fn []
       [:div.col-md-12 {:id "social-tab"}
        [:div.editor
         [:div.form-group {:style {:display "block"}}
-         [:label {:for (str "editor" (-> (session/get :user) :id)) #_"claim"} [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
-         [:div.editor  [markdown-editor request-comment (str "editor" (-> (session/get :user) :id))]]]
-        (when (seq @selected-users)
+         [:label {:for (str "editor" (-> (session/get :user) :id)) } [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
+         [:div.editor  [textarea {:name "request_endorsement" :atom request-comment :rows 8} ] #_[markdown-editor request-comment (str "editor" (-> (session/get :user) :id))]]]
+        (when (or (seq @selected-users) (seq @external-users))
           [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw.fa-3x]
            [:a {:href "#"
-                :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state)})}
+                :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state) :external-users-atom external-users})}
             (t :badge/Editselectedusers)]])
         (reduce (fn [r u]
                   (let [{:keys [id first_name last_name profile_picture]} u]
@@ -820,17 +752,23 @@
                              [:a {:href "#" :on-click (fn [] (reset! selected-users (->> @selected-users (remove #(= id (:id %))) vec)))}
                               [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
                 [:div.selected-users-container] @selected-users)
+        (reduce (fn [r e]
+                 (conj r [:div.user-item [:span {:style {:font-weight "500" }} e]
+                          [:a {:href "#" :on-click (fn [] (reset!  external-users (->> @ external-users (remove #(= e %)) vec)))}
+                           [:span.close {:style {:position "unset"} :aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]]))
+                [:div.selected-users-container]
+                @external-users)
         [:div.confirmusers {:style {:margin "20px auto"}}
-         (if-not (empty? @selected-users)
+         (if (or (seq @selected-users) (seq @external-users)) ;-not (empty? @selected-users)
            [:button.btn.btn-primary {:on-click #(do
                                                   (.preventDefault %)
                                                   (if (= context "endorsement_selfie")
                                                     (mo/previous-view)
                                                     (send-endorsement-request state reload-fn)))
-                                     :disabled (empty? @selected-users)}
+                                     :disabled (and (empty? @external-users)(empty? @selected-users))}
             (if (= context "endorsement_selfie") (t :core/Continue) (t :badge/Sendrequest))]
            [:button.btn.btn-primary.select-users-link {:href "#"
-                                                       :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state)})
+                                                       :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context context :user_badge_id (:id @state) :external-users-atom external-users})
                                                        :disabled (< (count @request-comment) 15)}
             [:i.fa.fa-users.fa-fw.fa-3x] (t :badge/Selectusers)])
          (when (and (= context "endorsement_selfie") (empty? @selected-users))

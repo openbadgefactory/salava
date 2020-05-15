@@ -20,7 +20,7 @@
 (s/defschema request (-> endorsement
                          (assoc
                           :status (s/enum "pending" "endorsed" "declined")
-                          (s/optional-key  :type) (s/enum "sent_request" "request")
+                          (s/optional-key  :type) (s/enum "sent_request" "request" "ext_request")
                           (s/optional-key :ctime) s/Int)))
 
 (s/defschema received-user-endorsement-p  (-> endorsement
@@ -87,10 +87,21 @@
                                  :sent-requests [(s/maybe sent-request-p)]
                                  :requests [(s/maybe received-request-p)]})
 
+
 (s/defschema all-endorsements {:given [(s/maybe given-user-endorsement)]
                                :received [(s/maybe received-user-endorsement)]
                                :sent-requests [(s/maybe sent-request)]
                                :requests [(s/maybe received-request)]
+                               (s/optional-key :ext-received) [(s/maybe (-> received-user-endorsement
+                                                                            (assoc :issuer_id s/Str
+                                                                                   :issuer_image (s/maybe s/Str)
+                                                                                   :email s/Str
+                                                                                   :type (s/eq "ext"))
+                                                                            (dissoc :profile_picture)))]
+                               (s/optional-key :ext-sent-requests) [(s/maybe (-> sent-request
+                                                                                 (dissoc :profile_picture :type :requestee_id)
+                                                                                 (assoc :issuer_image (s/maybe s/Str)
+                                                                                        :email s/Str)))]
                                :all-endorsements [(s/maybe s/Any)]})
 
 (s/defschema user-badge-endorsements-p {:endorsements [(s/maybe received-user-endorsement-p)]})
@@ -100,3 +111,58 @@
                                                                  (dissoc :name :image_file :description)))]})
 
 (s/defschema pending-user-endorsements {:endorsements [(-> received-user-endorsement (assoc :ctime s/Int) (dissoc :status :mtime))]})
+
+(s/defschema request-endorsement {:content content
+                                  (s/optional-key :user-ids) [(s/maybe s/Int)]
+                                  (s/optional-key :emails) [(s/maybe s/Str)]})
+
+(s/defschema ext-request {:content content
+                          :id s/Int
+                          :user_badge_id s/Int
+                          :status (s/enum "pending" "endorsed" "declined")
+                          :mtime s/Int
+                          (s/optional-key :issuer_email) s/Str
+                          (s/optional-key :issuer_id) (s/maybe s/Int)
+                          (s/optional-key :url) (s/maybe s/Str)
+                          (s/optional-key :description) (s/maybe s/Str)
+                          (s/optional-key :name) (s/maybe s/Str)
+                          (s/optional-key :image_file) (s/maybe s/Str)})
+
+
+(s/defschema pending-ext-requests [(s/maybe ext-request)])
+(s/defschema ext-endorser (s/maybe {:id s/Int
+                                    :ext_id s/Str
+                                    :name (s/maybe _name)
+                                    :url (s/maybe s/Str)
+                                    :description (s/maybe s/Str)
+                                    :image_file (s/maybe s/Str)
+                                    :email s/Str
+                                    :ctime s/Int
+                                    :mtime s/Int}))
+
+(s/defschema save-ext-endorsement {:content content
+                                   :endorser {:ext_id s/Str
+                                              :name (s/maybe _name)
+                                              :url (s/maybe s/Str)
+                                              :description (s/maybe s/Str)
+                                              :image_file (s/maybe s/Str)
+                                              :email s/Str}})
+                                    ;(-> ext-endorser (select-keys [:ext_id :name :url :description :image_file :email]))})
+
+(s/defschema issued-ext-endorsement (s/maybe (-> endorsement
+                                                 (merge {(s/optional-key :name) s/Str
+                                                         (s/optional-key :image_file) s/Str
+                                                         (s/optional-key :type) s/Str
+                                                         :first_name s/Str
+                                                         :last_name s/Str
+                                                         :profile_picture (s/maybe s/Str)}))))
+
+(s/defschema issued-ext-endorsement-all [issued-ext-endorsement])
+
+(s/defschema endorsement-requests-all [(s/maybe (-> ext-request
+                                                 (merge {(s/optional-key :name) s/Str
+                                                         (s/optional-key :image_file) s/Str
+                                                         (s/optional-key :type) s/Str
+                                                         :first_name s/Str
+                                                         :last_name s/Str
+                                                         :profile_picture (s/maybe s/Str)})))])
