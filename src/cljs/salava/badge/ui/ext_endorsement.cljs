@@ -94,6 +94,7 @@
                  #_(swap! state assoc :show-link "none"
                                       :show-content "none")
                  (init-endorsement user-badge-id state)
+                 (reset! (cursor state [:accept-terms] ) false)
                  (m/modal! [status-modal {:status "success" :message (t :badge/Endorsementsuccess)}] {})))})))
 
 (defn update-status [id status user_badge_id state reload-fn]
@@ -143,6 +144,20 @@
                      (reset! (cursor state [:ext-endorser :image_file]) (:url data))
                      (reset! (cursor state [:uploading-image]) false))
                   (m/modal! (upload-modal data) {:hidden #(reset! (cursor state [:uploading-image]) false)})))})))
+
+(defn accept-terms [state]
+ (let [term-atom (cursor state [:accept-terms])]
+  [:div {:style {:text-align "center"}}
+   [:fieldset.accept-terms-checkbox {:class "checkbox"}
+    [:div [:label
+           [:input {:type     "checkbox"
+                    :on-change (fn [e]
+                                 (if (.. e -target -checked)
+                                   (reset! term-atom true)
+                                   (reset! term-atom false)))}]
+           (str (t :user/Externaluserterms) " ")
+           [:a {:href (path-for  (str "/user/external/data/" @(cursor state [:ext-endorser :ext_id]) ) #_(t :user/Doyouaccept))
+                :target "_blank"} (t :badge/here)]]]]]))
 
 (defn endorser-info [id state]
   (let [{:keys [ext_id image_file name url description]} @(cursor state [:ext-endorser])]
@@ -232,12 +247,13 @@
        [:div [markdown-editor  (cursor state [:endorsement-comment]) (str "editor" ext_id)]]]
 
       [endorser-info ext_id state]
+      [accept-terms state]
       [:div.text-center.btn-toolbar
        [:div.btn-group {:style {:float "unset"}}
         [:button.btn.btn-primary.btn-bulky {:on-click #(do
                                                          (.preventDefault %)
                                                          (save-ext-endorsement (:id @state) state nil))
-                                            :disabled (or (blank? @(cursor state [:endorsement-comment])) (blank? @(cursor state [:ext-endorser :name])))}
+                                            :disabled (or (not @(cursor state [:accept-terms]))  (blank? @(cursor state [:endorsement-comment])) (blank? @(cursor state [:ext-endorser :name])))}
 
          (t :badge/Endorsebadge)]
 
@@ -275,16 +291,22 @@
 
          [:div [markdown-editor  (cursor state [:ext-endorsement :content]) (str "editor" ext_id)]]
          [endorser-info ext_id state]
+         [accept-terms state]
          [:div.btn-toolbar.text-center
           [:div.btn-group {:style {:float "unset"}}
            [:button.btn.btn-primary.btn-bulky
             {:on-click #(save-ext-endorsement (:id @state) state true)
              :disabled (or (blank? @(cursor state [:ext-endorsement :content]))
-                           (blank? @(cursor state [:ext-endorser :name])))}
+                           (blank? @(cursor state [:ext-endorser :name]))
+                           (not @(cursor state [:accept-terms])))}
             (t :badge/Save)]
            [:button.btn.btn-danger.btn-bulky
-            {:on-click #(delete-endorsement nil state nil)}
-            [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]]]]]]]))
+            {:on-click #(toggle-delete-dialogue state)} ;(delete-endorsement nil state nil)}
+            [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]
+         [confirm-delete state #(delete-endorsement nil state nil)]]]]]]]))
+
+
+
 
 (defn ext-endorse-badge [state]
   (let [{:keys [endorser-id user-logged-in?]} @state]

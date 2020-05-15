@@ -161,7 +161,7 @@
                 creator_image creator_description message_count endorsement_count default_language_code]} (content-setter @selected-language content)
         evidences (remove #(= true (get-in % [:properties :hidden])) evidences)
         lng (->> (remove blank? (list @(cursor state [:content-language]) default_language_code "en")) first)]
-    (if (= lng "ar") (dommy/set-attr! (sel1 :html) :dir "rtl") (dommy/set-attr! (sel1 :html) :dir "ltr"))
+    (if (or (= (session/get-in [:user :language]) "ar") (= lng "ar")) (dommy/set-attr! (sel1 :html) :dir "rtl") (dommy/set-attr! (sel1 :html) :dir "ltr"))
     [:div {:id "badge-info"}
      [m/modal-window]
      [:div.panel

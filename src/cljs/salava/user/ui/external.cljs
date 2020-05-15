@@ -10,7 +10,8 @@
   [salava.core.ui.helper :refer [path-for disable-background-image navigate-to js-navigate-to]]
   [salava.core.ui.layout :as layout]
   [salava.core.ui.modal :as mo]
-  [salava.user.ui.helper :refer [profile-picture]]))
+  [salava.user.ui.helper :refer [profile-picture]]
+  [dommy.core :as dommy :refer-macros [sel1]]))
 
 (defn delete-information [state]
   (ajax/DELETE
@@ -61,7 +62,6 @@
               :aria-label "OK"}
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]]
-   ; [:h4.modal-title (translate-text message)]]
    [:div.modal-body
     [:div.alert.alert-warning
      (t :badge/Confirmdelete)]]
@@ -79,20 +79,16 @@
   (when (seq data)
     [:div.col-md-12
      [:hr.border]
-     ;[:h2.uppercase-header heading]
      [:div.panel.panel-default
       [:div.panel.panel-heading
        [:h2.uppercase-header heading]]
-
       [:div.panel-body.endorsement-container
        [:div.table.endorsementlist  {:summary (t :badge/Endorsements)}
          (reduce (fn [r endorsement]
                      (let [{:keys [id endorsee_id issuer_id requester_id profile_picture issuer_name first_name last_name name image_file content status user_badge_id mtime type]} endorsement
                            endorser (or issuer_name (str first_name " " last_name))]
                        (conj r [:div.list-item.row.flip
-                                [:a {:href (path-for (str "/badge/info/" user_badge_id "?endorser=" ext_id)) :target "_blank"} ;:on-click #(do)
-                                                                             ;(.preventDefault %)
-                                                                             ;(navigate-to (str "/badge/info/" user_badge_id "?endorser=" ext_id))}
+                                [:a {:href (path-for (str "/badge/info/" user_badge_id "?endorser=" ext_id)) :target "_blank"}
 
                                  [:div.col-md-4.col-md-push-8
                                   [:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
@@ -118,43 +114,50 @@
 
 (defn content [state]
  (let [{:keys [id ext_id image_file name email description url]} @(cursor state [:ext-user])]
+  (if (= (session/get-in [:user :language]) "ar") (dommy/set-attr! (sel1 :html) :dir "rtl") (dommy/set-attr! (sel1 :html) :dir "ltr"))
   [:div
    [m/modal-window]
-   [:div.col-md-12 {:style {:margin "20px auto"}}
-    [language-switcher]]
    (if (empty? @(cursor state [:ext-user]))
      [:div.col-md-12
       [:b "404 not found"]]
      (if @(cursor state [:message])
        [:div @(cursor state [:message])]
-       [:div.well.well-lg
-        [:div.row.flip {:id "badge-stats"}
+       [:div.panel
+        [:div.row.flip.panel-body {:id "badge-stats"}
          [:div.col-md-12
-          [:div.btn-toolbar.pull-right
-           [:div.btn-group
-            [:button.btn.btn-danger
-             {:type "button"
-              :on-click #(m/modal! [delete-modal state] {})}
-             (t :core/Delete)]
-            [:button.btn.btn-primary
-             {:type "button"
-              :on-click #(export-data state)}
-             (t :user/Exportdata)]]]
+          [:div.row
+           [:div.col-md-12
+            [:div.btn-toolbar.pull-right
+             [:div.btn-group
+              [:button.btn.btn-danger
+               {:type "button"
+                :on-click #(m/modal! [delete-modal state] {})}
+               (t :core/Delete)]
+              [:button.btn.btn-primary
+               {:type "button"
+                :on-click #(export-data state)}
+               (t :user/Exportdata)]]]
+            [:div.pull-left {:style {:margin "10px auto"}} [language-switcher]]]]
 
-          [:h1.uppercase-header (t :user/Mydata)]
-          [:p {:style {:margin-bottom "25px"}} [:b "This page contains a summary of your personal data that is tied to the email address below."]]
-          [:div.col-md-3.text-center
-           [:div.profile-picture-wrapper
-            [:img.profile-picture
-             {:src (profile-picture image_file)
-              :alt (or name "external user")}]]]
-          [:div.col-md-9 {:style {:line-height "2.5"}}
-           [:div [:span._label (str "ID" ": ")] ext_id]
-           (when-not (blank? name) [:div [:span._label (str (t :badge/Name) ": ")] name])
-           [:div [:span._label (str (t :badge/Email) ": ")] email]
-           (when-not (blank? url) [:div [:span._label (str (t :badge/URL) ": ")] url])]
-
-          [endorsement-list ext_id @(cursor state [:ext-endorsement]) (t :badge/endorsement) nil]
+          [:div.row
+           [:div.col-md-12
+            [:div.well.well-sm
+             [:h1.uppercase-header.text-center (t :user/Mydata)]
+             [:p.text-center {:style {:margin-bottom "25px"}}
+               [:b (t :user/Aboutexternaluserdata)]]
+             [:div.row
+              [:div.col-md-12
+               [:div.col-md-3.text-center
+                [:div.profile-picture-wrapper
+                 [:img.profile-picture
+                  {:src (profile-picture image_file)
+                   :alt (or name "external user")}]]]
+               [:div.col-md-9 {:style {:line-height "2.5"}}
+                [:div [:span._label (str "ID" ": ")] ext_id]
+                (when-not (blank? name) [:div [:span._label (str (t :badge/Name) ": ")] name])
+                [:div [:span._label (str (t :badge/Email) ": ")] email]
+                (when-not (blank? url) [:div [:span._label (str (t :badge/URL) ": ")] url])]]]]]]
+          [endorsement-list ext_id @(cursor state [:ext-endorsement]) (t :badge/Iendorsed) nil]
           [endorsement-list ext_id @(cursor state [:request]) (t :badge/Endorsementrequests) "request"]]]]))]))
 
 

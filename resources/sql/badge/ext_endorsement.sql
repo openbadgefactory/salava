@@ -79,13 +79,18 @@ DELETE FROM user_badge_endorsement_ext WHERE id = :id
 SELECT id FROM user_badge_endorsement_ext ubee
 WHERE issuer_id = :issuer AND user_badge_id = :ubid AND status != "declined"
 
+--name: select-existing-endorsement-by-email
+SELECT ubee.id FROM user_badge_endorsement_ext ubee
+JOIN user_ext u ON u.ext_id = ubee.issuer_id
+WHERE u.email = :issuer AND user_badge_id = :ubid AND status != "declined"
+
 --name: delete-all-user-endorsements!
 DELETE FROM user_badge_endorsement_ext WHERE issuer_id = :issuer
 
 --name: delete-all-user-requests!
 DELETE FROM user_badge_endorsement_request_ext WHERE issuer_email = :issuer
 
---name: delete-sent-external-request! 
+--name: delete-sent-external-request!
 DELETE FROM user_badge_endorsement_request_ext WHERE id = :id
 
 --name: insert-ext-endorsement-event<!
@@ -141,3 +146,21 @@ JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 WHERE uber.status = 'pending' AND u.id = :id
+
+--name: pending-user-badge-ext-endorsement-count-multi
+--get user badge's pending external endorsement
+SELECT COUNT(ube.id) AS count, ube.user_badge_id FROM user_badge_endorsement_ext AS ube WHERE ube.user_badge_id IN (:user_badge_ids) AND ube.status = 'pending'
+GROUP BY ube.user_badge_id
+
+--name:pending-ext-endorsement-count
+SELECT COUNT(id) AS count FROM user_badge_endorsement_ext WHERE user_badge_id = :id AND status = 'pending';
+
+--name: select-user-badge-ext-endorsements
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, u.name AS issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.image_file AS issuer_image
+FROM user_badge_endorsement_ext AS ube
+LEFT JOIN user_ext AS u on u.ext_id = ube.issuer_id
+WHERE ube.user_badge_id = :user_badge_id
+ORDER BY ube.mtime DESC 
+
+--name: accepted-ext-endorsement-count
+SELECT COUNT(id) AS count FROM user_badge_endorsement_ext WHERE user_badge_id = :id AND status = 'accepted';
