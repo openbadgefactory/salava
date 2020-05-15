@@ -26,7 +26,7 @@ GROUP BY ub.id
 -- get user's badges
 SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.gallery_id, ub.badge_id,
            ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.assertion_url,
-           ic.name AS issuer_content_name, ic.url AS issuer_content_url, SUM(IF(bec.endorsement_content_id IS NULL, 0, 1)) AS endorsement_count, COUNT(ube.id) AS user_endorsement_count,
+           ic.name AS issuer_content_name, ic.url AS issuer_content_url, SUM(IF(bec.endorsement_content_id IS NULL, 0, 1)) AS endorsement_count, COUNT(ube.id) + COUNT(ubex.id) AS user_endorsement_count,
            ubm.meta_badge, ubm.meta_badge_req
 FROM user_badge ub
 INNER JOIN badge b ON ub.badge_id = b.id
@@ -37,6 +37,7 @@ INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
 LEFT JOIN user_badge_metabadge ubm ON ub.id = ubm.user_badge_id
 LEFT JOIN badge_endorsement_content AS bec ON (bec.badge_id = ub.badge_id)
 LEFT JOIN user_badge_endorsement AS ube ON (ube.user_badge_id = ub.id) AND ube.status = 'accepted'
+LEFT JOIN user_badge_endorsement_ext AS ubex ON (ubex.user_badge_id = ub.id) AND ubex.status = 'accepted'
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
     AND bc.language_code = b.default_language_code
     AND ic.language_code = b.default_language_code

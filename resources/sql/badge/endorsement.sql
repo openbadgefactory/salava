@@ -186,7 +186,7 @@ UPDATE user_badge_endorsement SET status = :status WHERE id = :id
 SELECT issuer_id FROM user_badge_endorsement WHERE user_badge_id = :user_badge_id AND issuer_id = :issuer_id
 
 --name: select-pending-endorsements
-SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.ctime,
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.ctime, ube.mtime,
 endorser.profile_picture, bc.name, bc.image_file, bc.description
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS endorser ON endorser.id = ube.issuer_id

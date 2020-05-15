@@ -182,7 +182,6 @@
                            :content-id lid
                            :content-type "image/png"}]]]}]
 
-
     (try+
       (log/info "sending to" to)
       (-> (if (nil? mail-host-config)
@@ -198,6 +197,12 @@
  [ctx user-badge-id email]
  (select-external-request-by-email {:user_badge_id user-badge-id :email email} (into {:result-set-fn first :row-fn :id} (get-db ctx))))
 
+(defn is-already-endorsed? [ctx user-badge-id issuer-id]
+ (if-let [id (select-existing-endorsement {:issuer issuer-id :ubid user-badge-id} (into {:result-set-fn first :row-fn :id} (get-db ctx)))] true false))
+
+(defn email-already-endorsed? [ctx user-badge-id email]
+ (if-let [id (select-existing-endorsement-by-email {:issuer email :ubid user-badge-id} (into {:result-set-fn first :row-fn :id} (get-db ctx)))] true false))
+
 (defn external-request-by-issuerid [ctx user-badge-id issuer-id]
  (if-let [_ (select-external-badge-request-by-issuerid {:ubid user-badge-id :isid issuer-id}  (get-db-1 ctx))] _ {}))
 
@@ -210,6 +215,8 @@
       (throw+ {:status "error" :message "Request already sent to email"}))
     (when-let [check (some #(= % email) user-emails)]
       (throw+ {:status "error" :message "Users cannot request endorsements from themselves"}))
+    (when-let [check (email-already-endorsed? ctx user-badge-id email)]
+      (throw+ {:status "error" :message (str "Badge already endorsed by email: " email)}))
     (let [issuer-id (util/hmac-sha256-hex email (get-in ctx [:config :factory :secret]))
           badge-info (as-> (first (plugin-fun (get-plugins ctx) "main" "get-badge-p")) $
                            (if $ ($ ctx user-badge-id owner-id)))
@@ -225,11 +232,6 @@
 
 (defn ext-pending-requests [ctx user-badge-id]
   (sent-pending-ext-requests-by-badge-id {:id user-badge-id} (get-db ctx)))
-
-(defn is-already-endorsed? [ctx user-badge-id issuer-id]
-  (if-let [id (select-existing-endorsement {:issuer issuer-id :ubid user-badge-id} (into {:result-set-fn first :row-fn :id} (get-db ctx)))]
-    true
-    false))
 
 (defn update-request-status [ctx user-badge-id issuer-email status]
  (try+

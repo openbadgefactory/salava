@@ -92,9 +92,12 @@
   (let [user-badge-ids (map :id badges)
         badge-ids (distinct (map :gallery_id badges))
         pending_endorsements_counts (pending-user-badge-endorsement-count-multi {:user_badge_ids user-badge-ids} (u/get-db ctx))
+        pending_ext_endorsements_count (as-> (first (u/plugin-fun (u/get-plugins ctx) "ext-endorsement" "pending-user-badge-ext-endorsement-count-multi")) $
+                                             (if (ifn? $) ($ {:user_badge_ids user-badge-ids} (u/get-db ctx)) []))
         new-message-counts (so/get-badge-message-count-multi ctx badge-ids user-id)]
     (->> badges
          (r/map #(assoc % :pending_endorsements_count (some (fn [b] (when (= (:id %) (:user_badge_id b)) (:count b))) pending_endorsements_counts)))
+         (r/map #(assoc % :pending_ext_endorsements_count (some (fn [b] (when (= (:id %) (:user_badge_id b))  (:count b))) pending_ext_endorsements_count)))
          (r/map #(assoc % :new_message_count (some (fn [m] (when (= (:gallery_id %) (:gallery_id m)) (:count m))) new-message-counts)))
          (r/foldcat))))
 
@@ -132,7 +135,7 @@
   [ctx user-id]
   (let [badges (map (fn [b] (assoc b :png_image_file (png-convert-url ctx (:image_file b))))
                     (select-user-badges-pending {:user_id user-id} (u/get-db ctx)))
-        tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))]
+        tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))] 
     (map-badges-tags badges tags)))
 
 (defn user-owns-badge?

@@ -6,6 +6,10 @@
 
 #? (:cljs (defn describe [v _] v))
 
+(defn either [s1 s2]
+  #? (:clj (s/either s1 s2)
+      :cljs (s/cond-pre s1 s2)))
+
 (def content (describe (s/constrained s/Str #(and (>= (count %) 5)
                                                   (not (clojure.string/blank? %)))) "Content in markdown format"))
 (def _name (s/constrained s/Str #(and (>= (count %) 1)
@@ -34,6 +38,10 @@
                                             :description (s/maybe s/Str)
                                             :name (s/maybe s/Str)
                                             :image_file (s/maybe s/Str))))
+
+(s/defschema received-ext-endorsements (-> received-user-endorsement
+                                           (dissoc :issuer_id :profile_picture)
+                                           (assoc :issuer_id s/Str :type s/Str :issuer_image (s/maybe s/Str) :email s/Str)))
 
 (s/defschema given-user-endorsement-p  (-> endorsement
                                            (assoc
@@ -106,11 +114,14 @@
 
 (s/defschema user-badge-endorsements-p {:endorsements [(s/maybe received-user-endorsement-p)]})
 
-(s/defschema user-badge-endorsement {:endorsements [(s/maybe (-> received-user-endorsement
-                                                                 (assoc :profile_visibility (s/maybe (s/enum "internal" "public")))
-                                                                 (dissoc :name :image_file :description)))]})
+(s/defschema user-badge-endorsement {:endorsements [(s/maybe (either (-> received-user-endorsement
+                                                                         (assoc  :profile_visibility (s/maybe (s/enum "internal" "public")))
+                                                                         (dissoc :name :image_file :description))
+                                                                     received-ext-endorsements))]})
 
-(s/defschema pending-user-endorsements {:endorsements [(-> received-user-endorsement (assoc :ctime s/Int) (dissoc :status :mtime))]})
+(s/defschema pending-user-endorsements {:endorsements [(s/maybe (either
+                                                                  (-> received-user-endorsement (dissoc :status :mtime) (assoc :ctime s/Int (s/optional-key :mtime) s/Int))
+                                                                  received-ext-endorsements))]})
 
 (s/defschema request-endorsement {:content content
                                   (s/optional-key :user-ids) [(s/maybe s/Int)]

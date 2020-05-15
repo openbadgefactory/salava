@@ -92,7 +92,7 @@
 
 (defn user-badge-endorsements
   ([ctx user-badge-id]
-   (select-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx)))
+   (concat (select-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx)) (map #(assoc % :type "ext" )(ext/select-user-badge-ext-endorsements {:user_badge_id user-badge-id} (get-db ctx)))))
   ([ctx user-badge-id html?]
    (reduce (fn [r e]
              (conj r (-> e (update :content md->html)))) [] (user-badge-endorsements ctx user-badge-id))))
@@ -101,7 +101,14 @@
   (select-user-badge-endorsements-p {:id user-badge-id} (get-db ctx)))
 
 (defn received-pending-endorsements [ctx user-id]
-  (map (fn [e] (-> e (update :content md->html))) (select-pending-endorsements {:user_id user-id} (get-db ctx))))
+ (->> (list*
+       (map (fn [e] (-> e (update :content md->html))) (select-pending-endorsements {:user_id user-id} (get-db ctx)))
+       (some->> (ext/endorsements-received ctx user-id true)
+                (filter #(= (:status %) "pending"))
+                (map #(update % :content md->html))
+                (map #(assoc % :type "ext"))))
+      flatten
+      (sort-by :mtime >))) 
 
 (defn endorsements-received
  ([ctx user-id]
@@ -226,10 +233,12 @@
   :request (select-user-endorsement-request-status {:id user-badge-id :issuer_id user-id} (into {:result-set-fn first :row-fn :status} (get-db ctx)))})
 
 (defn pending-endorsement-count [ctx user-badge-id user-id]
- (pending-user-badge-endorsement-count {:id user-badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
+ (+ (pending-user-badge-endorsement-count {:id user-badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+    (ext/pending-ext-endorsement-count {:id user-badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx)))))
 
 (defn accepted-endorsement-count [ctx user-badge-id user-id]
- {:user_endorsement_count (->> (select-accepted-badge-endorsements {:id user-badge-id}  (get-db ctx)) count)})
+ {:user_endorsement_count (+ (->> (select-accepted-badge-endorsements {:id user-badge-id}  (get-db ctx)) count)
+                             (ext/accepted-ext-endorsement-count {:id user-badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))})
 
 (defn endorsements-count [ctx user-badge-id user-id]
  {:pending_endorsements_count (pending-endorsement-count ctx user-badge-id user-id)
