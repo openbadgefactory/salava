@@ -16,7 +16,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [path-for private? hyperlink url? plugin-fun]]
+            [salava.core.ui.helper :refer [path-for private? hyperlink url? plugin-fun disable-background-image]]
             [salava.core.time :refer [date-from-unix-time unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -162,6 +162,7 @@
         evidences (remove #(= true (get-in % [:properties :hidden])) evidences)
         lng (->> (remove blank? (list @(cursor state [:content-language]) default_language_code "en")) first)]
     (if (or (= (session/get-in [:user :language]) "ar") (= lng "ar")) (dommy/set-attr! (sel1 :html) :dir "rtl") (dommy/set-attr! (sel1 :html) :dir "ltr"))
+    (when (and (not user-logged-in?) (:endorser-id @state)) (disable-background-image))
     [:div {:id "badge-info"}
      [m/modal-window]
      [:div.panel
