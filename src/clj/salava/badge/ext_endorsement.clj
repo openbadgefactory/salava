@@ -163,7 +163,7 @@
         image (as-> (first (plugin-fun (get-plugins ctx) "main" "png-convert-url")) $
                     (if (ifn? $) ($ ctx image_file) image_file))
         logo (if-let [path (first (mapcat #(get-in ctx [:config % :logo] []) (get-plugins ctx)))]
-               path
+               (str "resources/public/" path)
                "resources/public/img/logo.png")
         lid (util/random-token)
         bid (util/random-token)
@@ -366,7 +366,7 @@
 (defn insert-ext-endorsement-owner! [ctx data]
  (let [owner-id (select-ext-endorsement-receiver-by-badge-id {:id (:object data)} (into {:result-set-fn first :row-fn :id} (get-db ctx)))]
    (insert-event-owner! (assoc data :object owner-id) (get-db ctx))))
- 
+
 (defn endorsements-received
  ([ctx user-id]
   (map (fn [e] (-> e (update :content md->html)))
