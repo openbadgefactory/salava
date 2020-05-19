@@ -19,6 +19,7 @@
             [salava.badge.evidence :as evidence]
             [salava.badge.endorsement-schemas :as endoschemas]
             [salava.badge.pending :as p]
+            [salava.badge.ext-endorsement :as ext]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -446,6 +447,68 @@
                  :current-user current-user
                  (ok (e/user-badge-pending-requests ctx user-badge-id (:id current-user))))
 
+            (GET "/ext_request/pending/:user-badge-id" []
+                  :no-doc true
+                  :return endoschemas/pending-ext-requests
+                  :auth-rules access/authenticated
+                  :path-params [user-badge-id :- Long]
+                  :summary "Return user's externally sent pending requests"
+                  :current-user current-user
+                  (ok (ext/ext-pending-requests ctx user-badge-id)))
+
+            (GET "/ext_request/info/:user-badge-id/:issuer-id" []
+                  :no-doc true
+                  :return {(s/optional-key :id) s/Int (s/optional-key :status) (s/enum "pending" "endorsed" "declined")}
+                  :path-params [user-badge-id :- Long
+                                issuer-id :- s/Str]
+                  :summary "Return endorsement request id and current status"
+                  (ok (ext/external-request-by-issuerid ctx user-badge-id issuer-id)))
+
+            (GET "/ext_request/endorser/:id" []
+                  :no-doc true
+                  :return endoschemas/ext-endorser
+                  :path-params [id :- s/Str]
+                  :summary "Return external endorser's information if found"
+                  (ok (ext/ext-endorser ctx id)))
+
+            (GET "/ext/:user-badge-id/:issuer-id" []
+                  :no-doc true
+                  :return endoschemas/issued-ext-endorsement
+                  :path-params [user-badge-id :- Long
+                                issuer-id :- s/Str]
+                  :summary "Return badge endorsement issued by external user"
+                  (ok (ext/given-user-badge-endorsement ctx user-badge-id issuer-id)))
+
+            (POST "/ext/all/:issuer-id" []
+                  :no-doc true
+                  :return endoschemas/issued-ext-endorsement-all
+                  :path-params [issuer-id :- s/Str]
+                  :summary "Return all endorsements issued by external user"
+                  (ok (ext/all-endorsements ctx issuer-id)))
+
+            (POST "/ext_request/all/:issuer-id" []
+                  :no-doc true
+                  :return endoschemas/endorsement-requests-all
+                  :path-params [issuer-id :- s/Str]
+                  :summary "Return all external user's endorsement requests"
+                  (ok (ext/all-requests ctx issuer-id)))
+
+            (POST "/ext_request/endorser/upload_image" []
+                  :no-doc true
+                  :return {:status (s/enum "success" "error") :url s/Str (s/optional-key :message) (s/maybe s/Str)}
+                  :multipart-params [file :- upload/TempFileUpload]
+                  :summary "Upload external endorser image (PNG)"
+                  (ok (ext/upload-image ctx file)))
+
+            (POST "/ext_request/update_status/:user-badge-id" []
+                  :no-doc true
+                  :return {:status (s/enum "error" "success")}
+                  :path-params [user-badge-id :- s/Int]
+                  :body-params [status :- s/Str
+                                email :- s/Str]
+                  :summary "Update external request's status"
+                  (ok (ext/update-request-status ctx user-badge-id email status)))
+
             (POST "/edit/:endorsement-id" []
                   :return {:status (s/enum "success" "error")}
                   :path-params [endorsement-id :- Long]
@@ -466,15 +529,25 @@
                   :current-user current-user
                   (ok (e/update-status! ctx (:id current-user) user_badge_id endorsement-id status)))
 
+            (POST "/ext/update_status/:endorsement-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [endorsement-id :- Long]
+                   :body-params [status :- (s/enum "accepted" "declined")
+                                 user_badge_id :- s/Int]
+                   :summary "Update external endorsement status"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (ext/update-endorsement-status! ctx (:id current-user) user_badge_id endorsement-id status)))
+
             (POST "/request/:user-badge-id" []
                   :return {:status (s/enum "success" "error")}
                   :path-params [user-badge-id :- Long]
-                  :body-params [content :- s/Str
-                                user-ids :- [s/Int]]
+                  :body [request endoschemas/request-endorsement] #_[content :- s/Str
+                                                                     user-ids :- [s/Int]]
                   :auth-rules access/authenticated
                   :summary "Send endorsement request"
                   :current-user current-user
-                  (ok (e/request-endorsement! ctx user-badge-id (:id current-user) user-ids content)))
+                  (ok (e/request-endorsement! ctx user-badge-id (:id current-user) request))) ;user-ids emails content)))
 
             (POST "/request/update_status/:request_id" []
                   :return {:status (s/enum "success" "error")}
@@ -493,6 +566,37 @@
                   :auth-rules access/authenticated
                   :current-user current-user
                   (ok (e/endorse! ctx user-badge-id (:id current-user) content)))
+
+            (POST "/ext/endorse/:user-badge-id" []
+                   :no-doc true
+                   :return {(s/optional-key :id) s/Int :status (s/enum "success" "error") (s/optional-key :message) (s/maybe s/Str)}
+                   :path-params [user-badge-id :- Long]
+                   :body [data endoschemas/save-ext-endorsement]
+                   :summary "Endorse user badge externally"
+                   (ok (ext/endorse! ctx user-badge-id data)))
+
+            (POST "/ext/edit/:id/:user-badge-id" []
+                   :no-doc true
+                   :return {(s/optional-key :id) s/Int :status (s/enum "success" "error") (s/optional-key :message) (s/maybe s/Str)}
+                   :path-params [user-badge-id :- Long
+                                 id :- Long]
+                   :body [data endoschemas/save-ext-endorsement]
+                   :summary "Endorse user badge externally"
+                   (ok (ext/update-endorsement! ctx id user-badge-id data)))
+
+            (DELETE "/ext/endorsement/:id" []
+                    :no-doc true
+                    :return {:status (s/enum "error" "success")}
+                    :path-params [id :- Long]
+                    :summary "Delete endorsement"
+                    (ok (ext/delete-endorsement! ctx id)))
+
+            (DELETE "/ext_request/:id" []
+                    :no-doc true
+                    :return {:status (s/enum "error" "success")}
+                    :path-params [id :- Long]
+                    :summary "Delete external endorsement request"
+                    (ok (ext/delete-sent-request! ctx id)))
 
             (DELETE "/:user-badge-id/:endorsement-id" []
                     :return {:status (s/enum "success" "error")}
