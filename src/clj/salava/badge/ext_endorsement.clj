@@ -8,7 +8,8 @@
   [salava.core.util :as util :refer [publish get-site-name get-db-1 hex-digest digest bytes->base64 get-db plugin-fun get-plugins get-site-url get-data-dir md->html get-full-path get-db-col]]
   [salava.core.i18n :refer [t]]
   [slingshot.slingshot :refer :all]
-  [yesql.core :refer [defqueries]])
+  [yesql.core :refer [defqueries]]
+  [salava.core.time :as time])
  (:import
    [java.io ByteArrayOutputStream]
    [javax.imageio ImageIO]))
@@ -78,7 +79,7 @@
          :valign "top",
          :align  "center"}
         [:div {:style "font-size: 12px !important; color: #00838f !important; text-align: center !important;"}
-          [:img {:style "vertical-align: bottom; " :width "110px" :height "auto" :src (str "cid:"id)}]
+          [:img {:style "vertical-align: bottom; " :width "125px" :height "auto" :src (str "cid:"id)}]
           [:div {:style "margin-top: 15px;"}
             [:a {:href (str (get-full-path ctx) "/user/register") :target "_blank"}
              (str (t :badge/Clicktojoin lng) " " (get-site-name ctx) " " (t :badge/community lng))]]]]]]]]])
@@ -163,8 +164,8 @@
         image (as-> (first (plugin-fun (get-plugins ctx) "main" "png-convert-url")) $
                     (if (ifn? $) ($ ctx image_file) image_file))
         logo (if-let [path (first (mapcat #(get-in ctx [:config % :logo] []) (get-plugins ctx)))]
-               (str "resources/public/" path)
-               "resources/public/img/logo.png")
+               (str (get-site-url ctx) path)
+               (str (get-site-url ctx) "/img/logo.png"))
         lid (util/random-token)
         bid (util/random-token)
         data {:from    (get-in ctx [:config :core :mail-sender])
@@ -178,7 +179,7 @@
                            :content-id bid
                            :content-type "image/png"}
                           {:type :inline
-                           :content (io/file logo)
+                           :content (io/file (str (get-data-dir ctx) "/" (util/file-from-url-fix ctx logo)))
                            :content-id lid
                            :content-type "image/png"}]]]}]
 
@@ -344,7 +345,8 @@
   (select-all-issuer-endorsements {:issuer issuer-id} (get-db ctx)))
  ([ctx issuer-id export?]
   {:endorsements (->> (all-endorsements ctx issuer-id)
-                      (mapv #(hash-map :endorsement (:content %))))}))
+                      (mapv #(:content %)))}))
+                      ;(mapv #(hash-map :endorsement (:content %))))}))
 
 (defn all-requests
  ([ctx issuer-id]
@@ -384,3 +386,22 @@
   (catch Object _
    (log/error _)
    {:status "error"})))
+
+(defn delete-pending-request! [ctx user-badge-id]
+ (let [requests (sent-pending-ext-requests-by-badge-id {:id user-badge-id} (get-db ctx))]
+  (try+
+   (doseq [r requests
+           :let [days-pending (time/no-of-days-passed (long (:mtime r)))]]
+    (when (>= days-pending 30)
+      (log/info "Expired pending external request id" (:id r))
+      (log/info "Deleting pending external request id " (:id r))
+      (delete-sent-request!  ctx (:id r))
+      (log/info "Pending external request deleted!")))
+   (catch Object _
+     (log/error _)))))
+
+(defn delete-badge-endorsements! [db id]
+  (delete-user-badge-ext-endorsements! {:id id} db))
+
+(defn delete-badge-endorsement-requests! [db id]
+  (delete-user-badge-ext-endorsement-requests! {:id id} db))

@@ -84,6 +84,12 @@ SELECT ubee.id FROM user_badge_endorsement_ext ubee
 JOIN user_ext u ON u.ext_id = ubee.issuer_id
 WHERE u.email = :issuer AND user_badge_id = :ubid AND status != "declined"
 
+--name: delete-user-badge-ext-endorsements!
+DELETE FROM user_badge_endorsement_ext WHERE user_badge_id = :id
+
+--name: delete-user-badge-ext-endorsement-requests!
+DELETE FROM user_badge_endorsement_request_ext WHERE user_badge_id = :id
+
 --name: delete-all-user-endorsements!
 DELETE FROM user_badge_endorsement_ext WHERE issuer_id = :issuer
 
@@ -160,7 +166,7 @@ SELECT ube.id, ube.user_badge_id, ube.issuer_id, u.name AS issuer_name, ube.issu
 FROM user_badge_endorsement_ext AS ube
 LEFT JOIN user_ext AS u on u.ext_id = ube.issuer_id
 WHERE ube.user_badge_id = :user_badge_id
-ORDER BY ube.mtime DESC 
+ORDER BY ube.mtime DESC
 
 --name: accepted-ext-endorsement-count
 SELECT COUNT(id) AS count FROM user_badge_endorsement_ext WHERE user_badge_id = :id AND status = 'accepted';

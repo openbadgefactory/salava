@@ -22,7 +22,8 @@
             [salava.badge.ext-endorsement :as ext]
             [salava.badgeIssuer.db :as selfie]
             [salava.social.db :as so]
-            [salava.profile.db :as up]))
+            [salava.profile.db :as up]
+            [salava.badge.ext-endorsement :as ext]))
 
 
 (defqueries "sql/user/main.sql")
@@ -349,7 +350,10 @@
     (doseq [user-badge-id user-badge-ids]
       (b/delete-badge-with-db! db user-badge-id)
       (b/delete-badge-evidences! db user-badge-id user-id)
-      (b/delete-badge-endorsements! db user-badge-id))))
+      (b/delete-badge-endorsements! db user-badge-id)
+      (b/delete-badge-endorsement-requests! db user-badge-id)
+      (ext/delete-badge-endorsements! db user-badge-id)
+      (ext/delete-badge-endorsement-requests! db user-badge-id))))
 
 (defn delete-user
   "Delete user and all user data"
@@ -493,25 +497,24 @@
      "error")))
 
 (defn export-external-user-data [ctx id lng]
-  (let [endorsements (as-> (first (plugin-fun (get-plugins ctx) "ext-endorsement" "all-endorsements")) $
-                       (if (ifn? $) ($ ctx id true) {}))
-        requests (as-> (first (plugin-fun (get-plugins ctx) "ext-endorsement" "all-requests")) $
-                         (if (ifn? $) ($ ctx id true) {}))
-        personal-info (external-user-info ctx id)
+  (let [endorsements (some->> (ext/all-endorsements ctx id true))
+        #_requests #_(ext/all-requests ctx id true) #_(as-> (first (plugin-fun (get-plugins ctx) "ext-endorsement" "all-requests")) $
+                                                              (if (ifn? $) ($ ctx id true) {}))
+        personal-info (ext/ext-endorser ctx id)
         data (-> personal-info
-                 (assoc :image_file (str (u/get-site-url ctx) (:image_file personal-info)))
+                 (assoc :image_file (str (u/get-site-url ctx)"/" (:image_file personal-info)))
                  (merge endorsements)
-                 (merge requests)
+                 ;(merge requests)
                  (dissoc :mtime :ctime :id :ext_id)
                  (clojure.set/rename-keys {:name :Name :url :URL :email :Email :image_file :Logoorpicture}))
         data->csvformat (reduce-kv
                           (fn [r k v]
                             (when v
-                             (conj r
-                              [(t (keyword (str "badge/" (name k))) lng) (if (vector? v) (mapv vals v) v)])))
-
+                              (if-not (vector? v)
+                                (conj r [(t (keyword (str "badge/" (name k))) lng)  v])
+                                (into r (reduce (fn [_ x] (into _ [[(t (keyword (str "badge/" (t :badge/endorsement))) lng) x]])) [] (into [] v))))))
                           []
-                          data)]
+                          (into {}  (filter second data)))]
        (fn [out]
         (with-open [writer (io/writer out)]
          (csv/write-csv writer data->csvformat :seperator \:)))))

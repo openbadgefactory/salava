@@ -168,7 +168,7 @@
       [text-field
        {:name "name"
         :atom (cursor state [:ext-endorser :name])
-        :placeholder "input your name or the name of your organization" #_(t :badgeIssuer/Inputbadgename)}]]
+        :placeholder (t :badge/Inputyournameororganization)}]]
      [:div.form-group
       [:label {:for "input-url"} (t :badge/URL)]
       [text-field
@@ -203,13 +203,6 @@
   (fn []
     [:div {:style {:display @(cursor state [:show-content])}}
      [:hr.border]
-     #_[:div.row
-        [:div.col-xs-12 {:style {:margin-bottom "10px"}} [:a.close {:aria-label "Cancel" :href "#" :on-click #(do
-                                                                                                                (.preventDefault %)
-                                                                                                                (swap! state assoc :show-link "block"
-                                                                                                                       :show-content "none"))} [:i.fa.fa-remove {:title (t :core/Cancel)}]]]]
-
-
      [:div.endorse {:style {:margin "5px"}} (t :badge/Endorsehelptext)]
 
      [:div.row
@@ -304,9 +297,6 @@
             {:on-click #(toggle-delete-dialogue state)} ;(delete-endorsement nil state nil)}
             [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]
          [confirm-delete state #(delete-endorsement nil state nil)]]]]]]]))
-
-
-
 
 (defn ext-endorse-badge [state]
   (let [{:keys [endorser-id user-logged-in?]} @state]
