@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
             [clojure.pprint :refer [pprint]]
+            [clojure.data.json :as json]
             [yesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
             [salava.core.util :as u]
@@ -32,20 +33,25 @@
         primary-uids-emails (primary-emails-by-uids ctx (vals emails-uids))]
     (reduce (fn [coll v] (assoc coll v (->> v (get emails-uids) (get primary-uids-emails)))) {} emails)))
 
+
 (defn save-assertions-for-emails
   ""
-  [ctx emails-assertions]
-  (log/info "save-assertions-for-emails: got" (count emails-assertions) "recipients")
-  (try
-    (jdbc/with-db-transaction [tx {:datasource (:db ctx)}]
-                              (doseq [email (keys emails-assertions)]
-                                (doseq [assertion (get emails-assertions email)]
-                                  (insert-pending-badge-for-email! {:assertion_url assertion :email (name email)} {:connection tx}))))
-    true
-    (catch Throwable ex
-      (log/error "save-assertions-for-emails: transaction failed")
-      (log/error (.toString ex))
-      false)))
+  [ctx input]
+  (let [emails-assertions (if (and (:badge input) (:email input)) (:email input) input)]
+    (log/info "save-assertions-for-emails: got" (count emails-assertions) "recipients")
+    (try
+      (jdbc/with-db-transaction [tx {:datasource (:db ctx)}]
+        (doseq [email (keys emails-assertions)]
+          (doseq [assertion (get emails-assertions email)]
+            (insert-pending-badge-for-email! {:assertion_url assertion :email (name email)} {:connection tx}))))
+
+      (u/publish ctx :new-factory-badge input)
+
+      true
+      (catch Throwable ex
+        (log/error "save-assertions-for-emails: transaction failed")
+        (log/error (.toString ex))
+        false))))
 
 (defn save-pending-assertions
   ""

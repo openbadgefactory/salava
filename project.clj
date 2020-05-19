@@ -64,6 +64,9 @@
                            [org.clojure/data.zip "0.1.1"]
                            [org.clojure/data.csv "1.0.0"]
 
+                           [com.google.auth/google-auth-library-oauth2-http "0.20.0"
+                            :exclusions [com.google.guava/guava org.apache.httpcomponents/httpclient org.apache.httpcomponents/httpcore com.fasterxml.jackson.core/jackson-core]]
+
                  ; Client side
                            [org.clojure/clojurescript "1.10.520" :exclusions [com.google.errorprone/error_prone_annotations]]
                            [reagent "0.8.1"]

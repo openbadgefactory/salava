@@ -87,7 +87,20 @@
                             (not (nil? refresh_token)))
                        (if-let [out (d/refresh-access-token ctx client_id (string/split refresh_token #"-" 2))] (ok out) e400)
 
-                       :else e400))))
+                       :else e400)))
+
+             (PUT "/oauth2/firebase_token" []
+                  :no-doc true
+                  :summary ""
+                  :body-params [client_id :- s/Str
+                                id    :- s/Int
+                                token :- s/Str]
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (if (get-in ctx [:config :oauth :client client_id])
+                    (ok (d/set-firebase-token ctx client_id (:id current-user) id token))
+                    (bad-request {:message "400 Bad Request"})))
+             )
 
 
    (context "/oauth" []

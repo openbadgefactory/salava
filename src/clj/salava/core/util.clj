@@ -272,7 +272,6 @@
 
 
 (defn publish [ctx topic data]
-  (validate schemas/PublishEvent data)
   (if-not (map? data)
     (throw (IllegalArgumentException. "Publish: Data must be a map")))
   (if-not  (keyword? topic)

@@ -44,7 +44,7 @@ SELECT last_login FROM user WHERE id = :id;
 
 
 --name: select-oauth2-auth-code-user
-SELECT u.* FROM user u
+SELECT u.*, t.id AS token_id FROM user u
 INNER JOIN oauth2_token t ON u.id = t.user_id
 WHERE t.client_id = :client_id AND t.auth_code = :auth_code AND t.refresh_token IS NULL;
 
@@ -70,3 +70,7 @@ WHERE client_id = :client_id AND auth_code = :auth_code;
 -- name: update-oauth2-refresh-token!
 UPDATE oauth2_token SET refresh_token = :rtoken, mtime = UNIX_TIMESTAMP()
 WHERE client_id = :client_id AND id = :id AND user_id = :user_id AND auth_code IS NULL;
+
+-- name: update-oauth2-firebase-token!
+UPDATE oauth2_token SET firebase_token = :token, mtime = UNIX_TIMESTAMP()
+WHERE id = :id AND client_id = :client_id AND user_id = :user_id AND auth_code IS NULL;
