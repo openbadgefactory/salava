@@ -89,7 +89,7 @@
   [ctx user-id badge-id]
   (let [badge-updates (select-badge-updates {:user_id user-id :id badge-id} (u/get-db-1 ctx))
         evidence (select-user-badge-evidence {:id badge-id} (u/get-db ctx))
-        endorsements (->> (select-user-badge-endorsements {:id badge-id} (u/get-db ctx)) (endorsement->endorsement-class ctx))]
+        endorsements (some->> (select-user-badge-endorsements {:id badge-id} (u/get-db ctx)) (concat (select-user-badge-endorsements-ext {:id badge-id} (u/get-db ctx))) (endorsement->endorsement-class ctx))]
     {"user" {user-id {"badge" {badge-id (assoc badge-updates :evidence evidence :endorsement endorsements)}}}}))
 
 (defn- issued-by-factory [ctx badge]

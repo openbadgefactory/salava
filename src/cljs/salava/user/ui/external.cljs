@@ -129,14 +129,14 @@
            [:div.col-md-12
             [:div.btn-toolbar.pull-right
              [:div.btn-group
-              [:button.btn.btn-danger
-               {:type "button"
-                :on-click #(m/modal! [delete-modal state] {})}
-               (t :core/Delete)]
               [:button.btn.btn-primary
                {:type "button"
                 :on-click #(export-data state)}
-               (t :user/Exportdata)]]]
+               (t :user/Exportdata)]
+              [:button.btn.btn-danger
+               {:type "button"
+                :on-click #(m/modal! [delete-modal state] {})}
+               (t :core/Delete)]]]
             [:div.pull-left {:style {:margin "10px auto"}} [language-switcher]]]]
 
           [:div.row
