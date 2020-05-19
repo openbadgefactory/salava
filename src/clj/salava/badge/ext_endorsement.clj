@@ -103,9 +103,9 @@
     [:div {:style "margin: 10px auto;"}
      [:p (if-not (= "public" pv)
            [:span (str fname " " lname " " (t :badge/Externalrequestmail1 lng) " ") [:b (t :badge/Endorsethisbadge lng)]  (str " " (t :badge/linkbelow lng) " " (t :user/or lng) " ")
-            [:a {:href (str full-path "/badge/info/" (:id badge-info)"?endorser="issuer-id) :target "_blank"} (t :badge/here)]]
+            [:a {:href (str full-path "/badge/info/" (:id badge-info)"?endorser="issuer-id) :target "_blank"} (t :badge/here lng)]]
            [:span [:a {:href (str full-path "/profile/" oid) :target "_blank"} [:b (str fname " " lname)]]  (str " " (t :badge/Externalrequestmail1 lng) " ") [:b (t :badge/Endorsethisbadge lng)] (str " " (t :badge/linkbelow lng) " " (t :user/or lng) " ")
-            [:a {:href (str full-path "/badge/info/" (:id badge-info)"?endorser="issuer-id) :target "_blank"} (t :badge/here)]])]
+            [:a {:href (str full-path "/badge/info/" (:id badge-info)"?endorser="issuer-id) :target "_blank"} (t :badge/here lng)]])]
      [:p (t :badge/Externalrequestmail2 lng)]
      [:p (t :badge/Externalrequestmail3 lng) " " [:a {:href (str full-path "/user/external/data/" issuer-id) :target "_blank"} (str full-path "/external/mydata/" issuer-id)]]
      [:p (str (t :badge/Requestsentby lng) " ") [:a {:href (get-site-url ctx) :target "_blank"} (get-site-name ctx)]]]
