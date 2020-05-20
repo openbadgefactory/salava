@@ -1,0 +1,6 @@
+{:run-at 12
+ :source-file "/var/log/apache2/access.log.1"
+ :services   {:facebook  #"GET /app/badge/info/(\d+) .+ 20\d .+facebookexternalhit"
+              :linkedin  #"GET /app/badge/info/(\d+) .+ 20\d .+LinkedInBot"
+              :twitter   #"GET /app/badge/info/(\d+) .+ 20\d .+Twitterbot"
+              :pinterest #"GET /app/badge/info/(\d+) .+ 20\d .+Pinterestbot"}}

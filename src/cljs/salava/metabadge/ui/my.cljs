@@ -9,14 +9,14 @@
             [salava.core.ui.modal :as mo]
             [salava.core.ui.grid :as g]
             [reagent.session :as session]
-            ))
+            [salava.metabadge.ui.metabadge :as mb]))
 
 (defn init-data [state]
   (ajax/GET
-    (path-for "/obpv1/metabadge" true)
-    {:handler (fn [data]
-                (swap! state assoc :metabadges data
-                       :initializing false))}))
+   (path-for "/obpv1/metabadge" true)
+   {:handler (fn [data]
+               (swap! state assoc :metabadges data
+                      :initializing false))}))
 
 (defn %completed [req gotten]
   (Math/round (double (* (/ gotten req) 100))))
@@ -25,30 +25,29 @@
   (>= gotten req))
 
 (defn metabadge-element [milestone state]
-  (let [{:keys [badge name min_required required_badges completion_status]} milestone
-        image-class (if (= 100 completion_status) "" " opaque")
-        is-completed? (= completion_status 100)]
+  (let [{:keys [name min_required image_file criteria completion_status user_badge_id]} milestone
+        image-class (if (or user_badge_id (= 100 completion_status)) "" " opaque")
+        is-completed? (or user_badge_id (= completion_status 100))]
     [:div.media.grid-container
      [:div.media-content
       [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] milestone)}
-       (if (:image badge)
-         [:div.media-left
-          [:img.badge-img {:src (:image badge) :class image-class}]
-          ])
+       (when image_file
+         [:div.media-left {:class image-class}
+          [:img.badge-img {:src (str "/" image_file) :class (mb/image-class completion_status) :title name :alt (str "metabadge " name)}]])
        [:div.media-body
         [:div.media-heading
          [:p.heading-link name]]
-
         (when-not is-completed?
           [:div.progress
+           [:span.sr-only {:id (str "progress_" (:metabadge_id milestone))} (str "% " (t :profile/Complete))]
            [:div.progress-bar.progress-bar-success
-            { :role "progressbar"
-              :aria-valuenow (str completion_status)
-              :style {:width (str completion_status "%")}
-              :aria-valuemin "0"
-              :aria-valuemax "100"}
-            (str completion_status "%")]])]
-       ]]]))
+            {:role "progressbar"
+             :aria-valuenow (str completion_status)
+             :style {:width (str completion_status "%")}
+             :aria-valuemin "0"
+             :aria-valuemax "100"
+             :aria-labelledby (str "progress_" (:metabadge_id milestone))}
+            (str completion_status "%")]])]]]]))
 
 (defn order-radio-values []
   [{:value "name" :id "radio-name" :label (t :core/byname)}
@@ -62,25 +61,25 @@
                                 :id "checkbox1"
                                 :on-change #(do (if (= :in-progress @show-atom)
                                                   (reset! show-atom :all)
-                                                  (reset! show-atom :in-progress))
-                                              )}]
+                                                  (reset! show-atom :in-progress)))}]
       (t :metabadge/Showcompletedmilestones)]]))
 
 (defn metabadge-grid [state]
   (let [order (keyword (:order @state))
+        in-progress (-> @state :metabadges :in_progress)
+        completed (-> @state :metabadges :completed)
         show (cursor state [:show])
         metabadges (case @show
-                     :in-progress (filter #(not (>= (:completion_status %) 100)) (:metabadges @state))
-                     :all (:metabadges @state)
-                     (:metabadges @state))]
+                     :in-progress in-progress
+                     :all (flatten (conj in-progress completed))
+                     (flatten (conj in-progress completed)))]
     (if (= 0 (count metabadges))
       [:div {:style {:margin-top "50px"}} (t :metabadge/Nonewgoals)]
       (reduce (fn [r m]
                 (let [{:keys [required_badges min_required completion_status]} m
                       is-complete? (>= completion_status 100)]
-                  (conj r [metabadge-element m state])
-                  )) [:div#grid {:class "row wrap-grid"}] (sort-by :completion_status > metabadges)))))
-
+                  (conj r [metabadge-element m state])))
+              [:div#grid {:class "row wrap-grid"}] (sort-by :completion_status > metabadges)))))
 
 (defn content [state]
   (let [show-atom (cursor state [:show])]
@@ -97,7 +96,7 @@
         (if-not (empty? (:metabadges @state)) [grid-form state])
         (cond
           (not-activated?) (not-activated-banner)
-          (empty? (:metabadges@state)) [:div {:style {:margin-top "50px"}} (t :metabadge/Nonewgoals)]
+          (empty? (-> @state :metabadges)) [:div {:style {:margin-top "50px"}} (t :metabadge/Nonewgoals)]
           :else [metabadge-grid state])])]))
 
 (defn handler [site-navi]

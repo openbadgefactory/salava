@@ -9,20 +9,25 @@
             [salava.page.ui.helper :as ph]))
 
 #_(defn theme-selection [theme-atom themes]
-  [:select {:class     "form-control"
-            :on-change #(reset! theme-atom (js/parseInt (.-target.value %)))
-            :value     @theme-atom}
-   (for [theme themes]
-     [:option {:key (:id theme) :value (:id theme)} (t (:name theme))])])
+    [:select {:class     "form-control"
+              :on-change #(reset! theme-atom (js/parseInt (.-target.value %)))
+              :value     @theme-atom}
+     (for [theme themes]
+       [:option {:key (:id theme) :value (:id theme)} (t (:name theme))])])
 
 (defn theme-selection [theme-atom themes]
   (reduce (fn [r theme]
-            (conj r [:div {:id (str "theme-" (:id theme))}
+            (conj r [:div {:class (str "theme-" (:id theme))}
                      [:a {:href "#" :on-click #(do
                                                  (.preventDefault %)
-                                                 (reset! theme-atom (js/parseInt (:id theme)) ))
-                          :alt (t (:name theme)) :title (t (:name theme))}[:div {:class (str "panel-right theme-container" (if (= @theme-atom (:id theme)) " selected"))} " " ]]])
-            )[:div {:id "theme-container"}] themes))
+                                                 (reset! theme-atom (js/parseInt (:id theme))))
+                          :alt (t (:name theme))
+                          :title (t (:name theme))
+                          :aria-label (str (t :page/Selecttheme) " " (:id theme))}
+                      [:div {:class (str "panel-right theme-container" (if (= @theme-atom (:id theme)) " selected"))} " "]]]))
+
+          [:div {:id "theme-container"}]
+          themes))
 
 (defn padding-selection [padding-atom]
   [:div.row
@@ -34,7 +39,8 @@
              :min       0
              :max       50
              :step      5
-             :on-change #(reset! padding-atom (js/parseInt (.-target.value %)))}]]])
+             :on-change #(reset! padding-atom (js/parseInt (.-target.value %)))
+             :id "select-padding"}]]])
 
 (defn border-selection [border-atom borders]
   (into [:div.clearfix]
@@ -46,23 +52,22 @@
              [:div {:class "select-border"
                     :style {:border-top-width width
                             :border-top-style style
-                            :border-top-color color}}
-              ]]))))
+                            :border-top-color color}}]]))))
 
 #_(defn save-theme [state next-url]
-  (let [page-id (get-in @state [:page :id])
-        theme-id (get-in @state [:page :theme])
-        border-id (get-in @state [:page :border :id])
-        padding-id (get-in @state [:page :padding])]
-    (ajax/POST
-      (path-for (str "/obpv1/page/save_theme/" page-id))
-      {:params {:theme theme-id
-                :border border-id
-                :padding padding-id}
-       :handler (fn [data]
-                  (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
-                  (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000)
-                  )#_(navigate-to next-url)})))
+    (let [page-id (get-in @state [:page :id])
+          theme-id (get-in @state [:page :theme])
+          border-id (get-in @state [:page :border :id])
+          padding-id (get-in @state [:page :padding])]
+      (ajax/POST
+       (path-for (str "/obpv1/page/save_theme/" page-id))
+       {:params {:theme theme-id
+                 :border border-id
+                 :padding padding-id}
+        :handler (fn [data]
+                   (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
+                   (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000))
+        #_(navigate-to next-url)})))
 
 (defn content [state]
   (let [page @(cursor state [:page]) ;(:page @state)
@@ -75,7 +80,7 @@
      [:div {:class "panel page-panel thumbnail" :id "theme-panel"}
       [:form.form-horizontal
        [:div.form-group
-        [:label.col-xs-4 {:for "select-theme"}
+        [:span._label.col-xs-4 {:for "select-theme"}
          (str (t :page/Selecttheme) ":")]
         [:div.col-xs-8
          [theme-selection (cursor state [:page :theme]) themes]]]
@@ -85,7 +90,7 @@
         [:div.col-xs-8
          [padding-selection (cursor state [:page :padding])]]]
        [:div.form-group
-        [:label.col-xs-4 {:for "select-border"}
+        [:span._label.col-xs-4 {:for "select-border"}
          (str (t :page/Selectborder) ":")]
         [:div.col-xs-8
          [border-selection (cursor state [:page :border]) borders]]]
@@ -103,9 +108,9 @@
 
 (defn init-data [state id]
   (ajax/GET
-    (path-for (str "/obpv1/page/" id) true)
-    {:handler (fn [data]
-                (swap! state assoc :page data))}))
+   (path-for (str "/obpv1/page/" id) true)
+   {:handler (fn [data]
+               (swap! state assoc :page data))}))
 
 (defn handler [site-navi params]
   (let [id (:page-id params)

@@ -14,7 +14,8 @@
        [:div.buttons
         [:button {:class (str "btn btn-default " (if all-checked? "btn-active"))
                   :id "btn-all"
-                  :on-click (fn []
+                  :on-click (fn [e]
+                              (.preventDefault e)
                               (swap! state assoc (keyword key) [])
                               (swap! state assoc (keyword all-key) true)
                               (if func (func state))
@@ -26,7 +27,8 @@
                   checked? (boolean (some #(= value %) buttons-checked))]
               [:button {:class    (str "btn btn-default " (if checked? "btn-active"))
                         :key      value
-                        :on-click (fn []
+                        :on-click (fn [e]
+                                    (.preventDefault e)
                                     (swap! state assoc (keyword all-key) false)
                                     (if func (func state))
                                     (if checked?

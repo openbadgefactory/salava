@@ -1,5 +1,6 @@
 (ns salava.page.ui.my
   (:require [reagent.core :refer [atom create-class]]
+            [reagent-modals.modals :as m]
             [clojure.set :refer [intersection]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for not-activated?]]
@@ -92,6 +93,7 @@
 
 (defn content [state]
   [:div {:class "my-badges pages"}
+   [m/modal-window]
    [page-grid-form state]
    [page-grid state]])
 
@@ -99,7 +101,7 @@
   (ajax/GET
     (path-for "/obpv1/page" true)
     {:handler (fn [data]
-                (swap! state assoc :pages data))}))
+                (swap! state assoc :pages (:pages data)))}))
 
 (defn handler [site-navi]
   (let [state (atom {:pages []

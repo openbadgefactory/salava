@@ -11,15 +11,16 @@
             [salava.core.util :as u]))
 
 (defqueries "sql/badge/main.sql")
-
+(defqueries "sql/badge/endorsement.sql")
+(defqueries "sql/badge/ext_endorsement.sql")
 
 (defn badge-events-reduce [events]
   (let [helper (fn [current item]
                   (let [key [(:verb item) (:object item)]]
                     (-> current
-                        (assoc  key item)
+                        (assoc  key item))))
                         ;(assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
-                        )))
+
         reduced-events (vals (reduce helper {} (reverse events)))]
     (filter #(false? (:hidden %)) reduced-events)))
 
@@ -36,15 +37,15 @@
                                                                (inc new-messages-count)
                                                                new-messages-count)))))]
     (->> (reverse messages)
-         (reduce message-helper {})
-         )))
+         (reduce message-helper {}))))
 
-
-(defn filter-badge-message-events [events]
-  (filter #(= "message" (:verb %)) events))
+(defn filter-badge-message-events [ctx events user_id]
+ (let [filtered-events (filter #(= "message" (:verb %)) events)]
+   (as-> (first (u/plugin-fun (u/get-plugins ctx) "db" "user-owns-badge?")) $
+         (when $ (filter #(true? ($ ctx user_id (:object %))) filtered-events)))))
 
 (defn filter-own-events [events user_id]
-  (filter #(and (= user_id (:subject %)) (= "follow" (:verb %))) events) )
+  (filter #(and (= user_id (:subject %)) (= "follow" (:verb %))) events))
 
 (defn get-user-badge-events
   "get users badge  message and follow events"
@@ -55,13 +56,16 @@
         messages (if (not (empty? badge-ids)) (select-messages-with-badge-id {:badge_ids badge-ids :user_id user_id} (u/get-db ctx)) ())
         badge-gallery-ids (reduce (fn [coll v] (assoc coll (:badge_id v) (:gallery_id v))) {} messages)
         messages-map (badge-message-map messages)
-        message-events (->> (filter-badge-message-events reduced-events)
+        message-events (->> (filter-badge-message-events ctx reduced-events user_id)
                             (map (fn [event] (assoc event :message (get messages-map (get badge-gallery-ids (:object event)))
-                                                          :gallery_id (get badge-gallery-ids (:object event)))) ) ;add messages for nessage event
+                                                          :gallery_id (get badge-gallery-ids (:object event))))) ;add messages for nessage event
                             (reduce (fn [coll v] (assoc coll (:gallery_id v) v)) {})
                             vals)
         follow-events (filter-own-events reduced-events user_id)
-        badge-events (into follow-events message-events)]
+        endorsement-events (some->> (select-endorsement-events {:user_id user_id} (u/get-db ctx)) (map (fn [event] (assoc event :content (u/md->html (:content event))))) (badge-events-reduce))
+        endorsement-requests-event (some->> (select-endorsement-request-events {:user_id user_id} (u/get-db ctx)) (map (fn [event] (assoc event :content (u/md->html (:content event))))) (badge-events-reduce))
+        ext-endorsement-events (some->> (select-ext-endorsement-events {:user_id user_id} (u/get-db ctx)) (map (fn [event] (assoc event :content (u/md->html (:content event))))) (badge-events-reduce))
+        badge-events (->> (vector follow-events message-events endorsement-events endorsement-requests-event ext-endorsement-events) flatten (filter (complement nil?)))]
     badge-events))
 
 (defn get-badge-events [ctx user_id]
@@ -206,7 +210,7 @@
                          badge-id endorsement-id]))
 
     (-> badge
-        (dissoc :content :criteria :issuer :creator :endorsement )
+        (dissoc :content :criteria :issuer :creator :endorsement)
         (assoc :id badge-id)
         (insert-badge! {:connection tx}))
     badge-id))

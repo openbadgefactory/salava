@@ -12,11 +12,14 @@
            :cljs (.now js/Date))
         1000))
 
+(defn no-of-days-passed [event-time]
+ #?(:clj (t/in-days (t/interval (c/from-long (* event-time 1000)) (t/now)))))
+
 (defn get-day-of-week []
   #?(:clj (t/day-of-week (t/now))
      :cljs (.getDay (new js/Date))))
 
-(defn get-date-from-today 
+(defn get-date-from-today
   "today - months - weeks - days"
   [months weeks days]
   (quot #?(:clj (c/to-long (t/plus (t/today) (t/months months) (t/weeks weeks) (t/days days)))

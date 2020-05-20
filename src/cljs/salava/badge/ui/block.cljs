@@ -1,21 +1,28 @@
 (ns salava.badge.ui.block
- (:require [salava.core.ui.ajax-utils :as ajax]
-           [salava.core.ui.helper :refer [path-for unique-values]]
-           [reagent.core :refer [create-class atom cursor]]
-           [salava.badge.ui.helper :as bh]
-           [salava.core.ui.grid :as g]
-           [clojure.string :refer [upper-case]]
-           [salava.core.i18n :as i18n :refer [t]]
-           [clojure.set :as set :refer [intersection]]
-           [salava.core.ui.badge-grid :refer [badge-grid-element]]))
+ (:require
+  [clojure.string :refer [upper-case blank?]]
+  [clojure.set :as set :refer [intersection]]
+  [reagent.core :refer [create-class atom cursor]]
+  [reagent.session :as session]
+  [salava.badge.ui.endorsement :refer [endorsement-list request-endorsement]]
+  [salava.badge.ui.evidence :refer [evidence-list-badge-view evidenceblock]]
+  [salava.badge.ui.helper :as bh]
+  [salava.badge.ui.settings :refer [settings-tab-content]]
+  [salava.core.ui.ajax-utils :as ajax]
+  [salava.core.ui.helper :refer [path-for unique-values]]
+  [salava.core.ui.grid :as g]
+  [salava.core.i18n :as i18n :refer [t]]
+  [salava.core.ui.badge-grid :refer [badge-grid-element]]
+  [salava.core.ui.popover :refer [info]]
+  [salava.user.ui.helper :refer [profile-link-inline-modal]]))
 
 (defn init-data
   ([state]
    (ajax/GET
      (path-for "/obpv1/badge" true)
      {:handler (fn [data]
-                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
-                        :pending (filter #(= "pending" (:status %)) data)
+                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) (:badges data))
+                        :pending (filter #(= "pending" (:status %)) (:badges data))
                         :initializing false))})))
 
 (defn visibility-select-values []
@@ -69,7 +76,7 @@
         new-field-atom (:new-field-atom param)
         func (:function param)]
     (create-class {:reagent-render (fn []
-                                    (let [badges (remove #(true? (bh/badge-expired? (:expires_on %))) (:badges @state))
+                                    (let [badges (remove #(or (true? (bh/badge-expired? (:expires_on %))) (:revoked %)) (:badges @state))
                                           order (keyword (:order @state))
                                           badges (case order
                                                    (:mtime) (sort-by order > badges)
@@ -98,3 +105,86 @@
                                                           (badge-grid-element element-data state badge-type init-data)))))]
                                             [:div {:style {:font-size "16px"}} [:p [:b (t :badge/Youhavenobadgesyet)]]])])]]))
                    :component-will-mount (fn [] (init-data state))})))
+
+(defn visibilityform [vatom]
+ (let [site-name (session/get :site-name)]
+  [:div.row
+   [:div.col-md-12
+    [:div.panel.panel-default
+     [:div.panel-heading ;{:style {:padding "8px"}}
+      [:div.panel-title {:style {:margin-bottom "unset" :font-size "16px"}}
+       (t :badge/Setbadgevisibility) [info {:style {:position "absolute" :right "0" :top "0"} :content (t :badge/Visibilityinfo) :placement "left"}]]]
+     [:div.panel-body {:style {:padding "15px"}}
+      [:div.row
+       [:div.col-md-12
+        [:p [:b (t :badge/Selectvisibilityinfo)]]]]
+      [:div.visibility-opts-group
+       [:div.visibility-opt
+         [:input.radio-btn {:id "private"
+                            :type "radio"
+                            :name "private"
+                            :on-change #(do
+                                          (.preventDefault %)
+                                          (reset! vatom "private"))
+                            :checked (= "private" @vatom)}]
+         [:div.radio-tile
+          [:div.icon [:i.fa.fa-lock]]
+          [:label.radio-tile-label {:for "private"} (t :core/Private)]]]
+       [:div.visibility-opt
+         [:input.radio-btn {:id "internal"
+                            :type "radio"
+                            :name "internal"
+                            :on-change #(do
+                                          (.preventDefault %)
+                                          (reset! vatom "internal"))
+                            :checked (= "internal" @vatom)}]
+         [:div.radio-tile
+          [:div.icon [:i.fa.fa-group]]
+          [:label.radio-tile-label {:for "internal"} (if (blank? site-name)(t :core/Internal) site-name)]]]
+       [:div.visibility-opt
+         [:input.radio-btn {:id "public"
+                            :type "radio"
+                            :name "public"
+                            :on-change #(do
+                                          (.preventDefault %)
+                                          (reset! vatom "public"))
+                            :checked (= "public" @vatom)}]
+         [:div.radio-tile
+          [:div.icon [:i.fa.fa-globe]]
+          [:label.radio-tile-label {:for "public"} (t :core/Public)]]]]
+      [:div {:style {:margin "10px auto"}}
+       ;[:hr.border.dotted-border]
+       (case @vatom
+         "private" [:div
+                    [:ul
+                     [:li [:b (t :badge/Privatevisibilityinfo)]]
+                     [:li (t :badge/Socialfeaturesnotavailable)]
+                     [:li (t :badge/Badgesharingnotavailable)]]]
+         "internal" [:div
+                     [:ul
+                      [:li (t :badge/Internalvisibilityinfo)]
+                      [:li [:b (t :badge/Socialfeaturesavailable)]]
+                      [:li (t :badge/Badgesharingnotavailable)]]]
+         "public"  [:div
+                      [:ul
+                       [:li (t :badge/Publicvisibilityinfo)]
+                       [:li (t :badge/Socialfeaturesavailable)]
+                       [:li [:b (t :badge/Badgesharingavailable)]]]])]]]]]))
+
+(defn ^:export badge_endorsements [id data]
+ [endorsement-list id data])
+
+(defn ^:export request_endorsement [state]
+  [request-endorsement state])
+
+(defn ^:export settings_tab_content [data state init-data]
+  [settings-tab-content data state init-data])
+
+(defn ^:export evidence_list_badge [id]
+  [evidence-list-badge-view id])
+
+(defn ^:export evidence_block [data state init-data]
+  [evidenceblock data state init-data])
+
+(defn ^:export badge_visibility_form [vatom]
+  [visibilityform vatom])

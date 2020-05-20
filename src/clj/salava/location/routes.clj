@@ -9,13 +9,15 @@
             [salava.core.access :as access]
             [salava.core.util :as u]
             [salava.location.db :as l]
-            [salava.location.schemas :as ls]
-            ))
+            [salava.location.schemas :as ls]))
+
 
 (defn route-def [ctx]
   (routes
     (context "/gallery" []
-             (layout/main ctx "/map"))
+             (layout/main ctx "/map")
+             (layout/main ctx "/map/embed")
+             (layout/main ctx "/map/embed/generate-link"))
 
     (context "/obpv1/location" []
              :tags ["location"]
@@ -101,4 +103,11 @@
                   :return ls/explore-filters
                   :current-user current-user
                   (ok (l/explore-filters ctx (some-> current-user :id pos?))))
-             )))
+
+             (GET "/explore/badges/embed" []
+                  :no-doc true
+                  :summary "Get public badge locations for gallery for embed map. Requires bounding map box (South-West and North-East coordinates). Results can be filtered by badge or issuer name and tags."
+                  :return ls/explore-badges-ex-em
+                  :query [params ls/explore-badge-query]
+                  :current-user current-user
+                  (ok (l/explore-list-badges ctx (some-> current-user :id pos?) params true))))))

@@ -24,6 +24,7 @@
              (layout/main ctx "/browser/:editor/:callback/:lang")
 
              (GET "/browser" []
+                  :no-doc true
                   :summary "View user files"
                   :query-params [CKEditor :- String
                                  CKEditorFuncNum :- String
@@ -41,6 +42,17 @@
                   :auth-rules access/signed
                   :current-user current-user
                   (ok (f/user-files-all ctx (:id current-user))))
+
+             (GET "/as-png" []
+                  :query-params [image :- s/Str]
+                  :summary "Convert svg image to png"
+                  (let [bytes (f/svg->png ctx image)]
+                    (if bytes
+                      {:status 200
+                       :headers {"Content-Type" "image/png"}
+                       :body bytes}
+                      (not-found))))
+
 
              (DELETE "/:fileid" []
                      :path-params [fileid :- Long]

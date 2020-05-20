@@ -14,8 +14,11 @@
 (defn- run-every-x [ctx x cond-fun]
   (fn []
     (while @running
-      (when (cond-fun (t/now))
-        (periodically ctx x))
+      (let [now (t/now)
+            h (t/hour now)
+            m (t/minute now)]
+        (when (cond-fun now)
+          (periodically (assoc ctx :-cron {:hour h :minute m}) x)))
       (try
         (Thread/sleep 60000)
         (catch InterruptedException _)))))

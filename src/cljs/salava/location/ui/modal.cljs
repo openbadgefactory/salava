@@ -32,6 +32,23 @@
           (into [:tbody]))
       ]))
 
+(defn map-embed-handler [params]
+  (fn []
+     [:table.table
+      (->> params
+           :badges
+           (reduce (fn [coll v] (assoc coll (:gallery_id v) v)) {})
+           vals
+           (sort-by :badge_name)
+           (map (fn [{:keys [user_id badge_id gallery_id badge_image badge_name profile_visibility]}]
+                  [:tr
+                   [:td {:width 50} [:img {:src badge_image :width 40 :height 40}]]
+                   [:td  [:p {:style {:padding-top "10px"}}
+                          [:a {:href "#" :on-click (fn [] (if (= "public" profile_visibility) (mo/open-modal [:profile :view] {:user-id user_id}) #()))} badge_name]]]]))
+           (into [:tbody]))
+       ]))
+
 (def ^:export modalroutes
   {:location {:badgelist badge-handler
-              :userlist  user-handler}})
+              :userlist  user-handler
+              :embedlist map-embed-handler}})

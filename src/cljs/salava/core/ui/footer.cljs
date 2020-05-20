@@ -3,7 +3,7 @@
 
 
 (defn base-footer []
-  [:footer.footer
+  [:div.footer
    [:div.footer-container
     [:p.text-muted
      "Open Badge Passport community edition"]
@@ -13,5 +13,3 @@
      " | "
      [:a {:class "bottom-link" :href "https://github.com/discendum/salava" }
       "Github"]]]])
-
-

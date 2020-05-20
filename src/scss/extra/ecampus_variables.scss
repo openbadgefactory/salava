@@ -4,8 +4,8 @@ $menu-color: #1F1B35;
 $menu-active: darken($menu-color, 18%);
 $title-color: $menu-color;
 
-$link-color:#467d91;
-$link-hover:  #999999;//lighten($link-color, 5%);
+$link-color: #447A90; //#467d91;
+$link-hover:  #996B6A; //#999999;//lighten($link-color, 5%);
 $grid-link:  #333333;
 $grid-link-hover: lighten($grid-link, 5%);
 
@@ -19,4 +19,4 @@ $icon-color: #1F1B35;
 
 $text-color: #1F1B35;
 
-$green:#76881D;  //#5cb85c;
+$green: #6D7E29; //#76881D;  //#5cb85c;

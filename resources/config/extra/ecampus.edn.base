@@ -1,2 +1,4 @@
 {:css ["/css/extra/ecampus.css"]
-:logo ["/img/extra/ecampus/logo.png"]}
+ :logo ["/img/extra/ecampus/logo.png"]
+ :filter-options [{:country "all"
+                  :common-badges false}]} 

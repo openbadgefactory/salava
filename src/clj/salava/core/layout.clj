@@ -23,6 +23,7 @@
    "/css/rateit/rateit.css"
    "/css/simplemde.min.css"])
 
+
 (def asset-js
   ["/assets/jquery/jquery.min.js"
    "/assets/bootstrap/js/bootstrap.min.js"
@@ -32,6 +33,7 @@
 (defn with-version [ctx resource-name]
   (let [version (get-in ctx [:config :core :asset-version])]
     (str resource-name "?_=" (or version (System/currentTimeMillis)))))
+
 
 (defn css-list [ctx]
   (let [plugins (get-in ctx [:config :core :plugins])
@@ -48,15 +50,21 @@
            (concat asset-css)
            (map #(with-version ctx %))))))
 
+
 (defn js-list [ctx]
-  (map #(with-version ctx %) (conj asset-js "/js/salava.js")))
+ (map #(with-version ctx %) (conj asset-js "/js/salava.js")))
+
+(defn plugin-js-list [ctx]
+ (let [f (first (plugin-fun (get-plugins ctx) "block" "pluginjs"))]
+   (if f (f ctx) "")))
+
 
 (defn context-js [ctx]
   (let [site-name (get-in ctx [:config :core :site-name])
         share     {:site-name (get-in ctx [:config :core :share :site-name] site-name)
                    :hashtag   (get-in ctx [:config :core :share :hashtag] (->> (split site-name #" ")
                                                                                (map capitalize)
-                                                                               join))}
+                                                                               join)) }
         ctx-out   {:plugins         {:all (map plugin-str (get-in ctx [:config :core :plugins]))}
                    :user            (:user ctx)
                    :flash-message   (:flash-message ctx)
@@ -66,13 +74,16 @@
                    :base-path       (get-in ctx [:config :core :base-path])
                    :facebook-app-id (get-in ctx [:config :oauth :facebook :app-id])
                    :linkedin-app-id (get-in ctx [:config :oauth :linkedin :app-id])
+                   :google-app-id   (get-in ctx [:config :oauth :google :app-id])
                    :languages       (map name (get-in ctx [:config :core :languages]))
                    :private         (private? ctx)
                    :footer          (get-in ctx [:config :extra/theme :footer] nil)
                    :factory-url     (get-in ctx [:config :factory :url])
                    :show-terms?     (get-in ctx [:config :core :show-terms?] false)
-                   :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))}]
+                   :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))
+                   }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
+
 
 (defn include-meta-tags [ctx tags]
   (if tags
@@ -94,36 +105,42 @@
                    (cons (map (fn [f] (f ctx)) (plugin-fun (get-plugins ctx) "layout" "html-attributes"))))]
     (apply merge attrib)))
 
+
 (defn main-view
   ([ctx] (main-view ctx nil))
   ([ctx meta-tags]
    (let [favicons (favicon ctx)
          attrib (html-attributes ctx)]
-     (html5 {:dir (:dir attrib)}
-            [:head
-             [:title (get-in ctx [:config :core :site-name])]
-             [:meta {:charset "utf-8"}]
-             [:meta {:http-equiv "X-UA-Compatible" :content "IE=edge"}]
-             [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
-             [:meta {:property "og:sitename" :content (get-in ctx [:config :core :site-name])}]
-             (seq (include-meta-tags ctx meta-tags))
-             (when (:json-oembed meta-tags)
-               (:json-oembed meta-tags))
-             (apply include-css (css-list ctx))
-             [:link {:type "text/css" :href "/css/custom.css" :rel "stylesheet" :media "screen"}]
-             [:link {:type "text/css" :href "/css/print.css" :rel "stylesheet" :media "print"}]
-             [:link {:type "text/css", :href "https://fonts.googleapis.com/css?family=Halant:300,400,600,700|Dosis:300,400,600,700,800|Gochi+Hand|Coming+Soon|Oswald:400,300,700|Dancing+Script:400,700|Archivo+Black|Archivo+Narrow|Open+Sans:700,300,600,800,400|Open+Sans+Condensed:300,700|Cinzel:400,700&subset=latin,latin-ext", :rel "stylesheet"}]
-             [:link {:rel "shortcut icon" :href (:icon favicons)}]
-             [:link {:rel "icon" :type "image/png" :href  (:png favicons)}]
+     (html5 {:dir (:dir attrib)
+             :lang (or (get-in ctx [:user :language]) "en")}
+      [:head
+       [:title (get-in ctx [:config :core :site-name])]
+       [:meta {:charset "utf-8"}]
+       [:meta {:http-equiv "X-UA-Compatible" :content "IE=edge"}]
+       [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
+       [:meta {:property "og:sitename" :content (get-in ctx [:config :core :site-name])}]
+       (seq (include-meta-tags ctx meta-tags))
+       (when (:json-oembed meta-tags)
+         (:json-oembed meta-tags))
+       (apply include-css (css-list ctx))
+       [:link {:type "text/css" :href "/css/custom.css" :rel "stylesheet" :media "screen"}]
+       [:link {:type "text/css" :href "/css/print.css" :rel "stylesheet" :media "print"}]
+       [:link {:type "text/css", :href "https://fonts.googleapis.com/css?family=Halant:300,400,600,700|Dosis:300,400,600,700,800|Roboto|Gochi+Hand|Coming+Soon|Oswald:400,300,700|Dancing+Script:400,700|Archivo+Black|Archivo+Narrow|Open+Sans:700,300,600,800,400|Open+Sans+Condensed:300,700|Cinzel:400,700&subset=latin,latin-ext", :rel "stylesheet"}]
+       [:link {:rel "shortcut icon" :href (:icon favicons) }]
+       [:link {:rel "icon" :type "image/png" :href  (:png favicons)}]
 
-             [:script {:type "text/javascript"} (context-js ctx)]]
-            [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
-             [:div#app]
-             "<!--[if lt IE 10]>"
-             (include-js "/assets/es5-shim/es5-shim.min.js" "/assets/es5-shim/es5-sham.min.js")
-             "<![endif]-->"
-             (include-js "/assets/es6-shim/es6-shim.min.js" "/assets/es6-shim/es6-sham.min.js")
-             (apply include-js (js-list ctx))]))))
+       [:script {:type "text/javascript"} (context-js ctx)]
+       (include-js "/js/dataLayer.js")]
+
+      [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
+       [:div#app]
+       "<!--[if lt IE 10]>"
+       (include-js "/assets/es5-shim/es5-shim.min.js" "/assets/es5-shim/es5-sham.min.js")
+       "<![endif]-->"
+       (include-js "/assets/es6-shim/es6-shim.min.js" "/assets/es6-shim/es6-sham.min.js")
+       (apply include-js (js-list ctx))
+       (apply include-js (plugin-js-list ctx))]))))
+
 
 (defn main-response [ctx current-user flash-message meta-tags]
   (let [user (if current-user (-> (u/user-information ctx (:id current-user))
@@ -136,22 +153,22 @@
 
 (defn main [ctx path]
   (GET path []
-       :no-doc true
-       :summary "Main HTML layout"
-       :current-user current-user
-       :flash-message flash-message
-       (main-response ctx current-user flash-message nil)))
+    :no-doc true
+    :summary "Main HTML layout"
+    :current-user current-user
+    :flash-message flash-message
+    (main-response ctx current-user flash-message nil)))
 
 (defn main-meta [ctx path plugin]
   (GET path []
-       :no-doc true
-       :path-params [id :- s/Any]
-       :summary "Main with meta tags"
-       :current-user current-user
-       :flash-message flash-message
-       (let [meta-tags (case plugin
-                         :badge (b/meta-tags ctx id)
-                         :page (p/meta-tags ctx id)
-                         :user (u/meta-tags ctx id)
-                         :gallery (g/meta-tags ctx id))]
-         (main-response ctx current-user flash-message meta-tags))))
+    :no-doc true
+    :path-params [id :- s/Any]
+    :summary "Main with meta tags"
+    :current-user current-user
+    :flash-message flash-message
+    (let [meta-tags (case plugin
+                      :badge (b/meta-tags ctx id)
+                      :page (p/meta-tags ctx id)
+                      :user (u/meta-tags ctx id)
+                      :gallery (g/meta-tags ctx id))]
+      (main-response ctx current-user flash-message meta-tags))))

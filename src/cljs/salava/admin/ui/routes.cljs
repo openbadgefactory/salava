@@ -15,13 +15,23 @@
                                        ["/tickets" t/handler]
                                        ["/statistics" s/handler]
                                        ["/userlist" u/handler]]})
+(defn about []
+  {:stats {:heading (t :admin/Admin " / "  :admin/Statistics)
+           :content [:p.page-tip
+                     (t :admin/Aboutadminstats)]}
+   :tickets {:heading (t :admin/Admin " / "  :admin/Tickets)
+             :content [:p.page-tip
+                       (t :admin/Abouttickets)]}
+   :users {:heading (t :admin/Admin " / "  :admin/Userlist)
+           :content [:p.page-tip
+                     (t :admin/Aboutusers)]}})
 
 (defn admin-navi [context]
-  {(str (base-path context) "/admin")         {:weight 50 :title (t :admin/Admin) :top-navi true :breadcrumb (t :admin/Admin)}
-   (str (base-path context) "/admin/statistics") {:weight 51 :title (t :admin/Statistics) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Statistics)}
-   (str (base-path context) "/admin/tickets") {:weight 52 :title (t :admin/Tickets) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Tickets)}
-   (str (base-path context) "/admin/userlist") {:weight 53 :title (t :admin/Userlist) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Userlist)}
-   })
+  {(str (base-path context) "/admin")         {:weight 50 :title (t :admin/Admin) :top-navi true :breadcrumb (t :admin/Admin) :about (:stats (about))}
+   (str (base-path context) "/admin/statistics") {:weight 51 :title (t :admin/Statistics) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Statistics) :about (:stats (about))}
+   (str (base-path context) "/admin/tickets") {:weight 52 :title (t :admin/Tickets) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Tickets) :about (:tickets (about))}
+   (str (base-path context) "/admin/userlist") {:weight 53 :title (t :admin/Userlist) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Userlist) :about (:users (about))}})
+
 
 (defn ^:export navi [context]
   (if (= "admin" (get-in context [:user :role]))

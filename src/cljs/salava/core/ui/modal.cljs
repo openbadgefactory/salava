@@ -5,7 +5,8 @@
             [salava.core.ui.helper :refer [plugin-fun]]
             [salava.core.common :as common]
             [salava.core.helper :refer [dump]]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [dommy.core :as dommy :refer-macros [sel1 sel]]))
             ;[salava.core.ui.dispatch :refer [site-navi]]
 
 
@@ -16,6 +17,15 @@
 
 (defn set-new-view [route params]
   (reset! views (conj @views [((get-in (modal-navi) route) params)])))
+
+(defn previous-view []
+  (reset! views (pop @views)))
+
+(defn accessibility-fix []
+  (-> (sel1 ".modal")
+      (dommy/set-attr! :aria-label "modal content" :aria-hidden true))
+  (-> (sel1 ".modal-dialog")
+      (dommy/set-attr! :role "document")))
 
 (defn modal-content []
   [:div {:id "badge-content"}
@@ -40,7 +50,9 @@
    [:div.modal-footer]])
 
 (defn modal-init [view]
-  (create-class {:component-will-mount   (fn [] (reset! views [view]))
+  (create-class {:component-will-mount   (fn [] (do
+                                                  (reset! views [view])
+                                                  (accessibility-fix)))
                  :reagent-render         (fn [] (modal-content))
                  :component-will-unmount (fn [] (do (close-modal!)
                                                     (reset! views [])

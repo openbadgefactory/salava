@@ -151,6 +151,9 @@ DELETE FROM user_profile WHERE user_id = :user_id
 --name: delete-email-addresses!
 DELETE FROM user_email WHERE user_id = :user_id
 
+--name: delete-user-terms!
+DELETE FROM user_terms WHERE user_id = :user_id
+
 --name: delete-user!
 DELETE FROM user WHERE id = :id
 
@@ -229,3 +232,6 @@ REPLACE INTO user_properties (user_id, name, value) VALUES (:user_id, 'last_visi
 
 --name: select-user-last-visited
 SELECT value from user_properties WHERE user_id = :user_id AND name = 'last_visited';
+
+--name: delete-external-user-info!
+DELETE FROM user_ext WHERE ext_id = :id

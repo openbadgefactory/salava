@@ -12,11 +12,11 @@
   (input-valid? (:item-type schemas/Url-parser) item))
 
 (defn valid-item-id? [item]
-  (input-valid? (:item-id schemas/Url-parser) (js/parseInt item))
-  )
+  (input-valid? (:item-id schemas/Url-parser) (js/parseInt item)))
+
 
 (defn checker [url]
-  (let [url-list (vec(re-seq #"\w+" (str url) ))
+  (let [url-list (vec(re-seq #"\w+" (str url)))
         type (get url-list 1)
         id  (get url-list 3)]
     {:item-type (if (= type "gallery") "badges" type)
@@ -32,29 +32,34 @@
         subject (cursor mail [:subject])]
     [:div
      [:div.form-group
-      [:label 
+      [:label {:for "subjectArea"}
        (str (t :admin/Subjectforitemowner) ":")]
       [:input {:class    "form-control"
                :value    @subject
-               :onChange #(reset! subject (.-target.value %)) }]]
+               :onChange #(reset! subject (.-target.value %))
+               :aria-label (t :admin/Subjectforitemowner)
+               :id "subjectArea"}]]
      [:div.form-group
-      [:label 
+      [:label {:for "textArea"}
        (str (t :admin/Messageforitemowner) ":")]
       [:textarea {:class    "form-control"
                   :rows     "5"
                   :value    @message
-                  :onChange #(reset! message (.-target.value %))}]]]))
+                  :onChange #(reset! message (.-target.value %))
+                  :aria-label (t :admin/Messageforitemowner)
+                  :id "textArea"}]]]))
 
 
 (defn email-select [emails email-atom]
   (let [primary-email (first (filter #(and (:verified %) (:primary_address %)) emails))
         secondary-emails (filter #(and (:verified %) (not (:primary_address %))) emails)]
     (if (not (pos? (count secondary-emails)))
-      [:div (:email primary-email) ]
+      [:div (:email primary-email)]
       [:select {:class     "form-control"
                 :id        "emails"
                 :value     @email-atom
-                :on-change #(reset! email-atom (.-target.value %))}
+                :on-change #(reset! email-atom (.-target.value %))
+                :aria-label "Emails"}
        [:optgroup {:label (str (t :admin/Primaryemail) ":")}
         [:option {:key (hash (:email primary-email)) :value (:email primary-email)} (:email primary-email)]]
        [:optgroup {:label (str (t :admin/Secondaryemail) ":")}

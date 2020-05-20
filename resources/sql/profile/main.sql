@@ -5,9 +5,17 @@ SELECT id, first_name, last_name, country, language, profile_visibility, profile
 --name: select-user-profile-fields
 -- get all user's profile fields
 SELECT id, field, value, field_order FROM user_profile WHERE user_id = :user_id
+ORDER BY field_order
+
+--name: select-user-profile-fields-multi
+-- get all user's profile fields
+SELECT id, field, value, field_order FROM user_profile WHERE id IN (:field_ids) AND user_id = :user_id
 
 --name: delete-user-profile-fields!
 DELETE FROM user_profile WHERE user_id = :user_id
+
+--name: delete-user-profile-fields-multi!
+DELETE FROM user_profile WHERE user_id = :user_id AND id IN (:field_ids)
 
 --name: insert-user-profile-field!
 INSERT INTO user_profile (user_id, field, value, field_order) VALUES (:user_id, :field, :value, :field_order)
@@ -27,8 +35,19 @@ DELETE FROM user_properties WHERE user_id = :user_id AND name = 'profile'
 --name: delete-showcase-badges!
 DELETE FROM user_profile_badge_showcase_has_badge WHERE block_id = :block_id
 
+--name: delete-showcase-badges-multi!-REMOVE
+DELETE FROM user_profile_badge_showcase_has_badge AS t
+JOIN user_profile_badge_showcase AS t2 ON t.block_id = t2.id
+WHERE t.block_id IN (:block_ids) AND t2.user_id = :user_id
+
 --name: delete-showcase-block!
 DELETE FROM user_profile_badge_showcase WHERE id = :id
+
+--name: delete-showcase-block-multi!
+DELETE user_profile_badge_showcase, user_profile_badge_showcase_has_badge
+FROM user_profile_badge_showcase
+INNER JOIN user_profile_badge_showcase_has_badge ON user_profile_badge_showcase.id = user_profile_badge_showcase_has_badge.block_id
+WHERE user_profile_badge_showcase.id IN (:block_ids) AND user_profile_badge_showcase.user_id = :user_id;
 
 --name: delete-showcase-blocks!
 DELETE FROM user_profile_badge_showcase WHERE user_id = :user_id
@@ -52,9 +71,15 @@ SELECT DISTINCT ub.id, bc.name, bc.image_file FROM user_badge AS ub
   JOIN badge AS badge ON (badge.id = ub.badge_id)
   JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
   JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
-  WHERE pb.block_id = :block_id
+  WHERE pb.block_id = :block_id AND ub.revoked = 0 AND ub.deleted = 0
   ORDER BY pb.badge_order
 
-  --name: select-page
-  --get profile page tab
-  SELECT id, name, visibility FROM page WHERE id = :id AND deleted != 1;
+--name: select-page
+--get profile page tab
+SELECT id, name, visibility FROM page WHERE id = :id AND deleted != 1;
+
+--name: select-page-multi
+SELECT id, name, visibility, user_id FROM page WHERE id IN (:tabs) AND deleted != 1 AND user_id = :user_id;
+
+--name: select-badge-multi
+SELECT id, visibility FROM user_badge WHERE id IN (:ids) AND deleted = 0 AND revoked = 0;

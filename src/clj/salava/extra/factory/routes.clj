@@ -24,6 +24,7 @@
   (routes
    (context "/obpv1/factory" []
             :tags ["factory"]
+            :no-doc true
 
             (POST "/backpack_email_list" []
                   :header-params [authorization :- s/Str]

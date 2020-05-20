@@ -6,12 +6,18 @@
             [clojure.data.json :as json]
             [clojure.pprint :refer [pprint]]
             [clojure.xml :as xml]
+            [clojure.zip :as zip]
+            [clojure.data.zip.xml :as zip-xml]
             [clj-http.client :as clj-http]
             [net.cgrand.enlive-html :as html]
             [salava.core.util :as u]
             [salava.core.http :as http]
             [salava.core.helper :refer [dump]]
-            [schema.core :as s])
+            [schema.core :as s]
+            [pdfboxing.info :as pdf-info]
+            [pdfboxing.common :as pdf]
+            [pantomime.extract :as extract]
+            [autoclave.core :refer [json-sanitize]])
   (:import (ar.com.hjg.pngj PngReader)
            (java.io StringReader)))
 
@@ -22,7 +28,7 @@
                            :description s/Str
                            :alignment [(s/maybe {:name s/Str
                                                  :url  s/Str
-                                                 :description s/Str})]
+                                                 :description (s/maybe s/Str)})]
                            :tags      [(s/maybe s/Str)]})
 
 (s/defschema Endorsement {:id s/Str
@@ -219,8 +225,8 @@
                     :audience nil
                     :ctime now
                     :mtime now})]
-      :endorsement []
-      )))
+      :endorsement [])))
+
 
 
 ; old v0.5.0 badge content
@@ -246,6 +252,15 @@
 
 ;;
 
+(defn- get-json-content [url]
+ (try
+  (http/json-get url)
+  (catch Exception _
+   (log/error (.getMessage _))
+   (log/error "Error occured when getting json content with json-get! Using http-get instead")
+   (as-> (http/http-get url) $
+         (if (map? $) $ (-> $ (json-sanitize) (json/read-str :key-fn keyword)))))))
+
 (defn- get-endorsement
   ([item] (get-endorsement item 1))
   ([item depth]
@@ -253,14 +268,14 @@
      (if (empty? (:endorsement item))
        []
        (->> (:endorsement item)
-            (map #(if (map? %) % (http/json-get %)))
+            (map #(if (map? %) % (get-json-content %) #_(http/json-get %)))
             (map (fn [e]
                    (if (= item-id (get-in e [:claim :id]))
                      {:id ""
                       :content (get-in e [:claim :endorsementComment] "")
                       :issued_on (u/str->epoch (:issuedOn e))
                       :issuer (as-> (:issuer e) $
-                                    (if (map? $) $ (http/json-get $))
+                                    (if (map? $) $ (get-json-content $) #_(http/json-get $))
                                     {:id (:id $)
                                      :language_code ""
                                      :name (:name $)
@@ -275,7 +290,7 @@
                    (if (pos? depth)
                      (assoc-in e [:issuer :endorsement]
                                (-> (get-in e [:issuer :id])
-                                   http/json-get
+                                   get-json-content #_http/json-get
                                    (get-endorsement (dec depth))))
                      (assoc-in e [:issuer :endorsement] [])))))))))
 
@@ -294,7 +309,7 @@
                                :ctime (u/str->epoch (:issuedOn %))
                                :mtime (u/str->epoch (:issuedOn %))}
 
-                   (http/json-get %)))
+                   (get-json-content %) #_(http/json-get %)))
            (map (fn [e] {:id nil
                          :external_id (:id e)
                          :user_badge_id nil
@@ -316,7 +331,7 @@
 (defmethod badge-content :v2.0 [initial assertion]
   (let [parser (fn [badge]
                  (let [language (get badge (keyword "@language") "")
-                       issuer (if (map? (:issuer badge)) (:issuer badge) (http/json-get (:issuer badge)))
+                       issuer (if (map? (:issuer badge)) (:issuer badge) (get-json-content (:issuer badge)) #_(http/json-get (:issuer badge)))
                        criteria-url  (if (map? (:criteria badge)) (get-in badge [:criteria :id]) (:criteria badge))
                        criteria-text (if (map? (:criteria badge))
                                        (get-in badge [:criteria :narrative]
@@ -346,7 +361,7 @@
                                 :revocation_list_url (:revocationList issuer)
                                 :endorsement (get-endorsement issuer)}]
                     :creator (when creator-url
-                               (let [data (http/json-get creator-url)]
+                               (let [data (get-json-content creator-url) #_(http/json-get creator-url)]
                                  [{:id ""
                                    :language_code language
                                    :name        (:name data)
@@ -406,9 +421,10 @@
                                                           :mtime now}) (:evidence assertion))
                    :else [])
 
-        badge  (if (map? (:badge assertion)) (:badge assertion) (http/json-get (:badge assertion)))
+        badge  (if (map? (:badge assertion)) (:badge assertion) (get-json-content (:badge assertion)) #_(http/json-get (:badge assertion)))
         related (->> (get badge :related [])
-                     (map #(http/json-get (:id %)))
+                     (map #(get-json-content (:id %)))
+                     #_(map #(http/json-get (:id %)))
                      (remove #(nil? ((keyword "@language") %))))
         default-language (get badge (keyword "@language") "")
         endorsement (get-assertion-endorsement assertion)]
@@ -422,25 +438,25 @@
                      :default_language_code default-language
                      :published 0
                      :last_received 0
-                     :recipient_count 0
-                     }
+                     :recipient_count 0}
+
                     (apply merge-with (cons concat (map parser (cons badge related)))))
       :issued_on  (u/str->epoch (:issuedOn assertion))
       :expires_on (u/str->epoch (:expires assertion))
       :evidence evidence
-      :endorsement endorsement
-      )))
+      :endorsement endorsement)))
+
 ;;;
 
 (defmethod badge-content :default [initial assertion]
   (let [now (u/now)
-        badge  (http/json-get (:badge assertion))
-        issuer (http/json-get (:issuer badge))
+        badge  (get-json-content (:badge assertion)) #_(http/json-get (:badge assertion))
+        issuer (get-json-content (:issuer badge))#_(http/json-get (:issuer badge))
         criteria (http/http-get (:criteria badge))
         evidence_url (:evidence assertion)
         creator-url (get-in badge [:extensions:OriginalCreator :url])
         creator (if-not (nil? creator-url)
-                  (let [data (http/json-get creator-url)]
+                  (let [data (get-json-content creator-url) #_(http/json-get creator-url)]
                     [{:id ""
                       :language_code ""
                       :name        (:name data)
@@ -496,8 +512,8 @@
                     :audience nil
                     :ctime now
                     :mtime now})]
-      :endorsement []
-      )))
+      :endorsement [])))
+
 
 ; old v1.0/v1.1 badge content
 #_{:badge_url    (:badge assertion)
@@ -549,6 +565,17 @@
 
 ;;;
 
+(defn- ping-related
+  "Make a HEAD requests to related assertion urls."
+  [asr]
+  (doseq [rel (:related asr)]
+    (when (and (= (:type rel) "Assertion") (re-find #"^http" (get rel :id "")))
+      (try
+        (http/http-req {:method :head :url (:id rel)})
+        (catch Exception e
+          (log/error "HEAD request failed: " (:id rel))
+          (log/error (.getMessage e)))))))
+
 (defmulti verify-assertion assertion-version)
 
 (defmethod verify-assertion :v0.5.0 [url asr]
@@ -557,6 +584,7 @@
       (throw (IllegalArgumentException. "invalid assertion, origin url mismatch")))))
 
 (defmethod verify-assertion :v2.0 [url asr]
+  (ping-related asr)
   (let [kind (get-in asr [:verify :type] (get-in asr [:verification :type]))]
     (when (and (not (nil? url)) (or (= kind "hosted") (= kind "HostedBadge")))
       (if (and (not (string/starts-with? url (:id asr))) (not= (domain url) (domain (:id asr))))
@@ -569,10 +597,11 @@
 
 (defmethod verify-assertion :default [url asr]
   (if-not (nil? url)
-    (if (not= (get-in asr [:verify :url]) url)
+    (if (and (not= (get-in asr [:verify :url]) url) (not (string/starts-with? (get-in asr [:verify :url]) url)))
       (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
   (if (not= (domain (get-in asr [:verify :url])) (domain (:badge asr)))
     (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
+
 
 (defn assertion->badge
   ([user assertion] (assertion->badge user assertion {}))
@@ -610,9 +639,10 @@
 
 (defmethod str->badge :json [user input]
   (let [content (-> (json/read-str input :key-fn keyword) (dissoc :endorsement))
-        kind (get-in content [:verify :type] (get-in content [:verification :type]))]
-    (if (or (= kind "hosted") (= kind "HostedBadge"))
-      (str->badge user (get-in content [:verify :url] (:id content))))))
+        kind (some-> (get-in content [:verify :type] (get-in content [:verification :type])) string/lower-case)]
+    (if (or (= kind "hosted") (= kind "hostedbadge"))
+      (str->badge user (get-in content [:verify :url] (:id content)))
+      (throw (IllegalArgumentException. "assertion verification failed")))))
 
 (defmethod str->badge :url [user input]
   (let [body (http/http-get input)]
@@ -620,11 +650,30 @@
                       (json/read-str body :key-fn keyword)
                       {:assertion_url input :assertion_json body :assertion_jws nil})))
 
+
+(defn jws-pub-key [assertion]
+  (let [badge  (if (map? (:badge assertion)) (:badge assertion) (get-json-content (:badge assertion)))
+        issuer (if (map? (:issuer badge)) (:issuer badge) (get-json-content (:issuer badge)))]
+    (cond
+      (re-find #"^http" (get-in assertion [:verify :url] ""))
+      (some-> (get-in assertion [:verify :url]) http/http-get keys/str->public-key) ;; Older style key
+
+      (and (re-find #"^http" (get issuer :publicKey ""))
+           (= (get issuer :publicKey) (get-in assertion [:verification :creator]))) ;; New style key
+      (if-let [pub (some-> issuer :publicKey get-json-content)]
+        ;;TODO fix BRS and validate ids
+        #_(when (= (:owner pub) (:id issuer))
+          (keys/str->public-key (:publicKeyPem pub)))
+        (keys/str->public-key (:publicKeyPem pub)))
+
+      :else nil)))
+
+
 (defmethod str->badge :jws [user input]
   (let [[raw-header raw-payload raw-signature] (clojure.string/split input #"\.")
         header     (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
         payload    (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
-        public-key (-> (get-in payload [:verify :url]) http/http-get keys/str->public-key)
+        public-key (jws-pub-key payload)
         body       (-> input (jws/unsign public-key {:alg (-> header :alg string/lower-case keyword)}) (String. "UTF-8"))]
     (assertion->badge user (json/read-str body :key-fn keyword) {:assertion_url nil :assertion_jws input :assertion_json body})))
 
@@ -637,6 +686,13 @@
   (throw (IllegalArgumentException. "invalid assertion string")))
 
 ;;;
+
+(defn- find-tag [depth tag root]
+  (cond
+    (= (:tag root) tag) root
+    (> depth 10) nil
+    :else (some #(find-tag (inc depth) tag %) (:content root))))
+
 
 (defmulti file->badge (fn [_ upload]
                         (or (:content-type upload)
@@ -651,14 +707,24 @@
              (str->badge user))))
 
 (defmethod file->badge "image/svg+xml" [user upload]
-  (some->> (xml/parse (or (:tempfile upload) (:body upload)))
-           :content
-           (filter #(= :openbadges:assertion (:tag %)))
-           first
-           :content
-           first
+  (some->> (or (:tempfile upload) (:body upload))
+           xml/parse (find-tag 0 :openbadges:assertion) :attrs :verify
            string/trim
            (str->badge user)))
+
+(defmethod file->badge "application/pdf" [user upload]
+  (with-open [doc (pdf/obtain-document (or (:tempfile upload) (:body upload)))]
+    (or
+      (some->>
+        (.. doc getDocumentInformation (getCustomMetadataValue "openbadges"))
+        string/trim
+        (str->badge user))
+      (some->>
+        doc .getDocumentCatalog .getMetadata .createInputStream
+        xml/parse (find-tag 0 :openbadges:assertion) :attrs :verify
+        string/trim
+        (str->badge user)))))
+
 
 (defmethod file->badge :default [_ upload]
   (log/error "file->assertion: unsupported file type:" (:content-type upload))

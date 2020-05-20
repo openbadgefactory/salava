@@ -3,53 +3,43 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [path-for]]
-            [salava.core.i18n :refer [t]])
-  )
-
+            [salava.core.i18n :refer [t]]))
 
 (defn init-data [state]
   (ajax/GET
-   (path-for (str "/obpv1/socialuser/user-connection-config" ))
+   (path-for (str "/obpv1/socialuser/user-connection-config"))
    {:handler (fn [data]
                (reset! state data))}))
-
-
-
 
 (defn change-status [status]
   (ajax/POST
    (path-for (str "/obpv1/socialuser/user-connection-config/" status))
    {:response-format :json
-    :keywords?       true          
+    :keywords?       true
     :handler         (fn [data]
-                       (do
-                         ))
+                       (do))
     :error-handler   (fn [{:keys [status status-text]}]
                        (.log js/console (str status " " status-text)))}))
 
 (defn content [state]
   [:div.form-group
-   [:label {:for   "input-email-notifications"
+   [:label {:for   "input-following-config"
             :class "col-md-3"}
     (t :social/Userfollowingconfig)]
    [:div.col-md-9
-    [:select {:id        "input-country"
+    [:select {:id        "input-following-config"
               :class     "form-control"
               :value     @state
               :on-change #(do
                             (reset! state (.-target.value %))
-                            (change-status (.-target.value %)))}
-     
-     [:option {:value "accepted"
-               :key   "accepted"} (t :social/Configaccepting)]
+                            (change-status (.-target.value %)))} [:option {:value "accepted"
+                                                                           :key   "accepted"} (t :social/Configaccepting)]
      [:option {:value "pending"
                :key   "pending"} (t :social/Configpending)]]
     #_(case @state
-      "pending"  [:div "PENDING TEKSTI"]
-      "accepted" [:div "ACCEPTED teksti"]
-      "")]])
-
-
+        "pending"  [:div "PENDING TEKSTI"]
+        "accepted" [:div "ACCEPTED teksti"]
+        "")]])
 
 (defn handler []
   (let [state (atom "pending")]

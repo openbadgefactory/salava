@@ -55,6 +55,7 @@
         (wrap-defaults (-> site-defaults
                            (assoc-in [:security :anti-forgery] false)
                            (assoc-in [:session] false)
+                           (assoc-in [:responses :absolute-redirects] false) ;; Disabled for OAuth2 custom redirect_uri schemes
                            (assoc-in [:static :files] (get-data-dir ctx))
                            ))
         (remove-x-frame-options)

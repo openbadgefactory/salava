@@ -115,13 +115,18 @@ button {
 
 .badge-image-embed-pic {
   text-align: center;
-  height:320px;
+  height: 180px; //320px;
   width:90%;
   img {
     display: inline-block;
     max-width: 90%;
-    height: 320px;
+    height: 140px;  //320px;
     padding: 4px;
+    transition: all 0.1s ease-in-out;
+
+    &:hover {
+      transform: scale(1.1);
+    }
   }
 }
 
@@ -146,7 +151,7 @@ button {
   margin-top: 20px;
 }
 /* BADGE SETTINGS */
-#badge-settings {
+#badge-settings, #badge-evidence {
 
 
   .modal-evidence {
@@ -471,7 +476,7 @@ button {
   }
 
 }
-#badge-settings  {
+#badge-settings, #badge-evidence  {
   h1.uppercase-header {
     font-size: 16px;
     font-weight: 400;
@@ -560,14 +565,14 @@ button {
 }
 /* BADGE STATS */
 #badge-stats {
-  h3 {
+  h2 {
     font-weight: 300;
     padding-bottom: 10px;
     font: 400 20px "Open Sans",sans-serif;
   }
 
   .panel {
-    border:none;
+    border:1px solid #dddddd;
     border-radius: 4px;
     img.badge-icon {
       width: 30px;
@@ -577,7 +582,7 @@ button {
     }
     .panel-heading {
       border-bottom: 1px solid #dddddd;
-      h3 {
+      h2 {
         line-height: 30px;
         font: 300 24px "Open Sans Condensed",sans-serif;
         text-transform: uppercase;
@@ -630,9 +635,10 @@ button {
           }
         }
       }
-      label {
+      label.hidden-label, span.hidden-label {
         display: none;
       }
+
       .row.header {
         font-weight: 600;
         text-align: center;
@@ -650,11 +656,12 @@ button {
         .row.body{
           text-align: left;
           padding:10px 0px;
-          label {
+          label, span.hidden-label {
             display: inline-block;
             width:68%;
             font-weight: 600;
           }
+
           .col-md-1, .col-md-5 {
             display: inline-block;
             width: auto;
@@ -712,7 +719,7 @@ button {
     text-transform: uppercase;
   }
   .badge-info {
-    label {
+    label, ._label {
       color: $green;
       margin-bottom: 5px;
     }
@@ -757,9 +764,11 @@ button {
   }
 }
 #badge-info, #badge-content {
-  .badge-info label{
+  .badge-info label, .badge-info ._label{
     color: $text-color;
     min-width: 100px;
+    font-weight: 700;
+    display: inline-block;
   }
   .checkbox {
     margin-right: 15px;
@@ -783,7 +792,9 @@ button {
     position: absolute;
   }
 
-  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on, .fa-toggle-off, .fa-remove, .fa-search{
+  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt,
+  .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on,
+  .fa-toggle-off, .fa-remove, .fa-search, .fa-users, .fa-edit, .fa-paper-plane, .fa-random, .fa-tasks{
     font-size: 20px;
     margin-right: 10px;
     color: $link-color;
@@ -921,8 +932,8 @@ button {
 }
 
 /* BADGE GRID */
-#badge-gallery #badges, #my-badges, #export-badges, .import-badges, #user-badges {
-  #grid .grid-container {
+#badge-gallery #badges, #my-badges, #export-badges, .import-badges, #user-badges, #profile-user-badges, .showcase_badges, .my-selfie-badges{
+  #grid .grid-container, #badges-grid .grid-container{
     background-color: #ffffff;
     border: 1px solid #d2d2d2;
     box-shadow: 0px 4px 0px #dcdcdc;
@@ -947,6 +958,10 @@ button {
       height: auto;
       .icons {
         text-align: left;
+        .link-icon {
+          vertical-align: inherit;
+          font-size: 18px;
+        }
       }
       .visibility-icon {
         font-size: 17px;
@@ -1138,7 +1153,7 @@ button {
 }
 
 //import new badge
-#my-badges #grid #import-badge {
+#my-badges #grid #import-badge, .my-selfie-badges #grid #import-badge {
   text-align: center;
   position: relative;
 
@@ -1475,7 +1490,7 @@ button {
     line-height: 24px;
   }
 }
-#info-page-block .badge-message-link-info {
+#info-page-block .badge-message-link-info, #badge-settings .badge-message-link-info {
   i {
     color: $link-color;
     font-size: 20px;
@@ -1483,7 +1498,7 @@ button {
   }
 }
 
-#endorsebadge {
+#endorsebadge, .endorsebadge {
 
   .list-group {
     a {
@@ -1583,7 +1598,7 @@ button {
     .settings-endorsement {
       margin-top: 5px;
       img {
-        margin-right: 10px;
+        margin-right: 10px !important;
       }
     }
 
@@ -1665,6 +1680,7 @@ button {
 
   .badge-name {
     color: $badge-title;
+    font-size: 18px;
   }
 
   .profile-container {
@@ -1717,7 +1733,7 @@ button {
           margin: 10px;
         }
 
-        h4 {
+        h4, span.profileowner {
           margin-top: 0px;
           margin-bottom: 5px;
           color: $link-color;
@@ -1727,6 +1743,7 @@ button {
           height: 2.2em;
           word-wrap: break-word;
           padding: 4px;
+          font-size: 20px;
         }
 
       }
@@ -1827,13 +1844,16 @@ button {
 
 }
 
-#badge-info, #user-endorsements, #badge-stats {
+#badge-info, #user-endorsements, #badge-stats, #social-tab, #badge-content {
 
   .editor {
     .fa {
       font-size: 16px;
     }
 
+    .fa-toggle-on, .fa-toggle-off {
+      color: $button-color;
+    }
 
     .fa-eye {
       //float: right;
@@ -1889,4 +1909,486 @@ a.popup-info {
   font-size: 12px;
   margin-top: 15px;
   text-transform: none;
+}
+
+.expandable-block, div.expandable-block, .panel.expandable-block {
+  //border: unset !important;
+  .panel-heading {
+    position: relative;
+
+    a {
+      outline: none !important;
+      text-decoration: none !important;
+    }
+  }
+
+  .panel-status-icon {
+    position: absolute;
+    right: 10px;
+    top: 20px;
+    font-size: 26px !important;
+    color: $button-color;
+    transition: all 0.1s ease-in-out;
+  }
+
+  .in-badge{
+    top: 26px;
+  }
+
+  &:active,
+  &:focus {
+    .panel-status-icon {
+      color: $button-hover;
+      opacity: 0.7;
+    }
+    .fa-chevron-circle-right {
+      -webkit-transform: rotate(20deg) scale(.8);
+      -ms-transform: rotate(20deg) scale(.8);
+      transform: rotate(20deg) scale(.8);
+    }
+    .fa-chevron-circle-down {
+      -webkit-transform: rotate(-20deg) scale(.8);
+      -ms-transform: rotate(-20deg) scale(.8);
+      transform: rotate(-20deg) scale(.8);
+    }
+
+  }
+}
+#social-tab { //, #badge-settings #social-tab {
+  .confirmusers {
+    padding: 10px;
+    background-color: $background-color;
+    text-align: center;
+    border-radius: 4px;
+    .fa {
+          color: white
+        }
+    .select-users-link {
+      white-space: normal;
+      .fa {
+          color: inherit;
+      }
+    }
+  }
+  .profilescontainer {
+    max-height: 930px;
+    overflow-y: auto;
+
+  }
+  div.rating {
+    position: absolute;
+    right: 12px;
+    top:5px;
+      @media (max-width: 345px) {
+        padding-top: 20px;
+        position: unset;
+      }
+
+  }
+  .profile-element {
+    min-height: 75px;
+    max-height: 75px;
+    padding: 6px;
+    position: relative;
+    .media-body {
+      vertical-align: middle;
+    }
+    a {
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .common-badges {
+      margin: 10px auto;
+    }
+
+    .checkbox {
+      position: absolute;
+      top: -6px;
+      right: 0;
+      z-index: 100;
+    }
+
+    img {
+      max-width: 55px;
+      max-height: 55px;
+      width: auto;
+      height: auto;
+      padding: 3px
+    }
+
+  }
+  .request-link {
+    margin: 5px 0;
+
+    i {
+      vertical-align: text-bottom;
+    }
+    a {
+      text-decoration: none;
+      font-weight: 600 !important;
+
+      &:hover, &:focus, &:active {
+        color: $link-color !important;
+      }
+
+
+    }
+  }
+  .info-block {
+      width: 150px !important;
+      height: 130px;
+      font-style: normal;
+      color: #FFFFFF;
+      text-align: center;
+      line-height: 20px;
+      //background-color: $titlebar-color;
+      border-radius: 4px;
+      margin-right: 5px;
+      margin-bottom: 10px;
+      float: left;
+      position: relative;
+
+      .badge {
+        position: absolute;
+        right: 0; //11px;
+        top: 0; //10px;
+      }
+
+      a {
+        text-decoration: none;
+      }
+
+      @media (max-width: 375px) {
+        width: 100%;
+        height: 50px;
+        .info {
+          text-align: left !important;
+          .icon {
+            font-size: 20px !important;
+          }
+        }
+
+      }
+
+      .info {
+        padding-top: 10px;
+        text-align: center;
+        color: #FFFFFF;
+
+        .text {
+          font-size: 16px;
+          margin: 10px auto;
+          width: 90%;
+          p {
+            margin: 0;
+          }
+          .num{
+            font-size: 22px !important;
+            font-weight: 600 !important;
+          }
+          .desc{
+            margin-top: 10px;
+            margin-bottom: 10px;
+          }
+
+
+        }
+      }
+      @media (max-width: 420px) {
+        width: 100px !important;
+        height: 50px;
+        .info {
+          padding: 10px;
+          text-align: left !important;
+          width: 100%;
+
+          .icon {
+            font-size: 20px !important;
+            float: left;
+          }
+          .text{
+            float: left;
+            margin: unset;
+            display: flex;
+            margin-top: -2px;
+            .desc, .num{
+              margin-top: 0px;
+              float: left;
+              font-size: 16px !important;
+              margin: 3px;
+            }
+          }
+        }
+
+        p.new {
+          color: #FFFFFF !important;
+          font-weight: 700;
+          font-size: 16px;
+          position: absolute;
+          right: 5px;
+          //top: 0;
+        }
+      }
+    }
+  .endorsement .settings-endorsement {
+    margin-top: unset;
+  }
+  span.social-panel-info {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    background-color: #FF3333;
+  }
+
+  .panel-heading {
+      border-bottom: 1px solid #dddddd !important;
+
+      h1 {
+        line-height: 30px;
+        font: 300 24px "Open Sans Condensed",sans-serif;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: $title-color;
+        margin: 0px;
+        padding:0px;
+      }
+      a {
+        color: $text-color;
+        font-weight: 300;
+        &:hover {
+          text-decoration: none;
+          color:$menu-active;
+        }
+        &:active, &:focus{
+          text-decoration: none;
+        }
+      }
+    }
+    .congratulations, .endorsements {
+      padding: 6px 0;
+      .panel-body {
+        padding: 4px;
+      }
+      #accordion {
+        .panel {
+          margin-bottom: 2px;
+        }
+      }
+    }
+  }
+
+.badge-modal-navi {
+  .nav>li>a {
+      //padding: 10px 8px;
+    }
+  .nav-item  {
+    .btn.disabled {
+      margin: unset;
+      margin-top: unset;
+      margin-bottom: unset;
+      }
+    }
+}
+
+span.endorsement-notification{
+  margin-left:5px;
+  background-color: #FF3333 !important;
+  font-size: 11px;
+}
+
+span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
+  position: absolute;
+  right: 0;
+  top: 0;
+  margin-bottom: 5px;
+  i {
+    vertical-align: text-bottom;
+    font-size: 13px;
+  }
+}
+
+#endorsebadge .recipients-map {
+  i {
+    font-size: 25px;
+  }
+}
+
+.grid-element-info {
+  position: absolute;
+  //top: -5px;
+  right: 2px;
+  background-color: #FF3333;
+  z-index: 100;
+}
+
+.modal-navi-info {
+  position: absolute;
+  right: 2px;
+  top: -3px;
+  z-index: 100;
+  background-color: #FF3333;
+}
+.panel-body.endorsement-container {
+  padding-right: 1px;
+  //min-height: 600px;
+  .endorsementlist{
+    max-height: 590px;
+    overflow-y: auto;
+    }
+}
+
+.confirm-delete-block {
+  margin: 30px 0 5px 0;
+}
+
+._label{
+  color: $text-color;
+  min-width: 100px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+._label.filter-opt {
+    text-align: unset;
+  }
+
+._label.stats {
+  width: 60%;
+  font-size: 14px;
+}
+
+.selected-users-container {
+  margin: 20px auto;
+  a {
+    text-decoration: none;
+  }
+  .user-item {
+    display: inline-block;
+    position: relative;
+    margin-right: 10px;
+    .close {
+      font-size: 18px;
+      position: absolute;
+      top: -10px;
+      right: -5px;
+      color: $dark-red;
+      opacity: 0.5;
+      font-weight: 800;
+      padding: 2px 4px;
+    }
+
+    .close:hover {
+      opacity: 1;
+      font-size: 20px;
+
+    }
+  }
+}
+
+#badge-receive .existing #badge-info .panel {
+  border: none;
+  box-shadow: none;
+}
+
+#badge-receive {
+  .fa-ban {
+  color: $dark-red;
+  }
+  .pdf-list{
+    a:hover, a:focus{
+    font-weight: bold;
+  }
+}
+}
+
+.visibility-opts-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+
+  .visibility-opt {
+    position: relative;
+    height: 100px;//8.5em;
+    width: 95px;//9em;
+    margin: 5px; //1rem;
+
+    .radio-btn {
+      opacity: 0;
+      position: absolute;
+      top:0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .radio-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-evenly;
+      width: 100%;
+      height: 100%;
+      border: 2px solid cadetblue;
+      border-radius: 5px;
+      padding: 8px;
+      transition: transform 300ms ease;
+    }
+
+    .icon {
+      font-size: 30px;
+      //position: absolute;
+      //top: 10px;
+
+      //color: red;
+      //width: 3rem;
+      //height: 3rem;
+    }
+
+    .radio-tile-label {
+      //color: black !important;
+      margin: unset !important;
+      margin-top: 10px;
+      margin-bottom: unset;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600 !important;
+      text-transform: uppercase;
+      font-family: 'Source Sans Pro', sans-serif;
+      line-height: 1.5em;
+    }
+
+
+    //active tile styles
+  .radio-btn:checked + .radio-tile {
+    background-color: cadetblue ;//$primary-color;
+    border: 2px solid cadetblue;
+    color: lavenderblush !important;
+    transform: scale(1.1, 1.1);
+
+    .icon {
+      font-size: 35px;
+    }
+
+    .radio-tile-label {
+      color: lavenderblush !important;
+      //background-color: cadetblue;
+    }
+  }
+}
+
+}
+
+.editor-toolbar {
+  a.fa-question-circle {
+   float: right;
+   font-size: 25px !important;
+  }
+}
+
+.resource-buttons, .btn-toolbar {
+  .btn .fa {
+    color: #FFF !important;
+  }
 }

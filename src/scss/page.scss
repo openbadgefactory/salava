@@ -4,7 +4,7 @@
 #my-files #grid,
 #page-gallery #grid,
 #profile-gallery #grid,
-#user-pages #grid,
+#user-pages #grid, #user-pages #pages-grid,
 .pages #grid {
   .grid-container {
     background-color: #ffffff;
@@ -154,7 +154,7 @@
   }
 }
 
-#user-pages #grid .grid-container {
+#user-pages #grid .grid-container, #user-pages #pages-grid .grid-container {
     margin-right: unset;
     float:left;
    .media-content {
@@ -306,14 +306,17 @@
   }
 
   .badge-block {
-    h3.badge-name {
+    .badge-name {
       font: 300 30px "Open Sans Condensed";
       text-transform: uppercase;
+      margin-top: 20px;
+      margin-bottom: 10px;
     }
 
-    h3.criteria {
+    .criteria {
       font: 300 20px "Open Sans Condensed";
       text-transform: uppercase;
+      margin: 10px 0;
     }
   }
 }
@@ -630,7 +633,7 @@
   }
 }
 
-#theme-0 {
+#theme-0, .theme-0 {
   .panel-left {
     background-color: #aea1aa;
   }
@@ -640,7 +643,7 @@
   }
 }
 
-#theme-1 {
+#theme-1, .theme-1 {
   font-family: Oswald,arial;
   font-size: 17px;
   font-weight: 300;
@@ -710,7 +713,7 @@
   }
 }
 
-#theme-2 {
+#theme-2, .theme-2 {
   color: #000000;
   font-family: Halant;
   font-size: 17px;
@@ -775,7 +778,7 @@
   }
 }
 
-#theme-3 {
+#theme-3, .theme-3 {
   color: #000000;
   font-family: "Coming Soon";
   font-size: 17px;
@@ -845,7 +848,7 @@
   }
 }
 
-#theme-4 {
+#theme-4, .theme-4 {
   color: #000000;
   font-family: Open Sans;
   font-size: 14px;
@@ -916,7 +919,7 @@
   }
 }
 
-#theme-5 {
+#theme-5, .theme-5 {
   color: #000000;
   font-weight: 300;
   font-family: Oswald;
@@ -986,7 +989,7 @@
   }
 }
 
-#theme-6 {
+#theme-6, .theme-6 {
   color: #000000;
   font-family: "Coming Soon";
   font-size: 16px;
@@ -1056,7 +1059,7 @@
   }
 }
 
-#theme-7 {
+#theme-7, .theme-7 {
   color: #000000;
   font-family: Open Sans;
   font-size: 14px;
@@ -1132,7 +1135,7 @@
   }
 }
 
-#theme-8 {
+#theme-8, .theme-8 {
   color: #000000;
 
   a {
@@ -1149,7 +1152,7 @@
   }
 }
 
-#theme-9 {
+#theme-9, .theme-9 {
   font-family: Halant;
   font-size: 16px;
   line-height: 17px;
@@ -1224,7 +1227,7 @@
   }
 }
 
-#theme-10 {
+#theme-10, .theme-10 {
   color: #000000;
   font-family: Halant;
   font-size: 16px;
@@ -1295,7 +1298,7 @@
   }
 }
 
-#theme-11 {
+#theme-11, .theme-11 {
   color: #000000;
   font-family: Halant;
   font-size: 16px;
@@ -1366,7 +1369,7 @@
   }
 }
 
-#theme-12 {
+#theme-12, .theme-12 {
   font-family: Georgia;
 
   a {
@@ -1434,7 +1437,7 @@
   }
 }
 
-#theme-13 {
+#theme-13, .theme-13 {
   font: normal 16px Dosis;
 
   a {
@@ -1664,7 +1667,7 @@
 }
 /*WIZARD END*/
 #page-edit,
-#page-edit-theme {
+#page-edit-theme, #page-settings, #badge-creator {
   .close-button {
     position: absolute;
     top: 0;
@@ -1898,7 +1901,7 @@
   }
 
   #badge-showcase {
-    #grid .grid-container {
+    #grid .grid-container, #badges-grid .grid-container {
       background-color: #ffffff;
       border: 1px solid #d2d2d2;
       box-shadow: 0 4px 0 #dcdcdc;

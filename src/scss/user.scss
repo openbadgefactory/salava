@@ -53,7 +53,7 @@
 
 
 .form-required {
-  color: #f00f00;
+  color: #EC1400; //#f00f00;
 }
 
 .modal-cancel-button {
@@ -61,6 +61,7 @@
 }
 
 .or{
+  display: inline-block;
   text-align: center;
   font-size: 20px;
   padding-top: 15px;
@@ -73,6 +74,8 @@
     .btn-primary {
       font-size: 14px;
       border-radius: 3px;
+      white-space: normal;
+      word-break: break-word;
     }
   }
 }
@@ -220,7 +223,7 @@
   }
 }
 
-li.user-link-inline {
+li.user-link-inline, #social-tab div.user-link-inline, #badge-contents div.user-link-inline, #selfie-badges div.user-link-inline{
   list-style: none;
   display: inline-block;
   img {
@@ -270,4 +273,8 @@ li.user-link-inline {
   }
 
 
+}
+
+.management-links {
+ z-index: 1000;
 }

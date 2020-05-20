@@ -23,7 +23,12 @@
                       :messages (into (:messages @state) (:messages data))
                       :message ""
                       :page_count (inc (:page_count @state))
-                      :messages_left (:messages_left data)))}))
+                      :messages_left (:messages_left data)))})
+ (ajax/GET
+   (path-for (str "/obpv1/gallery/user_owns_badge/" (:badge_id @state)))
+   {:handler (fn [data]
+               (swap! state assoc :user_owns_badge? data))}))
+
 
 
 (defn save-message [state reload-fn]
@@ -46,8 +51,8 @@
                           :messages []
                           :page_count 0)
                    (init-data state)
-                   (reload-fn)
-                   ))
+                   (reload-fn)))
+
       :error-handler (fn [{:keys [status status-text]}]
                        (dump (str status " " status-text)))})))
 
@@ -106,9 +111,9 @@
   [:div {:class "media message-item" :key id}
    [:div.msgcontent
     [:span {:class "pull-left"}
-     [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
+     [:img {:class "message-profile-img" :src (profile-picture profile_picture) :alt ""}]] ;(str first_name " " last_name)}]]
     [:div {:class "media-body"}
-     [:h4 {:class "media-heading"}
+     [:h2 {:class "media-heading"}
       [:a {:href "#"
            :on-click #(set-new-view [:profile :view] {:user-id user_id})} (str first_name " "last_name)]
       [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]]
@@ -132,37 +137,42 @@
 
 
 (defn scroll-bottom []
-  (let [div (. js/document getElementById "message-list") ]
+  (let [div (. js/document getElementById "message-list")]
     (set! (. div -scrollTop) (. div -scrollHeight))))
 
 
 (defn message-list [messages state]
   (create-class {:reagent-render (fn [messages]
                                    [:div {:id ""}
+                                    (when (and (not @(cursor state [:user_owns_badge?])) (empty? messages))
+                                      [:div (t :social/Nocomment)])
                                     (doall
                                      (for [item messages]
                                        (message-list-item item state)))
-                                    (message-list-load-more state)])
+                                    (message-list-load-more state)])}))
                  ;:component-did-mount #(scroll-bottom)
                  ;:component-did-update #(scroll-bottom)
-                 }))
+
 
 (defn message-textarea [state reload-fn]
   (let [message-atom (cursor state [:message])]
     [:div
      [:div {:class "form-group"}
-      [:textarea {:class    "form-control"
+      ;[:label {:for "textInput"} ""]
+      [:textarea {:id "textInput"
+                  :class    "form-control"
                   :rows     "5"
                   :value    @message-atom
                   :disabled (if (not-activated?) "disabled" "")
-                  :onChange #(reset! message-atom (.-target.value %))} ]]
+                  :onChange #(reset! message-atom (.-target.value %))
+                  :aria-label (t :social/Postnew)}]]
      [:div {:class "form-group"}
       [:button {:class    "btn btn-primary"
                 :disabled (if (blank? @message-atom) "disabled" "")
                 :on-click #(do
                              (save-message state reload-fn)
                              (.preventDefault %))}
-      (t :social/Postnew)]]]))
+       (t :social/Postnew)]]]))
 
 
 (defn refresh-button [state]
@@ -194,11 +204,12 @@
 
 
 (defn content [state reload-fn]
-  (let [{:keys [messages start-following]} @state]
+  (let [{:keys [messages start-following ]} @state
+        owner? (cursor state [:user_owns_badge?])]
     [:div
      (if (not-activated?)
        (not-activated-banner))
-     [message-textarea state reload-fn]
+     (when @owner? [message-textarea state reload-fn])
      (if start-following
        (start-following-alert state))
      [message-list messages state]]))
@@ -214,8 +225,8 @@
                      :page_count 0
                      :messages_left 0
                      :start-following false})
-        reload-fn (or reload-fn (fn []))]
 
+        reload-fn (or reload-fn (fn []))]
     (init-data state)
     (fn []
       (content state reload-fn))))

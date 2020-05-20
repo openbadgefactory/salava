@@ -8,15 +8,20 @@
             [reagent-modals.modals :as m]
             [salava.core.time :refer [date-from-unix-time]]))
 
-
+(defn toggle-panel [key atom]
+  (if (= key @atom)
+    (reset! atom nil)
+    (reset! atom key)))
 
 (defn views-panel [views visible-area-atom]
   (let [panel-identity :views
-        total-views (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0 views)]
-    [:div.panel
+        total-views (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0 views)
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
+    [:div.panel.expandable-block
      [:div.panel-heading
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
-       [:h3 (t :badge/Badgeviews) ":" " (" total-views ")"]]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
+       [:h2 (t :badge/Badgeviews) ":" " (" total-views ")"]
+       [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
         [:div {:class "row header"}
@@ -31,23 +36,25 @@
                     :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                 [:div.col-md-12
                  [:div.flip-table
-                  [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file)}]]
+                  [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file) :alt ""}]]
                   [:div.col-md-5 [:a {:href "#"
                                       :on-click #(do
                                                    (mo/open-modal [:badge :info] {:badge-id id})
                                                    ;(b/open-modal id false init-data state)
                                                    (.preventDefault %)) }  name]]
-                  [:div.col-md-2 [:label (t :badge/Loggedinusers)] reg_count]
-                  [:div.col-md-2 [:label (t :badge/Anonymoususers)]anon_count]
-                  [:div.col-md-2 [:label (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]]))])]))
+                  [:div.col-md-2 [:span.hidden-label  (t :badge/Loggedinusers)] reg_count]
+                  [:div.col-md-2 [:span.hidden-label (t :badge/Anonymoususers)] anon_count]
+                  [:div.col-md-2 [:span.hidden-label  (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]]))])]))
 
 (defn congratulations-panel [congratulations visible-area-atom]
   (let [panel-identity :congratulations
-        total-congratulations (->> congratulations (map :congratulation_count) (reduce +))]
-    [:div.panel
+        total-congratulations (->> congratulations (map :congratulation_count) (reduce +))
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
+    [:div.panel.expandable-block
      [:div.panel-heading
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
-       [:h3 (t :badge/Congratulations) ":" " (" total-congratulations ")"]]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
+       [:h2 (t :badge/Congratulations) ":" " (" total-congratulations ")"]
+       [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
         [:table {:class "table" :summary (t :badge/Congratulations)}
@@ -62,7 +69,7 @@
                      :let [{:keys [id name image_file congratulation_count latest_congratulation]} badge-congrats]]
                  [:tr
                   [:td [:img.badge-icon {:src (str "/"  image_file)
-                                         :alt name}]]
+                                         :alt ""}]]
                   [:td.name [:a {:href "#"
                                  :on-click #(do
                                               (mo/open-modal [:badge :info] {:badge-id id})
@@ -72,17 +79,19 @@
                   [:td (if latest_congratulation (date-from-unix-time (* 1000 latest_congratulation)))]]))]])]))
 
 (defn issuers-panel [issuers visible-area-atom]
-  (let [panel-identity :issuers]
-    [:div.panel
+  (let [panel-identity :issuers
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
+    [:div.panel.expandable-block
      [:div.panel-heading
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
-       [:h3 (t :badge/Issuers) ":" " (" (count issuers) ")"]]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
+       [:h2 (t :badge/Issuers) ":" " (" (count issuers) ")"]
+       [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (if (= @visible-area-atom panel-identity)
        (into [:div.panel-body]
              (for [issuer issuers
                    :let [{:keys [issuer_content_id issuer_content_name issuer_content_url badges]} issuer]]
                [:div.issuer-badges-wrapper
-                [:h4 [:a {:href "#" :on-click #(mo/open-modal [:badge :issuer] issuer_content_id)} issuer_content_name] ": " (count badges)]
+                [:p {:style {:font-size "18px"}} [:a {:href "#" :on-click #(mo/open-modal [:badge :issuer] issuer_content_id)} issuer_content_name] ": " (count badges)]
                 (into [:div.issuer-badges]
                       (for [badge badges
                             :let [{:keys [id image_file name]} badge]]
@@ -90,8 +99,8 @@
                              :on-click #(do
                                           (mo/open-modal [:badge :info] {:badge-id id})
                                           ;(b/open-modal id false init-data state)
-                                          (.preventDefault %)) }
-                         [:img.badge-icon {:src (str "/"  image_file) :title name :alt name}]]))])))]))
+                                          (.preventDefault %))}
+                         [:img.badge-icon {:src (str "/"  image_file) :title name :alt (str (t :badge/Badge) " " name)}]]))])))]))
 
 (defn content [state]
   (let [{:keys [badge_count expired_badge_count badge_views badge_congratulations badge_issuers]} @state
@@ -102,7 +111,7 @@
       (t :badge/Stats)
       #_(t :badge/Badgestatistics)]
      [:p (t :connections/Statisticspageinfo)]
-     [:h3 (t :badge/Totalbadges) ": " badge_count " " (t :badge/Expired) ": " expired_badge_count]
+     [:h2 (t :badge/Totalbadges) ": " badge_count " " (t :badge/Expired) ": " expired_badge_count]
      [views-panel badge_views visible-area-atom]
      [congratulations-panel badge_congratulations visible-area-atom]
      [issuers-panel badge_issuers visible-area-atom]]))

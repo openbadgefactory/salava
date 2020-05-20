@@ -24,8 +24,10 @@
                 [salava.extra.hpi.ui.routes]
                 [salava.extra.msftembo.ui.routes]
                 [salava.extra.hpass.ui.routes]
+                [salava.extra.badgbl.ui.routes]
+                [salava.extra.boat.ui.routes]
                 [salava.metabadge.ui.routes]
                 [salava.connections.ui.routes]
                 [salava.profile.ui.routes]
-                [salava.location.ui.routes]])))
-                
+                [salava.location.ui.routes]
+                [salava.badgeIssuer.ui.routes]])))

@@ -1,3 +1,4 @@
+
 (ns salava.core.ui.helper
   (:require [reagent.session :as session]
             [clojure.string :as str]
@@ -55,11 +56,12 @@
 
 (defn navigate-to [url]
   (let [history (session/get :history)]
+    (session/put! :about-page nil) ;;initialize about page info
     (pushy/replace-token! history (path-for url))))
 
 (defn js-navigate-to [url]
+  (session/put! :about-page nil) ;;initialize about page info
   (set! (.-location.href js/window) (path-for url)))
-
 
 (defn input-valid? [schema input]
   (try
@@ -94,8 +96,9 @@
     (when-not (clojure.string/blank? s)
       (not (clojure.string/blank? (re-matches url-pattern s))))))
 
-(defn disable-background-image []
- (-> (sel1 :body) (dommy/remove-class! :anon)))
+(defn disable-background-image
+ ([] (-> (sel1 :body) (dommy/remove-class! :anon)))
+ ([embed?] (-> (sel1 :body) (dommy/add-class! :anon-embed))))
 
 (defn enable-background-image []
  (-> (sel1 :body) (dommy/add-class! :anon)))

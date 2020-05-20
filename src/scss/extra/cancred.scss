@@ -13,6 +13,9 @@
 @import '../user';
 @import 'application';
 @import '../rtl';
+@import '../metabadge';
+@import '../profile';
+@import '../badgeIssuer';
 
 .logo-image-url{
   width: 350px;
@@ -44,6 +47,21 @@
   background-image: url("/img/extra/cancred/verifiedissuedbyobf.png");
 }
 
+#registration-page #narrow-panel{
+   .logo-image-icon-url {
+     //width: 78px;
+     //height: 75px;
+     background-image: url("/img/extra/cancred/logo_icon.png");
+     background-size: contain;
+  }
+
+  .media {
+    margin-top: 10px;
+    .media-body {
+      vertical-align: middle !important;
+    }
+  }
+}
 
 a#login-button {
   background-color: $button-color;
@@ -53,6 +71,10 @@ a#login-button {
   }
 }
 
+nav a#login-button{
+  /* client request, no top row login button */
+  display: none;
+}
 
 //NAVBAR FIXED TOP
 .navbar-fixed-top {
@@ -62,6 +84,22 @@ a#login-button {
 .logo-main, .logo-icon {
   height: 48px;
 }
+
+div#navbar {
+  background: none;
+  background-color: #FFFFFF;
+}
+
+ul.navbar-nav {
+  li a {
+    color: $icon-color;//$button-hover;
+  }
+
+  li.active a, li a:hover {
+    color: $button-color;
+  }
+}
+
 
 /*.title-row {
 border-bottom-color: #9DBE5F;
@@ -101,7 +139,7 @@ ul#secondary-menu-links li a i.fa {
     }
 
   }
-  .connections-block .info-block .text p.num {
+  .connections-block .info-block .text p.num, .badge-block .connections-block .info-block .text p.num {
     color: #a1d1ca;
   }
 
@@ -109,7 +147,11 @@ ul#secondary-menu-links li a i.fa {
     background-color: $link-color;//#2e2464;
   }
 
-  #box_3 {
+  .profile-block .profile-visibility a{
+    color:$link-color;
+  }
+
+  #box_3, #box_6{
     p {
       font-weight: 400;
     }
@@ -158,7 +200,14 @@ ul#secondary-menu-links li a i.fa {
       }
 
       .page {
-        background-color: $button-hover;
+        background-color: #0C4F5A; //$button-color;
+      }
+
+      .map {
+        background-color: #8984a8;
+        .info, .text {
+          color: #1E1E1E;
+        }
       }
 
 
@@ -178,6 +227,152 @@ ul#secondary-menu-links li a i.fa {
   background-color: none;
   background: $titlebar-color;  /* fallback for old browsers */
   background:linear-gradient(to left, $button-hover, $titlebar-color);
+}
+
+#profiletips .tip, #_profiletips .tip{
+  .tipicon, a {
+    color: $link-color;
+
+  }
+}
+
+.btn-success {
+  background-color: $button-color;
+  border-color: $button-color;
+
+  &:active:hover,
+  &:focus,
+  &:hover {
+    background-color: $button-hover;
+    border-color: $button-hover;
+    /*         box-shadow: 0px 2px $box-shadow; */
+   }
+}
+
+#page-edit .field .field-move .move-arrows {
+ .move-down,
+ .move-up {
+  color: $button-hover;
+ }
+}
+
+#page-edit #block-modal .block-types div.content-type,
+#page-edit-theme #block-modal .block-types div.content-type {
+ background-color: $button-color;
+ color: #fff;
+
+ &:focus,
+ &:hover {
+  background-color: $button-hover;
+ }
+}
+
+
+#field-editor .field .field-content #badge-showcase {
+ .addbadge .add-icon {
+  color: $button-hover;
+ }
+
+ #grid .grid-container {
+  .move-left i,.move-right i{
+   color: $button-color;
+  }
+ }
+}
+
+ #my-files #grid #add-element #add-element-link,
+ #my-files #grid #add-element .add-element-link,
+ #page-gallery #grid #add-element #add-element-link,
+ #page-gallery #grid #add-element .add-element-link,
+ #profile-gallery #grid #add-element #add-element-link,
+ #profile-gallery #grid #add-element .add-element-link,
+ #user-pages #grid #add-element #add-element-link,
+ #user-pages #grid #add-element .add-element-link,
+ .pages #grid #add-element #add-element-link,
+ .pages #grid #add-element .add-element-link {
+  color: $button-color; //$blue;//$text-color;
+  font-weight: bold;
+
+  &:hover {
+   color: $button-color;
+  }
+ }
+
+#theme-0 {
+  .panel-left, .panel-right {
+    background: -webkit-linear-gradient(to bottom, $titlebar-color, $button-hover);
+    background: linear-gradient(to bottom, $titlebar-color, $button-hover);
+  }
+}
+
+#page-edit, #profile, #page-edit-theme, #page-settings {
+ .action-bar {
+  &:hover {
+   opacity: 1;
+  }
+ }
+}
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus, .btn-primary:active:focus {
+  background-color:$button-hover;
+}
+
+#profile .profile-navi {
+  .nav .open > a {
+      border-color: $button-color;
+  }
+  .close {
+   opacity:0.8;
+   color: #314755;
+   &:hover {
+    opacity: 1;
+   }
+  }
+  .nav-tabs {
+  border-bottom: 1px solid $button-color;
+  >li {
+   margin-bottom: 0;
+  }
+  >li a {
+   margin-right: 0;
+   text-decoration: none;
+  }
+  > li.active a {
+    color: $button-hover;
+    border: 1px solid $button-color;
+    border-bottom-color: transparent;
+  }
+ }
+}
+
+.grid-element-info, .modal-navi-info, #social-tab span.social-panel-info, span.endorsement-notification {
+  background-color: $link-color !important;
+}
+
+div.footer {
+  a {
+    color: $link-color;
+  }
+}
+
+p.text-muted {
+  color: #816F6E;
+}
+
+.btn-warning {
+  color: #372C2C;
+}
+
+#grid-filter .btn {
+  background-color: $titlebar-color;
+  border-color: $titlebar-color;
+}
+
+#my-files .file-icon-large, .max-file-size {
+  color: $icon-color;
+}
+
+#login-page .btn-primary {
+  color: #1E1E1E;
 }
 
 /*#my-badges #grid .grid-container .media-content .icons{

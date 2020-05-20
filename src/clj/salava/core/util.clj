@@ -14,7 +14,13 @@
             [salava.core.helper :refer [plugin-str]]
             [salava.core.http :as http]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
-            [clojure.core.async :refer [>!!]])
+            [buddy.core.mac :as mac]
+            [buddy.core.codecs :as codecs]
+            [clojure.core.async :refer [>!!]]
+            [salava.core.schemas :as schemas]
+            [schema.core :refer [validate]])
+
+
   (:import (java.io StringReader)
            (java.net URLEncoder)
            (java.util Base64)))
@@ -61,6 +67,8 @@
 (defn get-plugins [ctx]
   (get-in ctx [:config :core :plugins] []))
 
+(defn get-factory-url [ctx]
+  (get-in ctx [:config :factory :url] "https://openbadgefactory.com/"))
 
 (defn base64->bytes [input]
   (.decode (Base64/getDecoder) input))
@@ -77,6 +85,9 @@
 (defn bytes->base64 [input]
   (.encodeToString (Base64/getEncoder) input))
 
+(defn bytes->base64-url [input]
+  (.encodeToString (Base64/getUrlEncoder) input))
+
 (defn hex-digest [algo string]
   (case algo
     "sha1" (d/sha-1 string)
@@ -84,6 +95,21 @@
     "sha512" (d/sha-512 string)
     "md5" (d/md5 string)
     (throw+ (str "Unknown algorithm: " algo))))
+
+(defn digest [algo string]
+  (->> string
+    (hex-digest algo)
+    (partition 2)
+    (map (fn [[x y]] (Integer/parseInt (str x y) 16)))
+    byte-array))
+
+(defn hmac-sha256-hex [v secret]
+  (-> (mac/hash v {:key secret :alg :hmac+sha256})
+      (codecs/bytes->hex)))
+
+(defn random-token
+  ([] (random-token ""))
+  ([seed] (hex-digest "sha256" (str (System/currentTimeMillis) (java.util.UUID/randomUUID) seed))))
 
 (defn ordered-map-values
   "Returns a flat list of keys and values in a map, sorted by keys."
@@ -164,6 +190,16 @@
           path (public-path-from-content content-str ext)]
       (save-file-data ctx content path))))
 
+(defn save-file-from-data-url-fix
+  [ctx data-str comma-pos]
+  (if (> comma-pos -1)
+    (let [base64-data (subs data-str (inc comma-pos))
+          content (.decode (Base64/getMimeDecoder) base64-data)
+          content-str (String. (.decode (Base64/getMimeDecoder) base64-data) "UTF-8")
+          ext (if (re-find #"^data:image/svg" data-str) ".svg" ".png")
+          path (public-path-from-content content-str ext)]
+      (save-file-data ctx content path))))
+
 (defn file-from-url
   [ctx url]
   (cond
@@ -171,6 +207,13 @@
     (re-find #"^https?"  (str url)) (save-file-from-http-url ctx url)
     (re-find #"^data"    (str url)) (save-file-from-data-url ctx url (.lastIndexOf url ","))
     :else (throw (Exception. (str "Error in file url: " url)))))
+
+(defn file-from-url-fix [ctx url]
+   (cond
+      (string/blank? url) (do (log/error "file-from-url-fix: url parameter missing") nil)
+      (re-find #"^https?"  (str url)) (save-file-from-http-url ctx url)
+      (re-find #"^data"    (str url)) (save-file-from-data-url-fix ctx url (.lastIndexOf url ","))
+      :else (throw (Exception. (str "Error in file url: " url)))))
 
 (defn str->qr-base64 [text]
   (try
@@ -229,6 +272,7 @@
 
 
 (defn publish [ctx topic data]
+  (validate schemas/PublishEvent data)
   (if-not (map? data)
     (throw (IllegalArgumentException. "Publish: Data must be a map")))
   (if-not  (keyword? topic)
@@ -236,6 +280,13 @@
   (>!! (:input-chan ctx) (assoc data :topic topic)))
 
 (defn event [ctx subject verb object type]
-  ;TODO VALIDATE DATA
-  (publish ctx :event {:subject subject :verb verb :object object :type type}))
+  (let [data {:subject subject :verb verb :object object :type type}]
+    (validate schemas/PublishEvent data)
+    (publish ctx :event data)))
 
+(defn url? [s]
+  "Pattern Source: https://mathiasbynens.be/demo/url-regex"
+  "Pattern author: @diegoperini"
+  (let [url-pattern #"(?i)^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?$"]
+    (when-not (clojure.string/blank? s)
+      (not (clojure.string/blank? (re-matches url-pattern s))))))

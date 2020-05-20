@@ -1,20 +1,58 @@
 --name: select-users-from-connections-badge
 SELECT user_id AS owner FROM social_connections_badge
-WHERE badge_id = :badge_id OR gallery_id = (SELECT gallery_id FROM social_connections_badge WHERE badge_id = :badge_id);
+WHERE badge_id = :badge_id OR gallery_id = (SELECT MAX(gallery_id) FROM social_connections_badge WHERE badge_id = :badge_id);
 
--- name: select-user-badges-all
+-- name: select-user-badges-all-REMOVE
 -- get user's badges
-SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
+SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.gallery_id,
            ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.badge_id, ub.assertion_url,
-           b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url, SUM(IF(bec.endorsement_content_id IS NULL, 0, 1)) AS endorsement_count, COUNT(ube.id) AS user_endorsements_count
+           b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url, SUM(IF(bec.endorsement_content_id IS NULL, 0, 1)) AS endorsement_count, COUNT(ube.id) AS user_endorsements_count,
+           ubm.meta_badge, ubm.meta_badge_req
 FROM user_badge ub
 INNER JOIN badge b ON ub.badge_id = b.id
 INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
 INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
 INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
 INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
+LEFT JOIN user_badge_metabadge ubm ON ub.id = ubm.user_badge_id
 LEFT JOIN badge_endorsement_content AS bec ON (bec.badge_id = ub.badge_id)
 LEFT JOIN user_badge_endorsement AS ube ON (ube.user_badge_id = ub.id) AND ube.status = 'accepted'
+WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
+    AND bc.language_code = b.default_language_code
+    AND ic.language_code = b.default_language_code
+GROUP BY ub.id
+
+-- name: select-user-badges-all
+-- get user's badges
+SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.gallery_id, ub.badge_id,
+           ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.assertion_url,
+           ic.name AS issuer_content_name, ic.url AS issuer_content_url, SUM(IF(bec.endorsement_content_id IS NULL, 0, 1)) AS endorsement_count, COUNT(ube.id) + COUNT(ubex.id) AS user_endorsement_count,
+           ubm.meta_badge, ubm.meta_badge_req
+FROM user_badge ub
+INNER JOIN badge b ON ub.badge_id = b.id
+INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
+INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
+INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
+INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
+LEFT JOIN user_badge_metabadge ubm ON ub.id = ubm.user_badge_id
+LEFT JOIN badge_endorsement_content AS bec ON (bec.badge_id = ub.badge_id)
+LEFT JOIN user_badge_endorsement AS ube ON (ube.user_badge_id = ub.id) AND ube.status = 'accepted'
+LEFT JOIN user_badge_endorsement_ext AS ubex ON (ubex.user_badge_id = ub.id) AND ubex.status = 'accepted'
+WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
+    AND bc.language_code = b.default_language_code
+    AND ic.language_code = b.default_language_code
+GROUP BY ub.id
+
+--name: select-user-badges-all-p
+-- get user's badges
+SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
+           ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url
+FROM user_badge ub
+INNER JOIN badge b ON ub.badge_id = b.id
+INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
+INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
+INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
+INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
     AND bc.language_code = b.default_language_code
     AND ic.language_code = b.default_language_code
@@ -178,7 +216,7 @@ WHERE ub.id = :id AND ub.deleted = 0
 GROUP BY ub.id
 
 
---name: select-multi-language-user-badge
+--name: select-multi-language-user-badge-REMOVE
 --get badge by id
 SELECT ub.id, ub.user_id,
 ub.badge_id, ub.email,
@@ -188,7 +226,7 @@ ub.expires_on, ub.status,
 ub.visibility, ub.show_recipient_name,
 ub.rating, ub.ctime,
 ub.mtime, ub.deleted,
-ub.revoked, ub.show_evidence,
+ub.revoked, ub.show_evidence, ub.gallery_id,
 b.remote_url,
 b.issuer_verified,
 ube.url AS evidence_url,
@@ -200,6 +238,38 @@ LEFT JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
 GROUP BY ub.id
 
+--name: select-multi-language-user-badge
+--get badge by id
+SELECT ub.id, ub.user_id,
+ub.badge_id, ub.email,
+ub.assertion_url,
+ub.assertion_json, ub.issued_on,
+ub.expires_on,
+ub.visibility, ub.show_recipient_name,
+ub.ctime, ub.mtime,
+ub.revoked, ub.gallery_id,
+b.remote_url,
+b.issuer_verified,
+u.id AS owner, u.first_name, u.last_name
+FROM user_badge AS ub
+INNER JOIN badge as b ON (b.id = ub.badge_id)
+LEFT JOIN user AS u ON (u.id = ub.user_id)
+WHERE ub.id = :id AND ub.deleted = 0
+GROUP BY ub.id
+
+--name: select-multi-language-user-badge-p
+--get badge by id, for public route
+SELECT  ub.id, ub.badge_id, ub.gallery_id,
+ub.assertion_url, ub.assertion_json, ub.assertion_jws, b.remote_url,
+ub.issued_on, ub.expires_on, ub.revoked,
+ub.visibility, ub.show_recipient_name,
+ub.ctime, ub.mtime,
+u.first_name, u.last_name
+FROM user_badge AS ub
+INNER JOIN badge as b ON (b.id= ub.badge_id)
+LEFT JOIN user AS u ON (u.id = ub.user_id)
+WHERE ub.id = :id AND ub.deleted = 0
+GROUP BY ub.id
 
 --name: select-multi-language-badge-content
 --get badge by id
@@ -334,8 +404,8 @@ SELECT issuer_content_id AS client_id FROM issuer_endorsement_content
 REPLACE INTO badge_tag (user_badge_id, tag)
        VALUES (:user_badge_id, :tag)
 
--- --name: update-user-badge-evidence!
---UPDATE user_badge_evidence SET url = :url, mtime = UNIX_TIMESTAMP() WHERE id = :id
+--name: update-user-badge-evidence!
+UPDATE user_badge_evidence SET url = :url, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: insert-user-badge-evidence-url<!
 INSERT INTO user_badge_evidence (user_badge_id, url, ctime, mtime) VALUES (:user_badge_id, :url, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
@@ -383,7 +453,7 @@ UPDATE user_badge SET show_recipient_name = :show_recipient_name WHERE id = :id
 --show/hide evidence
 UPDATE user_badge SET show_evidence = :show_evidence WHERE id = :id
 
---name: select-badge-settings
+--name: select-badge-settings-REMOVE
 --get badge settings
 SELECT ub.id, ub.issued_on,
 ub.expires_on, ub.status,
@@ -409,11 +479,22 @@ JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
 WHERE ub.id = :id
 
+--name:select-badge-settings
+--get badge settings
+SELECT ub.id, ub.visibility, ub.show_recipient_name, ub.rating, bc.name, bc.image_file, ub.show_evidence
+FROM user_badge AS ub
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE ub.id = :id AND ub.deleted = 0 AND ub.revoked = 0
 
+--name: update-badge-settings!-REMOVE
+--update badge settings
+UPDATE user_badge SET visibility = :visibility, rating = :rating WHERE id = :id
 
 --name: update-badge-settings!
 --update badge settings
-UPDATE user_badge SET visibility = :visibility, rating = :rating WHERE id = :id
+UPDATE user_badge SET visibility = :visibility, rating = :rating, show_recipient_name = :show_recipient_name WHERE id = :id
 
 --name: update-badge-published!
 UPDATE badge SET published = :value where id = :badge_id
@@ -421,8 +502,8 @@ UPDATE badge SET published = :value where id = :badge_id
 --name: update-badge-recipient-count!
 UPDATE badge SET recipient_count = recipient_count + 1 where id = :badge_id
 
---name: update-badge-raiting!
---update badge raiting
+--name: update-badge-rating!
+--update badge rating
 UPDATE user_badge SET rating = :rating WHERE id = :id
 
 --name: update-badge-set-deleted!
@@ -446,7 +527,7 @@ ub.mtime, ub.badge_id,
 bc.name, bc.description, bc.image_file,
 bt.tag,
 cc.markdown_text AS criteria_content,
-cc.url AS criteria_url
+cc.url AS criteria_url, ic.id AS issuer_content_id, ic.name AS issuer_content_name, crc.id AS creator_content_id, crc.name AS creator_name
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
@@ -454,6 +535,10 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 JOIN badge_tag AS bt ON bt.user_badge_id = ub.id
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id AND ic.language_code = badge.default_language_code)
+LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
+LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id  AND crc.language_code = badge.default_language_code)
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND bt.tag = :badge_tag
 
 
@@ -647,7 +732,7 @@ INSERT INTO user_badge (
 ) VALUES (
     :badge_id, :user_id, :email,
     :assertion_url, :assertion_jws, :assertion_json,
-    :issued_on, :expires_on, :status, 'private',
+    :issued_on, :expires_on, :status, :visibility,
     1, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0
 );
 
@@ -662,67 +747,67 @@ SELECT assertion_jws FROM user_badge AS ub WHERE ub.id = :id;
 --name: select-user-badge-id-with-badge-id
 SELECT id FROM user_badge AS ub WHERE ub.badge_id = :badge_id AND  ub.user_id = :user_id AND ub.status = 'accepted';
 
---name: select-user-badge-evidence
+--name: select-user-badge-evidence-REMOVE
 SELECT ube.id, ube.url, ube.description, ube.narrative, ube.name, ube.ctime, ube.mtime
 FROM user_badge_evidence AS ube
 JOIN user_badge AS ub ON ub.id = ube.user_badge_id
 WHERE ube.user_badge_id = :user_badge_id
 
---name: insert-evidence<!
+--name: insert-evidence<!-REMOVE
 INSERT INTO user_badge_evidence (user_badge_id, url, name, description, narrative, ctime, mtime )
 VALUES (:user_badge_id, :url, :name, :description, :narrative, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
---name: update-user-badge-evidence!
+--name: update-user-badge-evidence!-REMOVE
 UPDATE user_badge_evidence SET url = :url, name = :name,
 narrative = :narrative, mtime = UNIX_TIMESTAMP()
 WHERE id = :id AND user_badge_id = :user_badge_id
 
---name: delete-user-badge-evidence!
+--name: delete-user-badge-evidence!-REMOVE
 DELETE FROM user_badge_evidence WHERE id = :id AND user_badge_id = :user_badge_id
 
--- name: insert-user-evidence-property!
+-- name: insert-user-evidence-property!-REMOVE
 -- this is used to more information about evidences e.g. {:hidden true :type url}
 REPLACE INTO user_properties (user_id, name, value)
  VALUES (:user_id, :name, :value)
 
---name: delete-user-evidence-property!
+--name: delete-user-evidence-property!-REMOVE
 DELETE FROM user_properties WHERE name = :name AND user_id = :user_id
 
---name: select-user-evidence-property
+--name: select-user-evidence-property-REMOVE
 SELECT value FROM user_properties WHERE name = :name AND user_id = :user_id
 
---name: select-user-evidence-by-url
+--name: select-user-evidence-by-url-REMOVE
 SELECT DISTINCT ube.url FROM user_badge_evidence AS ube
 JOIN user_badge AS ub ON ub.id = ube.user_badge_id
 WHERE ub.user_id = :user_id AND ube.url = :url
 
---name: delete-all-badge-evidences!
+--name: delete-all-badge-evidences!-REMOVE
 DELETE FROM user_badge_evidence WHERE user_badge_id = :user_badge_id
 
---name: insert-user-badge-endorsement<!
+--name: insert-user-badge-endorsement<!-REMOVE
 INSERT INTO user_badge_endorsement (external_id,user_badge_id, issuer_id, issuer_name, issuer_url, content, status, ctime, mtime)
 VALUES (:external_id, :user_badge_id, :issuer_id, :issuer_name, :issuer_url, :content, 'pending', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
---name: delete-user-badge-endorsement!
+--name: delete-user-badge-endorsement!-REMOVE
 DELETE FROM user_badge_endorsement WHERE id = :id
 
---name: select-endorsement-owner
+--name: select-endorsement-owner-REMOVE
 SELECT issuer_id FROM user_badge_endorsement WHERE id = :id
 
---name: select-user-badge-endorsements
-SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.profile_picture
+--name: select-user-badge-endorsements-REMOVE
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.profile_picture, u.profile_visibility
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS u on u.id = ube.issuer_id
 WHERE user_badge_id = :user_badge_id
 ORDER BY ube.mtime DESC
 
---name: update-endorsement-status!
+--name: update-endorsement-status!-REMOVE
 UPDATE user_badge_endorsement SET status = :status WHERE id = :id
 
---name: select-user-badge-endorser
+--name: select-user-badge-endorser-REMOVE
 SELECT issuer_id FROM user_badge_endorsement WHERE user_badge_id = :user_badge_id AND issuer_id = :issuer_id
 
---name: select-pending-endorsements
+--name: select-pending-endorsements-REMOVE
 SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.ctime,
 endorser.profile_picture, bc.name, bc.image_file, bc.description
 FROM user_badge_endorsement AS ube
@@ -735,11 +820,11 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 WHERE recepient.id = :user_id AND ube.status = 'pending'
 ORDER BY ube.mtime DESC
 
---name: update-user-badge-endorsement!
+--name: update-user-badge-endorsement!-REMOVE
 UPDATE user_badge_endorsement SET status = 'pending', content = :content, mtime = UNIX_TIMESTAMP()
 WHERE id = :id
 
---name: select-given-endorsements
+--name: select-given-endorsements-REMOVE
 SELECT ube.id, ube.user_badge_id, ube.content, ube.mtime, bc.name, bc.description, bc.image_file, u.id AS endorsee_id, u.profile_picture, u.first_name, u.last_name, ube.status
 FROM user_badge_endorsement AS ube
 JOIN user_badge AS ub ON ub.id=ube.user_badge_id
@@ -749,7 +834,7 @@ JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 WHERE ube.issuer_id = :user_id
 
---name: select-received-endorsements
+--name: select-received-endorsements-REMOVE
 SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,
 endorser.profile_picture, bc.name, bc.image_file, bc.description
 FROM user_badge_endorsement AS ube
@@ -762,8 +847,21 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 WHERE recepient.id = :user_id
 ORDER BY ube.mtime DESC
 
---name: select-accepted-badge-endorsements
-SELECT id FROM user_badge_endorsement AS ube WHERE ube.user_badge_id = :id AND ube.status = 'accepted'
-
---name: delete-user-badge-endorsements!
+--name: delete-user-badge-endorsements!-REMOVE
 DELETE FROM user_badge_endorsement WHERE user_badge_id = :id
+
+--name: select-user-badge-views-stats
+--get user-badge view stats
+SELECT ub.id,
+CAST(SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS UNSIGNED) AS reg_count, CAST(SUM(bv.id IS NOT NULL AND bv.user_id IS NULL) AS UNSIGNED) AS anon_count, MAX(bv.ctime) AS latest_view
+FROM user_badge AS ub
+JOIN badge_view AS bv ON ub.id = bv.user_badge_id
+WHERE ub.id = :id AND ub.deleted = 0 AND ub.status = 'accepted';
+
+--name: check-badge-exists
+-- check if user-badge-id exists
+SELECT id, mtime FROM user_badge
+WHERE id = :id AND revoked = 0 AND deleted = 0;
+
+--name: select-badge-issuers
+SELECT DISTINCT name FROM issuer_content;

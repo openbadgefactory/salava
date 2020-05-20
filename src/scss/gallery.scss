@@ -28,7 +28,7 @@
     }
     h2.uppercase-header {
         padding: 15px 0 0 0;
-        font-size: 30px;
+        font-size: 25px; //30px;
     }
 }
 #gallery-modal {
@@ -142,6 +142,7 @@
   border-width: 5px 5px 0 5px;
 
 }
+
 .autocomplete__control--open:after {
   border-color: transparent transparent #444 transparent;
   border-width: 0 5px 5px 5px;
@@ -193,7 +194,7 @@
   -moz-user-select: none;
   -ms-user-select: none;
 }
-.autocomplete__item:hover {
+.autocomplete__item:hover{
   color: #FFFFFF;
   background: $grid-link-hover; //hae oikea orange
 }
@@ -305,6 +306,3 @@
 .autocomplete__highlight {
   background: #FFF1C2;
 }
-
-
-

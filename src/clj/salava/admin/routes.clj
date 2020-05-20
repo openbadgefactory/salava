@@ -2,6 +2,7 @@
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
             [ring.util.response :refer [redirect]]
+            [ring.util.io :as io]
             [salava.core.layout :as layout]
             [schema.core :as s]
             [salava.core.util :refer [get-base-path plugin-fun get-plugins]]
@@ -22,46 +23,46 @@
 
     (context "/obpv1/admin" []
              :tags ["admin"]
+             :no-doc true
 
              (GET "/stats" []
                   :return schemas/Stats
                   :summary "Get statistics"
                   :auth-rules access/admin
                   :current-user current-user
-                  (do
-                    (ok (a/get-stats ctx))))
+                  (ok (a/get-stats ctx (:last-visited current-user))))
 
-             (POST "/private_badge/:id" []
+             (POST "/private_badge/:user_badge_id" []
                    :return (s/enum "success" "error")
-                   :path-params [id :- s/Int]
+                   :path-params [user_badge_id :- s/Int]
                    :summary "Set badge to private"
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/private-badge! ctx id)))
+                   (ok (a/private-badge! ctx user_badge_id)))
 
-             (POST "/private_badges/:id" []
+             (POST "/private_badges/:badge_id" []
                    :return (s/enum "success" "error")
-                   :path-params [id :- s/Str]
+                   :path-params [badge_id :- s/Str]
                    :summary "Set badges from gallery to private"
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/private-badges! ctx id)))
+                   (ok (a/private-badges! ctx badge_id)))
 
-             (POST "/private_page/:id" []
+             (POST "/private_page/:page_id" []
                    :return (s/enum "success" "error")
-                   :path-params [id :- s/Int]
+                   :path-params [page_id :- s/Int]
                    :summary "Set page to private"
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/private-page! ctx id)))
+                   (ok (a/private-page! ctx page_id)))
 
-             (POST "/private_user/:id" []
+             (POST "/private_user/:user_id" []
                    :return (s/enum "success" "error")
-                   :path-params [id :- s/Int]
+                   :path-params [user_id :- s/Int]
                    :summary "Set user to private"
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/private-user! ctx id)))
+                   (ok (a/private-user! ctx user_id)))
 
              (POST "/send_message/:user_id" []
                    :return (s/enum "success" "error")
@@ -90,74 +91,73 @@
                   :current-user current-user
                   (ok (a/get-user ctx user_id)))
 
-             (GET "/badge/:id" []
+             (GET "/badge/:user_badge_id" []
                   :return schemas/Badge
-                  :path-params [id :- s/Int]
+                  :path-params [user_badge_id :- s/Int]
                   :summary "Get badge name, image and info"
                   :auth-rules access/admin
                   :current-user current-user
-                  (ok (a/get-badge-modal ctx id)))
+                  (ok (a/get-badge-modal ctx user_badge_id)))
 
-             (GET "/badges/:id" []
-                  ;;:return schemas/Badges
-                  :path-params [id :- s/Str]
+             (GET "/badges/:badge_id" []
+                  :return schemas/Badges
+                  :path-params [badge_id :- s/Str]
                   :summary "Get badges name, image and info"
                   :auth-rules access/admin
                   :current-user current-user
+                  (ok (a/get-public-badge-content-modal ctx badge_id (:id current-user))))
 
-                  (ok (a/get-public-badge-content-modal ctx id (:id current-user))))
-
-             (GET "/page/:id" []
+             (GET "/page/:page_id" []
                   :return schemas/Page
-                  :path-params [id :- s/Int]
+                  :path-params [page_id :- s/Int]
                   :summary "Get page name, image and info"
                   :auth-rules access/admin
                   :current-user current-user
-                  (ok (a/get-page-modal ctx id)))
+                  (ok (a/get-page-modal ctx page_id)))
 
-             (POST "/delete_badge/:id" []
+             (POST "/delete_badge/:user_badge_id" []
                    :return (s/enum "success" "error")
                    :summary "Delete badge"
                    :body-params [subject :- s/Str
                                  message :- s/Str
                                  user-id :- s/Int]
-                   :path-params [id :- s/Int]
+                   :path-params [user_badge_id :- s/Int]
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/delete-badge! ctx id user-id subject message)))
+                   (ok (a/delete-badge! ctx user_badge_id user-id subject message)))
 
-             (POST "/delete_badges/:id" []
+             (POST "/delete_badges/:badge_id" []
                    :return (s/enum "success" "error")
                    :summary "Delete badge"
                    :body-params [subject :- s/Str
                                  message :- s/Str
                                  user-id :- [(s/maybe s/Int)]]
-                   :path-params [id :- s/Str]
+                   :path-params [badge_id :- s/Str]
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/delete-badges! ctx id subject message)))
+                   (ok (a/delete-badges! ctx badge_id subject message)))
 
-             (POST "/delete_page/:id" []
+             (POST "/delete_page/:page_id" []
                    :return (s/enum "success" "error")
                    :summary "Delete page"
                    :body-params [subject :- s/Str
                                  message :- s/Str
                                  user-id :- s/Int]
-                   :path-params [id :- s/Int]
+                   :path-params [page_id :- s/Int]
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/delete-page! ctx id  user-id subject message)))
+                   (ok (a/delete-page! ctx page_id user-id subject message)))
 
-             (POST "/delete_user/:id" []
+             (POST "/delete_user/:user_id" []
                    :return (s/enum "success" "error")
                    :summary "Delete user"
                    :body-params [subject :- s/Str
                                  message :- s/Str
                                  email   :- s/Str]
-                   :path-params [id :- s/Int]
+                   :path-params [user_id :- s/Int]
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/delete-user! ctx id subject message email)))
+                   (ok (a/delete-user! ctx user_id subject message email)))
 
              (POST "/full_delete_user/:id" []
                    :return (s/enum "success" "error")
@@ -202,7 +202,7 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (let [{:keys [description report_type item_id item_url item_name item_type reporter_id item_content_id]} content]
-                     (ok (a/ticket ctx description report_type item_id item_url item_name item_type reporter_id item_content_id) )))
+                     (ok (a/ticket ctx description report_type item_id item_url item_name item_type reporter_id item_content_id))))
 
              (GET "/tickets" []
                   :return [schemas/Ticket]
@@ -219,6 +219,15 @@
                   :current-user current-user
                   (do
                     (ok (a/get-closed-tickets ctx))))
+
+             (GET  "/export_statistics" []
+                   :summary "Export admin stats to csv format"
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (-> (io/piped-input-stream (a/export-admin-statistics ctx current-user))
+                       ok
+                       (header "Content-Disposition" (str "attachment; filename=\"statistics.csv\""))
+                       (header "Content-Type" "text/csv")))
 
              (POST "/close_ticket/:id" []
                    :return (s/enum "success" "error")
@@ -244,8 +253,8 @@
                    :path-params [user_id :- s/Int]
                    :auth-rules access/admin
                    :current-user current-user
-                   (a/set-fake-session ctx (ok {:status "success" :real-id (:id current-user)}) user_id (:id current-user))
-                   )
+                   (a/set-fake-session ctx (ok {:status "success" :real-id (:id current-user)}) user_id (:id current-user)))
+
 
              (POST "/return_to_admin" []
                    ;:return (s/enum "success" "error")
@@ -253,8 +262,8 @@
                    :auth-rules access/signed
                    :current-user current-user
                    (if (:real-id current-user)
-                     (a/set-session ctx (ok) (:real-id current-user)))
-                   )
+                     (a/set-session ctx (ok) (:real-id current-user))))
+
 
              (POST "/upgrade_user_to_admin/:id" []
                    ;:return (s/enum "success" "error")
@@ -270,14 +279,14 @@
                    :path-params [id :- s/Int]
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/update-admin-to-user ctx id) ))
+                   (ok (a/update-admin-to-user ctx id)))
 
 
              (POST "/profiles" []
                    ;:return
                    #_{:users     [schemas/UserProfiles]
-                      :countries [schemas/Countries]
-                      }
+                      :countries [schemas/Countries]}
+
                    :body [search-params {:name     (s/maybe s/Str)
                                          :country  (s/maybe s/Str)
                                          :order_by (s/enum "name" "ctime" "common_badge_count")
@@ -293,5 +302,4 @@
                          users-with-terms (map #(-> %
                                                     (assoc :terms (:status (accepted-terms-fn ctx (:id %))))) users)]
                      (ok {:users     (vec users-with-terms)
-                          :countries countries
-                          }))))))
+                          :countries countries}))))))

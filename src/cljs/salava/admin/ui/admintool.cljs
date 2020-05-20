@@ -10,7 +10,6 @@
             [salava.core.helper :refer [dump]]
             [salava.admin.ui.admintool-content :refer [admin-modal]]))
 
-
 (defn open-admintool-modal
   ([item-id item-type]
    (let [state (atom {:mail          {:subject ""
@@ -28,7 +27,7 @@
                       :gallery-state nil
                       :init-data nil})]
      (ajax/GET
-      (path-for (str "/obpv1/admin/"item-type"/" item-id))
+      (path-for (str "/obpv1/admin/" item-type "/" item-id))
       {:handler (fn [data]
                   (do
                     (swap! state assoc :name (:name data)
@@ -40,21 +39,21 @@
                   (m/modal! [admin-modal state nil nil] {:size :lg}))})))
 
   ([item-type item-id gallery-state init-data]
-   (let [ state (atom {:mail          {:subject ""
-                                       :message ""}
-                       :visible_area  ""
-                       :item_type     item-type
-                       :item_id       item-id
-                       :item_owner    ""
-                       :item_owner_id nil
-                       :image_file    nil
-                       :name          ""
-                       :info          {}
-                       :gallery-state gallery-state
-                       :init-data init-data
-                       :status ""})]
+   (let [state (atom {:mail          {:subject ""
+                                      :message ""}
+                      :visible_area  ""
+                      :item_type     item-type
+                      :item_id       item-id
+                      :item_owner    ""
+                      :item_owner_id nil
+                      :image_file    nil
+                      :name          ""
+                      :info          {}
+                      :gallery-state gallery-state
+                      :init-data init-data
+                      :status ""})]
      (ajax/GET
-      (path-for (str "/obpv1/admin/"item-type"/" item-id))
+      (path-for (str "/obpv1/admin/" item-type "/" item-id))
       {:handler (fn [data]
                   (do
                     (swap! state assoc :name (:name data)
@@ -75,34 +74,35 @@
       [:button {:class    "btn btn-primary text-right admin-btn"
                 :on-click #(do (.preventDefault %)
                                (open-admintool-modal item-id item-type))}
-      (t :admin/Admintools)]]]))
+       (t :admin/Admintools)]]]))
 
 (defn admin-gallery-badge [item-id item-type state init-data]
   (if (admin?)
-    [:div {:id "admin-link"}
+    [:div {:class "admin-link"}
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
-                         (open-admintool-modal "badges" item-id state init-data))}
-      [:i {:class "fa fa-wrench"}]
+                         (open-admintool-modal "badges" item-id state init-data))
+          :tabIndex 0}
+      [:i {:class "fa fa-wrench"}]]]))
       ;(t :admin/Admintools)
-      ]]))
+
 
 (defn admintool-gallery-page [item-id item-type state init-data user-id]
   (if (admin?)
-    [:div {:id "admin-link"}
+    [:div {:class "admin-link"}
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
-                         (open-admintool-modal "page" item-id state init-data))}
+                         (open-admintool-modal "page" item-id state init-data))
+          :tabIndex 0}
       [:i {:class "fa fa-wrench"}]]]))
-
 
 (defn admintool-admin-page [item-id item-type state init-data]
 
-(if (admin?)
+  (if (admin?)
     [:div
-     [:div {:id "buttons"
+     [:div {;:id "buttons"
             :class "text-right"}
       [:button {:class    "btn btn-primary text-right"
                 :on-click #(do (.preventDefault %)
                                (open-admintool-modal item-type item-id state  init-data))}
-      (t :admin/Admintools)]]]))
+       (t :admin/Admintools)]]]))

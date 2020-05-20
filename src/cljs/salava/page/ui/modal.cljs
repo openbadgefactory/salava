@@ -17,74 +17,66 @@
             [salava.page.ui.helper :refer [badge-block html-block file-block heading-block tag-block showcase-block profile-block]]
             [salava.page.ui.my :refer [mypagesmodal]]))
 
-
-
 (defn content [state]
   (let [{:keys [id name description mtime user_id first_name last_name blocks theme border padding visibility qr_code]} (:page @state)]
     [:div
      [:div {:id    (str "theme-" (or theme 0))
-                  :class "page-content"}
-           (if id
-             [:div.panel
-              [:div.panel-left
-               [:div.panel-right
-                [:div.panel-content
-                 (if (and qr_code (= visibility "public"))
-                   [:div.row
-                    [:div {:class "col-xs-12 text-center"}
-                     [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}]]])
-                 (if mtime
-                   [:div.row
-                    [:div {:class "col-md-12 page-mtime"}
-                     (date-from-unix-time (* 1000 mtime))]])
-                 [:div.row
-                  [:div {:class "col-md-12 page-title"}
-                   [:h1 name]]]
-                 [:div.row
-                  [:div {:class "col-md-12 page-author"}
-                   [:a {:href "#"
-                        :on-click #(open-modal [:profile :view] {:user-id user_id} {:style {:modal-body {:padding "unset"}}})}
-                    (str first_name " " last_name)]]]
+            :class "page-content"}
+      (if id
+        [:div.panel
+         [:div.panel-left
+          [:div.panel-right
+           [:div.panel-content
+            (if (and qr_code (= visibility "public"))
+              [:div.row
+               [:div {:class "col-xs-12 text-center"}
+                [:img#print-qr-code {:src (str "data:image/png;base64," qr_code) :alt "qr code"}]]])
+            (if mtime
+              [:div.row
+               [:div {:class "col-md-12 page-mtime"}
+                (date-from-unix-time (* 1000 mtime))]])
+            [:div.row
+             [:div {:class "col-md-12 page-title"}
+              [:h1 name]]]
+            [:div.row
+             [:div {:class "col-md-12 page-author"}
+              [:a {:href "#"
+                   :on-click #(open-modal [:profile :view] {:user-id user_id} {:style {:modal-body {:padding "unset"}}})}
+               (str first_name " " last_name)]]]
                     ;#(set-new-view [:profile :view] {:user-id user_id})} (str first_name " " last_name)]]]
-                 [:div.row
-                  [:div {:class "col-md-12 page-summary"}
-                   description]]
-                 (into [:div.page-blocks]
-                       (for [block blocks]
-                         [:div {:class "block-wrapper"
-                                :style {:border-top-width (:width border)
-                                        :border-top-style (:style border)
-                                        :border-top-color (:color border)
-                                        :padding-top (str padding "px")
-                                        :margin-top (str padding "px")}}
-                          (case (:type block)
-                            "badge" (badge-block block)
-                            "html" (html-block block)
-                            "file" (file-block block)
-                            "heading" (heading-block block)
-                            "tag" (tag-block block)
-                           "showcase" (showcase-block block)
-                           "profile" (profile-block user_id (atom block))
-                            nil)]))]]]])]
+            [:div.row
+             [:div {:class "col-md-12 page-summary"}
+              description]]
+            (into [:div.page-blocks]
+                  (for [block blocks]
+                    [:div {:class "block-wrapper"
+                           :style {:border-top-width (:width border)
+                                   :border-top-style (:style border)
+                                   :border-top-color (:color border)
+                                   :padding-top (str padding "px")
+                                   :margin-top (str padding "px")}}
+                     (case (:type block)
+                       "badge" (badge-block block)
+                       "html" (html-block block)
+                       "file" (file-block block)
+                       "heading" (heading-block block)
+                       "tag" (tag-block block)
+                       "showcase" (showcase-block block)
+                       "profile" (profile-block user_id (atom block))
+                       nil)]))]]]])]
      [:div.col-xs-12 [reporttool1 id name "page"]]]))
-
-
-
-
-
 
 (defn init-data [page-id state]
   (ajax/GET
-    (path-for (str "/obpv1/page/view/" page-id) true)
-    {:handler (fn [data]
+   (path-for (str "/obpv1/page/view/" page-id) true)
+   {:handler (fn [data]
 
-                (reset! state (assoc data
-                                :page-id page-id
-                                :show-link-or-embed-code nil
-                                :permission "success"
-                                :badge-small-view false)))}
-    (fn [] (swap! state assoc :permission "error"))))
-
+               (reset! state (assoc data
+                                    :page-id page-id
+                                    :show-link-or-embed-code nil
+                                    :permission "success"
+                                    :badge-small-view false)))}
+   (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [params]
 
@@ -104,7 +96,6 @@
         (= "success" (:permission @state)) (content state)
         (and (= "success" (:permission @state)) user) (content state)
         :else (content state)))))
-
 
 (def ^:export modalroutes
   {:page  {:view handler

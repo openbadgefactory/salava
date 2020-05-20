@@ -1,5 +1,11 @@
-$titlebar-color: #cce800;
+$titlebar-color: #cdd455; //#343436; //#cce800;
 $login-button-active: darken($titlebar-color, 5%);
+$dark-blue: #1e679e;
+$dark-green: #cad52f;
+$light-green: #cce800;
+$light-brown: #ded3ca;
+$light-blue: #8fa6c1;
+
 
 $menu-color: #023b6b;
 $menu-active: #fc4c02;
@@ -7,9 +13,9 @@ $title-color: $menu-color;
 
 $text-color: #1d1d1d;
 
-$link-color: $text-color;
+$link-color: #1c6799;
 /* $link-color: #00cdb2; */
-$link-hover:$text-color;
+$link-hover: darken($link-color, 5%);
 $grid-link:  #023b6b;
 $grid-link-hover: lighten($grid-link, 5%);
 
@@ -19,7 +25,7 @@ $badge-title-hover:$link-hover;
 $button-color: $titlebar-color;
 $button-hover: rgba(242, 249, 191, 1);
 
-$icon-color: #d2d2d2;
+$icon-color: #373739; //#d2d2d2;
 
 $green: #7f7179;
 $grey: #d2d2d2;
@@ -28,5 +34,5 @@ $orange-hover: #db442c;
 
 $background-color: #F4F4F4;
 $blue: #568EB4;
-$pink: #c774a0;
+$pink: #AD5883;//#AE5484;//#c774a0;
 $pink-hover: #e3bad0;

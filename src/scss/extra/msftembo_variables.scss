@@ -1,3 +1,9 @@
+$main-color: #c8001a;
+$second-color: #000000;
+$third-color: #4a93a2;
+$background-color: #f6f6f6;
+$text-color: #000000;
+
 $titlebar-color: #4a93a2;
 
 $menu-color: #000000;
@@ -12,8 +18,8 @@ $grid-link-hover: lighten($link-color, 5%);
 $badge-title:#c8001a;
 $badge-title-hover:#910000;
 
-$button-color: $link-color;
-$button-hover: lighten($link-color, 5%);
+$button-color: $main-color;
+$button-hover: darken($main-color, 10%);
 
 $icon-color: #a28f9b;
 

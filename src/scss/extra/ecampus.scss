@@ -14,6 +14,10 @@
 @import '../user';
 @import 'application';
 @import '../rtl';
+@import '../metabadge';
+@import '../profile';
+@import '../badgeIssuer';
+
 
 .btn {
   border-radius: 10px;
@@ -70,7 +74,22 @@
 
 
 /*REGISTER */
+#registration-page #narrow-panel{
+   .logo-image-icon-url {
+     //width: 87px;
+     //height: 97px;
+     background-image: url("/img/extra/ecampus/logo_icon.png");
+     background-size: contain;
+     background-repeat: no-repeat;
+  }
 
+  .media {
+    margin-top: 10px;
+    .media-body {
+      //vertical-align: middle !important;
+    }
+  }
+}
 
 
 /*navbar*/
@@ -169,7 +188,7 @@ nav a#login-button{
   opacity:0.4;
 }
 
-.btn-warning, .btn-success {
+.btn-warning, .btn-success, .btn-danger {
   color: black;
   background-color: white;
   border-color: $button-color;
@@ -206,7 +225,7 @@ body, body.anon{
 .logo-main, .logo-icon {
   height: 48px;
 }
-header#navbar {
+header#navbar, div#navbar {
   background: #f1b435;
 }
 
@@ -269,6 +288,10 @@ message-item.media button.close {
   .form-control {
     border-radius: 10px;
   }
+
+  a {
+    color: #3C7084;
+  }
 }
 
 select.form-control {
@@ -292,17 +315,25 @@ select.form-control::-ms-expand {
     }
   }
 
-  .connections-block .info-block .text{
-    p.num {
-      color: $button-color;
+  .close {
+    opacity: 0.65;
+  }
+
+  .profile-block .profile-visibility a{
+      color:$link-color;
     }
 
-    p.desc {
+  .connections-block .info-block .text, .badge-block .connections-block .info-block .text{
+    p.num, span.num {
+      color: #467d91; //$button-color;
+    }
+
+    p.desc, span.num {
       font-weight: 400;
     }
   }
 
-  #box_3 {
+  #box_3, #box_6 {
     p {
       font-weight: 400;
     }
@@ -356,10 +387,17 @@ select.form-control::-ms-expand {
       }
       .badge-connection {
         background-color: $button-color !important;
+        .text, .icon {
+          color: $menu-color;
+        }
       }
 
       .page {
         background-color: $link-color;
+      }
+
+      .map {
+        background-color: $link-hover;
       }
 
 
@@ -375,8 +413,174 @@ select.form-control::-ms-expand {
   }
 }
 
+#profiletips .tip{
+  .tipicon, a {
+    color: $link-color;
 
-/*#my-badges #grid .grid-container .media-content .icons{
+  }
+}
+
+ #my-files #grid #add-element #add-element-link,
+ #my-files #grid #add-element .add-element-link,
+ #page-gallery #grid #add-element #add-element-link,
+ #page-gallery #grid #add-element .add-element-link,
+ #profile-gallery #grid #add-element #add-element-link,
+ #profile-gallery #grid #add-element .add-element-link,
+ #user-pages #grid #add-element #add-element-link,
+ #user-pages #grid #add-element .add-element-link,
+ .pages #grid #add-element #add-element-link,
+ .pages #grid #add-element .add-element-link {
+  color: $grid-link; //$blue;//$text-color;
+  font-weight: bold;
+
+  &:hover {
+   color: $grid-link;
+  }
+ }
+.add-info, .add-field-after {
+  .btn-warning, .btn-success {
+  color: black;
+  background-color: $button-color;
+  border-color: $button-color;
+  &:hover{
+    background-color: $button-hover;
+    border-color: $button-hover;
+  }
+  &:focus, &:active{
+    background-color: $button-hover;
+    color: black;
+    border-color: $button-hover;
+    }
+  }
+}
+
+#field-editor .field .field-content #badge-showcase {
+ .addbadge .add-icon {
+  color: $titlebar-color;
+ }
+
+ #grid .grid-container {
+  .move-left i,.move-right i{
+   color: $button-color;
+  }
+ }
+}
+
+#page-edit #block-modal .block-types div.content-type,
+#page-edit-theme #block-modal .block-types div.content-type {
+ background-color: $button-color;
+ color: #000;
+
+ &:focus,
+ &:hover {
+  background-color: $button-hover;
+ }
+}
+
+#page-edit, #profile, #page-edit-theme, #page-settings {
+ .action-bar {
+  &:hover {
+   opacity: 1;
+  }
+ }
+}
+
+#theme-0 {
+  .panel-left, .panel-right {
+    background: -webkit-linear-gradient(to bottom, $titlebar-color, $button-hover);
+    background: linear-gradient(to bottom, $titlebar-color, $button-hover);
+  }
+}
+
+#profile .profile-navi {
+  .nav .open > a {
+      border-color: $button-color;
+  }
+  .close {
+   opacity:0.8;
+   color: #314755;
+   &:hover {
+    opacity: 1;
+   }
+  }
+  .nav-tabs {
+  border-bottom: 1px solid $titlebar-color;
+  >li {
+   margin-bottom: 0;
+  }
+  >li a {
+   margin-right: 0;
+   text-decoration: none;
+  }
+  > li.active a {
+    color: #9D6E04; //$button-color;
+    border: 1px solid $titlebar-color;
+    border-bottom-color: transparent;
+  }
+ }
+}
+
+.wizard {
+  a, .badge, .current {
+    color: #000;
+  }
+}
+
+/*#page-edit #step-button, #page-edit #step-button-previous, #page-edit-theme #step-button-previous, #page-edit-theme #step-button, #step-button {
+  color: #000;
+}*/
+
+#page-edit, #page-edit-theme, #page-settings {
+  #step-button, #step-button-previous {
+    color: $menu-color;
+  }
+}
+
+#registration-page .or span, #login-page .or span {
+  background:  #E9E9E9;
+}
+
+.footer .text-muted {
+  color: #996B6A; //#797676;
+}
+
+.progress-bar-success {
+  background-image: linear-gradient(to bottom,#418545 0,#449d44 100%);
+  background-color: #418545;
+}
+
+#dashboard .badge,.endorsement-notification, .grid-element-info, .modal-navi-info, .social-panel-info {
+  color: $menu-color !important;
+}
+
+#my-files {
+  .file-icon-large {
+    color: $menu-color;
+  }
+  .max-file-size {
+    color: #996B6A;
+  }
+}
+
+.move-tab {
+  color: #9D6E04 !important;
+  &:hover, &:focus {
+    color: $menu-color !important;
+  }
+}
+
+/*
+.ticket-container.fakebadge u {
+  color: #A76905;
+}
+.ticket-container.mistranslation u {
+  color: #088488;
+}
+.ticket-container.bug u {
+  color: #EC130E;
+}
+
+#my-badges #grid .grid-container .media-content .icons{
 text-align:left;
 .visibility-icon{
 width:30px;

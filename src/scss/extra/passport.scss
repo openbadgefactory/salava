@@ -15,6 +15,7 @@
 @import '../rtl';
 @import '../metabadge';
 @import '../profile';
+@import '../badgeIssuer';
 
 /* LINKS */
 a, #badge-info a {
@@ -80,6 +81,18 @@ a, #badge-info a {
   height: 44px;
   background-image: url("/img/extra/passport/verifiedissuedbyobf.png");
 }
+
+#registration-page #narrow-panel{
+   .logo-image-icon-url {
+     width: 66px;
+     //height: 87px;
+     background-image: url("/img/extra/passport/logo_icon.png");
+     background-repeat: no-repeat;
+     background-size: contain;
+  }
+}
+
+
 /* MENU */
 ul.side-links{
   li {
@@ -156,13 +169,18 @@ a#login-button, #login-page .btn-primary {
   }
 }
 
+nav a#login-button{
+  /* client request, no top row login button */
+  display: none;
+}
+
 
 /* GRID */
 .pages #grid .grid-container .media-content .media-body .media-heading,
 #page-gallery #grid .grid-container .media-content .media-body .media-heading,
 #my-files #grid .grid-container .media-content .media-body .media-heading,
 #profile-gallery #grid .grid-container .media-content .media-body .media-heading,
-#user-pages #grid .media-content .media-body .media-heading, #page-gallery, #user-pages #grid .grid-container,
+#user-pages #grid .media-content .media-body .media-heading, #page-gallery, #user-pages #grid .grid-container, #user-pages #pages-grid .media-content .media-body .media-heading,
 #badge-gallery #profile #user-pages #grid .grid-container{
   p.heading-link{
     color: $badge-title;
@@ -171,7 +189,13 @@ a#login-button, #login-page .btn-primary {
     }
   }
   .page-owner {
-    color: $menu-color;
+    color: $text-color;
+  }
+}
+
+#page-gallery, #user-pages #grid .grid-container, #user-pages #pages-grid .media-content  {
+  .page-owner {
+    color: $text-color;
   }
 }
 
@@ -203,6 +227,12 @@ a#login-button, #login-page .btn-primary {
   }
 }
 
+#user-pages #pages-grid .media-content .page-create-date, #page-gallery #grid .media-content .page-create-date, .pages #grid .grid-container .page-create-date, .file-create-date {
+  color: #1e461f;
+  font-weight: normal;
+  font-size: 12px;
+}
+
 #export-badges, .import-badges {
   #grid .grid-container {
     .media-bottom .checkbox{
@@ -214,6 +244,12 @@ a#login-button, #login-page .btn-primary {
   }
 }
 #badge-settings {
+  .new-evidence .fa-plus:before {
+    background: -webkit-gradient(linear, left bottom, right top, from(#314755), to(#26a0da));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: initial;
+  }
   .settings-content legend.sub-heading, label.sub-heading, h1.uppercase-header {
     font-weight: 600;
   }
@@ -221,7 +257,13 @@ a#login-button, #login-page .btn-primary {
 .pages #grid, #page-gallery #grid, #my-files #grid, #profile-gallery #grid {
   #add-element {
     #add-element-icon {
-      color: $title-color;
+      .fa-plus:before {
+        background: -webkit-gradient(linear, left bottom, right top, from(#314755), to(#26a0da));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: initial;
+      }
+      //color: $title-color;
     }
     #add-element-link, .add-element-link {
     color: $badge-title;//$badge-title; //$orange-color;
@@ -379,7 +421,7 @@ a.popup-info {
   }
 }
 
-#my-badges #grid #import-badge #add-element-link, #my-badges #grid #import-badge .add-element-link {
+#my-badges #grid #import-badge #add-element-link, #my-badges #grid #import-badge .add-element-link, #selfie-badges #grid #import-badge #add-element-link {
   color: $badge-title;
   &:hover, &:focus, &:active {
     color: $button-hover;
@@ -406,7 +448,7 @@ a.popup-info {
 
   }
 
-  #box_3 {
+  #box_3, #box_6 {
     .help p {
       color: $badge-title;
       font-weight: 400;
@@ -441,7 +483,10 @@ a.popup-info {
 
     .content {
       .badge-connection {
-        background-color: #26a0da !important;
+        background-color: #553147 !important; //#26a0da !important;
+        /*.info, .text {
+          color: #372C2C !important;
+        }*/
       }
 
       .endorsement {
@@ -449,11 +494,17 @@ a.popup-info {
       }
 
       .page {
-        background-color: #49E5AD;
+        background-color: #31553f;//#49E5AD;
+        /*.info, .text {
+          color: #505050 !important;
+        }*/
       }
 
         .map{
-          background-color: #aad3df;
+          background-color: #313555; //#aad3df;
+          /*.info, .text {
+            color: #505050 !important;
+          }*/
         }
 
 
@@ -461,7 +512,30 @@ a.popup-info {
 
   }
 
+  /*improvements to dashboard*/
 
+  #box_1 .notifications-block {
+    .notification-div  {
+    background-color: unset;
+    border: unset;
+    border-radius: 0px;
+    border-bottom: 1px solid;
+    margin: 3px auto;
+    .content-text p.content-heading {
+      font-weight: 500;
+    }
+
+  }
+
+}
+
+.info-block .text p.desc {
+  font-weight: 500;
+}
+
+.block .content p.header {
+  font-weight: 400;
+}
 }
 
 .title-row {
@@ -469,8 +543,14 @@ a.popup-info {
   background: linear-gradient(to left, #26a0da, #314755);
 }
 
-#my-badges #grid #import-badge #add-element-icon, .pages #grid .grid-container #add-element #add-element-icon {
+#my-badges #grid #import-badge #add-element-icon, .pages #grid .grid-container #add-element #add-element-icon, #selfie-badges #grid #import-badge #add-element-icon {
   color: $title-color;
+  .fa-plus:before {
+    background: -webkit-gradient(linear, left bottom, right top, from(#314755), to(#26a0da));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: initial;
+  }
 }
 
 #page-edit .thumbnail, #page-edit-theme .thumbnail {
@@ -514,6 +594,12 @@ a.popup-info {
 #field-editor .field .field-content #badge-showcase{
   .addbadge {
    border: 3px dashed #314755;
+     .fa-plus:before {
+       background: -webkit-gradient(linear, left bottom, right top, from(#314755), to(#26a0da));
+       -webkit-background-clip: text;
+       -webkit-text-fill-color: transparent;
+       display: initial;
+     }
  }
  #grid .grid-container{
   .move-left i, .move-right i {
@@ -560,12 +646,75 @@ a.popup-info {
    }
 }
 
-#profiletips .tip{
+#profiletips .tip, #_profiletips .tip{
   .tipicon, a {
     color: $button-color;
     &:active, &:hover, &:focus {
           color: $button-hover;
         }
+  }
+}
+
+html[dir="rtl"] .wizard {
+
+   .current {
+    &:before{
+     border-right-color: #314755 !important;
+    }
+   }
+}
+
+/*#badge-receive .panel-heading {
+  background: linear-gradient(75deg, $button-color, $background-color);
+  .uppercase-header {
+    color: #1E1E1E !important;
+  }
+}*/
+
+
+#dashboard .badge,.endorsement-notification, .grid-element-info, .modal-navi-info, .social-panel-info {
+  color: #1E1E1E !important;
+}
+
+.text-muted {
+  color: #816F6E;
+}
+
+.max-file-size {
+  color: #1e461f;
+}
+
+.btn-warning:disabled {
+  color: #373737;
+}
+.footer .footer-container a {
+  color: $link-color;
+}
+
+.page-info-box {
+  .close {
+    right: unset;
+  }
+}
+
+.btn-bulky {
+  padding: 8px;
+  border-radius: 2px;
+  .fa {
+    color: #FFF !important;
+  }
+}
+
+.selfie-stamp {
+  line-height: 0px;
+  .logo-image-url {
+    width: 160px;
+  }
+}
+
+#selfie-badges .alert-dismissable {
+  button.close {
+    padding: inherit !important;
   }
 }
 /*
