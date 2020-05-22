@@ -5,7 +5,7 @@
 
 (defqueries "sql/extra/spaces/main.sql")
 
-(defrecord Space [id uuid name description status visibility logo banner])
+(defrecord Space [id uuid name description status visibility logo banner alias valid_until])
 
 (defn uuid [] (str (java.util.UUID/randomUUID)))
 

@@ -52,6 +52,7 @@
 (defn space-id [ctx id]
  (if (uuid? (java.util.UUID/fromString id)) (some-> (select-space-by-uuid {:uuid id} (u/get-db ctx)) :id) id))
 
+
 (defn clear-space-data!
  "Clear out space information"
  [ctx id]

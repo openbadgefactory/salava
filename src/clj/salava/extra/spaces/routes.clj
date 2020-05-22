@@ -11,11 +11,16 @@
 
 (defn route-def [ctx]
   (routes
+   (context "/admin" []
+            (layout/main ctx "/spaces")
+            (layout/main ctx "/spaces/creator"))
+
    (context "/obpv1/spaces" []
             :tags ["spaces"]
             (POST "/create" []
                   :return {:success s/Bool}
                   :body [space schemas/CreateSpace]
+                  :auth-rules access/admin
                   :summary "Create new space"
                   (ok (space/create! ctx space)))
 

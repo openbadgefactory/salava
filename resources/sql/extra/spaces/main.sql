@@ -1,9 +1,9 @@
 -- name: create-space<!
 -- create new space
 INSERT INTO space
-  (uuid, name, description, logo, banner, status, visibility, ctime, mtime)
+  (uuid, name, alias, description, logo, banner, status, visibility, valid_until, ctime, mtime)
 VALUES
-  (:uuid, :name, :description, :logo, :banner, :status, :visibility, UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
+  (:uuid, :name, :alias, :description, :logo, :banner, :status, :visibility, :valid_until, UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
 
 -- name: select-email-address
 -- check if email address exists

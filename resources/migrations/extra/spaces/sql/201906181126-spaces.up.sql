@@ -1,4 +1,4 @@
-CREATE TABLE `space` (
+CREATE TABLE IF NOT EXISTS `space` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE `space` (
 
 --;;
 
-CREATE TABLE `user_space`(
+CREATE TABLE IF NOT EXISTS `user_space`(
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) unsigned NOT NULL,
   `space_id` bigint(20) unsigned NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE `user_space`(
 
 --;;
 
-CREATE TABLE `space_properties`(
+CREATE TABLE IF NOT EXISTS `space_properties`(
   `space_id` bigint(20) unsigned NOT NULL,
   `name` varchar(255) NOT NULL,
   `value` text NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE `space_properties`(
 
 --;;
 
-CREATE TABLE `space_admin_pending`(
+CREATE TABLE IF NOT EXISTS `space_admin_pending`(
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `space_id`  bigint(20) unsigned NOT NULL,
   `email` varchar(255) NOT NULL,
