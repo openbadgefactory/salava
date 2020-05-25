@@ -19,7 +19,7 @@
             :tags ["spaces"]
             (POST "/create" []
                   :return {:success s/Bool}
-                  :body [space schemas/CreateSpace]
+                  :body [space schemas/create-space]
                   :auth-rules access/admin
                   :summary "Create new space"
                   (ok (space/create! ctx space)))

@@ -18,7 +18,6 @@
 
     .media-content {
       height: 65px;
-
       .media-heading {
         font-weight: 600;
         margin-right: 0;
@@ -53,4 +52,14 @@
       color: $text-color;
     }
   }
+}
+
+#space-gallery
+{
+  .form-control {
+    max-width: 500px;
+  }
+   div#add-element-icon {
+          font-size: 25px;
+        }
 }
