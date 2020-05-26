@@ -82,7 +82,8 @@
           [:img {:style "vertical-align: bottom; " :width "125px" :height "auto" :src (str "cid:"id)}]
           [:div {:style "margin-top: 15px;"}
             [:a {:href (str (get-full-path ctx) "/user/register") :target "_blank"}
-             (str (t :badge/Clicktojoin lng) " " (get-site-name ctx) " " (t :badge/community lng))]]]]]]]]])
+             [:b (t :badge/Clicktojoincommunity lng)]
+             #_(str (t :badge/Clicktojoin lng) " " (get-site-name ctx) " " (t :badge/community lng))]]]]]]]]])
 
 (defn- request-template [ctx message badge-info issuer-id {:keys [bid lid fname lname oid pv lng]}]
  (let [{:keys [name image_file]} (-> badge-info :content first)
@@ -172,7 +173,7 @@
               :subject (t :badge/Endorsementrequest language) ;(str first_name " " last_name " " (t :badge/requestsendorsement language) " " name)
               :body    [[:alternative
                          [:related
-                          {:type    "text/html"
+                          {:type    "text/html;charset=utf-8"
                            :content (request-template ctx message badge-info issuer-id {:lng language :oid owner-id :pv profile_visibility :lid lid :bid bid :fname first_name :lname last_name})}
                           {:type :inline
                            :content (io/file (str (get-data-dir ctx) "/" (util/file-from-url-fix ctx image)))
