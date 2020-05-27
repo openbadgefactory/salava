@@ -35,7 +35,7 @@
                #_[:div {:id "add-element-link"}
                   (t :badge/New)]]]]]]]
     (for [space @(cursor state [:spaces])]
-     (space-card state))))
+     (space-card space))))
 
 
 (defn content [state]

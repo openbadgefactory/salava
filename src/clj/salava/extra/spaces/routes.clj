@@ -5,6 +5,7 @@
             [salava.core.helper :refer [dump]]
             [salava.core.layout :as layout]
             [salava.extra.spaces.space :as space]
+            [salava.extra.spaces.db :as db]
             [salava.core.access :as access]
             [salava.extra.spaces.schemas :as schemas] ;cljc
             [clojure.string :refer [split]]))
@@ -17,8 +18,10 @@
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]
+            (GET "/" []
+                  (ok (db/all-spaces ctx)))
             (POST "/create" []
-                  :return {:success s/Bool}
+                  :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
                   :body [space schemas/create-space]
                   :auth-rules access/admin
                   :summary "Create new space"

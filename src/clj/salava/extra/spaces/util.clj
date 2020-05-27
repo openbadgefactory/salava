@@ -4,4 +4,6 @@
 
 
 (defn save-image! [ctx url]
- (if-not (blank? url) (u/file-from-url ctx url) nil))
+ (if-not (blank? url) (u/file-from-url-fix ctx url) nil))
+
+(defn uuid [] (str (java.util.UUID/randomUUID)))

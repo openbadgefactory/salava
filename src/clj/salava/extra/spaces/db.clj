@@ -10,6 +10,8 @@
 (defrecord Space_member [id user_id space_id role default_space])
 (defrecord Pending_admin [id space_id email])
 
+(defn save-space-properties [ctx space])
+
 (defn create-space-admin!
   "Adds existing user as a space member and sets role to admin
    Otherwise, adds email as pending admin"
@@ -28,26 +30,25 @@
 (defn create-new-space!
  "Initializes space and creates admins"
  [ctx space]
+ ;(try+
  (log/info "Creating space" (:name space))
  (log/info "Space exists? " (space-exists? ctx space))
- (if (space-exists? ctx space)
-   (do
-    (log/error "Error!" (str "Space with name " (:name space) " already exists"))
-    {:status "error"})
-   (if (seq (:admin space))
-     (jdbc/with-db-transaction [tx (:connection (u/get-db ctx))]
-      (let [space_id (-> space
-                       (dissoc :id :admin)
-                       (assoc :logo (save-image! ctx (:logo space)) :banner (save-image! ctx (:banner space)))
-                       (create-space<! {:connection tx})
-                       :generated_key)]
-       (doseq [email (:admin space)]
-              (create-space-admin! ctx space_id email))
-       (log/info "Finished creating space!")
-       {:status "success"}))
-     (do
-      (log/error "Error, No space admin defined")
-      {:status "error"}))))
+ (when (empty? (:admins space)) (throw+ "Error, no space admin defined"))
+ (when (space-exists? ctx space) (throw+ (str "Space with name " (:name space) " already exists")))
+ (jdbc/with-db-transaction [tx (:connection (u/get-db ctx))]
+  (let [space_id (-> space
+                   (dissoc :id :admin)
+                   (assoc :logo (save-image! ctx (:logo space)) :banner (save-image! ctx (:banner space)))
+                   (create-space<! {:connection tx})
+                   :generated_key)]
+   (doseq [$ (:admins space)
+            :let [email (if (number? $) (select-primary-address {:id $} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
+          (create-space-admin! ctx space_id email))
+   (log/info "Finished creating space!")))
+  ;{:status "success"}
+ #_(catch Object _
+    (log/error "Error, No space admin defined")
+    {:status "error"}))
 
 (defn space-id [ctx id]
  (if (uuid? (java.util.UUID/fromString id)) (some-> (select-space-by-uuid {:uuid id} (u/get-db ctx)) :id) id))

@@ -5,6 +5,8 @@
                                      :s-color (s/maybe s/Str)
                                      :t-color (s/maybe s/Str)}})
 
+
+
 (s/defschema space {:uuid s/Str
                     :name s/Str
                     :alias s/Str
@@ -13,7 +15,8 @@
                     (s/optional-key :banner) (s/maybe s/Str)
                     :visibility (s/enum "public" "private")
                     :status (s/enum "active" "suspended")
-                    :properties space-properties
+                    (s/optional-key :properties) space-properties
+                    (s/optional-key :admins) [s/Int]
                     :ctime s/Int
                     :mtime s/Int})
 

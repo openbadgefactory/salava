@@ -205,6 +205,12 @@
                                             (reduce (fn [r user]
                                                       (conj r [profile-grid-element user selected-users-atom type]))
                                                     [:div.col-md-12.profilescontainer
+                                                     (when (= "space_admins" context)
+                                                       [:div.col-md-12 {:style {:font-weight "bold"}}
+                                                        [:hr.line]
+                                                        [:p (t :extra-spaces/AboutAdmins2)]
+                                                        [:hr.line]])
+
                                                      (when (or (= "endorsement_selfie" context)(= "endorsement" context))
                                                        [:div.col-md-12 {:style {:font-weight "bold"}}
                                                         [:hr.line]
@@ -265,6 +271,15 @@
                                                #_[:span [:i.fa.fa-lg.fa-paper-plane] (t :badgeIssuer/Issuebadge)]]
                                               [:button.btn.btn-danger.btn-bulky
                                                {:on-click #(do (reset! selected-users-atom []) (mo/previous-view))}
+                                               (t :core/Cancel)]])
+                                            (when  (= context "space_admins")
+                                             [:div
+                                              [:button.btn.btn-primary.btn-bulky
+                                               {:on-click #(m/close-modal!)
+                                                :disabled (empty? @selected-users-atom)}
+                                               (t :core/Continue)]
+                                              [:button.btn.btn-danger.btn-bulky
+                                               {:on-click #(do (reset! selected-users-atom []) (m/close-modal!))}
                                                (t :core/Cancel)]])])])]])
 
 

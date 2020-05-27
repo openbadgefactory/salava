@@ -47,3 +47,6 @@ DELETE FROM user_space WHERE space_id = :space_id
 
 --name:delete-space-properties!
 DELETE FROM space_properties WHERE space_id = :space_id
+
+--name: select-primary-address 
+SELECT email FROM user_email WHERE user_id = :id AND primary_address = 1

@@ -2,10 +2,21 @@
  (:require
   [reagent-modals.modals :as m]
   [salava.core.i18n :refer [t translate-text]]
-  [salava.core.time :refer [date-from-unix-time]]))
+  [salava.core.time :refer [date-from-unix-time]]
+  [salava.core.ui.modal :as mo]
+  [salava.user.ui.helper :refer [profile-picture]]))
+
+(defn profile-link-inline-modal [id first_name last_name picture]
+  (let [name (str first_name " " last_name)]
+    [:div.user-link-inline
+     [:a {:href "#"
+          :on-click #(mo/open-modal [:profile :view] {:user-id id})}
+      [:img {:src (profile-picture picture) :alt (str name (t :user/Profilepicture))}]
+      name]]))
 
 (defn space-card [info]
  (let [{:keys [name logo valid_until visibility status ctime]} info]
+   (prn info)
    [:div {:class "col-xs-12 col-sm-6 col-md-4"}
           ;:key id}
     [:div {:class "media grid-container"}
@@ -13,9 +24,9 @@
       [:div.media-content
        [:div.media-left
         (if logo
-          [:img {:src "" ;(profile-picture profile_picture)
+          [:img {:src (profile-picture logo)
                  :alt "" #_(str first_name " " last_name)}]
-          [:i.fa.fa-building-o {:style {:font-size "22px"}}])]
+          [:i.fa.fa-building-o {:style {:font-size "40px" :margin-top "10px"}}])]
        [:div.media-body
         [:div {:class "media-heading profile-heading"}
          name]
