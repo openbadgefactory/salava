@@ -119,6 +119,15 @@
                  :current-user current-user
                  (ok (p/pending-badges ctx (:id current-user))))
 
+            (GET "/pending_badges_first" []
+                 :summary "Check and return first of user's pending badges"
+                 ;:return [:id :- Long]
+                 :auth-rules access/signed
+                 :current-user current-user
+                 (if-let [pending (p/pending-badges-first ctx (:id current-user))]
+                   (ok pending)
+                   (not-found)))
+
             (GET "/issuer/:issuerid" []
                  :return schemas/IssuerContent
                  :path-params [issuerid :- String]

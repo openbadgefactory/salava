@@ -56,6 +56,7 @@ WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
     AND bc.language_code = b.default_language_code
     AND ic.language_code = b.default_language_code
 GROUP BY ub.id
+ORDER BY ub.id
 
 -- name: select-user-badges-to-export
 SELECT ub.id,

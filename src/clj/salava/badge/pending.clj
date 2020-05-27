@@ -1,6 +1,6 @@
 (ns salava.badge.pending
-  (:require [salava.badge.main :refer [fetch-badge badge-issued-and-verified-by-obf user-badges-pending]]
-            [salava.factory.db :refer [save-pending-assertions]]
+  (:require [salava.badge.main :refer [fetch-badge badge-issued-and-verified-by-obf user-badges-pending user-badges-all-p]]
+            [salava.factory.db :refer [save-pending-assertions save-pending-assertion-first]]
             [salava.user.db :refer [email-exists?]]))
 
 (defn pending-badge-content [ctx req]
@@ -16,3 +16,9 @@
 (defn pending-badges [ctx user-id]
   (save-pending-assertions ctx user-id)
   {:pending-badges (user-badges-pending ctx user-id)})
+
+(defn pending-badges-first [ctx user-id]
+  (save-pending-assertion-first ctx user-id)
+  (select-keys
+    (some->> (user-badges-all-p ctx user-id) :badges (filter #(= "pending" (:status %))) first)
+    [:id]))

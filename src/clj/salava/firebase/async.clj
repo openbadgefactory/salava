@@ -63,15 +63,15 @@
     (str (u/get-full-path ctx) "/obpv1/file/as-png?image=" image)
     (str (u/get-site-url ctx) "/" image)))
 
-(defn- notification-content [ctx badge-url]
-  (let [badge  (some-> badge-url http/json-get)
+(defn- notification-content [ctx input]
+  (let [badge  (some-> input vals first first http/json-get :badge http/json-get)
         issuer (some-> badge :issuer http/json-get)
         image  (some->> badge :image (u/file-from-url ctx))]
     (fn [lang]
       (if (and badge issuer image)
         {:title (t :badge/yougotnewbadge lang)
          :image "https://openbadgepassport.com/theme/img/logo.png" ;TODO switch to real badge image (png-convert-url ctx image)
-         :body (str (:name badge) "\n\n" (:name issuer))}
+         :body (str (:name badge) " " (t :badge/fromissuer lang) " " (:name issuer))}
 
         {:title "You got a new Open Badge!"
          :body "Click here to see it."}))))
@@ -81,8 +81,8 @@
     (let [conf (get-in ctx [:config :firebase])
           auth (auth-token conf)
           url (str "/v1/projects/" (:project_id conf) "/messages:send")
-          emails (map name (keys (:email input)))
-          content (notification-content ctx (:badge input))]
+          emails (map name (keys input))
+          content (notification-content ctx input)]
       (doseq [chunk (partition-all 100 emails)]
         (let [body (->> (select-firebase-tokens-by-emails {:emails chunk} (u/get-db ctx))
                         (map (fn [user]
@@ -101,12 +101,3 @@
 
 (defn subscribe [ctx]
   {:new-factory-badge (fn [data] (new-badge-notification ctx data))})
-
-#_(let [ctx {:config {:core {:site-url "http://10.0.2.2:3000"
-                             :base-path "/app"
-                             :data-dir "/var/local/salavadata"}
-                      :firebase (-> "config/firebase.edn" io/resource slurp read-string)}}]
-    (new-badge-notification
-      ctx {:badge "http://localhost:5000/v1/badge/_/Q9AFALa674a2.json?v=2.0&event=Q9AFBWa674a3"
-           :email {"antti@example.com" nil}})
-    )

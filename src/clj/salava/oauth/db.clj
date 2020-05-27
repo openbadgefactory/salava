@@ -141,7 +141,7 @@
   (some->> code_verifier (u/digest "sha256") u/bytes->base64-url))
 
 ;; Expiry time for OAuth access token in seconds. Low value used for debugging.
-(def token-expires 120)
+(def token-expires 600)
 
 (defn new-access-token [ctx client_id auth_code code_verifier]
   (when-let [user (select-oauth2-auth-code-user {:client_id client_id :auth_code auth_code :auth_code_challenge (challenge-hash code_verifier)} (u/get-db-1 ctx))]

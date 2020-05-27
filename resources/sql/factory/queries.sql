@@ -11,13 +11,13 @@ INSERT INTO pending_factory_badge (assertion_url, email, ctime) VALUES (:asserti
 SELECT DISTINCT p.assertion_url, p.email FROM pending_factory_badge AS p
 INNER JOIN user_email AS ue ON p.email = ue.email
 LEFT JOIN user_badge ub ON (ue.user_id = ub.user_id AND p.assertion_url = ub.assertion_url AND ub.deleted = 0)
-WHERE p.assertion_url IS NOT NULL AND ue.user_id = :user_id AND ue.verified = 1
-  AND ub.id IS NULL;
+WHERE p.assertion_url IS NOT NULL AND ue.user_id = :user_id AND ue.verified = 1 AND ub.id IS NULL
+FOR UPDATE;
 
 --name: delete-duplicate-pending-badges!
 DELETE FROM pending_factory_badge
 WHERE email = :email AND assertion_url =
-    (SELECT assertion_url FROM user_badge WHERE user_id = :user_id AND assertion_url = :assertion_url LIMIT 1)
+    (SELECT assertion_url FROM user_badge WHERE user_id = :user_id AND assertion_url = :assertion_url LIMIT 1);
 
 -- --name: select-badge-updates
 -- FIXME (evidence_url)
