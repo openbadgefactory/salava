@@ -1,6 +1,7 @@
 (ns salava.gallery.ui.block
   (:require [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.input :as input]
             [salava.core.ui.badge-grid :refer [badge-grid-element]]
             [salava.core.i18n :refer [t]]
             [reagent.core :refer [atom cursor create-class]]
@@ -10,7 +11,8 @@
             [salava.gallery.ui.profiles :as profiles]
             [reagent-modals.modals :as m]
             [salava.core.ui.modal :as mo]
-            [salava.user.ui.helper :refer [profile-picture]]))
+            [salava.user.ui.helper :refer [profile-picture]]
+            [salava.user.ui.input :refer [email-valid?]]))
 
 (defn init-grid [kind state]
   (ajax/GET
@@ -173,8 +175,8 @@
   (let [country (session/get-in [:user :country] "all")
         filter-options (session/get :filter-options nil)
 
-        common-badges? (if filter-options (:common-badges filter-options) true)
-        {:keys [type selected-users-atom context user_badge_id selfie func]} params
+        common-badges? (if filter-options (:common-badges filter-options) false)
+        {:keys [type selected-users-atom context user_badge_id selfie func external-users-atom]} params
         data-atom (atom {:users []
                          :selected []
                          :ajax-message nil
@@ -187,7 +189,8 @@
                          :url (if (= context "endorsement")
                                (str "/obpv1/gallery/profiles/" user_badge_id "/" context)
                                (str "/obpv1/gallery/profiles"))
-                         :sent-requests []})]
+                         :sent-requests []
+                         :email ""})]
     (create-class {:reagent-render (fn []
                                      [:div
                                       [:div {:id "social-tab"}
@@ -212,7 +215,33 @@
                                                        [:div.col-md-12 {:style {:font-weight "bold"}}
                                                         [:hr.line]
                                                         [:p (t :badgeIssuer/Issueselfiebadgeinfo)]
-                                                        [:hr.line]])]
+                                                        [:hr.line]])
+
+                                                     (when (or (= "endorsement" context) (= context "endorsement_selfie"))
+                                                       [:div.col-md-12 {:style {:margin "20px auto" :padding "10px" :background-color "ghostwhite"}}
+                                                        [:p (t :badge/Aboutexternalendorsements)]
+                                                        [:span {:style {:display "block" :font-weight "600" :font-size "14px" :margin "10px auto"}} [:i.fa.fa-lg.fa-envelope] (t :badge/Externalendorsers)]
+
+                                                        (when (seq @external-users-atom)
+                                                         (reduce (fn [r e]
+                                                                  (conj r [:div.user-item [:span {:style {:font-weight "500" }} e]
+                                                                           [:a {:href "#" :on-click (fn [] (reset! external-users-atom (->> @external-users-atom (remove #(= e %)) vec)))}
+                                                                            [:span.close {:style {:position "unset"} :aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]]))
+                                                                 [:div.selected-users-container]
+                                                                 @external-users-atom))
+
+                                                        [:div.col-md-6 {:style {:padding "unset"}}
+                                                          [:div.input-group
+                                                           [input/text-field {:name "email" :placeholder (t :badge/Inputemail) :atom (cursor data-atom [:email]) :aria-label (t :badge/Inputemail)}]
+                                                           [:span.input-group-btn
+                                                            [:button.btn.btn-primary
+                                                               {:disabled (or (not (email-valid? @(cursor data-atom [:email]))) (some #(= % @(cursor data-atom [:email])) @(cursor data-atom [:user_emails])))
+                                                                :type "button"
+                                                                :style {:margin-top "unset"}
+                                                                :on-click #(when-not (some (fn [e] (= e @(cursor data-atom [:email]))) @external-users-atom)
+                                                                             (reset! external-users-atom (conj @external-users-atom @(cursor data-atom [:email])))
+                                                                             (reset! (cursor data-atom [:email]) ""))}
+                                                               [:i.fa.fa-lg.fa-user-plus {:style {:color "inherit" :font-size "medium" :vertical-align "baseline"}}] (t :core/Add)]]]]])]
 
                                                     (if (or (= context "endorsement") (= context "endorsement_selfie"))
                                                      (->> @(cursor data-atom [:users])
@@ -225,7 +254,7 @@
                                            [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
                                             (when (or (= context "endorsement") (= context "endorsement_selfie"))
                                              [:button.btn.btn-primary {:on-click #(mo/previous-view)
-                                                                       :disabled (empty? @selected-users-atom)}
+                                                                       :disabled (and (empty? @selected-users-atom) (empty? @external-users-atom))}
                                                  (t :core/Continue)])
                                             (when (= context "selfie_issue")
                                              [:div
@@ -244,13 +273,18 @@
                                             (if (= context "endorsement")
                                               (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
                                               (path-for (str "/obpv1/gallery/profiles")))
-                                            {:params {:country (session/get-in [:filter-options :country] country)
-                                                      :name ""
-                                                      :common_badges common-badges?
-                                                      :order_by "ctime"}
+                                            {:params {:country (or @(cursor data-atom [:country-selected]) (session/get-in [:filter-options :country] country))
+                                                      :name (or @(cursor data-atom [:name]) " ")
+                                                      :common_badges (or @(cursor data-atom [:common-badges?]) common-badges?)
+                                                      :order_by (or @(cursor data-atom [:order_by]) "ctime")}
                                              :handler (fn [{:keys [users countries]} data]
                                                         (swap! data-atom assoc :users users
                                                                :countries countries
-                                                               :country-selected (session/get-in [:filter-options :country] country)))
+                                                               :country-selected (or @(cursor data-atom [:country-selected]) (session/get-in [:filter-options :country] country))))
                                              :finally (fn []
-                                                        (swap! data-atom assoc :ajax-message nil))}))})))
+                                                        (swap! data-atom assoc :ajax-message nil)
+                                                        (when (or (= "endorsement" context) (= context "endorsement_selfie"))
+                                                          (ajax/GET
+                                                           (path-for "/obpv1/user/email-addresses")
+                                                           {:handler (fn [data]
+                                                                       (swap! data-atom assoc :user_emails (mapv :email data)))})))}))})))

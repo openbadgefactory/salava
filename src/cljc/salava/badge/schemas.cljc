@@ -32,6 +32,7 @@
                                    (s/optional-key :meta_badge)                 (describe (s/maybe s/Str) "badge is a metabadge")
                                    (s/optional-key :meta_badge_req)             (describe (s/maybe s/Str) "badge is a required part of a metabadge")
                                    (s/optional-key :pending_endorsements_count) (s/maybe s/Int)
+                                   (s/optional-key :pending_ext_endorsements_count) (s/maybe s/Int)
                                    (s/optional-key :endorsement_count)          (s/maybe s/Int)
                                    (s/optional-key :assertion-jws)              (s/maybe s/Str)
                                    (s/optional-key :new_message_count)          (s/maybe s/Int)
@@ -383,54 +384,3 @@
                                   (s/optional-key  :resource_id)   (describe (s/maybe s/Int) "used internally, attached evidence resource id")
                                   (s/optional-key  :mime_type)     (describe (s/maybe s/Str) "used internally, mime type of attached evidence resource")
                                   (s/optional-key  :resource_type) (s/maybe s/Str)})
-
-#_(s/defschema user-endorsement {:id s/Int
-                                 :user_badge_id s/Int
-                                 :content s/Str
-                                 (s/optional-key :status) (s/maybe s/Str)
-                                 (s/optional-key :ctime) (s/maybe s/Int)
-                                 (s/optional-key :mtime) (s/maybe s/Int)
-                                 (s/optional-key :issuer_id) (s/maybe s/Int)
-                                 (s/optional-key :endorsee_id) (s/maybe s/Int)
-                                 (s/optional-key :issuer_name) (s/maybe s/Str)
-                                 (s/optional-key :issuer_url) (s/maybe s/Str)
-                                 (s/optional-key :first_name) s/Str
-                                 (s/optional-key :last_name) s/Str
-                                 (s/optional-key :profile_picture) (s/maybe s/Str)
-                                 (s/optional-key :profile_visibility) (s/enum "internal" "public")
-                                 (s/optional-key :name) (s/maybe s/Str)
-                                 (s/optional-key :image_file) (s/maybe s/Str)
-                                 (s/optional-key :description) (s/maybe s/Str)})
-
-#_(s/defschema endorsement-content {:content (describe (s/constrained s/Str #(and (>= (count %) 5)
-                                                                                  (not (clojure.string/blank? %)))) "Content in markdown format")})
-
-#_(s/defschema pending-endorsement {:id s/Int
-                                    :description (s/maybe s/Str)
-                                    :user_badge_id s/Int
-                                    :profile_picture (describe (s/maybe s/Str) "Issuer's profile picture")
-                                    :issuer_name (describe (s/maybe s/Str) "Issuer's name")
-                                    :issuer_url (s/maybe s/Str)
-                                    :issuer_id s/Int
-                                    :content s/Str
-                                    :name (describe s/Str "Endorsed badge's name")
-                                    :image_file (describe (s/maybe s/Str) "Endorsed badge's image")
-                                    :ctime s/Int})
-
-#_(s/defschema pending-user-endorsements {:endorsements [pending-endorsement]})
-
-#_(s/defschema user-badge-endorsement {:endorsements [user-endorsement]})
-
-#_(s/defschema EndorsementRequest (-> user-endorsement
-                                      (assoc (s/optional-key :issued_on) (s/maybe s/Int)
-                                             (s/optional-key :type) (s/maybe s/Str)
-                                             (s/optional-key :requester_id) s/Int
-                                             (s/optional-key :requestee_id) s/Int
-                                             (s/optional-key :user_id) s/Int
-                                             (s/optional-key :issuer_content_id) s/Str)))
-
-#_(s/defschema AllEndorsements {:given [(s/maybe user-endorsement)]
-                                :received [(s/maybe user-endorsement)]
-                                :requests [(s/maybe EndorsementRequest)]
-                                :sent-requests [(s/maybe EndorsementRequest)]
-                                :all-endorsements [(s/maybe (merge EndorsementRequest user-endorsement))]})

@@ -18,7 +18,8 @@
             [salava.user.ui.terms :as terms]
             [salava.user.ui.delete-user :as delete-user]
             [salava.user.ui.register-complete :as rc]
-            [reagent.session :as session]))
+            [reagent.session :as session]
+            [salava.user.ui.external :as ext]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -43,6 +44,7 @@
                                       ["/terms" terms/handler]
                                       [["/delete-user/" :lang] delete-user/handler]
                                       [["/data/" [#"\d+" :user-id]] data/handler]
+                                      [["/external/data/" [#"\S+" :id]] ext/handler]
                                       ["/registration-complete" rc/handler]]})
 
 (defn about []
