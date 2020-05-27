@@ -67,11 +67,11 @@
                [f meta_badge meta_badge_req]))]]]))
 
 (defn badge-grid-element [element-data state badge-type init-data]
-  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id gallery_id assertion_url meta_badge meta_badge_req endorsement_count user_endorsement_count pending_endorsements_count new_message_count selfie_id]} element-data
+  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id gallery_id assertion_url meta_badge meta_badge_req endorsement_count user_endorsement_count pending_endorsements_count pending_ext_endorsements_count new_message_count selfie_id]} element-data
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))
         obf_url (session/get :factory-url)
-        notification-count (+ new_message_count pending_endorsements_count)
+        notification-count (+ new_message_count pending_endorsements_count pending_ext_endorsements_count)
         endorsementscount (+ endorsement_count user_endorsement_count)]
     [:div {:class "media grid-container" :style {:position "relative"}}
      (cond

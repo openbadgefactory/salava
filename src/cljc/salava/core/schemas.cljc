@@ -28,11 +28,13 @@
                  "endorse_badge"
                  "issue"
                  "create"
-                 "delete")
+                 "delete"
+                 "endorse_badge_ext")
 
    :type (s/enum "badge"
                  "user"
                  "page"
                  "admin"
                  "advert"
-                 "selfie")})
+                 "selfie")
+   (s/optional-key :user-id) (s/maybe s/Int)})

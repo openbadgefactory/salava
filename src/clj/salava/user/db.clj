@@ -1,5 +1,8 @@
 (ns salava.user.db
   (:require [yesql.core :refer [defqueries]]
+            [clojure.tools.logging :as log]
+            [clojure.java.io :as io]
+            [clojure.data.csv :as csv]
             [clojure.java.jdbc :as jdbc]
             [clojure.string :refer [trim split]]
             [slingshot.slingshot :refer :all]
@@ -16,9 +19,12 @@
             [salava.core.time :refer [unix-time]]
             [salava.mail.mail :as m]
             [salava.badge.endorsement :as end]
+            [salava.badge.ext-endorsement :as ext]
             [salava.badgeIssuer.db :as selfie]
             [salava.social.db :as so]
-            [salava.profile.db :as up]))
+            [salava.profile.db :as up]
+            [salava.badge.ext-endorsement :as ext]))
+
 
 (defqueries "sql/user/main.sql")
 
@@ -344,7 +350,10 @@
     (doseq [user-badge-id user-badge-ids]
       (b/delete-badge-with-db! db user-badge-id)
       (b/delete-badge-evidences! db user-badge-id user-id)
-      (b/delete-badge-endorsements! db user-badge-id))))
+      (b/delete-badge-endorsements! db user-badge-id)
+      (b/delete-badge-endorsement-requests! db user-badge-id)
+      (ext/delete-badge-endorsements! db user-badge-id)
+      (ext/delete-badge-endorsement-requests! db user-badge-id))))
 
 (defn delete-user
   "Delete user and all user data"
@@ -392,8 +401,8 @@
            (delete-user! {:id user-id} {:connection tr-cn})
            (update-user-set-deleted! {:first_name "deleted" :last_name "deleted" :id user-id} {:connection tr-cn}))
 
-       (delete-user! {:id user-id} {:connection tr-cn});delete user anyway
-       ){:status "success"})
+       (delete-user! {:id user-id} {:connection tr-cn}));delete user anyway
+      {:status "success"})
     (catch Object _
       {:status "error"}))))
 
@@ -466,9 +475,46 @@
      :endorsers (->> (end/endorsements-received ctx user-id) count)
      :endorsement-requests (->> (end/endorsement-requests ctx user-id) count)
      :pending-endorsements-requests (->> (end/endorsement-requests ctx user-id) (filter #(= "pending" (:status %))) count)
-     :pending-endorsements (->> (end/received-pending-endorsements ctx user-id) count)
+     :pending-endorsements (->> (concat (end/received-pending-endorsements ctx user-id)  (ext/endorsements-received ctx user-id)) count)
      :connections {:badges (->> (so/get-connections-badge ctx user-id) count)}
-   ;:pages_count (->> (p/user-pages-all ctx user-id) count)
-   ;:files_count (->> (f/user-files-all ctx user-id) :files count)
      :user-profile user-profile
      :published_badges_count public-badges-count}))
+
+(defn external-user-info [ctx id]
+  (as-> (first (plugin-fun (get-plugins ctx)  "ext-endorsement" "ext-endorser")) $
+        (if (ifn? $) ($ ctx id) {})))
+
+(defn delete-external-user! [ctx id]
+  (log/info "Request to delete external user id :" id)
+  (try+
+   (as-> (first (plugin-fun (get-plugins ctx) "ext-endorsement" "delete-external-user-endorsements")) $
+         (when (ifn? $) ($ ctx id)))
+   (delete-external-user-info! {:id id} (get-db ctx))
+   (log/info "External user info deleted!")
+   "success"
+   (catch Object _
+     (log/error _)
+     "error")))
+
+(defn export-external-user-data [ctx id lng]
+  (let [endorsements (some->> (ext/all-endorsements ctx id true))
+        #_requests #_(ext/all-requests ctx id true) #_(as-> (first (plugin-fun (get-plugins ctx) "ext-endorsement" "all-requests")) $
+                                                              (if (ifn? $) ($ ctx id true) {}))
+        personal-info (ext/ext-endorser ctx id)
+        data (-> personal-info
+                 (assoc :image_file (str (u/get-site-url ctx)"/" (:image_file personal-info)))
+                 (merge endorsements)
+                 ;(merge requests)
+                 (dissoc :mtime :ctime :id :ext_id)
+                 (clojure.set/rename-keys {:name :Name :url :URL :email :Email :image_file :Logoorpicture}))
+        data->csvformat (reduce-kv
+                          (fn [r k v]
+                            (when v
+                              (if-not (vector? v)
+                                (conj r [(t (keyword (str "badge/" (name k))) lng)  v])
+                                (into r (reduce (fn [_ x] (into _ [[(t (keyword (str "badge/" (t :badge/endorsement))) lng) x]])) [] (into [] v))))))
+                          []
+                          (into {}  (filter second data)))]
+       (fn [out]
+        (with-open [writer (io/writer out)]
+         (csv/write-csv writer data->csvformat :seperator \:)))))

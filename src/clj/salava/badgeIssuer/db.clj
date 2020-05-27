@@ -45,7 +45,7 @@
     (->> badges
          (map #(assoc % :selfie_id (some (fn [b] (when (= (:gallery_id %) (:gallery_id b))
                                                    (:selfie_id b))) _))))))
-  
+   
 (defn insert-create-event! [ctx data]
   (insert-selfie-event<! data (get-db ctx)))
 

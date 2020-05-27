@@ -2,6 +2,7 @@
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
             [ring.util.response :refer [redirect]]
+            [ring.util.io :as io]
             [salava.core.layout :as layout]
             [schema.core :as s]
             [salava.core.util :refer [get-base-path plugin-fun get-plugins]]
@@ -29,8 +30,7 @@
                   :summary "Get statistics"
                   :auth-rules access/admin
                   :current-user current-user
-                  (do
-                    (ok (a/get-stats ctx))))
+                  (ok (a/get-stats ctx (:last-visited current-user))))
 
              (POST "/private_badge/:user_badge_id" []
                    :return (s/enum "success" "error")
@@ -219,6 +219,15 @@
                   :current-user current-user
                   (do
                     (ok (a/get-closed-tickets ctx))))
+
+             (GET  "/export_statistics" []
+                   :summary "Export admin stats to csv format"
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (-> (io/piped-input-stream (a/export-admin-statistics ctx current-user))
+                       ok
+                       (header "Content-Disposition" (str "attachment; filename=\"statistics.csv\""))
+                       (header "Content-Type" "text/csv")))
 
              (POST "/close_ticket/:id" []
                    :return (s/enum "success" "error")

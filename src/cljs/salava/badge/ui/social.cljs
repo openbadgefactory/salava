@@ -41,7 +41,12 @@
   (ajax/GET
    (path-for (str "/obpv1/badge/user_endorsement/request/pending/" (:id @state)))
    {:handler (fn [data]
-               (reset! (cursor dataatom [:sent-requests]) data))}))
+               (reset! (cursor dataatom [:sent-requests]) data))})
+
+  (ajax/GET
+   (path-for (str "/obpv1/badge/user_endorsement/ext_request/pending/" (:id @state)))
+   {:handler (fn [data]
+               (reset! (cursor dataatom [:ext-requests]) data))}))
 
 (defn refresh-social-tab [dataatom state]
   (let [endorsements (cursor state [:user-badge-endorsements])
@@ -116,7 +121,8 @@
         pending-endorsements-count @(cursor state [:pending_endorsements_count])
         request-mode (cursor state [:request-mode])
         hand-icon (if @request-mode "fa-hand-o-down" "fa-hand-o-right")
-        sent-requests (cursor dataatom [:sent-requests])]
+        sent-requests (cursor dataatom [:sent-requests])
+        ext-requests (cursor dataatom [:ext-requests])]
     (create-class
      {:reagent-render
       (fn []
@@ -131,9 +137,11 @@
               (when (and (pos? @(cursor state [:notification])) (pos? pending-endorsements-count)) [:span.badge.social-panel-info  pending-endorsements-count])]
              [:h1 (str (t :badge/Userendorsements) " : "  @(cursor state [:user_endorsement_count]))])
             [:div.row.panel-title {:id "endorsebadge" :style {:margin-bottom "auto" :margin-top "10px"}}
+             [:div.col-md-12 [:b (t :badge/Requestendorsementtip)]]
              [:div.col-md-12.request-link [:a {:href "#"
-                                               :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :reload-fn (do (toggle-panel panel-identity visible-area-atom) (fn [] (get-pending-requests dataatom state)))})}
-                                           [:span [:i {:class (str "fa fa-fw " hand-icon)}] (t :badge/Requestendorsement)]]]]]
+                                               :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :reload-fn (do (toggle-panel panel-identity visible-area-atom) (fn [] (get-pending-requests dataatom state)))} {:shown (fn [] (reset! (cursor state [:external-users]) []))})}
+                                           [:span {:style {:font-size "14.5px" :font-weight "600"}} [:i {:class (str "fa fa-fw " hand-icon)}] (t :badge/Requestendorsement)]]]]]
+
            (when (= @(cursor state [:visible-area]) panel-identity)
              [:div.panel-body.endorsements
               #_[:div.col-md-12.request-link {:id "endorsebadge"} [:a {:href "#"
@@ -144,14 +152,20 @@
               (when @(cursor state [:resp-message])
                 [:div.col-md-12 [:div.alert.alert-success {:style {:margin "15px 0"}} (t :badge/Requestsuccessfullysent)]])
 
-              (when (seq @sent-requests)
+              (when (or (seq @sent-requests) (seq @ext-requests))
                 [:div.col-md-12
                  #_[:hr.border]
-                 (reduce (fn [r u]
-                           (let [{:keys [user_id first_name last_name profile_picture]} u]
-                             (conj r [profile-link-inline-modal user_id first_name last_name profile_picture])))
-                         [:div.col-md-12 {:style {:margin-bottom "20px"}} [:div.row {:style {:margin "5px auto"}} [:span.label.label-primary (t :badge/Alreadysentrequest)]]]
-                         @sent-requests)
+                 (conj (reduce (fn [r u]
+                                 (let [{:keys [user_id first_name last_name profile_picture]} u]
+                                   (conj r [profile-link-inline-modal user_id first_name last_name profile_picture])))
+                               [:div.col-md-12 {:style {:margin-bottom "20px"}} [:div.row {:style {:margin "5px auto"}} [:span.label.label-primary (t :badge/Alreadysentrequest)]]]
+                               @sent-requests)
+                       [:div.col-md-12 {:style {:margin-top "10px"}} (reduce (fn [r u]
+                                                                               (let [{:keys [issuer_email]} u]
+                                                                                 (conj r [:li [:b issuer_email]])))
+                                                                             [:ul {:style {:padding "unset"}}]
+                                                                             @ext-requests)])
+
                  (when (or (pos? pending-endorsements-count) (pos? @(cursor state [:user_endorsement_count]))) [:hr.border.dotted-border])])
 
               (into [:div.col-md-12 {:style {:margin-top "20px"}}]

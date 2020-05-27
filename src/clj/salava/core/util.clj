@@ -67,6 +67,8 @@
 (defn get-plugins [ctx]
   (get-in ctx [:config :core :plugins] []))
 
+(defn get-factory-url [ctx]
+  (get-in ctx [:config :factory :url] "https://openbadgefactory.com/"))
 
 (defn base64->bytes [input]
   (.decode (Base64/getDecoder) input))
@@ -270,7 +272,6 @@
 
 
 (defn publish [ctx topic data]
-  (validate schemas/PublishEvent data)
   (if-not (map? data)
     (throw (IllegalArgumentException. "Publish: Data must be a map")))
   (if-not  (keyword? topic)

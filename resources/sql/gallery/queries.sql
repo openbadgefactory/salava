@@ -379,6 +379,16 @@ WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
 ORDER BY ub.ctime DESC
 LIMIT 100000;
 
+--name: select-gallery-ids-selfie
+SELECT DISTINCT ub.gallery_id FROM user_badge ub
+INNER JOIN selfie_badge sb ON ub.selfie_id = sb.id
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+    AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
+    AND ub.selfie_id IS NOT NULL AND (:country = 'all' OR u.country = :country)
+ORDER BY ub.ctime DESC
+LIMIT 100000;
+
 --name: select-gallery-id
 SELECT ub.gallery_id FROM user_badge ub
 WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0

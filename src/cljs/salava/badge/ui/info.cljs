@@ -16,7 +16,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [path-for private? hyperlink url? plugin-fun]]
+            [salava.core.ui.helper :refer [path-for private? hyperlink url? plugin-fun disable-background-image]]
             [salava.core.time :refer [date-from-unix-time unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -28,14 +28,23 @@
             [salava.metabadge.ui.metabadge :refer [metabadge]]
             [salava.badge.ui.evidence :refer [evidence-icon]]
             [dommy.core :as dommy :refer-macros [sel1]]
-            [salava.translator.ui.helper :refer [translate]]))
+            [salava.translator.ui.helper :refer [translate]]
+            [cemerick.url :as url]
+            [clojure.walk :refer [keywordize-keys]]
+            [salava.badge.ui.ext-endorsement :as ext]))
+
+(defn init-owner-profile-visibility [user-id state]
+  (ajax/GET
+   (path-for (str "/obpv1/profile/user/visibility/" user-id))
+   {:handler (fn [data] (reset! (cursor state [:profile_visibility]) data))}))
 
 (defn init-endorsement-count [id state]
   (ajax/GET
    (path-for (str "/obpv1/badge/user_endorsement/count/" id))
    {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
 
-(defn init-data [state id]
+(defn init-data
+ ([state id]
   (ajax/GET
    (path-for (str "/obpv1/badge/info/" id))
    {:handler (fn [data]
@@ -44,8 +53,23 @@
                                     :initializing false
                                     :content-language (init-content-language (:content data))
                                     :permission "success"))
-               (init-endorsement-count id state))}
+               (init-endorsement-count id state)
+               (init-owner-profile-visibility (:user_id data) state))}
    (fn [] (swap! state assoc :permission "error"))))
+
+ ([state id endorser-id]
+  (ajax/GET
+   (path-for (str "/obpv1/badge/info/" id))
+   {:handler (fn [data]
+               (reset! state (assoc data :id id
+                                    :show-link-or-embed-code nil
+                                    :initializing false
+                                    :content-language (init-content-language (:content data))
+                                    :permission "success"))
+               (init-endorsement-count id state)
+               (init-owner-profile-visibility (:user_id data) state)
+               (reset! (cursor state [:endorser-id]) endorser-id))}
+   (fn [] (swap! state assoc :permission "error")))))
 
 (comment
   (defn toggle-visibility [state]
@@ -137,11 +161,13 @@
                 creator_image creator_description message_count endorsement_count default_language_code]} (content-setter @selected-language content)
         evidences (remove #(= true (get-in % [:properties :hidden])) evidences)
         lng (->> (remove blank? (list @(cursor state [:content-language]) default_language_code "en")) first)]
-    (if (= lng "ar") (dommy/set-attr! (sel1 :html) :dir "rtl") (dommy/set-attr! (sel1 :html) :dir "ltr"))
+    (if (or (= (session/get-in [:user :language]) "ar") (= lng "ar")) (dommy/set-attr! (sel1 :html) :dir "rtl") (dommy/set-attr! (sel1 :html) :dir "ltr"))
+    (when (and (not user-logged-in?) (:endorser-id @state)) (disable-background-image))
     [:div {:id "badge-info"}
      [m/modal-window]
      [:div.panel
       [:div.panel-body
+       [ext/language-switcher state]
        (comment
          (if (and owner? (not expired?) (not revoked))
            [:div {:class "row" :id "badge-share-inputs"}
@@ -262,7 +288,9 @@
            (if (pos? @show-recipient-name-atom)
              (if (and user-logged-in? (not owner?))
                [:div [:span._label (t :badge/Recipient) ": "] [:a.link {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
-               [:div [:span._label (translate lng :badge/Recipient) #_(t :badge/Recipient) ": "]  first_name " " last_name]))
+               (if (and (= "public" @(cursor state [:profile_visibility])) (= 2 @show-recipient-name-atom))
+                 [:div [:span._label (translate lng :badge/Recipient) ": "] [:a.link {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:profile :view] {:user-id owner}))} #_{:href (path-for (str "/profile/" owner))} first_name " " last_name]]
+                 [:div [:span._label (translate lng :badge/Recipient) ": "]  first_name " " last_name])))
 
            #_[:div [metabadge (:assertion_url @state)]]
 
@@ -270,6 +298,9 @@
 
           ;check-badge-link
            (check-badge id lng)
+
+           ;external endorsement
+           [ext/ext-endorse-badge state]
 
            (when-not (empty? alignment)
              [:div.row
@@ -310,17 +341,23 @@
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)
+        endorser-id (-> js/window .-location .-href url/url :query keywordize-keys :endorser)
         state (atom {:initializing true
-                     :permission "initial"})
+                     :permission "initial"
+                     :endorser-id endorser-id})
 
         user (session/get :user)]
-    (init-data state id)
+    (if endorser-id
+     (init-data state id endorser-id)
+     (init-data state id))
+
     (fn []
 
       (cond
         (= "initial" (:permission @state)) [:div]
         (and user (= "error" (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
         (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
+        (and (= "success" (:permission @state)) (:endorser-id @state) ) (layout/landing-page site-navi (content state))
         (and (= "success" (:permission @state)) (:owner? @state) user) (layout/default site-navi (content state))
         (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))
         :else (layout/landing-page site-navi (content state))))))

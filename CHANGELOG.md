@@ -1,4 +1,21 @@
 # Changelog
+## 3.11.1
+- Bug fixes
+- Minor ui improvements
+
+## 3.11.0
+- External endorsements
+
+## 3.10.2
+- Fixed French translations
+- Added option to show name as link to owner profile in shared badges
+- Added show only badges issued by users filter in explore badges
+
+## 3.10.1
+- Fixed active users count in admin statistics
+
+## 3.10.0
+- Revamped admin statistics page
 
 ## 3.9.1
 - Fixed sharing badge to LinkedIn issue
