@@ -10,7 +10,8 @@
 (defrecord Space_member [id user_id space_id role default_space])
 (defrecord Pending_admin [id space_id email])
 
-(defn save-space-properties [ctx space])
+(defn save-space-properties [ctx id properties])
+  ;(let [existing-properties (-> (select-space-properties {:space_id }))]))
 
 (defn create-space-admin!
   "Adds existing user as a space member and sets role to admin

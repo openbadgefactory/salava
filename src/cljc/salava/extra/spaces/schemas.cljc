@@ -10,8 +10,8 @@
 (s/defschema space {:uuid s/Str
                     :name s/Str
                     :alias s/Str
-                    :description (s/maybe s/Str)
-                    (s/optional-key :logo )(s/maybe s/Str)
+                    :description s/Str
+                    (s/optional-key :logo)(s/maybe s/Str)
                     (s/optional-key :banner) (s/maybe s/Str)
                     :visibility (s/enum "public" "private")
                     :status (s/enum "active" "suspended")

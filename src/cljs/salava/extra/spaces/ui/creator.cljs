@@ -9,21 +9,21 @@
    [salava.core.ui.input :refer [text-field textarea]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]
-   [salava.extra.spaces.ui.helper :refer [upload-modal profile-link-inline-modal]]))
+   [salava.extra.spaces.ui.helper :refer [upload-modal profile-link-inline-modal create-space]]))
 
-(defn create-space [state]
-  (ajax/POST
-   (path-for "/obpv1/spaces/create")
-   {:params (-> @(cursor state [:space])
-                (assoc :admins (mapv :id @(cursor state [:space :admins]))))
-    :handler (fn [data]
-              (when (= (:status data) "error")
-                (m/modal! (upload-modal data) {}))
-              (when (= (:status data) "success")
-                (navigate-to "admin/spaces")))}))
+#_(defn create-space [state]
+    (ajax/POST
+     (path-for "/obpv1/spaces/create")
+     {:params (-> @(cursor state [:space])
+                  (assoc :admins (mapv :id @(cursor state [:space :admins]))))
+      :handler (fn [data]
+                (when (= (:status data) "error")
+                  (m/modal! (upload-modal data) {}))
+                (when (= (:status data) "success")
+                  (navigate-to "admin/spaces")))}))
 
 (defn send-file [id state type]
-  (let [file (-> (.querySelector js/document "#picture-upload")
+  (let [file (-> (.querySelector js/document id)
                  .-files
                  (.item 0))
         form-data (doto
@@ -39,7 +39,7 @@
                      nil)]
     (reset! alert-atom true)
     (ajax/POST
-     (path-for (str "/obpv1/badge/user_endorsement/ext_request/endorser/upload_image"))
+     (path-for (str "/obpv1/spaces/upload_image/" (name type)))
      {:body    form-data
       :handler (fn [data]
                  (if (= (:status data) "success")
@@ -96,15 +96,15 @@
               [:span.fa.fa-spin.fa-cog.fa-2x])]
            [:div {:style {:margin "5px" :width "100px"}}
             [:span {:class "btn btn-primary btn-file btn-bulky"}
-             [:input {:id "picture-upload"
+             [:input {:id "logo-upload"
                       :type       "file"
                       :name       "file"
-                      :on-change  #(send-file nil state :logo)
+                      :on-change  #(send-file "#logo-upload" state :logo)
                       :accept     "image/png"}]
              [:span (t :file/Upload)]]]]
           [:div.form-group
            [:label {:for "input-banner"} (t :extra-spaces/Banner)]
-           [:p (t :extra-spaces/Uploadbannerinstructions)]
+
            [:div {:style {:margin "5px"}}
             (if-not @(cursor state [:uploading-banner])
               (if-not (blank? @(cursor state [:space :banner]))
@@ -113,14 +113,14 @@
                              (str "/" banner))
                       :alt "image"}]
                       ;:style {:width "100px" :height "auto"}}]
-               [:i.fa.fa-building {:style {:font-size "60px" :color "#757575"}}])
+               [:div.input-banner [:p (t :extra-spaces/Uploadbannerinstructions)]])
               [:span.fa.fa-spin.fa-cog.fa-2x])]
            [:div {:style {:margin "5px" :width "100px"}}
             [:span {:class "btn btn-primary btn-file btn-bulky"}
-             [:input {:id "picture-upload"
+             [:input {:id "banner-upload"
                       :type       "file"
                       :name       "file"
-                      :on-change  #(send-file nil state :banner)
+                      :on-change  #(send-file "#banner-upload" state :banner)
                       :accept     "image/png"}]
              [:span (t :file/Upload)]]]]
           [:div.form-group
@@ -128,7 +128,7 @@
            [:input#p-color.form-control
             {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
              :type "color"
-             ;:value "#000000"
+             :value @(cursor state [:space :properties :css :p-color])
              :on-change #(do
                            (.preventDefault %)
                            (reset! (cursor state [:space :properties :css :p-color]) (.-target.value %)))}]]
@@ -137,7 +137,7 @@
            [:input#s-color.form-control
             {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
              :type "color"
-             ;:value "#000000"
+             :value @(cursor state [:space :properties :css :s-color])
              :on-change #(do
                            (.preventDefault %)
                            (reset! (cursor state [:space :properties :css :s-color]) (.-target.value %)))}]]
@@ -147,7 +147,7 @@
            [:input#t-color.form-control
             {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
              :type "color"
-             ;:value "#000000"
+             :value @(cursor state [:space :properties :css :t-color])
              :on-change #(do
                            (.preventDefault %)
                            (reset! (cursor state [:space :properties :css :t-color]) (.-target.value %)))}]]

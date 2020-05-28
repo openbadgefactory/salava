@@ -60,6 +60,16 @@
     max-width: 500px;
   }
    div#add-element-icon {
-          font-size: 25px;
+          vertical-align: middle;
+          font-size: 40px;
         }
+
+
 }
+
+  div.input-banner {
+    width: 640px;
+    height: 120px;
+    border: 4px dashed #9e9e9e;
+    padding: 3px;
+  }
