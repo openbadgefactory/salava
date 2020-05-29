@@ -61,6 +61,7 @@
           user-badge (p/str->badge {:id user-id :emails user-emails} (:assertion_url pending-assertion))
           id (db/save-user-badge! ctx user-badge tx)]
       (delete-duplicate-pending-badges! (assoc pending-assertion :user_id user-id) {:connection tx})
+      (u/publish ctx :new-pending-badge (assoc pending-assertion :id id))
       id)
     (catch Exception ex
       (log/error "save-pending-assertions: failed to save badge")
@@ -70,29 +71,21 @@
 (defn save-pending-assertion-first
   "Save one of user's pending assertions"
   [ctx user-id]
-  (let [metabadge-fn (first (u/plugin-fun (u/get-plugins ctx) "metabadge" "pending-metabadge?"))
-        [user-badge-id pending-assertion]
-        (jdbc/with-db-transaction [tx {:datasource (:db ctx)}]
-          (loop [pending-assertions (select-pending-badges-by-user {:user_id user-id} {:connection tx})]
-            (when-let [pending-assertion (first pending-assertions)]
-              (if-let [id (save-pending-assertion ctx tx user-id pending-assertion)]
-                [id pending-assertion]
-                (recur (rest pending-assertions))))))]
-    (when (and metabadge-fn pending-assertion user-badge-id)
-      (metabadge-fn ctx (assoc pending-assertion :user_id user-id) user-badge-id))))
+  (jdbc/with-db-transaction [tx {:datasource (:db ctx)}]
+    (loop [pending-assertions (select-pending-badges-by-user {:user_id user-id} {:connection tx})]
+      (when-let [pending-assertion (first pending-assertions)]
+        (if-let [id (save-pending-assertion ctx tx user-id pending-assertion)]
+          [id pending-assertion]
+          (recur (rest pending-assertions)))))))
 
 
 (defn save-pending-assertions
   "Save all pending assertions"
   [ctx user-id]
-  (let [metabadge-fn (first (u/plugin-fun (u/get-plugins ctx) "metabadge" "pending-metabadge?"))
-        pending (jdbc/with-db-transaction [tx {:datasource (:db ctx)}]
-                  (mapv (fn [pending-assertion]
-                          [(save-pending-assertion ctx tx user-id pending-assertion) pending-assertion])
-                        (select-pending-badges-by-user {:user_id user-id} {:connection tx})))]
-    (doseq [[user-badge-id pending-assertion] pending]
-      (when (and metabadge-fn pending-assertion user-badge-id)
-        (metabadge-fn ctx (assoc pending-assertion :user_id user-id) user-badge-id)))))
+  (jdbc/with-db-transaction [tx {:datasource (:db ctx)}]
+    (doseq [pending-assertion (select-pending-badges-by-user {:user_id user-id} {:connection tx})]
+      (save-pending-assertion ctx tx user-id pending-assertion))))
+
 
 #_(defn get-badge-updates
     ""
