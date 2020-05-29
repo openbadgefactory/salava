@@ -1,14 +1,25 @@
 (ns salava.extra.spaces.ui.helper
  (:require
+  [clojure.string :refer [blank? join split replace lower-case]]
   [reagent.core :refer [atom cursor]]
   [reagent-modals.modals :as m]
   [salava.core.ui.ajax-utils :as ajax]
   [salava.core.i18n :refer [t translate-text]]
   [salava.core.time :refer [date-from-unix-time]]
-  [salava.core.ui.helper :refer [input-valid? path-for]]
+  [salava.core.ui.helper :refer [input-valid? path-for navigate-to]]
   [salava.core.ui.modal :as mo]
   [salava.user.ui.helper :refer [profile-picture]]
   [salava.extra.spaces.schemas :as schemas]))
+
+(defn generate-alias [state]
+  (when-let [x (not (blank?  @(cursor state [:space :name])))]
+    (reset! (cursor state [:space :alias])
+        (as-> @(cursor state [:space :name]) $
+              (replace $ #" " "")
+              (lower-case $)
+              (if (> (count $) 15) (clojure.string/join (take 10 $)) $)))))
+
+
 
 (defn validate-inputs [s space]
   (doall
@@ -39,6 +50,26 @@
               :data-dismiss "modal"}
      "OK"]]])
 
+(defn upload-modal [{:keys [status message reason]}]
+  [:div
+   [:div.modal-header
+    [:button {:type "button"
+              :class "close"
+              :data-dismiss "modal"
+              :aria-label "OK"}
+     [:span {:aria-hidden "true"
+             :dangerouslySetInnerHTML {:__html "&times;"}}]]
+    [:h4.modal-title (translate-text message)]]
+   [:div.modal-body
+    [:div {:class (str "alert " (if (= status "error")
+                                  "alert-warning"
+                                  "alert-success"))}
+     (translate-text message)]]
+   [:div.modal-footer
+    [:button {:type "button"
+              :class "btn btn-primary"
+              :data-dismiss "modal"}
+     "OK"]]])
 
 (defn create-space [state]
   (reset! (cursor state [:error-message]) nil)
@@ -73,11 +104,11 @@
       name]]))
 
 (defn space-card [info]
- (let [{:keys [name logo valid_until visibility status ctime]} info]
+ (let [{:keys [id name logo valid_until visibility status ctime]} info]
    [:div {:class "col-xs-12 col-sm-6 col-md-4"}
           ;:key id}
     [:div {:class "media grid-container"}
-     [:a {:href "#"} ;:on-click #(mo/open-modal [:profile :view] {:user-id id}) :style {:text-decoration "none"}}
+     [:a {:href "#" :on-click #(mo/open-modal [:space :info] {:id id}) :style {:text-decoration "none"}}
       [:div.media-content
        [:div.media-left
         (if logo
@@ -95,23 +126,3 @@
            (t :gallery/ownprofile)
            [:span common_badge_count " " (if (= common_badge_count 1)
                                            (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]))
-(defn upload-modal [{:keys [status message reason]}]
-  [:div
-   [:div.modal-header
-    [:button {:type "button"
-              :class "close"
-              :data-dismiss "modal"
-              :aria-label "OK"}
-     [:span {:aria-hidden "true"
-             :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    [:h4.modal-title (translate-text message)]]
-   [:div.modal-body
-    [:div {:class (str "alert " (if (= status "error")
-                                  "alert-warning"
-                                  "alert-success"))}
-     (translate-text message)]]
-   [:div.modal-footer
-    [:button {:type "button"
-              :class "btn btn-primary"
-              :data-dismiss "modal"}
-     "OK"]]])

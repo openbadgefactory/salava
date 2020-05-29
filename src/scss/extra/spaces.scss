@@ -73,3 +73,31 @@
     border: 4px dashed #9e9e9e;
     padding: 3px;
   }
+
+#space {
+  .space-img {
+    width:80px;
+    height:auto;
+  }
+  .banner-container {
+    max-width: 640px;
+    height: 120px;
+    padding: 8px;
+    margin: 10px auto;
+    border: 2px dotted #ddd;
+
+    img {
+    max-width: 640px;
+    height: 100px;
+    }
+  }
+
+  .color-span {
+    display: inline-block;
+    width: 50px;
+    height: 15px;
+    border-radius: 4px;
+    margin: 0 5px;
+    padding: 3px;
+  }
+}

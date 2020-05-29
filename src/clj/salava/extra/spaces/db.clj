@@ -2,6 +2,7 @@
   (:require [yesql.core :refer [defqueries]]
             [salava.core.util :as u]
             [clojure.java.jdbc :as jdbc]
+            [clojure.data.json :as json]
             [salava.extra.spaces.util :refer [save-image!]]
             [clojure.tools.logging :as log]
             [slingshot.slingshot :refer :all]))
@@ -10,8 +11,16 @@
 (defrecord Space_member [id user_id space_id role default_space])
 (defrecord Pending_admin [id space_id email])
 
-(defn save-space-properties [ctx id properties])
-  ;(let [existing-properties (-> (select-space-properties {:space_id }))]))
+(defn space-property [ctx id property]
+  (when-let [value (select-space-property {:id id :name property} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))]
+    (json/read-str value :key-fn keyword)))
+
+(defn save-space-property [ctx id property value]
+  (insert-space-property! {:space_id id :name property :value (json/write-str value)} (u/get-db ctx)))
+
+(defn space-admins [ctx id]
+  (prn (select-space-admins {:space_id id} (u/get-db ctx)))
+  (select-space-admins {:space_id id} (u/get-db ctx)))
 
 (defn create-space-admin!
   "Adds existing user as a space member and sets role to admin
@@ -27,6 +36,11 @@
   "check if space name already exists"
   [ctx space]
   (if (empty? (select-space-by-name {:name (:name space)} (u/get-db ctx))) false true))
+
+(defn get-space-information [ctx id]
+  (assoc (select-space-by-id {:id id} (into {:result-set-fn first} (u/get-db ctx)))
+    :css (space-property ctx id "css")
+    :admins (space-admins ctx id)))
 
 (defn create-new-space!
  "Initializes space and creates admins"
@@ -45,6 +59,8 @@
    (doseq [$ (:admins space)
             :let [email (if (number? $) (select-primary-address {:id $} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
           (create-space-admin! ctx space_id email))
+   (when (:css space) (prn (:css space) "sdasdsd")(save-space-property ctx space_id "css" (:css space)))
+
    (log/info "Finished creating space!")))
   ;{:status "success"}
  #_(catch Object _
@@ -65,7 +81,7 @@
           (delete-space-properties! {:space_id id} {:connection tx}))))
 
 (defn all-spaces [ctx]
-  (select-all-spaces {} (u/get-db ctx)))
+ (select-all-spaces {} (u/get-db ctx)))
 
 (defn active-spaces [ctx]
   (select-all-active-spaces {} (u/get-db ctx)))

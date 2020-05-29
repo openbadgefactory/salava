@@ -34,7 +34,10 @@ SELECT * FROM space WHERE uuid = :uuid
 SELECT * FROM space WHERE name = :name
 
 --name: select-space-admins
-SELECT * FROM user_space WHERE space_id = :space_id AND role = 'admin'
+SELECT us.user_id AS id, us.space_id, us.default_space, u.first_name, u.last_name, u.profile_picture
+FROM user_space us
+JOIN user u ON us.user_id = u.id
+WHERE us.space_id = :space_id AND us.role = 'admin'
 
 --name: select-pending-space-admins
 SELECT * FROM space_admin_pending WHERE space_id = :space_id
@@ -48,5 +51,11 @@ DELETE FROM user_space WHERE space_id = :space_id
 --name:delete-space-properties!
 DELETE FROM space_properties WHERE space_id = :space_id
 
---name: select-primary-address 
+--name: select-primary-address
 SELECT email FROM user_email WHERE user_id = :id AND primary_address = 1
+
+--name: select-space-property
+SELECT value FROM space_properties WHERE space_id = :id AND name = :name
+
+--name: insert-space-property!
+REPLACE INTO space_properties (space_id, name, value) VALUES (:space_id, :name, :value)

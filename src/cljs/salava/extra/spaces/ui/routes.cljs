@@ -3,7 +3,8 @@
    [salava.core.i18n :refer [t]]
    [salava.core.ui.helper :refer [base-path]]
    [salava.extra.spaces.ui.creator :as sc]
-   [salava.extra.spaces.ui.my :as my]))
+   [salava.extra.spaces.ui.my :as my]
+   [salava.extra.spaces.ui.modal :as modal]))
 
 
 (defn ^:export routes [context]
@@ -12,4 +13,5 @@
 
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Organizations) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Organizations)}}) ;:about (:selfie (about))}})
+  {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces)} ;:about (:selfie (about))}})
+   (str (base-path context) "/admin/spaces/creator") {:weight 200 :title (t :extra-spaces/CreateSpace) :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces " / " :extra-spaces/CreateSpace)}})

@@ -24,13 +24,22 @@
             (GET "/" []
                   :auth-rules access/admin
                   :summary "Get all spaces"
+                  :current-user current-user
                   (ok (db/all-spaces ctx)))
+
+            (GET "/:id" []
+                  :auth-rules access/admin
+                  :summary "Get space"
+                  :path-params [id :- s/Int]
+                  :current-user current-user
+                  (ok (space/get-space ctx id)))
 
             (POST "/create" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
                   :body [space schemas/create-space]
                   :auth-rules access/admin
                   :summary "Create new space"
+                  :current-user current-user
                   (ok (space/create! ctx space)))
 
             (POST "/suspend/:id" []

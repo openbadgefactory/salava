@@ -4,18 +4,19 @@
   [yesql.core :refer [defqueries]]
   [salava.extra.spaces.db :as db]
   [salava.extra.spaces.util :as u]
-  [slingshot.slingshot :refer :all]))
+  [slingshot.slingshot :refer :all]
+  [salava.core.time :refer [get-date-from-today]]))
 
 (defqueries "sql/extra/spaces/main.sql")
 
 (defrecord Space [id uuid name description status visibility logo banner alias valid_until])
-;;validate data with specs?
 
 (defn create! [ctx space]
  (try+
-   (let [{:keys [name description status visibility logo banner admins alias valid_until properties]} space
-         space (->Space nil (u/uuid) name description "active" "public" logo banner alias nil)]
-    (db/create-new-space! ctx (assoc space :admins admins)) ;:admin admin))
+   (let [{:keys [name description status visibility logo banner admins alias valid_until css]} space
+         valid_until (get-date-from-today 12 0 0)
+         space (->Space nil (u/uuid) name description "active" "public" logo banner alias valid_until)]
+    (db/create-new-space! ctx (assoc space :admins admins :css css)) ;:admin admin))
     {:status "success"})
    (catch Object _
      (log/error "error: " _) ;(.getMessage _))
@@ -33,7 +34,8 @@
 (defn edit! [space-id])
 (defn suspend! [ctx space-id])
 (defn switch [space-id])
-
+(defn get-space [ctx id]
+  (db/get-space-information ctx id))
 
 
 (def space [:id :uuid :name :description :logo :banner :status :visibility :ctime :mtime :last-modified-by])
