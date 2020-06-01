@@ -16,10 +16,10 @@
     (json/read-str value :key-fn keyword)))
 
 (defn save-space-property [ctx id property value]
+  (prn id)
   (insert-space-property! {:space_id id :name property :value (json/write-str value)} (u/get-db ctx)))
 
 (defn space-admins [ctx id]
-  (prn (select-space-admins {:space_id id} (u/get-db ctx)))
   (select-space-admins {:space_id id} (u/get-db ctx)))
 
 (defn create-space-admin!
@@ -59,13 +59,19 @@
    (doseq [$ (:admins space)
             :let [email (if (number? $) (select-primary-address {:id $} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
           (create-space-admin! ctx space_id email))
-   (when (:css space) (prn (:css space) "sdasdsd")(save-space-property ctx space_id "css" (:css space)))
+   (when (:css space) (save-space-property ctx space_id "css" (:css space)))
 
    (log/info "Finished creating space!")))
   ;{:status "success"}
  #_(catch Object _
     (log/error "Error, No space admin defined")
     {:status "error"}))
+
+(defn update-space-info [ctx id space user-id]
+  (let [data (assoc space :id id :user_id user-id :last_modified_by user-id :logo (if (re-find #"^data:image" (:logo space)) (save-image! ctx (:logo space)) (:logo space)))]
+    (prn space)
+    (update-space-information! data (u/get-db ctx))
+    (when (:css space) (save-space-property ctx id "css" (:css data)))))
 
 (defn space-id [ctx id]
  (if (uuid? (java.util.UUID/fromString id)) (some-> (select-space-by-uuid {:uuid id} (u/get-db ctx)) :id) id))

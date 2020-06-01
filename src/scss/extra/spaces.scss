@@ -6,7 +6,7 @@
     border: 1px solid #d2d2d2;
     box-shadow: 0 4px 0 #dcdcdc;
     -webkit-box-shadow: 0 4px 0 #dcdcdc;
-    padding: 12px;
+    padding: 8px;
     margin-bottom: 20px;
     margin-top: 0;
     line-height: 1.4;
@@ -14,7 +14,11 @@
     max-width: 280px;
     min-width: 250px;
     height: auto;
-    padding: 10px 15px;
+    //padding: 10px 15px;
+    border-radius: 4px;
+    min-height: 110px;
+    color: $text-color;
+
 
     .media-content {
       height: 65px;
@@ -39,9 +43,52 @@
 
       .media-profile {
         font-size: 12px;
+        padding-left: 4px;
+
+        .banner {
+          text-align: center;
+          width: inherit;
+          max-height: 120px;
+          img {
+            height: auto;
+          }
+
+        }
+
+        .blob {
+          background: black;
+          border-radius: 50%;
+          box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+          margin-right: 3px;
+          height: 10px;
+          width: 10px;
+          transform: scale(1);
+          animation: pulse 2s infinite;
+          display: inline-block;
+
+
+         }
+        .blob.active {
+          	background: rgba(51, 217, 178, 1);
+            box-shadow: 0 0 0 0 rgba(51, 217, 178, 1);
+            animation: pulse-active 2s infinite;
+
+        }
+
+        .blob.suspended {
+          	background: rgba(255, 121, 63, 1);
+            box-shadow: 0 0 0 0 rgba(255, 121, 63, 1);
+            animation: pulse-suspended 2s infinite;
+        }
+
+        .status {
+          font-family: monospace;
+          color: $text-color;
+          margin: 2px;
+        }
 
         .join-date {
-          color: $green;
+          color: #757575; //$green;
         }
       }
     }
@@ -52,6 +99,7 @@
       color: $text-color;
     }
   }
+
 }
 
 #space-gallery
@@ -79,7 +127,19 @@
     width:80px;
     height:auto;
   }
-  .banner-container {
+
+
+  .color-span {
+    display: inline-block;
+    width: 50px;
+    height: 15px;
+    border-radius: 4px;
+    margin: 0 5px;
+    padding: 3px;
+  }
+}
+
+  .space-banner-container {
     max-width: 640px;
     height: 120px;
     padding: 8px;
@@ -92,12 +152,36 @@
     }
   }
 
-  .color-span {
-    display: inline-block;
-    width: 50px;
-    height: 15px;
-    border-radius: 4px;
-    margin: 0 5px;
-    padding: 3px;
-  }
+@keyframes pulse-active {
+0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(51, 217, 178, 0.7);
+	}
+
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 10px rgba(51, 217, 178, 0);
+	}
+
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(51, 217, 178, 0);
+	}
+}
+
+@keyframes pulse-suspended {
+  0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(255, 121, 63, 0.7);
+	}
+
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 10px rgba(255, 121, 63, 0);
+	}
+
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(255, 121, 63, 0);
+	}
 }

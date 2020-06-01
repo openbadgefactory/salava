@@ -10,7 +10,7 @@
    [salava.core.ui.input :refer [text-field textarea]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]
-   [salava.extra.spaces.ui.helper :refer [upload-modal profile-link-inline-modal create-space generate-alias]]))
+   [salava.extra.spaces.ui.helper :refer [upload-modal profile-link-inline-modal create-space edit-space generate-alias]]))
 
 #_(defn create-space [state]
     (ajax/POST
@@ -49,188 +49,47 @@
                      (reset! alert-atom false))
                   (m/modal! (upload-modal data) {:hidden #(reset! alert-atom false)})))})))
 
-(defn modal-content [state]
-  (let [{:keys [logo banner]} @(cursor state [:space])]
-    [:div
-     [:div.row
-      [:div.col-md-12
-       [:p (t :extra-spaces/Createinstructions)]]
-
-      [:div.col-md-12
-       [:div.panel.panel-default
-        [:div.panel-heading]
-        [:div.panel-body
-         [:div.col-md-12.panel-section
-          [:form.form-horizontal
-           [:div.form-group
-            [:label {:for "input-name"} (t :extra-spaces/Organizationname) [:span.form-required " *"]]
-            [:input#input-name.form-control ;text-field
-             {:name "name"
-              :value @(cursor state [:space :name])
-              :placeholder (t :extra-spaces/Inputorganizationname)
-              :on-change #(do
-                            (reset! (cursor state [:space :name]) (.-target.value %))
-                            (generate-alias state))}]]
-                            ;(when (clojure.string/blank? @(cursor state [:space :alias])) (generate-alias state)))}]]
-           [:div.form-group
-            [:label {:for "input-alias"} (t :extra-space/Alias) [:span.form-required " *"]]
-            [:div.input-group
-             [:span.input-group-addon (str (str (session/get :site-url) " " (session/get :base-path) "/"))]
-             [text-field
-              {:name "alias"
-               :atom (cursor state [:space :alias])
-               :placeholder (t :extra-spaces/Inputalias)}]]]
-           [:div.form-group
-            [:label {:for "input-description"} (t :extra-spaces/Description) [:span.form-required " *"]]
-            [textarea
-             {:name "description"
-              :atom (cursor state [:space :description])
-              :placeholder (t :extra-spaces/Inputdescription)}]]
-           [:div.form-group
-            [:label {:for "input-logo"} (t :extra-spaces/Logo)]
-            [:p (t :extra-spaces/Uploadlogoinstructions)]
-            [:div {:style {:margin "5px"}}
-             (if-not @(cursor state [:uploading-logo])
-               (if-not (blank? @(cursor state [:space :logo]))
-                [:img {:src (if (re-find #"^data:image" logo)
-                              logo
-                              (str "/" logo))
-                       :alt "image"
-                       :style {:width "100px" :height "auto"}}]
-                [:i.fa.fa-building {:style {:font-size "60px" :color "#757575"}}])
-               [:span.fa.fa-spin.fa-cog.fa-2x])]
-            [:div {:style {:margin "5px" :width "100px"}}
-             [:span {:class "btn btn-primary btn-file btn-bulky"}
-              [:input {:id "logo-upload"
-                       :type       "file"
-                       :name       "file"
-                       :on-change  #(send-file "#logo-upload" state :logo)
-                       :accept     "image/png"}]
-              [:span (t :file/Upload)]]]]
-           [:div.form-group
-            [:label {:for "input-banner"} (t :extra-spaces/Banner)]
-
-            [:div.banner-container  {:style {:margin "5px"}}
-             (if-not @(cursor state [:uploading-banner])
-               (if-not (blank? @(cursor state [:space :banner]))
-                [:img {:src (if (re-find #"^data:image" banner)
-                              banner
-                              (str "/" banner))
-                       :alt "image"}]
-                       ;:style {:width "100px" :height "auto"}}]
-                [:div[:p (t :extra-spaces/Uploadbannerinstructions)]])
-               [:span.fa.fa-spin.fa-cog.fa-2x])]
-            [:div {:style {:margin "5px" :width "100px"}}
-             [:span {:class "btn btn-primary btn-file btn-bulky"}
-              [:input {:id "banner-upload"
-                       :type       "file"
-                       :name       "file"
-                       :on-change  #(send-file "#banner-upload" state :banner)
-                       :accept     "image/png"}]
-              [:span (t :file/Upload)]]]]
-           [:div.form-group
-            [:label {:for "p-color"} (str (t :extra-spaces/Primarycolor) ": ")]
-            [:input#p-color.form-control
-             {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
-              :type "color"
-              :value @(cursor state [:space :css :p-color])
-              :on-change #(do
-                            (.preventDefault %)
-                            (reset! (cursor state [:space :css :p-color]) (.-target.value %)))}]]
-           [:div.form-group
-            [:label {:for "s-color"} (str (t :extra-spaces/Secondarycolor) ": ")]
-            [:input#s-color.form-control
-             {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
-              :type "color"
-              :value @(cursor state [:space :css :s-color])
-              :on-change #(do
-                            (.preventDefault %)
-                            (reset! (cursor state [:space :css :s-color]) (.-target.value %)))}]]
-
-           [:div.form-group
-            [:label {:for "t-color"} (str (t :extra-spaces/Tertiarycolor) ": ")]
-            [:input#t-color.form-control
-             {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
-              :type "color"
-              :value @(cursor state [:space :css :t-color])
-              :on-change #(do
-                            (.preventDefault %)
-                            (reset! (cursor state [:space :css :t-color]) (.-target.value %)))}]]
-
-           [:div#social-tab.form-group {:style {:background-color "ghostwhite" :padding "8px"}}
-            [:p (t :extra-space/Aboutadmins)]
-            [:div
-              [:a {:href "#"
-                   :on-click #(do
-                                (.preventDefault %)
-                                (mo/open-modal [:gallery :profiles]
-                                 {:type "pickable"
-                                  :selected-users-atom (cursor state [:space :admins])
-                                  :context "space_admins"} {}))}
-
-               [:span [:i.fa.fa-user-plus.fa-fw.fa-lg] (t :extra-spaces/Addadmins)]]]
-            #_(when (seq @(cursor state [:space :admins]))
-                [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw]
-                 [:a {:href "#"
-                      :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom (cursor state [:space :admins]) :context "space_admins"})}
-                  (t :badge/Editselectedusers)]])
-            (reduce (fn [r u]
-                      (let [{:keys [id first_name last_name profile_picture]} u]
-                        (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
-                                 [:a {:href "#" :on-click (fn [] (reset! (cursor state [:space :admins]) (->> @(cursor state [:space :admins]) (remove #(= id (:id %))) vec)))}
-                                  [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
-                    [:div.selected-users-container] @(cursor state [:space :admins]))]
-
-           [:hr.border]
-           [:div.text-center;.col-md-12
-            [:div.btn-toolbar
-             [:div.btn-group {:style {:float "unset"}}
-              [:button.btn.btn-primary.btn-bulky
-               {:type "button"
-                :on-click #(do
-                            (.preventDefault %)
-                            (create-space state))}
-               (t :extra-spaces/Editspace)]
-              [:button.btn.btn-warning.btn-bulky
-               {:type "button"
-                :on-click #(do
-                            (.preventDefault %)
-                            (reset! (cursor state [:space]) nil)
-                            (m/close-modal!))}
-               (t :core/Cancel)]]]]]]]]]]]))
-
-(defn content [state]
- (let [{:keys [logo banner]} @(cursor state [:space])]
+(defn create-form [state]
+  (let [{:keys [logo banner name]} @(cursor state [:space])]
    [:div
     [:div.row
-     [m/modal-window]
-     [:div.col-md-12
-      [:p (t :extra-spaces/Createinstructions)]]
+     #_[:div.col-md-12
+        [:p (t :extra-spaces/Createinstructions)]]
 
      [:div.col-md-12
       [:div.panel.panel-default
-       [:div.panel-heading]
+       [:div.panel-heading
+         [:div.panel-title
+          (if @(cursor state [:in-modal])
+            [:div (if logo [:img {:src (str "/" logo) :style {:width "70px" :height "70px"}}] [:i.fa.fa-building.fa-fw.fa-2x]) [:h4.inline " " (t :extra-spaces/Edit) "/" name]]
+            (t :extra-spaces/Createmember))]]
        [:div.panel-body
         [:div.col-md-12.panel-section
          [:form.form-horizontal
           [:div.form-group
-           [:label {:for "input-name"} (t :extra-spaces/Organizationname) [:span.form-required " *"]]
+           [:label {:for "input-name"} (t :extra-spaces/Name) [:span.form-required " *"]]
            [:input#input-name.form-control ;text-field
             {:name "name"
              ;:atom (cursor state [:space :name])
-             :placeholder (t :extra-spaces/Inputorganizationname)
+             :placeholder (t :extra-spaces/Inputmembername)
              :on-change #(do
                            (reset! (cursor state [:space :name]) (.-target.value %))
                            (generate-alias state))}]]
                            ;(when (clojure.string/blank? @(cursor state [:space :alias])) (generate-alias state)))}]]
           [:div.form-group
            [:label {:for "input-alias"} (t :extra-space/Alias) [:span.form-required " *"]]
-           [:div.input-group
-            [:span.input-group-addon (str (str (session/get :site-url) " " (session/get :base-path) "/"))]
-            [text-field
-             {:name "alias"
-              :atom (cursor state [:space :alias])
-              :placeholder (t :extra-spaces/Inputalias)}]]]
+           [:p (t :extra-spaces/Aboutalias)]
+           [text-field
+            {:name "alias"
+             :atom (cursor state [:space :alias])
+             :placeholder (t :extra-spaces/Inputalias)}]
+           [:p {:style {:margin-top "5px"}} [:b (str (str (session/get :site-url) " " (session/get :base-path) "/") @(cursor state [:space :alias]))]]
+           #_[:div.input-group
+              [:span.input-group-addon (str (str (session/get :site-url) " " (session/get :base-path) "/"))]
+              [text-field
+               {:name "alias"
+                :atom (cursor state [:space :alias])
+                :placeholder (t :extra-spaces/Inputalias)}]]]
           [:div.form-group
            [:label {:for "input-description"} (t :extra-spaces/Description) [:span.form-required " *"]]
            [textarea
@@ -238,8 +97,8 @@
              :atom (cursor state [:space :description])
              :placeholder (t :extra-spaces/Inputdescription)}]]
           [:div.form-group
-           [:label {:for "input-logo"} (t :extra-spaces/Logo)]
-           [:p (t :extra-spaces/Uploadlogoinstructions)]
+           [:label {:for "input-logo"} (t :extra-spaces/Logo) [:span.form-required " *"]]
+           [:p (t :badge/Uploadimginstructions)]
            [:div {:style {:margin "5px"}}
             (if-not @(cursor state [:uploading-logo])
               (if-not (blank? @(cursor state [:space :logo]))
@@ -260,7 +119,7 @@
              [:span (t :file/Upload)]]]]
           [:div.form-group
            [:label {:for "input-banner"} (t :extra-spaces/Banner)]
-
+           [:div [:p (t :extra-spaces/Uploadbannerinstructions)]]
            [:div {:style {:margin "5px"}}
             (if-not @(cursor state [:uploading-banner])
               (if-not (blank? @(cursor state [:space :banner]))
@@ -269,7 +128,7 @@
                              (str "/" banner))
                       :alt "image"}]
                       ;:style {:width "100px" :height "auto"}}]
-               [:div.input-banner [:p (t :extra-spaces/Uploadbannerinstructions)]])
+               [:div.space-banner-container]);[:p (t :extra-spaces/Uploadbannerinstructions)]])
               [:span.fa.fa-spin.fa-cog.fa-2x])]
            [:div {:style {:margin "5px" :width "100px"}}
             [:span {:class "btn btn-primary btn-file btn-bulky"}
@@ -279,36 +138,43 @@
                       :on-change  #(send-file "#banner-upload" state :banner)
                       :accept     "image/png"}]
              [:span (t :file/Upload)]]]]
-          [:div.form-group
-           [:label {:for "p-color"} (str (t :extra-spaces/Primarycolor) ": ")]
-           [:input#p-color.form-control
-            {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
-             :type "color"
-             :value @(cursor state [:space :css :p-color])
-             :on-change #(do
-                           (.preventDefault %)
-                           (reset! (cursor state [:space :css :p-color]) (.-target.value %)))}]]
-          [:div.form-group
-           [:label {:for "s-color"} (str (t :extra-spaces/Secondarycolor) ": ")]
-           [:input#s-color.form-control
-            {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
-             :type "color"
-             :value @(cursor state [:space :css :s-color])
-             :on-change #(do
-                           (.preventDefault %)
-                           (reset! (cursor state [:space :css :s-color]) (.-target.value %)))}]]
+          [:div.colors
+            [:div [:span._label.form-group (t :extra-spaces/Theme)] (str "   - " (t :extra-spaces/optional))]
 
-          [:div.form-group
-           [:label {:for "t-color"} (str (t :extra-spaces/Tertiarycolor) ": ")]
-           [:input#t-color.form-control
-            {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
-             :type "color"
-             :value @(cursor state [:space :css :t-color])
-             :on-change #(do
-                           (.preventDefault %)
-                           (reset! (cursor state [:space :css :t-color]) (.-target.value %)))}]]
+            [:div.form-group
+             [:p (t :extra-spaces/Aboutcolors)]
+             [:p (t :extra-spaces/Aboutcolors2)]]
+            [:div.form-group
+             [:label {:for "p-color"} (str (t :extra-spaces/Primarycolor) ": ")]
+             [:input#p-color.form-control
+              {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
+               :type "color"
+               :value @(cursor state [:space :css :p-color])
+               :on-change #(do
+                             (.preventDefault %)
+                             (reset! (cursor state [:space :css :p-color]) (.-target.value %)))}]]
+            [:div.form-group
+             [:label {:for "s-color"} (str (t :extra-spaces/Secondarycolor) ": ")]
+             [:input#s-color.form-control
+              {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
+               :type "color"
+               :value @(cursor state [:space :css :s-color])
+               :on-change #(do
+                             (.preventDefault %)
+                             (reset! (cursor state [:space :css :s-color]) (.-target.value %)))}]]
+
+            [:div.form-group
+             [:label {:for "t-color"} (str (t :extra-spaces/Tertiarycolor) ": ")]
+             [:input#t-color.form-control
+              {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
+               :type "color"
+               :value @(cursor state [:space :css :t-color])
+               :on-change #(do
+                             (.preventDefault %)
+                             (reset! (cursor state [:space :css :t-color]) (.-target.value %)))}]]]
 
           [:div#social-tab.form-group {:style {:background-color "ghostwhite" :padding "8px"}}
+           [:span._label (t :extra-spaces/Admins)]
            [:p (t :extra-space/Aboutadmins)]
            [:div
              [:a {:href "#"
@@ -330,25 +196,57 @@
                        (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
                                 [:a {:href "#" :on-click (fn [] (reset! (cursor state [:space :admins]) (->> @(cursor state [:space :admins]) (remove #(= id (:id %))) vec)))}
                                  [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
-                   [:div.selected-users-container] @(cursor state [:space :admins]))]
+                   [:div.selected-users-container] @(cursor state [:space :admins]))]]]]]]]]))
 
-          [:hr.border]
-          [:div.text-center;.col-md-12
-           [:div.btn-toolbar
-            [:div.btn-group {:style {:float "unset"}}
-             [:button.btn.btn-primary.btn-bulky
-              {:type "button"
-               :on-click #(do
-                           (.preventDefault %)
-                           (create-space state))}
-              (t :extra-spaces/Createspace)]
-             [:button.btn.btn-warning.btn-bulky
-              {:type "button"
-               :on-click #(do
-                           (.preventDefault %)
-                           (reset! (cursor state [:space]) nil)
-                           (navigate-to "admin/spaces"))}
-              (t :core/Cancel)]]]]]]]]]]]))
+(defn modal-content [state]
+  (let [{:keys [logo banner name]} @(cursor state [:space])]
+    [:div
+     [:div.row
+      [create-form state]
+
+      [:hr.border]
+      [:div.text-center;.col-md-12
+       [:div.btn-toolbar
+        [:div.btn-group {:style {:float "unset"}}
+         [:button.btn.btn-primary.btn-bulky
+          {:type "button"
+           :on-click #(do
+                        (.preventDefault %)
+                        (edit-space state))}
+          (t :extra-spaces/Editspace)]
+         [:button.btn.btn-warning.btn-bulky
+          {:type "button"
+           :on-click #(do
+                        (.preventDefault %)
+                        (reset! (cursor state [:space]) nil)
+                        (m/close-modal!))}
+          (t :core/Cancel)]]]]]]))
+
+(defn content [state]
+  (let [{:keys [logo banner]} @(cursor state [:space])]
+    [:div
+     [:div.row
+      [m/modal-window]
+      [create-form state]
+
+
+      [:hr.border]
+      [:div.text-center;.col-md-12
+       [:div.btn-toolbar
+        [:div.btn-group {:style {:float "unset"}}
+         [:button.btn.btn-primary.btn-bulky
+          {:type "button"
+           :on-click #(do
+                        (.preventDefault %)
+                        (create-space state))}
+          (t :extra-spaces/Createspace)]
+         [:button.btn.btn-warning.btn-bulky
+          {:type "button"
+           :on-click #(do
+                        (.preventDefault %)
+                        (reset! (cursor state [:space]) nil)
+                        (navigate-to "admin/spaces"))}
+          (t :core/Cancel)]]]]]]))
 
 
 

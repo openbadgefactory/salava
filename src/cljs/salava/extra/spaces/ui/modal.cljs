@@ -46,7 +46,7 @@
         [:div
           [:div [:span._label (str (t :extra-spaces/Primarycolor) ":  ")] [:span.color-span {:style {:background-color p-color}}]]
           [:div [:span._label (str (t :extra-spaces/Secondarycolor) ":  ")] [:span.color-span {:style {:background-color s-color}}]]
-          [:div [:span._label (str (t :extra-spaces/tertiarycolor) ":  ")] [:span.color-span {:style {:background-color t-color}}]]])]))
+          [:div [:span._label (str (t :extra-spaces/Tertiarycolor) ":  ")] [:span.color-span {:style {:background-color t-color}}]]])]))
 
 
 
@@ -72,7 +72,7 @@
          [:div  [:i.nav-icon.fa.fa-info-circle.fa-lg] (t :metabadge/Info)]]]
        [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 2 (:tab-no @state))) "active")}
         [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [edit-space state]  :tab-no 2)}
-         [:div  [:i.nav-icon.fa.fa-edit.fa-lg] (t :core/Edit)]]]
+         [:div  [:i.nav-icon.fa.fa-edit.fa-lg] (t :extra-spaces/Edit)]]]
        #_[:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 3 (:tab-no @state))) "active")}
           [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [edit-space state]  :tab-no 3)}
            [:div  [:i.nav-icon.fa.fa-cog.fa-lg] (t :extra-spaces/Manage)]]]
@@ -102,7 +102,8 @@
 (defn handler [params]
   (let [id (:id params)
         state (atom {:id id
-                     :tab-no 1})]
+                     :tab-no 1
+                     :in-modal true})]
     (init-data id state)
     (fn []
       [space-content state])))

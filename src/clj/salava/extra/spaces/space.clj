@@ -31,7 +31,16 @@
    (db/clear-space-data! ctx id))
   (db/clear-space-data! ctx ids)))
 
-(defn edit! [space-id])
+(defn edit! [ctx id space user-id]
+  (try+
+    (let [{:keys [id name description status visibility logo banner alias valid_until css]} space
+          data (dissoc space :id)]
+      (db/update-space-info ctx id data user-id)
+      {:status "success"})
+    (catch Object _
+      (log/error "error: " _)
+      {:status "error"})))
+
 (defn suspend! [ctx space-id])
 (defn switch [space-id])
 (defn get-space [ctx id]

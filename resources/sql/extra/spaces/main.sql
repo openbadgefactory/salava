@@ -5,6 +5,10 @@ INSERT INTO space
 VALUES
   (:uuid, :name, :alias, :description, :logo, :banner, :status, :visibility, :valid_until, UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
 
+--name: update-space-information!
+UPDATE space SET name = :name, description = :description, logo = :logo, banner = :banner, mtime= UNIX_TIMESTAMP(), last_modified_by= :user_id
+WHERE id = :id
+
 -- name: select-email-address
 -- check if email address exists
 SELECT user_id, verified FROM user_email WHERE email = :email

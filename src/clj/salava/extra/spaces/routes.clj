@@ -42,6 +42,15 @@
                   :current-user current-user
                   (ok (space/create! ctx space)))
 
+            (POST "/edit/:id" []
+                  :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
+                  :auth-rules access/admin
+                  :path-params [id :- s/Str]
+                  :body [space schemas/edit-space]
+                  :summary "Edit space"
+                  :current-user current-user
+                  (ok (space/edit! ctx id space (:id current-user))))
+
             (POST "/suspend/:id" []
                   :return {:success s/Bool}
                   :summary "Suspend space"

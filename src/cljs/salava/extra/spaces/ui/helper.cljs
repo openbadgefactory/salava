@@ -95,6 +95,29 @@
                   (when (= (:status data) "success")
                     (navigate-to "admin/spaces")))}))))
 
+(defn edit-space [state]
+  (reset! (cursor state [:error-message]) nil)
+  (let [data (select-keys @(cursor state [:space])[:id :name :description :alias :logo :css :banner])
+         validate-info (validate-inputs schemas/create-space data)]
+    (if (some false? validate-info)
+        (reset! (cursor state [:error-message])
+          (case (.indexOf validate-info false)
+            0 (t :extra-spaces/Namefieldempty)
+            1 (t :extra-spaces/Descriptionfieldempty)
+            2 (t :extra-spaces/Aliasfieldempty)
+            (t :extra-spaces/Errormsg)))
+
+       (ajax/POST
+        (path-for (str "/obpv1/spaces/edit/" @(cursor state [:space :id])))
+        {:params data #_(-> @(cursor state [:space])
+                          (assoc :admins (mapv :id @(cursor state [:space :admins]))))
+          :handler (fn [data]
+                    (when (= (:status data) "error")
+                      (reset! (cursor state [:error-message]) data))
+                    (when (= (:status data) "success")
+                      (swap! state assoc :tab nil :tab-no 1)))}))))
+
+
 (defn profile-link-inline-modal [id first_name last_name picture]
   (let [name (str first_name " " last_name)]
     [:div.user-link-inline
@@ -104,11 +127,19 @@
       name]]))
 
 (defn space-card [info]
- (let [{:keys [id name logo valid_until visibility status ctime]} info]
+ (let [{:keys [id name logo valid_until visibility status ctime banner]} info
+       bg (case status
+            "active" "green"
+            "suspended" "yellow"
+            "red")]
    [:div {:class "col-xs-12 col-sm-6 col-md-4"}
           ;:key id}
     [:div {:class "media grid-container"}
      [:a {:href "#" :on-click #(mo/open-modal [:space :info] {:id id}) :style {:text-decoration "none"}}
+      #_(when banner
+          [:div.banner
+           [:img {:src (str "/" banner)}]
+           [:hr.line]])
       [:div.media-content
        [:div.media-left
         (if logo
@@ -119,10 +150,10 @@
         [:div {:class "media-heading profile-heading"}
          name]
         [:div.media-profile
-         [:div.join-date
-          (t :gallery/Joined) ": " (date-from-unix-time (* 1000 ctime))]]]]
-      #_[:div.common-badges
-         (if (= id current-user)
-           (t :gallery/ownprofile)
-           [:span common_badge_count " " (if (= common_badge_count 1)
-                                           (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]))
+         [:div.status.join-date
+          (t :extra-spaces/Createdon) ": " (date-from-unix-time (* 1000 ctime))]
+         [:div.status
+           [:div.blob {:class status}]
+          [:b (t (keyword (str "extra-spaces/"status)) (when (and valid_until (= status "active")) (str " " (t :extra-spaces/until) (date-from-unix-time (* 1000 valid_until)))))]]]]]]]]))
+
+
