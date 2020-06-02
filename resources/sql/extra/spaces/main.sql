@@ -63,3 +63,21 @@ SELECT value FROM space_properties WHERE space_id = :id AND name = :name
 
 --name: insert-space-property!
 REPLACE INTO space_properties (space_id, name, value) VALUES (:space_id, :name, :value)
+
+--name: soft-delete-space!
+UPDATE space SET status = "deleted", last_modified_by = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: count-space-members
+SELECT COUNT(DISTINCT user_id) AS count FROM user_space WHERE space_id = :id
+
+--name: downgrade-to-member!
+UPDATE user_space SET role = 'member' WHERE space_id = :id AND user_id = :admin
+
+--name: upgrade-member-to-admin!
+UPDATE user_space SET role = 'admin' WHERE space_id = :id AND user_id = :admin
+
+--name: select-space-members
+SELECT us.user_id AS id, us.space_id, us.default_space, u.first_name, u.last_name, u.profile_picture
+FROM user_space us
+JOIN user u ON us.user_id = u.id
+WHERE us.space_id = :space_id AND us.role = 'member'

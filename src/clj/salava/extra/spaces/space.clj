@@ -5,7 +5,8 @@
   [salava.extra.spaces.db :as db]
   [salava.extra.spaces.util :as u]
   [slingshot.slingshot :refer :all]
-  [salava.core.time :refer [get-date-from-today]]))
+  [salava.core.time :refer [get-date-from-today]]
+  [salava.core.util :refer [get-db]]))
 
 (defqueries "sql/extra/spaces/main.sql")
 
@@ -22,14 +23,26 @@
      (log/error "error: " _) ;(.getMessage _))
      {:status "error" :message _})))
 
+#_(defn delete!
+   "Delete space by space id or uuid.
+    ids can be a sequable collection"
+   [ctx ids]
+   (if (seq ids)
+    (doseq [id ids]
+     (db/clear-space-data! ctx id))
+    (db/clear-space-data! ctx ids)))
+
 (defn delete!
- "Delete space by space id or uuid.
-  ids can be a sequable collection"
- [ctx ids]
- (if (seq ids)
-  (doseq [id ids]
-   (db/clear-space-data! ctx id))
-  (db/clear-space-data! ctx ids)))
+  "Delete space by id, soft delete if space has more than one member"
+  [ctx id user-id]
+  (try+
+    (if-let [check (> (count-space-members {:id id} (into {:result-set-fn first :row-fn :count} (get-db ctx))) 1)]
+      (db/soft-delete ctx id user-id)
+      (db/clear-space-data! ctx id))
+    {:status "success"}
+    (catch Object _
+      (log/error _)
+      {:status "error"})))
 
 (defn edit! [ctx id space user-id]
   (try+
@@ -40,6 +53,14 @@
     (catch Object _
       (log/error "error: " _)
       {:status "error"})))
+
+(defn downgrade! [ctx id admin-id]
+ (try+
+  (downgrade-to-member! {:id id :admin admin-id} (get-db ctx))
+  {:status "success"}
+  (catch Object _
+   (log/error _)
+   {:status "error"})))
 
 (defn suspend! [ctx space-id])
 (defn switch [space-id])

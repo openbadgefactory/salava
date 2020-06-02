@@ -16,11 +16,13 @@
     (json/read-str value :key-fn keyword)))
 
 (defn save-space-property [ctx id property value]
-  (prn id)
   (insert-space-property! {:space_id id :name property :value (json/write-str value)} (u/get-db ctx)))
 
 (defn space-admins [ctx id]
   (select-space-admins {:space_id id} (u/get-db ctx)))
+
+(defn space-members [ctx id]
+ (select-space-members {:space_id id} (u/get-db ctx)))
 
 (defn create-space-admin!
   "Adds existing user as a space member and sets role to admin
@@ -32,10 +34,24 @@
    (create-pending-space-admin! (->Pending_admin nil space-id email) (u/get-db ctx)))
   (log/info "Space admin " email " created!"))
 
+(defn add-space-admins [ctx id admins]
+ (try+
+  (doseq [admin admins
+          :let [email (if (number? admin) (select-primary-address {:id admin} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
+   (if (some #(= admin (:id %)) (space-members ctx id))
+     (upgrade-member-to-admin! {:admin admin :id id} (u/get-db ctx))
+     (create-space-admin! ctx id email)))
+  {:status "success"}
+  (catch Object _
+   (log/error _)
+   {:status "error"})))
+
 (defn space-exists?
   "check if space name already exists"
   [ctx space]
   (if (empty? (select-space-by-name {:name (:name space)} (u/get-db ctx))) false true))
+
+(defn alias-exists? [ctx id alias])
 
 (defn get-space-information [ctx id]
   (assoc (select-space-by-id {:id id} (into {:result-set-fn first} (u/get-db ctx)))
@@ -61,33 +77,34 @@
           (create-space-admin! ctx space_id email))
    (when (:css space) (save-space-property ctx space_id "css" (:css space)))
 
-   (log/info "Finished creating space!")))
-  ;{:status "success"}
- #_(catch Object _
-    (log/error "Error, No space admin defined")
-    {:status "error"}))
+   (log/info "Finished creating space!"))))
 
 (defn update-space-info [ctx id space user-id]
-  (let [data (assoc space :id id :user_id user-id :last_modified_by user-id :logo (if (re-find #"^data:image" (:logo space)) (save-image! ctx (:logo space)) (:logo space)))]
-    (prn space)
+  (let [data (assoc space
+               :id id :user_id user-id
+               :last_modified_by user-id
+               :logo (if (re-find #"^data:image" (:logo space)) (save-image! ctx (:logo space)) (:logo space))
+               :banner (if (re-find #"^data:image" (:banner space)) (save-image! ctx (:banner space)) (:banner space)))]
     (update-space-information! data (u/get-db ctx))
     (when (:css space) (save-space-property ctx id "css" (:css data)))))
 
 (defn space-id [ctx id]
  (if (uuid? (java.util.UUID/fromString id)) (some-> (select-space-by-uuid {:uuid id} (u/get-db ctx)) :id) id))
 
-
 (defn clear-space-data!
- "Clear out space information"
- [ctx id]
- (let [id (space-id ctx id)]
-   (jdbc/with-db-transaction [tx (:connection (u/get-db ctx))]
-          (delete-space! {:id id} {:connection tx})
-          (delete-space-members! {:space_id id} {:connection tx})
-          (delete-space-properties! {:space_id id} {:connection tx}))))
+  "Clear out space information"
+  [ctx id]
+  ;(let [id (space-id ctx id)]
+  (jdbc/with-db-transaction [tx (:connection (u/get-db ctx))]
+                            (delete-space! {:id id} {:connection tx})
+                            (delete-space-members! {:space_id id} {:connection tx})
+                            (delete-space-properties! {:space_id id} {:connection tx})))
+
+(defn soft-delete [ctx id user-id]
+  (soft-delete-space! {:id id :user_id user-id} (u/get-db ctx)))
 
 (defn all-spaces [ctx]
- (select-all-spaces {} (u/get-db ctx)))
+ (mapv #(assoc % :member_count (count-space-members {:id (:id %)} (into {:result-set-fn first :row-fn :count} (u/get-db ctx))))(select-all-spaces {} (u/get-db ctx))))
 
 (defn active-spaces [ctx]
   (select-all-active-spaces {} (u/get-db ctx)))

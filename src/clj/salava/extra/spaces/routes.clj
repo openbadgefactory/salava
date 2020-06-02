@@ -34,6 +34,15 @@
                   :current-user current-user
                   (ok (space/get-space ctx id)))
 
+            (POST "/add_admin/:id" []
+                  :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
+                  :auth-rules access/admin
+                  :summary "Add admin to space"
+                  :path-params [id :- s/Int]
+                  :body-params [admins :- [s/Int]]
+                  :current-user current-user
+                  (ok (db/add-space-admins ctx id admins)))
+
             (POST "/create" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
                   :body [space schemas/create-space]
@@ -41,6 +50,15 @@
                   :summary "Create new space"
                   :current-user current-user
                   (ok (space/create! ctx space)))
+
+            (POST "/downgrade/:id/:admin-id" []
+                :return {:status (s/enum "success" "error")}
+                :path-params [id :- s/Int
+                              admin-id :- s/Int]
+                :summary "downgrade admin to space member"
+                :auth-rules access/admin
+                :current-user current-user
+                (ok (space/downgrade! ctx id admin-id)))
 
             (POST "/edit/:id" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
@@ -67,9 +85,10 @@
                   :current-user current-user
                   (ok (util/upload-image ctx current-user file kind)))
 
-
             (DELETE "/delete/:id" []
-                    :return {:success s/Bool}
+                    :return {:status (s/enum "success" "error")}
                     :summary "Delete space"
                     :path-params [id :- s/Str]
-                    (ok (space/delete! ctx id))))))
+                    :auth-rules access/admin
+                    :current-user current-user
+                    (ok (space/delete! ctx id (:id current-user)))))))

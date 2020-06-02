@@ -69,16 +69,22 @@
 
          }
         .blob.active {
-          	background: rgba(51, 217, 178, 1);
-            box-shadow: 0 0 0 0 rgba(51, 217, 178, 1);
+          	background: green; //rgba(51, 217, 178, 1);
+            box-shadow: 0 0 0 0 green; //rgba(51, 217, 178, 1);
             animation: pulse-active 2s infinite;
 
         }
 
         .blob.suspended {
-          	background: rgba(255, 121, 63, 1);
-            box-shadow: 0 0 0 0 rgba(255, 121, 63, 1);
+          	background: orange; //rgba(255, 121, 63, 1);
+            box-shadow: 0 0 0 0 orange; //rgba(255, 121, 63, 1);
             animation: pulse-suspended 2s infinite;
+        }
+
+        .blob.deleted {
+           	background: red; //rgba(255, 121, 63, 1);
+            box-shadow: 0 0 0 0 red; //rgba(255, 121, 63, 1);
+            animation: pulse-deleted 2s infinite;
         }
 
         .status {
@@ -143,7 +149,7 @@
     max-width: 640px;
     height: 120px;
     padding: 8px;
-    margin: 10px auto;
+    margin: 10px 0;
     border: 2px dotted #ddd;
 
     img {
@@ -170,6 +176,23 @@
 }
 
 @keyframes pulse-suspended {
+  0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(255, 121, 63, 0.7);
+	}
+
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 10px rgba(255, 121, 63, 0);
+	}
+
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(255, 121, 63, 0);
+	}
+}
+
+@keyframes pulse-deleted{
   0% {
 		transform: scale(0.95);
 		box-shadow: 0 0 0 0 rgba(255, 121, 63, 0.7);

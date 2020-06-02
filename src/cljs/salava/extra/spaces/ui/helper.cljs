@@ -11,6 +11,12 @@
   [salava.user.ui.helper :refer [profile-picture]]
   [salava.extra.spaces.schemas :as schemas]))
 
+(defn init-data [state]
+  (ajax/GET
+   (path-for "/obpv1/spaces/")
+   {:handler (fn [data]
+               (swap! state assoc :spaces data))}))
+
 (defn generate-alias [state]
   (when-let [x (not (blank?  @(cursor state [:space :name])))]
     (reset! (cursor state [:space :alias])
@@ -126,8 +132,8 @@
       [:img {:src (profile-picture picture) :alt (str name (t :user/Profilepicture))}]
       name]]))
 
-(defn space-card [info]
- (let [{:keys [id name logo valid_until visibility status ctime banner]} info
+(defn space-card [info state]
+ (let [{:keys [id name logo valid_until visibility status ctime banner member_count]} info
        bg (case status
             "active" "green"
             "suspended" "yellow"
@@ -135,7 +141,7 @@
    [:div {:class "col-xs-12 col-sm-6 col-md-4"}
           ;:key id}
     [:div {:class "media grid-container"}
-     [:a {:href "#" :on-click #(mo/open-modal [:space :info] {:id id}) :style {:text-decoration "none"}}
+     [:a {:href "#" :on-click #(mo/open-modal [:space :info] {:id id :member_count member_count} {:hidden (fn [] (init-data state))}) :style {:text-decoration "none"}}
       #_(when banner
           [:div.banner
            [:img {:src (str "/" banner)}]
@@ -152,6 +158,9 @@
         [:div.media-profile
          [:div.status.join-date
           (t :extra-spaces/Createdon) ": " (date-from-unix-time (* 1000 ctime))]
+        ;[:div.status
+         ; [:i.fa.fa-users.fa-fw member_count]]
+
          [:div.status
            [:div.blob {:class status}]
           [:b (t (keyword (str "extra-spaces/"status)) (when (and valid_until (= status "active")) (str " " (t :extra-spaces/until) (date-from-unix-time (* 1000 valid_until)))))]]]]]]]]))

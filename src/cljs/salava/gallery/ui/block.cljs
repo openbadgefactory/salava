@@ -176,7 +176,7 @@
         filter-options (session/get :filter-options nil)
 
         common-badges? (if filter-options (:common-badges filter-options) true)
-        {:keys [type selected-users-atom context user_badge_id selfie func external-users-atom]} params
+        {:keys [type selected-users-atom context user_badge_id selfie func external-users-atom existing-users-atom]} params
         data-atom (atom {:users []
                          :selected []
                          :ajax-message nil
@@ -255,7 +255,14 @@
                                                            (filter #(every? nil? (-> % :endorsement vals))))
                                                      (if (= "selfie_issue" context)
                                                       (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id]))))
-                                                      @(cursor data-atom [:users]))))]
+                                                      (if (and (seq @existing-users-atom) (= "space_admins_modal" context))
+                                                          (remove (fn [u]
+                                                                    (some #(= (:id u) (:id %)) @existing-users-atom)) @(cursor data-atom [:users]))
+                                                          @(cursor data-atom [:users]))))
+                                                    #_(when (and (seq @existing-users-atom) (= "space_admins_modal" context))
+                                                        (remove (fn [u]
+                                                                  (some #(= (:id u) (:id %)) @existing-users-atom)) @(cursor data-atom [:users]))))]
+
 
                                            [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
                                             (when (or (= context "endorsement") (= context "endorsement_selfie"))
@@ -280,6 +287,15 @@
                                                (t :core/Continue)]
                                               [:button.btn.btn-danger.btn-bulky
                                                {:on-click #(do (reset! selected-users-atom []) (m/close-modal!))}
+                                               (t :core/Cancel)]])
+                                            (when  (= context "space_admins_modal")
+                                             [:div
+                                              [:button.btn.btn-primary.btn-bulky
+                                               {:on-click #(mo/previous-view)
+                                                :disabled (empty? @selected-users-atom)}
+                                               (t :core/Continue)]
+                                              [:button.btn.btn-danger.btn-bulky
+                                               {:on-click #(do (reset! selected-users-atom []) (mo/previous-view))}
                                                (t :core/Cancel)]])])])]])
 
 

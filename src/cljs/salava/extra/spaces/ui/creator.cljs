@@ -61,7 +61,10 @@
        [:div.panel-heading
          [:div.panel-title
           (if @(cursor state [:in-modal])
-            [:div (if logo [:img {:src (str "/" logo) :style {:width "70px" :height "70px"}}] [:i.fa.fa-building.fa-fw.fa-2x]) [:h4.inline " " (t :extra-spaces/Edit) "/" name]]
+            [:div (if logo [:img {:src (if (re-find #"^data:image" logo) logo (str "/" logo))
+                                  :style {:width "40px" :height "40px"}}]
+                           [:i.fa.fa-building.fa-fw.fa-2x])
+                [:h4.inline " " (t :extra-spaces/Edit) "/" name]]
             (t :extra-spaces/Createmember))]]
        [:div.panel-body
         [:div.col-md-12.panel-section
@@ -123,10 +126,11 @@
            [:div {:style {:margin "5px"}}
             (if-not @(cursor state [:uploading-banner])
               (if-not (blank? @(cursor state [:space :banner]))
-               [:img {:src (if (re-find #"^data:image" banner)
-                             banner
-                             (str "/" banner))
-                      :alt "image"}]
+               [:div.space-banner-container
+                 [:img {:src (if (re-find #"^data:image" banner)
+                                banner
+                               (str "/" banner))
+                        :alt "image"}]]
                       ;:style {:width "100px" :height "auto"}}]
                [:div.space-banner-container]);[:p (t :extra-spaces/Uploadbannerinstructions)]])
               [:span.fa.fa-spin.fa-cog.fa-2x])]
