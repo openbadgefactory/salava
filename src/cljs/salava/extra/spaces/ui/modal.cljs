@@ -77,7 +77,7 @@
       [:h1.uppercase-header name]
       [:p [:b description]]
       [:div [:span._label (str (t :extra-spaces/Alias) ":  ")] alias]
-      [:div [:span._label (str (t :extra-spaces/Createdon) ":  ")] (date-from-unix-time (* 1000 ctime))]
+      [:div [:span._label (str (t :extra-spaces/createdon) ":  ")] (date-from-unix-time (* 1000 ctime))]
       [:div [:span._label (str (t :extra-spaces/Status) ": ")] status]
       (when css
         [:div
@@ -281,9 +281,9 @@
        [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 4 (:tab-no @state))) "active")}
         [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [manage-space state]  :tab-no 4)}
          [:div  [:i.nav-icon.fa.fa-cogs.fa-lg] (t :extra-spaces/Manage)]]]
-       [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 5 (:tab-no @state))) "active")}
-        [:a.nav-link {:class disable-link :href "#" :on-click #(swap! state assoc :tab [delete-space-content state] :tab-no 5)}
-         [:div  [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]]]))
+       #_[:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 5 (:tab-no @state))) "active")}
+          [:a.nav-link {:class disable-link :href "#" :on-click #(swap! state assoc :tab [delete-space-content state] :tab-no 5)}
+           [:div  [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]]]))
 
 (defn space-content [state]
   [:div#space
@@ -297,7 +297,7 @@
          (case (:tab-no @state)
            2 [edit-space state]
            4 [manage-space state]
-           5 [delete-space-content state]
+           ;5 [delete-space-content state]
            [view-space state]))]]]])
 
 (defn handler [params]

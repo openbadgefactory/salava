@@ -39,6 +39,7 @@
                      :banner (cursor state [:space :banner])
                      nil)]
     (reset! alert-atom true)
+    (reset! (cursor state [type :error]) nil)
     (ajax/POST
      (path-for (str "/obpv1/spaces/upload_image/" (name type)))
      {:body    form-data
