@@ -5,7 +5,8 @@
             [clojure.data.json :as json]
             [salava.extra.spaces.util :refer [save-image!]]
             [clojure.tools.logging :as log]
-            [slingshot.slingshot :refer :all]))
+            [slingshot.slingshot :refer :all]
+            [clojure.string :refer [blank?]]))
 
 (defqueries "sql/extra/spaces/main.sql")
 (defrecord Space_member [id user_id space_id role default_space])
@@ -51,7 +52,10 @@
   [ctx space]
   (if (empty? (select-space-by-name {:name (:name space)} (u/get-db ctx))) false true))
 
-(defn alias-exists? [ctx id alias])
+(defn alias-exists?
+  "check if space alias already exists"
+  [ctx alias]
+  (if (blank? (select-space-by-alias {:alias alias} (into {:result-set-fn first :row-fn :alias} (u/get-db ctx)))) false true))
 
 (defn get-space-information [ctx id]
   (assoc (select-space-by-id {:id id} (into {:result-set-fn first} (u/get-db ctx)))
@@ -64,8 +68,9 @@
  ;(try+
  (log/info "Creating space" (:name space))
  (log/info "Space exists? " (space-exists? ctx space))
- (when (empty? (:admins space)) (throw+ "Error, no space admin defined"))
- (when (space-exists? ctx space) (throw+ (str "Space with name " (:name space) " already exists")))
+ (when (empty? (:admins space)) (throw+ "extra-spaces/Adminerror"))
+ (when (space-exists? ctx space) (throw+ "extra-spaces/Nameexistserror"))
+ (when (alias-exists? ctx (:alias space)) (throw+ "extra-spaces/Aliasexistserror"))
  (jdbc/with-db-transaction [tx (:connection (u/get-db ctx))]
   (let [space_id (-> space
                    (dissoc :id :admin)

@@ -191,6 +191,7 @@
                                (str "/obpv1/gallery/profiles"))
                          :sent-requests []
                          :email ""})]
+    (prn params)
     (create-class {:reagent-render (fn []
                                      [:div
                                       [:div {:id "social-tab"}
@@ -249,20 +250,27 @@
                                                                              (reset! (cursor data-atom [:email]) ""))}
                                                                [:i.fa.fa-lg.fa-user-plus {:style {:color "inherit" :font-size "medium" :vertical-align "baseline"}}] (t :core/Add)]]]]])]
 
-                                                    (if (or (= context "endorsement") (= context "endorsement_selfie"))
-                                                     (->> @(cursor data-atom [:users])
+                                                    (cond
+                                                      (or (= context "endorsement") (= context "endorsement_selfie"))
+                                                      (->> @(cursor data-atom [:users])
                                                            (remove #(= (:id %) (session/get-in [:user :id])))
                                                            (filter #(every? nil? (-> % :endorsement vals))))
-                                                     (if (= "selfie_issue" context)
+                                                      (= "selfie_issue" context)
                                                       (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id]))))
-                                                      (if (and (seq @existing-users-atom) (= "space_admins_modal" context))
-                                                          (remove (fn [u]
-                                                                    (some #(= (:id u) (:id %)) @existing-users-atom)) @(cursor data-atom [:users]))
-                                                          @(cursor data-atom [:users]))))
-                                                    #_(when (and (seq @existing-users-atom) (= "space_admins_modal" context))
-                                                        (remove (fn [u]
-                                                                  (some #(= (:id u) (:id %)) @existing-users-atom)) @(cursor data-atom [:users]))))]
-
+                                                      (= "space_admins_modal" context)
+                                                      (remove (fn [u] (some #(= (:id u) (:id %)) @existing-users-atom)) @(cursor data-atom [:users]))
+                                                      :else
+                                                      @(cursor data-atom [:users]))
+                                                    #_(if (or (= context "endorsement") (= context "endorsement_selfie"))
+                                                       (->> @(cursor data-atom [:users])
+                                                             (remove #(= (:id %) (session/get-in [:user :id])))
+                                                             (filter #(every? nil? (-> % :endorsement vals))))
+                                                       (if (= "selfie_issue" context)
+                                                        (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id]))))
+                                                        (if (and @existing-users-atom (seq @existing-users-atom) (= "space_admins_modal" context))
+                                                            (remove (fn [u]
+                                                                      (some #(= (:id u) (:id %)) @existing-users-atom)) @(cursor data-atom [:users]))
+                                                            @(cursor data-atom [:users])))))]
 
                                            [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
                                             (when (or (= context "endorsement") (= context "endorsement_selfie"))

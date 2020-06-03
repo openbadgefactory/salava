@@ -62,11 +62,21 @@
    (log/error _)
    {:status "error"})))
 
-(defn suspend! [ctx space-id])
+#_(defn suspend! [ctx space-id admin-id]
+    (suspend-space! {:id space-id :user_id admin-id} (get-db ctx)))
+
+(defn update-status! [ctx space-id status admin-id]
+ (try+
+  (update-space-status! {:id space-id :status status :user_id admin-id} (get-db ctx))
+  {:status "success"}
+  (catch Object _
+   (log/error _)
+   {:status "error"})))
+
 (defn switch [space-id])
+
 (defn get-space [ctx id]
   (db/get-space-information ctx id))
-
 
 (def space [:id :uuid :name :description :logo :banner :status :visibility :ctime :mtime :last-modified-by])
 (def user_space [:id :user_id :space_id :role :default_space :ctime :mtime])

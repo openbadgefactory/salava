@@ -13,5 +13,5 @@
 
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces)} ;:about (:selfie (about))}})
-   (str (base-path context) "/admin/spaces/creator") {:weight 200 :title (t :extra-spaces/CreateSpace) :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces " / " :extra-spaces/CreateSpace)}})
+  {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Members) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Members)} ;:about (:selfie (about))}})
+   (str (base-path context) "/admin/spaces/creator") {:weight 200 :title (t :extra-spaces/CreateSpace) :breadcrumb (t :admin/Admin " / " :extra-spaces/Members " / " :extra-spaces/Create)}})

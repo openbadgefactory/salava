@@ -69,11 +69,21 @@
                   :current-user current-user
                   (ok (space/edit! ctx id space (:id current-user))))
 
-            (POST "/suspend/:id" []
-                  :return {:success s/Bool}
-                  :summary "Suspend space"
+            (POST "/update_status/:id" []
+                  :return {:status (s/enum "success" "error")}
+                  :auth-rules access/admin
                   :path-params [id :- s/Str]
-                  (ok (space/suspend! ctx id)))
+                  :body-params [status :- (s/enum "active" "deleted" "suspended")]
+                  :summary "Update space status"
+                  :current-user current-user
+                  (ok (space/update-status! ctx id status (:id current-user))))
+
+            #_(POST "/suspend/:id" []
+                    :return {:success s/Bool}
+                    :summary "Suspend space"
+                    :path-params [id :- s/Str]
+                    :current-user current-user
+                    (ok (space/suspend! ctx id (:id current-user))))
 
             (POST "/upload_image/:kind" []
                   :return {:status (s/enum "success" "error") :url s/Str (s/optional-key :message) (s/maybe s/Str)}

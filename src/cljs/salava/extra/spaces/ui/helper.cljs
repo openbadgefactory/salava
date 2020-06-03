@@ -23,17 +23,14 @@
         (as-> @(cursor state [:space :name]) $
               (replace $ #" " "")
               (lower-case $)
-              (if (> (count $) 15) (clojure.string/join (take 10 $)) $)))))
-
-
+              (if (> (count $) 25) (clojure.string/join (take 25 $)) $)))))
 
 (defn validate-inputs [s space]
   (doall
     [(input-valid? (:name s) (:name space))
      (input-valid? (:description s) (:description space))
-     (input-valid? (:alias s) (:alias space))]))
-     ;(input-valid? (:banner s) (:banner space))
-     ;(input-valid? (:logo s) (:logo space))
+     (input-valid? (:alias s) (:alias space))
+     (input-valid? (:logo s) (:logo space))]))
      ;(input-valid? (:properties s) (:properties space))]))
      ;(input-valid? (:admins s) (:admins space))]))
 
@@ -87,9 +84,9 @@
             0 (t :extra-spaces/Namefieldempty)
             1 (t :extra-spaces/Descriptionfieldempty)
             2 (t :extra-spaces/Aliasfieldempty)
+            3 (t :extra-spaces/Missinglogo)
             (t :extra-spaces/Errormsg)))
         (m/modal! (error-msg state) {}))
-
 
       (ajax/POST
        (path-for "/obpv1/spaces/create")
@@ -104,13 +101,14 @@
 (defn edit-space [state]
   (reset! (cursor state [:error-message]) nil)
   (let [data (select-keys @(cursor state [:space])[:id :name :description :alias :logo :css :banner])
-         validate-info (validate-inputs schemas/create-space data)]
+         validate-info (validate-inputs schemas/edit-space data)]
     (if (some false? validate-info)
         (reset! (cursor state [:error-message])
           (case (.indexOf validate-info false)
             0 (t :extra-spaces/Namefieldempty)
             1 (t :extra-spaces/Descriptionfieldempty)
             2 (t :extra-spaces/Aliasfieldempty)
+            3 (t :extra-spaces/Missinglogo)
             (t :extra-spaces/Errormsg)))
 
        (ajax/POST
@@ -157,12 +155,41 @@
          name]
         [:div.media-profile
          [:div.status.join-date
-          (t :extra-spaces/Createdon) ": " (date-from-unix-time (* 1000 ctime))]
+          (t :extra-spaces/createdon) " " (date-from-unix-time (* 1000 ctime))]
         ;[:div.status
          ; [:i.fa.fa-users.fa-fw member_count]]
 
          [:div.status
            [:div.blob {:class status}]
-          [:b (t (keyword (str "extra-spaces/"status)) (when (and valid_until (= status "active")) (str " " (t :extra-spaces/until) (date-from-unix-time (* 1000 valid_until)))))]]]]]]]]))
+          [:b (t (keyword (str "extra-spaces/"status)) (when (and valid_until (= status "active")) (str " " (t :extra-spaces/until) " " (date-from-unix-time (* 1000 valid_until)))))]]]]]]]]))
 
-
+(defn grid-buttons-with-translates [title buttons key all-key state]
+  [:div.form-group
+   [:span._label.filter-opt {:class "control-label col-sm-2"} title]
+   [:div.col-sm-10
+    (let [all-checked? (= ((keyword all-key) @state) true)
+          buttons-checked ((keyword key) @state)]
+      [:div.buttons
+       [:button {:class (str "btn btn-default " (if all-checked? "btn-active"))
+                 :id "btn-all"
+                 :on-click (fn []
+                             (swap! state assoc (keyword key) [])
+                             (swap! state assoc (keyword all-key) true))}
+        (t :core/All)]
+       (doall
+        (for [button buttons]
+          (let [value button
+                checked? (boolean (some #(= value %) buttons-checked))]
+            [:button {:class    (str "btn btn-default " value " " (if checked? "btn-active"))
+                      :key      value
+                      :on-click (fn []
+                                  (swap! state assoc (keyword all-key) false)
+                                  (if checked?
+                                    (do
+                                      (if (= (count buttons-checked) 1)
+                                        (swap! state assoc (keyword all-key) true))
+                                      (swap! state assoc (keyword key)
+                                             (remove (fn [x] (= x value)) buttons-checked)))
+                                    (swap! state assoc (keyword key)
+                                           (conj buttons-checked value))))}
+             (t (keyword (str "extra-spaces/" value)))])))])]])

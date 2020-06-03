@@ -37,6 +37,9 @@ SELECT * FROM space WHERE uuid = :uuid
 --name: select-space-by-name
 SELECT * FROM space WHERE name = :name
 
+--name: select-space-by-alias
+SELECT id, alias FROM space WHERE alias = :alias
+
 --name: select-space-admins
 SELECT us.user_id AS id, us.space_id, us.default_space, u.first_name, u.last_name, u.profile_picture
 FROM user_space us
@@ -81,3 +84,6 @@ SELECT us.user_id AS id, us.space_id, us.default_space, u.first_name, u.last_nam
 FROM user_space us
 JOIN user u ON us.user_id = u.id
 WHERE us.space_id = :space_id AND us.role = 'member'
+
+--name: update-space-status!
+UPDATE space SET status = :status, last_modified_by = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :id

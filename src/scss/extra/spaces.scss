@@ -55,38 +55,6 @@
 
         }
 
-        .blob {
-          background: black;
-          border-radius: 50%;
-          box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
-          margin-right: 3px;
-          height: 10px;
-          width: 10px;
-          transform: scale(1);
-          animation: pulse 2s infinite;
-          display: inline-block;
-
-
-         }
-        .blob.active {
-          	background: green; //rgba(51, 217, 178, 1);
-            box-shadow: 0 0 0 0 green; //rgba(51, 217, 178, 1);
-            animation: pulse-active 2s infinite;
-
-        }
-
-        .blob.suspended {
-          	background: orange; //rgba(255, 121, 63, 1);
-            box-shadow: 0 0 0 0 orange; //rgba(255, 121, 63, 1);
-            animation: pulse-suspended 2s infinite;
-        }
-
-        .blob.deleted {
-           	background: red; //rgba(255, 121, 63, 1);
-            box-shadow: 0 0 0 0 red; //rgba(255, 121, 63, 1);
-            animation: pulse-deleted 2s infinite;
-        }
-
         .status {
           font-family: monospace;
           color: $text-color;
@@ -117,6 +85,11 @@
           vertical-align: middle;
           font-size: 40px;
         }
+   div#add-element-link {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+   }
 
 
 }
@@ -157,6 +130,43 @@
     height: 100px;
     }
   }
+
+#space, #space-gallery #grid {
+        .blob {
+          background: black;
+          border-radius: 50%;
+          box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+          margin-right: 3px;
+          height: 10px;
+          width: 10px;
+          transform: scale(1);
+          animation: pulse 2s infinite;
+          display: inline-block;
+
+
+         }
+        .blob.active {
+          	background: green; //rgba(51, 217, 178, 1);
+            box-shadow: 0 0 0 0 green; //rgba(51, 217, 178, 1);
+            animation: pulse-active 2s infinite;
+
+        }
+
+        .blob.suspended {
+          	background: orange; //rgba(255, 121, 63, 1);
+            box-shadow: 0 0 0 0 orange; //rgba(255, 121, 63, 1);
+            animation: pulse-suspended 2s infinite;
+        }
+
+        .blob.deleted {
+           	background: red; //rgba(255, 121, 63, 1);
+            box-shadow: 0 0 0 0 red; //rgba(255, 121, 63, 1);
+            animation: pulse-deleted 2s infinite;
+        }
+
+}
+
+
 
 @keyframes pulse-active {
 0% {

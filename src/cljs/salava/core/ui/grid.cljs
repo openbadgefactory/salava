@@ -41,6 +41,38 @@
                                              (conj buttons-checked value))))}
                value])))])]]))
 
+(defn translated-grid-buttons [title buttons key all-key state plugin]
+  [:div.form-group
+   [:span._label.filter-opt {:class "control-label col-sm-2"} title]
+   [:div.col-sm-10
+    (let [all-checked? (= ((keyword all-key) @state) true)
+          buttons-checked ((keyword key) @state)]
+      [:div.buttons
+       [:button {:class (str "btn btn-default " (if all-checked? "btn-active"))
+                 :id "btn-all"
+                 :on-click (fn []
+                             (swap! state assoc (keyword key) [])
+                             (swap! state assoc (keyword all-key) true))}
+        (t :core/All)]
+       (doall
+          (for [button buttons]
+            (let [value button
+                  checked? (boolean (some #(= value %) buttons-checked))]
+              [:button {:class    (str "btn btn-default " (if checked? "btn-active"))
+                        :key      value
+                        :on-click (fn [e]
+                                    (.preventDefault e)
+                                    (swap! state assoc (keyword all-key) false)
+                                    (if checked?
+                                      (do
+                                        (if (= (count buttons-checked) 1)
+                                          (swap! state assoc (keyword all-key) true))
+                                        (swap! state assoc (keyword key)
+                                               (remove (fn [x] (= x value)) buttons-checked)))
+                                      (swap! state assoc (keyword key)
+                                             (conj buttons-checked value))))}
+             (t (keyword (str plugin "/" value)))])))])]])
+
 (defn grid-search-field
   ([title field-name placeholder key state]
    (grid-search-field title field-name placeholder key state nil))

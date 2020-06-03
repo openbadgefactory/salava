@@ -11,18 +11,20 @@
     [salava.extra.spaces.ui.creator :as creator]
     [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]))
 
-(defn delete-space! [state]
-  (ajax/DELETE
-    (path-for (str "/obpv1/spaces/delete/" (:id @state)) true)
-    {:handler (fn [data]
-                (when (= (:status data) "success")
-                  ""))}))
+
 
 (defn init-data [id state]
   (ajax/GET
     (path-for (str "/obpv1/spaces/"id))
     {:handler (fn [data]
                 (swap! state assoc :space data))}))
+
+(defn delete-space! [state]
+  (ajax/DELETE
+    (path-for (str "/obpv1/spaces/delete/" (:id @state)) true)
+    {:handler (fn [data]
+                (when (= (:status data) "success")
+                  (m/close-modal!)))}))
 
 (defn downgrade-member! [admin-id state]
   (ajax/POST
@@ -39,6 +41,14 @@
               (when (= "success" (:status data))
                 (init-data (:id @state) state)
                 (reset! (cursor state [:new-admins]) [])))}))
+
+(defn update-status [state status]
+  (ajax/POST
+   (path-for (str "/obpv1/spaces/update_status/" (:id @state)) true)
+   {:params {:status status}
+    :handler (fn [data]
+               (when (= (:status data) "success")
+                 (init-data (:id @state) state)))}))
 
 (defn space-logo [state]
   (let [{:keys [logo name]} @(cursor state [:space])]
@@ -103,57 +113,57 @@
         :data-dismiss "modal"}
        (t :core/Delete)]]]])
 
-(defn manage-space [state]
-  [:div.row
-   [:div.form-group
-    [:div.panel.panel-default
-     [:div.panel-heading
-      (t :extra-spaces/Admins)]
+(defn manage-admins [state]
+  [:div.form-group
+   [:div.panel.panel-default
+    [:div.panel-heading
+     (t :extra-spaces/Admins)]
 
-     [:table {:class "table" :summary (t :badge/Issuers)}
-      [:thead
-       [:tr
-        [:th {:style {:display "none"}}  "Logo"]
-        [:th {:style {:display "none"}} (t :badge/Name)]
-        [:th {:style {:display "none"}} "Action"]]]
-      (into [:tbody]
-        (for [admin @(cursor state [:space :admins])
-              :let [{:keys [id profile_picture first_name last_name]} admin
-                    name (str first_name " " last_name)]]
-          [:tr
-            [:td  [:img {:style {:width "40px" :height "40px"} :alt "" :src (profile-picture profile_picture)}]]
-            [:td.text-center {:style {:vertical-align "middle"}} [:a {:href "#" :on-click #(do
-                                                                                             (.preventDefault %)
-                                                                                             (mo/open-modal [:profile :view] {:user-id id}))}
-                                                                  name]]
-            [:td {:style {:vertical-align "middle"}} (when (= id @(cursor state [:space :last_modified_by])) [:span.label.label-info "last-modified"])]
-            [:td {:style {:text-align "end"}} [:button.btn.btn-primary.btn-bulky
-                                                {:on-click #(do
-                                                              (.preventDefault %)
-                                                              (downgrade-member! id state))
-                                                 :disabled (= 1 (count @(cursor state [:space :admins])))}
-                                                (t :extra-spaces/Downgradetomember)]]]))]
-     [:hr.line]
-     [:div#social-tab {:style {:background-color "ghostwhite" :padding "8px"}}
-      #_[:span._label (t :extra-spaces/Admins)]
-      #_[:p (t :extra-space/Aboutadmins)]
-      [:div
-        [:a {:href "#"
-             :on-click #(do
-                          (.preventDefault %)
-                          (mo/open-modal [:gallery :profiles]
-                           {:type "pickable"
-                            :selected-users-atom (cursor state [:new-admins])
-                            :existing-users-atom (cursor state [:space :admins])
-                            :context "space_admins_modal"} {}))}
+    [:table {:class "table" :summary (t :badge/Issuers)}
+     [:thead
+      [:tr
+       [:th {:style {:display "none"}}  "Logo"]
+       [:th {:style {:display "none"}} (t :badge/Name)]
+       [:th {:style {:display "none"}} "Action"]]]
+     (into [:tbody]
+       (for [admin @(cursor state [:space :admins])
+             :let [{:keys [id profile_picture first_name last_name]} admin
+                   name (str first_name " " last_name)]]
+         [:tr
+           [:td  [:img {:style {:width "40px" :height "40px"} :alt "" :src (profile-picture profile_picture)}]]
+           [:td.text-center {:style {:vertical-align "middle"}} [:a {:href "#" :on-click #(do
+                                                                                            (.preventDefault %)
+                                                                                            (mo/open-modal [:profile :view] {:user-id id}))}
+                                                                 name]]
+           [:td {:style {:vertical-align "middle"}} (when (= id @(cursor state [:space :last_modified_by])) [:span.label.label-info "last-modified"])]
+           [:td {:style {:text-align "end"}} [:button.btn.btn-primary.btn-bulky
+                                               {:on-click #(do
+                                                             (.preventDefault %)
+                                                             (downgrade-member! id state))
+                                                :disabled (= 1 (count @(cursor state [:space :admins])))}
+                                               (t :extra-spaces/Downgradetomember)]]]))]
+    [:hr.line]
+    [:div#social-tab {:style {:background-color "ghostwhite" :padding "8px"}}
+     #_[:span._label (t :extra-spaces/Admins)]
+     #_[:p (t :extra-space/Aboutadmins)]
+     [:div
+       [:a {:href "#"
+            :on-click #(do
+                         (.preventDefault %)
+                         (mo/open-modal [:gallery :profiles]
+                          {:type "pickable"
+                           :selected-users-atom (cursor state [:new-admins])
+                           :existing-users-atom (cursor state [:space :admins])
+                           :context "space_admins_modal"} {}))}
 
-         [:span [:i.fa.fa-user-plus.fa-fw.fa-lg] (t :extra-spaces/Addadmins)]]]
-      (reduce (fn [r u]
-                (let [{:keys [id first_name last_name profile_picture]} u]
-                  (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
-                           [:a {:href "#" :on-click (fn [] (reset! (cursor state [:space :admins]) (->> @(cursor state [:space :admins]) (remove #(= id (:id %))) vec)))}
-                            [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
-              [:div.selected-users-container] @(cursor state [:new-admins]))
+        [:span [:i.fa.fa-user-plus.fa-fw.fa-lg] (t :extra-spaces/Addadmins)]]]
+     (reduce (fn [r u]
+               (let [{:keys [id first_name last_name profile_picture]} u]
+                 (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
+                          [:a {:href "#" :on-click (fn [] (reset! (cursor state [:new-admins]) (->> @(cursor state [:new-admins]) (remove #(= id (:id %))) vec)))}
+                           [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
+             [:div.selected-users-container] @(cursor state [:new-admins]))
+     (when (seq @(cursor state [:new-admins]))
       [:div.btn-toolbar
        [:div.btn-group
         [:button.btn-primary.btn.btn-bulky
@@ -163,12 +173,95 @@
                        (add-admin state))
           :disabled (empty? @(cursor state [:new-admins]))}
          (t :core/Add)]
-        [:button.btn-warning.btn.btn-bulky
+        [:button.btn-danger.btn.btn-bulky
          {:type "button"
           :on-click #(do
                        (.preventDefault %)
                        (reset! (cursor state [:new-admins]) []))}
-         (t :core/Cancel)]]]]]]])
+         (t :core/Delete)]]])]]])
+
+
+(defn manage-status [state]
+  [:div#space-gallery.form-group
+   [:div.panel.panel-default
+    [:div.panel-heading
+     (t :extra-spaces/Status)]
+    [:div.panel-body
+     [:div.row
+      [:div.col-md-12 {:style {:line-height "4"}}
+       [:div.blob {:class @(cursor state [:space :status])}] @(cursor state [:space :status])
+       [:div.pull-right
+        (case @(cursor state [:space :status])
+          "active" [:div.btn-toolbar
+                    [:div.btn-group
+                     [:button.btn.btn-warning.btn-bulky
+                      {:on-click #(do
+                                    (.preventDefault %)
+                                    (update-status state "suspended"))
+                       :role "button"
+                       :aria-label (t :extra-spaces/Suspend)}
+                      (t :extra-spaces/Suspend)]
+                     [:button.btn.btn-danger.btn-bulky
+                      {:on-click #(do
+                                    (.preventDefault %)
+                                    (reset! (cursor state [:delete]) true))
+                                    ;(delete-space! state))
+                       :type "button"
+                       :aria-label (t :core/Delete)}
+                      (t :core/Delete)]]]
+           "suspended" [:div.btn-toolbar
+                        [:div.btn-group
+                         [:button.btn.btn-primary.btn-bulky
+                          {:on-click #(do
+                                        (.preventDefault %)
+                                        (update-status state "active"))
+                           :type "button"
+                           :aria-label (t :extra-spaces/Activate)}
+                          (t :extra-spaces/Activate)]
+                         [:button.btn.btn-danger.btn-bulky
+                          {:on-click #(do
+                                        (.preventDefault %)
+                                        (reset! (cursor state [:delete]) true))
+                                        ;(delete-space! state))
+                           :type "button"
+                           :aria-label (t :core/Delete)}
+                          (t :core/Delete)]]]
+           "deleted"    [:button.btn.btn-primary.btn-bulky
+                          {:on-click #(do
+                                        (.preventDefault %)
+                                        (update-status state "active"))
+                           :type "button"
+                           :aria-label (t :extra-spaces/Undodelete)}
+                         (t :extra-spaces/Undodelete)])]]]
+     (when @(cursor state [:delete])
+       [:div;.row
+         (when (> (:member_count @state) 1) [:p [:b (t :extra-spaces/Aboutdelete)]])
+         [:div.alert.alert-danger
+          (t :badge/Confirmdelete)]
+         [:hr.line]
+         [:div.btn-toolbar.text-center
+          [:div.btn-group {:style {:float "unset"}}
+           [:button.btn.btn-primary
+            {:type "button"
+             :aria-label (t :core/Cancel)
+             :on-click #(do
+                          (.preventDefault %)
+                          (reset! (cursor state [:delete]) false))}
+            (t :core/Cancel)]
+           [:button.btn.btn-danger
+            {:type "button"
+             :on-click #(do
+                          (.preventDefault %)
+                          (delete-space! state))
+             :data-dismiss "modal"}
+            (t :core/Delete)]]]])]]])
+
+
+
+(defn manage-space [state]
+  [:div.row
+   [manage-status state]
+   [manage-admins state]])
 
 (defn space-navi [state]
  (let [disable-link (when (= "deleted" @(cursor state [:space :status])) "btn disabled")]
@@ -187,7 +280,7 @@
            [:div  [:i.nav-icon.fa.fa-cog.fa-lg] (t :extra-spaces/Manage)]]]
        [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 4 (:tab-no @state))) "active")}
         [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [manage-space state]  :tab-no 4)}
-         [:div  [:i.nav-icon.fa.fa-cogs.fa-lg] (t :extra-spaces/Managespace)]]]
+         [:div  [:i.nav-icon.fa.fa-cogs.fa-lg] (t :extra-spaces/Manage)]]]
        [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 5 (:tab-no @state))) "active")}
         [:a.nav-link {:class disable-link :href "#" :on-click #(swap! state assoc :tab [delete-space-content state] :tab-no 5)}
          [:div  [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]]]))
@@ -207,8 +300,6 @@
            5 [delete-space-content state]
            [view-space state]))]]]])
 
-
-
 (defn handler [params]
   (let [id (:id params)
         no-of-members (:member_count params)
@@ -216,11 +307,11 @@
                      :tab-no 1
                      :in-modal true
                      :member_count no-of-members
-                     :new-admins []})]
+                     :new-admins []
+                     :delete false})]
     (init-data id state)
     (fn []
       [space-content state])))
-
 
 (def ^:export modalroutes
   {:space {:info handler}})
