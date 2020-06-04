@@ -1,12 +1,12 @@
 -- name: create-space<!
 -- create new space
 INSERT INTO space
-  (uuid, name, alias, description, logo, banner, status, visibility, valid_until, ctime, mtime)
+  (uuid, name, alias, description, url, logo, banner, status, visibility, valid_until, ctime, mtime)
 VALUES
-  (:uuid, :name, :alias, :description, :logo, :banner, :status, :visibility, :valid_until, UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
+  (:uuid, :name, :alias, :description, :url, :logo, :banner, :status, :visibility, :valid_until, UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
 
 --name: update-space-information!
-UPDATE space SET name = :name, description = :description, logo = :logo, banner = :banner, mtime= UNIX_TIMESTAMP(), last_modified_by= :user_id
+UPDATE space SET name = :name, description = :description, url = :url, logo = :logo, banner = :banner, mtime= UNIX_TIMESTAMP(), last_modified_by= :user_id
 WHERE id = :id
 
 -- name: select-email-address
@@ -39,6 +39,9 @@ SELECT * FROM space WHERE name = :name
 
 --name: select-space-by-alias
 SELECT id, alias FROM space WHERE alias = :alias
+
+--name: select-deleted-spaces
+SELECT id, name, mtime FROM space WHERE status = 'deleted'
 
 --name: select-space-admins
 SELECT us.user_id AS id, us.space_id, us.default_space, u.first_name, u.last_name, u.profile_picture
@@ -74,10 +77,10 @@ UPDATE space SET status = "deleted", last_modified_by = :user_id, mtime = UNIX_T
 SELECT COUNT(DISTINCT user_id) AS count FROM user_space WHERE space_id = :id
 
 --name: downgrade-to-member!
-UPDATE user_space SET role = 'member' WHERE space_id = :id AND user_id = :admin
+UPDATE user_space SET role = 'member', mtime = UNIX_TIMESTAMP() WHERE space_id = :id AND user_id = :admin
 
 --name: upgrade-member-to-admin!
-UPDATE user_space SET role = 'admin' WHERE space_id = :id AND user_id = :admin
+UPDATE user_space SET role = 'admin', mtime = UNIX_TIMESTAMP() WHERE space_id = :id AND user_id = :admin
 
 --name: select-space-members
 SELECT us.user_id AS id, us.space_id, us.default_space, u.first_name, u.last_name, u.profile_picture
@@ -87,3 +90,13 @@ WHERE us.space_id = :space_id AND us.role = 'member'
 
 --name: update-space-status!
 UPDATE space SET status = :status, last_modified_by = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: select-user-spaces
+SELECT us.space_id, us.user_id, us.role, us.default_space, us.ctime, s.id, s.name, s.logo
+FROM user_space us
+JOIN space s ON s.id = us.space_id
+WHERE us.user_id = :id
+GROUP BY us.space_id
+
+--name: remove-user-from-space!
+DELETE FROM user_space WHERE space_id = :space_id AND user_id = :user_id

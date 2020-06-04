@@ -73,7 +73,7 @@
  (when (alias-exists? ctx (:alias space)) (throw+ "extra-spaces/Aliasexistserror"))
  (jdbc/with-db-transaction [tx (:connection (u/get-db ctx))]
   (let [space_id (-> space
-                   (dissoc :id :admin)
+                   (dissoc :id :admins)
                    (assoc :logo (save-image! ctx (:logo space)) :banner (save-image! ctx (:banner space)))
                    (create-space<! {:connection tx})
                    :generated_key)]
@@ -88,8 +88,12 @@
   (let [data (assoc space
                :id id :user_id user-id
                :last_modified_by user-id
-               :logo (if (re-find #"^data:image" (:logo space)) (save-image! ctx (:logo space)) (:logo space))
-               :banner (if (re-find #"^data:image" (:banner space)) (save-image! ctx (:banner space)) (:banner space)))]
+               :logo (if (and (not (blank? (:logo space))) (re-find #"^data:image" (:logo space)))
+                         (save-image! ctx (:logo space))
+                         (:logo space))
+               :banner (if (and (not (blank? (:banner space))) (re-find #"^data:image" (:banner space)))
+                         (save-image! ctx (:banner space))
+                         (:banner space)))]
     (update-space-information! data (u/get-db ctx))
     (when (:css space) (save-space-property ctx id "css" (:css data)))))
 
@@ -115,3 +119,9 @@
   (select-all-active-spaces {} (u/get-db ctx)))
 
 (defn suspended-spaces [ctx])
+
+(defn deleted-spaces [ctx]
+  (select-deleted-spaces {} (u/get-db ctx))) 
+
+(defn get-user-spaces [ctx user-id]
+  (select-user-spaces {:id user-id} (u/get-db ctx)))

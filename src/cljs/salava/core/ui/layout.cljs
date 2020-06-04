@@ -201,13 +201,18 @@
         about-page (get-in site-navi [:navi-items matched-route :about])]
     (if matched-route
       [:h1 (get-in site-navi [:navi-items matched-route :breadcrumb]) (when about-page
-                                                                        [:a {:style {:color "inherit"} 
+                                                                        [:a {:style {:color "inherit"}
                                                                              :on-click #(do
                                                                                           (.preventDefault %)
                                                                                           (m/modal! [about-page-modal about-page]))}
 
                                                                          [:i.fa.fa-question-circle.fa-fw]])]
       (get-dropdown-breadcrumb site-navi))))
+
+(defn spaces []
+ (into [:div]
+       (for [f (plugin-fun (session/get :plugins) "block" "space_list")]
+         [f])))
 
 (defn default-0 [top-items sub-items heading content]
   [:div {:role "main"}
@@ -232,7 +237,9 @@
    [:img {:id "print-logo" :src "/img/logo.png" :alt "site logo"}]
    [:div {:class "title-row"}
     [:div {:class "container"}
-     (breadcrumb site-navi)]]
+     (breadcrumb site-navi)
+     [spaces]]]
+
    [:div {:class "container main-container"}
     #_(when (session/get-in [:about-page])
          [about-page (session/get-in [:about-page])])

@@ -6,7 +6,7 @@
   [salava.core.ui.ajax-utils :as ajax]
   [salava.core.i18n :refer [t translate-text]]
   [salava.core.time :refer [date-from-unix-time]]
-  [salava.core.ui.helper :refer [input-valid? path-for navigate-to]]
+  [salava.core.ui.helper :refer [input-valid? path-for navigate-to url?]]
   [salava.core.ui.modal :as mo]
   [salava.user.ui.helper :refer [profile-picture]]
   [salava.extra.spaces.schemas :as schemas]))
@@ -30,7 +30,9 @@
     [(input-valid? (:name s) (:name space))
      (input-valid? (:description s) (:description space))
      (input-valid? (:alias s) (:alias space))
-     (input-valid? (:logo s) (:logo space))]))
+     (input-valid? (:logo s) (:logo space))
+     (input-valid? (:url s) (:url space))
+     (url? (:url space))]))
      ;(input-valid? (:properties s) (:properties space))]))
      ;(input-valid? (:admins s) (:admins space))]))
 
@@ -85,6 +87,8 @@
             1 (t :extra-spaces/Descriptionfieldempty)
             2 (t :extra-spaces/Aliasfieldempty)
             3 (t :extra-spaces/Missinglogo)
+            4 (t :extra-spaces/Urlfieldempty)
+            5 (t :extra-spaces/Invalidurlerror)
             (t :extra-spaces/Errormsg)))
         (m/modal! (error-msg state) {}))
 
@@ -100,7 +104,7 @@
 
 (defn edit-space [state]
   (reset! (cursor state [:error-message]) nil)
-  (let [data (select-keys @(cursor state [:space])[:id :name :description :alias :logo :css :banner])
+  (let [data (select-keys @(cursor state [:space])[:id :name :description :alias :url :logo :css :banner])
          validate-info (validate-inputs schemas/edit-space data)]
     (if (some false? validate-info)
         (reset! (cursor state [:error-message])
@@ -109,17 +113,18 @@
             1 (t :extra-spaces/Descriptionfieldempty)
             2 (t :extra-spaces/Aliasfieldempty)
             3 (t :extra-spaces/Missinglogo)
+            4 (t :extra-spaces/Urlfieldempty)
+            5 (t :extra-spaces/Invalidurlerror)
             (t :extra-spaces/Errormsg)))
 
        (ajax/POST
         (path-for (str "/obpv1/spaces/edit/" @(cursor state [:space :id])))
-        {:params data #_(-> @(cursor state [:space])
-                          (assoc :admins (mapv :id @(cursor state [:space :admins]))))
-          :handler (fn [data]
-                    (when (= (:status data) "error")
-                      (reset! (cursor state [:error-message]) data))
-                    (when (= (:status data) "success")
-                      (swap! state assoc :tab nil :tab-no 1)))}))))
+        {:params data
+         :handler (fn [data]
+                   (when (= (:status data) "error")
+                     (reset! (cursor state [:error-message]) data))
+                   (when (= (:status data) "success")
+                     (swap! state assoc :tab nil :tab-no 1)))}))))
 
 
 (defn profile-link-inline-modal [id first_name last_name picture]
@@ -156,11 +161,11 @@
         [:div.media-profile
          [:div.status.join-date
           (t :extra-spaces/createdon) " " (date-from-unix-time (* 1000 ctime))]
-        ;[:div.status
-         ; [:i.fa.fa-users.fa-fw member_count]]
+         [:div.status
+           [:i.fa.fa-users.fa-fw.fa-1x] member_count " " (t :extra-spaces/members)] 
 
          [:div.status
-           [:div.blob {:class status}]
+          [:div.blob {:class status}]
           [:b (t (keyword (str "extra-spaces/"status)) (when (and valid_until (= status "active")) (str " " (t :extra-spaces/until) " " (date-from-unix-time (* 1000 valid_until)))))]]]]]]]]))
 
 (defn grid-buttons-with-translates [title buttons key all-key state]

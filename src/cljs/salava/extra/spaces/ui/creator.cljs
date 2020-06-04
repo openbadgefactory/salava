@@ -51,7 +51,6 @@
                   (if (:in-modal @state)
                       (reset! (cursor state [type :error]) (:message data))
                       (m/modal! (upload-modal data) {:hidden #(reset! alert-atom false)}))))})))
-       ;:finally (fn [] (reset! (cursor state [type :error]) nil))})))
 
 (defn create-form [state]
   (let [{:keys [logo banner name]} @(cursor state [:space])]
@@ -96,13 +95,20 @@
                                   (replace $ #" " "")
                                   (lower-case $)
                                   (if (> (count $) 25) (clojure.string/join (take 25 $)) $)))}]
-            [:p {:style {:margin-top "5px"}} [:b (str (str (session/get :site-url) " " (session/get :base-path) "/") @(cursor state [:space :alias]))]]])
+            [:p {:style {:margin-top "5px"}} [:b (str (str (session/get :site-url) " " (session/get :base-path) "/spaces/member/") @(cursor state [:space :alias]))]]])
           [:div.form-group
            [:label {:for "input-description"} (t :extra-spaces/Description) [:span.form-required " *"]]
            [textarea
             {:name "description"
              :atom (cursor state [:space :description])
              :placeholder (t :extra-spaces/Inputdescription)}]]
+          [:div.form-group
+           [:label {:for "input-url"} (t :admin/Url) [:span.form-required " *"]]
+           [text-field
+             {:name "url"
+              :atom (cursor state [:space :url])
+              :placeholder "https://"}]]
+
           [:div.form-group
            [:label {:for "input-logo"} (t :extra-spaces/Logo) [:span.form-required " *"]]
            [:p (t :badge/Uploadimginstructions)]
@@ -246,7 +252,7 @@
            :on-click #(do
                         (.preventDefault %)
                         (edit-space state))}
-          (t :extra-spaces/Editspace)]
+          (t :core/Save)]
          [:button.btn.btn-warning.btn-bulky
           {:type "button"
            :on-click #(do

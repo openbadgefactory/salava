@@ -14,6 +14,7 @@
                     :name (s/conditional #(not (blank? %)) s/Str)
                     :alias (s/conditional #(not (blank? %)) s/Str)
                     :description (s/conditional #(not (blank? %)) s/Str)
+                    :url (s/conditional #(not (blank? %)) s/Str)
                     :logo (s/conditional #(not (blank? %)) s/Str)
                     (s/optional-key :banner) (s/maybe s/Str)
                     :visibility (s/enum "public" "private")

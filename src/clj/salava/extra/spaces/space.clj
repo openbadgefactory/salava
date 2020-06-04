@@ -73,7 +73,15 @@
    (log/error _)
    {:status "error"})))
 
-(defn switch [space-id])
+(defn switch! [space-id])
+
+(defn leave! [ctx space-id user-id]
+ (try+
+  (remove-user-from-space! {:space_id space-id :user_id user-id} (get-db ctx))
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error"})))
 
 (defn get-space [ctx id]
   (db/get-space-information ctx id))

@@ -74,7 +74,7 @@
         {:keys [p-color s-color t-color]} css]
     [:div {:style {:line-height "2.5"}}
       [space-banner state]
-      [:h1.uppercase-header name]
+      [:h1.uppercase-header {:style {:word-break "break-word"}} name]
       [:p [:b description]]
       [:div [:span._label (str (t :extra-spaces/Alias) ":  ")] alias]
       [:div [:span._label (str (t :extra-spaces/createdon) ":  ")] (date-from-unix-time (* 1000 ctime))]
@@ -88,7 +88,6 @@
 
 (defn edit-space [state]
    [creator/modal-content state])
-
 
 (defn delete-space-content [state]
   [:div.row
@@ -116,7 +115,7 @@
 (defn manage-admins [state]
   [:div.form-group
    [:div.panel.panel-default
-    [:div.panel-heading
+    [:div.panel-heading.weighted
      (t :extra-spaces/Admins)]
 
     [:table {:class "table" :summary (t :badge/Issuers)}
@@ -180,11 +179,10 @@
                        (reset! (cursor state [:new-admins]) []))}
          (t :core/Delete)]]])]]])
 
-
 (defn manage-status [state]
   [:div#space-gallery.form-group
    [:div.panel.panel-default
-    [:div.panel-heading
+    [:div.panel-heading.weighted
      (t :extra-spaces/Status)]
     [:div.panel-body
      [:div.row
@@ -255,8 +253,6 @@
                           (delete-space! state))
              :data-dismiss "modal"}
             (t :core/Delete)]]]])]]])
-
-
 
 (defn manage-space [state]
   [:div.row

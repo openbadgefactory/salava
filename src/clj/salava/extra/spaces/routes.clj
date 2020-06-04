@@ -17,6 +17,8 @@
    (context "/admin" []
             (layout/main ctx "/spaces")
             (layout/main ctx "/spaces/creator"))
+   (context "/connections" []
+            (layout/main ctx "/spaces"))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]
@@ -33,6 +35,20 @@
                   :path-params [id :- s/Int]
                   :current-user current-user
                   (ok (space/get-space ctx id)))
+
+            (POST "/user" []
+                   :auth-rules access/authenticated
+                   :summary "Get all spaces user belongs to"
+                   :current-user current-user
+                   (ok (db/get-user-spaces ctx (:id current-user))))
+
+            (DELETE "/user/leave/:id" []
+                   :return {:status (s/enum "success" "error")}
+                   :auth-rules access/authenticated
+                   :summary "Leave organization"
+                   :path-params [id :- s/Int]
+                   :current-user current-user
+                   (ok (space/leave! ctx id (:id current-user))))
 
             (POST "/add_admin/:id" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
