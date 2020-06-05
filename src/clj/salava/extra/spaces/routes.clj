@@ -50,6 +50,14 @@
                    :current-user current-user
                    (ok (space/leave! ctx id (:id current-user))))
 
+            (POST "/user/default/:id" []
+                   :return {:status (s/enum "success" "error")}
+                   :auth-rules access/authenticated
+                   :summary "Set space as default"
+                   :path-params [id :- s/Int]
+                   :current-user current-user
+                   (ok (db/set-default-space ctx id (:id current-user))))
+
             (POST "/add_admin/:id" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
                   :auth-rules access/admin
@@ -58,6 +66,14 @@
                   :body-params [admins :- [s/Int]]
                   :current-user current-user
                   (ok (db/add-space-admins ctx id admins)))
+
+            (POST "/switch/:id" req
+                  ;:return {:status (s/enum "success" "error")}
+                  :auth-rules access/authenticated
+                  :summary "Switch space"
+                  :path-params [id :- s/Int]
+                  :current-user current-user
+                  (space/switch! ctx (ok {:status "success"}) current-user id))
 
             (POST "/create" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}

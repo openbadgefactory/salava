@@ -73,7 +73,14 @@
    (log/error _)
    {:status "error"})))
 
-(defn switch! [space-id])
+(defn get-space
+ ([ctx id]
+  (db/get-space-information ctx id))
+ ([ctx id user-id]
+  (assoc (get-space ctx id) :role (select-user-space-role {:user_id user-id :space_id id} (into {:result-set-fn first :row-fn :role} (get-db ctx))))))
+
+(defn switch! [ctx ok-status current-user space-id]
+  (assoc-in ok-status [:session :identity] (assoc current-user :current-space (dissoc (get-space ctx space-id (:id current-user)) :admins))))
 
 (defn leave! [ctx space-id user-id]
  (try+
@@ -83,8 +90,7 @@
     (log/error _)
     {:status "error"})))
 
-(defn get-space [ctx id]
-  (db/get-space-information ctx id))
+
 
 (def space [:id :uuid :name :description :logo :banner :status :visibility :ctime :mtime :last-modified-by])
 (def user_space [:id :user_id :space_id :role :default_space :ctime :mtime])

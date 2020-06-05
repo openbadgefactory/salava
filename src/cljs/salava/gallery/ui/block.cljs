@@ -297,6 +297,7 @@
                                                {:on-click #(do (reset! selected-users-atom []) (m/close-modal!))}
                                                (t :core/Cancel)]])
                                             (when  (= context "space_admins_modal")
+                                             (prn "hahaha")
                                              [:div
                                               [:button.btn.btn-primary.btn-bulky
                                                {:on-click #(mo/previous-view)

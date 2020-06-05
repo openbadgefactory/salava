@@ -100,3 +100,12 @@ GROUP BY us.space_id
 
 --name: remove-user-from-space!
 DELETE FROM user_space WHERE space_id = :space_id AND user_id = :user_id
+
+--name: reset-default-space-value!
+UPDATE user_space SET default_space = 0, mtime = UNIX_TIMESTAMP() WHERE user_id = :user_id
+
+--name: set-default-space!
+UPDATE user_space SET default_space = 1, mtime = UNIX_TIMESTAMP() WHERE user_id = :user_id AND space_id = :space_id
+
+--name: select-user-space-role
+SELECT role FROM user_space WHERE space_id = :space_id AND user_id = :user_id

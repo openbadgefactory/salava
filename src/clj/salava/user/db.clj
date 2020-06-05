@@ -433,9 +433,11 @@
 (defn set-session [ctx ok-status user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)
         last-visited (last-visited ctx user-id)
-        expires (+ (long (/ (System/currentTimeMillis) 1000)) (get-in ctx [:config :core :session :max-age]))]
+        expires (+ (long (/ (System/currentTimeMillis) 1000)) (get-in ctx [:config :core :session :max-age]))
+        user-spaces (as-> (first (plugin-fun (get-plugins ctx) "db" "get-user-spaces")) $
+                          (if (ifn? $) ($ ctx user-id) nil))]
     (-> ok-status
-        (assoc-in [:session :identity] {:id id :role role :private private :activated activated :last-visited last-visited :expires expires})
+        (assoc-in [:session :identity] {:id id :role role :private private :activated activated :last-visited last-visited :expires expires :spaces user-spaces})
         (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"}))))
 
 (defn finalize-login [ctx ok-res user-id pending-badge-id new-account]

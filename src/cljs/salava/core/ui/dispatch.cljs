@@ -79,7 +79,7 @@
 (defn main-view []
   (fn []
     (let [{:keys [handler route-params]} @current-route]
-      [ (handler site-navi route-params) ])))
+      [ (handler site-navi route-params)])))
 
 (defonce history (pushy/pushy set-route! (partial b/match-route (:routes site-navi))))
 

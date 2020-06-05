@@ -121,7 +121,16 @@
 (defn suspended-spaces [ctx])
 
 (defn deleted-spaces [ctx]
-  (select-deleted-spaces {} (u/get-db ctx))) 
+  (select-deleted-spaces {} (u/get-db ctx)))
 
 (defn get-user-spaces [ctx user-id]
   (select-user-spaces {:id user-id} (u/get-db ctx)))
+
+(defn set-default-space [ctx space-id user-id]
+ (try+
+  (reset-default-space-value! {:user_id user-id} (u/get-db ctx))
+  (set-default-space! {:space_id space-id :user_id user-id} (u/get-db ctx))
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error"})))

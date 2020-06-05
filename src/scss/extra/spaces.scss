@@ -239,7 +239,11 @@
       font-size: large;
       font-weight: 600;
       a {
-        color: inherit !important}
+        color: inherit !important;
+      }
+      ul {
+        color: $link-color !important;
+      }
     }
   }
 }
