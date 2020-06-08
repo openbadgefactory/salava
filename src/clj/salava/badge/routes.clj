@@ -64,7 +64,14 @@
                        (ok badge))
                      (if (and (not user-id) (= visibility "internal"))
                        (unauthorized)
-                       (not-found))))))
+                       (not-found)))))
+
+            (GET "/congratulations/:user-badge-id" []
+                 :return schemas/congratulations-p
+                 :path-params [user-badge-id :- Long]
+                 :summary "badge congratulations"
+                 :current-user current-user
+                 (ok (b/get-congratulations-p ctx user-badge-id (:id current-user)))))
 
    (context "/obpv1/badge" []
             :tags  ["badge"]
@@ -382,7 +389,7 @@
             :tags ["badge_user_endorsements"]
 
             (GET "/:user-badge-id" []
-                 :no-doc true
+                 ;:no-doc true
                  :return endoschemas/user-badge-endorsement
                  :path-params [user-badge-id :- Long]
                  :summary "Get user badge endorsements"

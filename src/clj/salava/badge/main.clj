@@ -287,6 +287,14 @@
                   ;:qr_code (u/str->qr-base64 (badge-url ctx badge-id)))
             (dissoc :badge_id :deleted :obf_url))))
 
+(defn get-congratulations-p
+  "Get badge by id, public route"
+  [ctx badge-id user-id]
+  {:congratulations
+   (if user-id
+     (select-all-badge-congratulations {:user_badge_id badge-id} (u/get-db ctx))
+     [])})
+
 (defn get-endorsements [ctx badge-id]
   (map (fn [e]
          {:id (:id e)

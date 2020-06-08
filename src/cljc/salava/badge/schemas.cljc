@@ -47,7 +47,8 @@
 (s/defschema congratulation {:id s/Int
                              :first_name (s/maybe s/Str)
                              :last_name (s/maybe s/Str)
-                             :profile_picture (s/maybe s/Str)})
+                             :profile_picture (s/maybe s/Str)
+                             (s/optional-key :ctime) s/Int})
 
 (s/defschema evidence-properties {(s/optional-key :hidden)         (describe (s/maybe s/Bool) "evidence visibility flag")
                                   (s/optional-key  :resource_id)   (describe (s/maybe s/Int) "used internally, attached evidence resource id")
@@ -144,6 +145,8 @@
                                              ;(s/optional-key :qr_code)                (s/maybe s/Str)
                                              ;(s/optional-key :email)                  (describe (s/maybe s/Str) "email badge was issued to")
                                              ;(s/optional-key :user_id)                (s/maybe s/Int))))
+
+(s/defschema congratulations-p {:congratulations [congratulation]})
 
 (s/defschema verification {:type                                  (s/enum "HostedBadge" "SignedBadge" "hosted" "signed")
                            (s/optional-key :url)                  (s/maybe s/Str)

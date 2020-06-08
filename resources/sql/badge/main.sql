@@ -310,11 +310,13 @@ GROUP BY badge.id, bc.language_code, cc.language_code, ic.language_code
 --name: select-badge-detail-count-p
 --get badge endorsement, evicence and congratulation counts by id
 SELECT
-(COUNT(DISTINCT ube.id) + COUNT(DISTINCT be.endorsement_content_id)) AS endorsement_count,
+(COUNT(DISTINCT ube.id) + COUNT(DISTINCT be.endorsement_content_id) + COUNT(DISTINCT ie.endorsement_content_id)) AS endorsement_count,
 COUNT(DISTINCT ue.id) AS evidence_count,
 COUNT(DISTINCT c.user_id) AS congratulation_count
 FROM user_badge ub
 LEFT JOIN badge_endorsement_content be ON be.badge_id = ub.badge_id
+LEFT JOIN badge_issuer_content bi ON bi.badge_id = ub.badge_id
+LEFT JOIN issuer_endorsement_content ie ON bi.issuer_content_id = ie.issuer_content_id
 LEFT JOIN user_badge_endorsement ube ON (ube.user_badge_id = ub.id AND ube.status = 'accepted')
 LEFT JOIN user_badge_evidence ue ON ue.user_badge_id = ub.id
 LEFT JOIN badge_congratulation c ON c.user_badge_id = ub.id
@@ -576,9 +578,9 @@ INSERT INTO badge_congratulation (user_badge_id, user_id, ctime) VALUES (:user_b
 
 --name: select-all-badge-congratulations
 --get all users who congratulated another user from specific badge
-SELECT u.id, first_name, last_name, profile_picture FROM user AS u
-       JOIN badge_congratulation AS b ON u.id = b.user_id
-       WHERE b.user_badge_id = :user_badge_id
+SELECT u.id, u.first_name, u.last_name, u.profile_picture, bc.ctime FROM user u
+INNER JOIN badge_congratulation AS bc ON u.id = bc.user_id
+WHERE bc.user_badge_id = :user_badge_id
 
 --name: insert-badge-viewed!
 --save badge view information
