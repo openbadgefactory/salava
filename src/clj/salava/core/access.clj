@@ -13,3 +13,8 @@
   (and
    (authenticated? req)
    (= "admin" (get-in req [:identity :role]))))
+
+(defn space-admin [req]
+ (or
+  (admin req)
+  (= "admin" (get-in req [:identity :current-space :role]))))

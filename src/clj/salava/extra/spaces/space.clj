@@ -62,6 +62,14 @@
    (log/error _)
    {:status "error"})))
 
+(defn upgrade! [ctx id admin-id]
+ (try+
+  (upgrade-member-to-admin! {:id id :admin admin-id} (get-db ctx))
+  {:status "success"}
+  (catch Object _
+   (log/error _)
+   {:status "error"})))
+
 #_(defn suspend! [ctx space-id admin-id]
     (suspend-space! {:id space-id :user_id admin-id} (get-db ctx)))
 
@@ -90,6 +98,8 @@
     (log/error _)
     {:status "error"})))
 
+(defn members [ctx space-id]
+  (select-space-members-all {:space_id space-id} (get-db ctx)))
 
 
 (def space [:id :uuid :name :description :logo :banner :status :visibility :ctime :mtime :last-modified-by])

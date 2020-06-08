@@ -191,7 +191,6 @@
                                (str "/obpv1/gallery/profiles"))
                          :sent-requests []
                          :email ""})]
-    (prn params)
     (create-class {:reagent-render (fn []
                                      [:div
                                       [:div {:id "social-tab"}
@@ -297,7 +296,6 @@
                                                {:on-click #(do (reset! selected-users-atom []) (m/close-modal!))}
                                                (t :core/Cancel)]])
                                             (when  (= context "space_admins_modal")
-                                             (prn "hahaha")
                                              [:div
                                               [:button.btn.btn-primary.btn-bulky
                                                {:on-click #(mo/previous-view)

@@ -45,7 +45,7 @@
   {:status "success"}
   (catch Object _
    (log/error _)
-   {:status "error"})))
+   {:status "error"}))) 
 
 (defn space-exists?
   "check if space name already exists"

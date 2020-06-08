@@ -10,13 +10,17 @@
 
 
 (defn stylyze-buttons [btn-class color])
-
+(defn stylyze-links [color]
+  (doall
+   (doseq [a (sel :a)]
+      (dommy/set-style! a :color color))))
 
 (defn stylyze []
   (let [{:keys [p-color s-color t-color]} (session/get-in [:user :current-space :css])]
    (doall
     [(dommy/set-style! (sel1 ".title-row") :background "none" :background-color p-color)
-     (stylyze-buttons ".btn-default" p-color)])))
+     (stylyze-buttons ".btn-default" p-color)
+     (stylyze-links p-color)])))
 
 
 (defn init-spaces [state]
@@ -85,6 +89,13 @@
 
     [:div.well.well-sm (t :extra-spaces/Notjoinedanyorg)])))
 
+(defn next-url [space]
+  (let [current-path (current-route-path)
+        admin? (= (:role space) "admin")]
+    (if admin?
+      current-path
+      (if (clojure.string/starts-with? current-path "/space") "/social" current-path))))
+
 
 (defn space-list []
  (let [state (atom {:selected  nil})
@@ -94,7 +105,7 @@
   (fn []
    (let [spaces @(cursor state [:spaces])
          default-space (->> spaces (filter #(pos? (:default_space %))) first :name)]
-     (when spaces #_(seq @(cursor state [:spaces]))
+     (when (seq spaces) #_(seq @(cursor state [:spaces]))
        [:div#space-list
         [:div.dropdown
          [:a.dropdown-toggle {:href "#"
@@ -112,7 +123,7 @@
                                                                          (ajax/POST
                                                                           (path-for (str "/obpv1/spaces/switch/" (:id space))true)
                                                                           {:handler (fn [data]
-                                                                                      (js-navigate-to (current-route-path)))}))}
+                                                                                      (js-navigate-to (next-url space)))}))}
 
                                                 (if selected? [:b [:i (:name space)]] (:name space))]])))
           [:ul.dropdown-menu.pull-left]

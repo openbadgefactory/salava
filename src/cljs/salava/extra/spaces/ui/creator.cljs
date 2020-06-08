@@ -210,30 +210,38 @@
                              (.preventDefault %)
                              (reset! (cursor state [:space :css :t-color]) (.-target.value %)))}]]]
 
-          [:div#social-tab.form-group {:style {:background-color "ghostwhite" :padding "8px"}}
-           [:span._label (t :extra-spaces/Admins)]
-           [:p (t :extra-spaces/Aboutadmins)]
-           [:div
-             [:a {:href "#"
-                  :on-click #(do
-                               (.preventDefault %)
-                               (mo/open-modal [:gallery :profiles]
-                                {:type "pickable"
-                                 :selected-users-atom (cursor state [:space :admins])
-                                 :context "space_admins"} {}))}
+          (when-not (:in-modal @state)
+           [:div#social-tab.form-group {:style {:background-color "ghostwhite" :padding "8px"}}
+             [:span._label (t :extra-spaces/Admins)]
+             [:p (t :extra-spaces/Aboutadmins)]
+             [:div
+               [:a {:href "#"
+                    :on-click #(do
+                                 (.preventDefault %)
+                                 (if-not (:in-modal @state)
+                                    (mo/open-modal [:gallery :profiles]
+                                     {:type "pickable"
+                                      :selected-users-atom (cursor state [:space :admins])
+                                      :context "space_admins"} {})
+                                    (mo/open-modal [:gallery :profiles]
+                                     {:type "pickable"
+                                      :selected-users-atom (cursor state [:new-admins])
+                                      :existing-users-atom (cursor state [:space :admins])
+                                      :context "space_admins_modal"})))}
 
-              [:span [:i.fa.fa-user-plus.fa-fw.fa-lg] (t :extra-spaces/Addadmins)]]]
-           #_(when (seq @(cursor state [:space :admins]))
-               [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw]
-                [:a {:href "#"
-                     :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom (cursor state [:space :admins]) :context "space_admins"})}
-                 (t :badge/Editselectedusers)]])
-           (reduce (fn [r u]
-                     (let [{:keys [id first_name last_name profile_picture]} u]
-                       (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
-                                [:a {:href "#" :on-click (fn [] (reset! (cursor state [:space :admins]) (->> @(cursor state [:space :admins]) (remove #(= id (:id %))) vec)))}
-                                 [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
-                   [:div.selected-users-container] @(cursor state [:space :admins]))]]]]]]]]))
+                [:span [:i.fa.fa-user-plus.fa-fw.fa-lg] (t :extra-spaces/Addadmins)]]]
+             #_(when (seq @(cursor state [:space :admins]))
+                 [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw]
+                  [:a {:href "#"
+                       :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom (cursor state [:space :admins]) :context "space_admins"})}
+                   (t :badge/Editselectedusers)]])
+             (reduce (fn [r u]
+                       (let [{:keys [id first_name last_name profile_picture]} u]
+                         (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
+                                  [:a {:href "#" :on-click (fn [] (reset! (cursor state [:space :admins]) (->> @(cursor state [:space :admins]) (remove #(= id (:id %))) vec)))}
+                                   [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
+                     [:div.selected-users-container]
+                     (if (:in-modal @state)(concat @(cursor state [:space :admins])  @(cursor state [:new-admins]))))])]]]]]]]))
 
 (defn modal-content [state]
   (let [{:keys [logo banner name]} @(cursor state [:space])]

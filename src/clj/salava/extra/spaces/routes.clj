@@ -16,9 +16,17 @@
   (routes
    (context "/admin" []
             (layout/main ctx "/spaces")
-            (layout/main ctx "/spaces/creator"))
+            (layout/main ctx "/spaces/creator")
+            (layout/main ctx "/spaces/user/admin"))
    (context "/connections" []
             (layout/main ctx "/spaces"))
+
+   (context "/space" []
+            (layout/main ctx "/admin")
+            (layout/main ctx "/stats")
+            (layout/main ctx "/manage")
+            (layout/main ctx "/users"))
+
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]
@@ -35,6 +43,23 @@
                   :path-params [id :- s/Int]
                   :current-user current-user
                   (ok (space/get-space ctx id)))
+
+            (POST "/userlist/:id" []
+                   :auth-rules access/space-admin
+                   :summary "Get the members of an organization"
+                   :path-params [id :- s/Int]
+                   :current-user current-user
+                   (ok (space/members ctx id)))
+
+            (POST "/remove_user/:id/:user_id" []
+                    :return {:status (s/enum "success" "error")}
+                    :auth-rules access/space-admin
+                    :summary "Remove user from organization"
+                    :path-params [id :- s/Int
+                                  user_id :- s/Int]
+                    :current-user current-user
+                    ;(when (= user_id (:id current-user)))
+                    (ok (space/leave! ctx id user_id)))
 
             (POST "/user" []
                    :auth-rules access/authenticated
@@ -88,9 +113,18 @@
                 :path-params [id :- s/Int
                               admin-id :- s/Int]
                 :summary "downgrade admin to space member"
-                :auth-rules access/admin
+                :auth-rules access/space-admin
                 :current-user current-user
                 (ok (space/downgrade! ctx id admin-id)))
+
+            (POST "/upgrade/:id/:admin-id" []
+             :return {:status (s/enum "success" "error")}
+             :path-params [id :- s/Int
+                           admin-id :- s/Int]
+             :summary "upgrade member to space admin"
+             :auth-rules access/space-admin
+             :current-user current-user
+             (ok (space/upgrade! ctx id admin-id)))
 
             (POST "/edit/:id" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
