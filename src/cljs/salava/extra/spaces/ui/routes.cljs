@@ -14,7 +14,7 @@
   {(str (base-path context) "/admin/spaces") [["" my/handler]
                                               ["/creator" sc/handler]]
    (str (base-path context) "/connections") [["/spaces" block/manage-spaces-handler]]
-   (str (base-path context) "/space") [["/admin" block/manage-spaces-handler]
+   (str (base-path context) "/space") [["/admin" stats/handler]
                                        ["/users" users/handler]
                                        ["/stats" stats/handler]]})
 

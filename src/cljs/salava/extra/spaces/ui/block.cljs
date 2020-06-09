@@ -84,7 +84,7 @@
                                 (if logo [:img.badge-icon {:src (str "/" logo) :alt (str name " icon")}]
                                          [:span [:i.fa.fa-building.fa-3x {:style {:margin-right "10px"}}]]) name]]
                   [:td [:span.label {:class (if (= role "admin") "label-danger" "label-success")} (translate-text (str "extra-spaces/" role))]]
-                  [:td "" (default-btn space state)]
+                  [:td {:style {:min-width "150px"}} "" (default-btn space state)]
                   [:td.action "" (leave-organization space_id state)]]))]]]]
 
     [:div.well.well-sm (t :extra-spaces/Notjoinedanyorg)])))

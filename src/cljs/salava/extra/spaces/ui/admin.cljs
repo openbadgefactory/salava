@@ -6,12 +6,12 @@
   [salava.core.ui.ajax-utils :as ajax]
   [salava.core.ui.layout :as layout]))
 
-(defn init-data [state]
- (let [id (session/get-in [:user :current-space :id])]
-  (ajax/POST
-   (path-for (str "/obpv1/spaces/statistics/" id))
-   {:handler (fn [data]
-               (swap! state assoc :space data))})))
+#_(defn init-data [state]
+   (let [id (session/get-in [:user :current-space :id])]
+    (ajax/POST
+     (path-for (str "/obpv1/spaces/statistics/" id))
+     {:handler (fn [data]
+                 (swap! state assoc :space data))})))
 
 (defn manage [])
 
@@ -22,6 +22,6 @@
 
 (defn handler [site-navi]
   (let [state (atom {:space nil})]
-    (init-data space)
+    ;(init-data space)
     (fn []
       (layout/default site-navi [content state]))))

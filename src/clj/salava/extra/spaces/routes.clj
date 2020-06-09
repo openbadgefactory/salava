@@ -10,7 +10,8 @@
             [salava.extra.spaces.util :as util]
             [salava.core.access :as access]
             [salava.extra.spaces.schemas :as schemas] ;cljc
-            [clojure.string :refer [split]]))
+            [clojure.string :refer [split]]
+            [salava.extra.spaces.stats :as stats]))
 
 (defn route-def [ctx]
   (routes
@@ -43,6 +44,13 @@
                   :path-params [id :- s/Int]
                   :current-user current-user
                   (ok (space/get-space ctx id)))
+
+            (POST "/stats/:id" []
+                   :auth-rules access/space-admin
+                   :summary "Get space stats"
+                   :path-params [id :- s/Int]
+                   :current-user current-user
+                   (ok (stats/space-stats ctx id (:last-visited current-user))))
 
             (POST "/userlist/:id" []
                    :auth-rules access/space-admin
