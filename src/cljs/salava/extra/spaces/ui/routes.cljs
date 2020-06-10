@@ -21,15 +21,15 @@
 
 
 (defn base-navi [context]
-  {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Members) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Members)} ;:about (:selfie (about))}})
-   (str (base-path context) "/admin/spaces/creator") {:weight 200 :title (t :extra-spaces/CreateSpace) :breadcrumb (t :admin/Admin " / " :extra-spaces/Members " / " :extra-spaces/Create)}
-   (str (base-path context) "/connections/spaces") {:weight 70 :title (t :extra-spaces/Organizations) :site-navi true :breadcrumb (t :social/Connections " / " :extra-spaces/Organizations)}})
+  {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces)} ;:about (:selfie (about))}})
+   (str (base-path context) "/admin/spaces/creator") {:weight 200 :title (t :extra-spaces/Createspace) :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces " / " :extra-spaces/Create)}
+   (str (base-path context) "/connections/spaces") {:weight 70 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :social/Connections " / " :extra-spaces/Spaces)}})
 
 (defn member-admin-navi [context]
-  {(str (base-path context) "/space/admin") {:weight 150 :title (t :extra-spaces/Memberadmin) :top-navi true :breadcrumb (t :extra-spaces/Organization " / " :extra-spaces/Admin)}
-   (str (base-path context) "/space/stats") {:weight 250 :title (t :extra-spaces/Statistics) :site-navi true :breadcrumb (t :extra-spaces/Organization " / " :extra-spaces/Statistics)}
-   (str (base-path context) "/space/manage") {:weight 300 :title (t :extra-spaces/Manage)  :site-navi true :breadcrumb (t :extra-spaces/Organization " / " :extra-spaces/Manage)}
-   (str (base-path context) "/space/users") {:weight 400 :title (t :extra-spaces/Users)  :site-navi true :breadcrumb (t :extra-spaces/Organization " / " :extra-spaces/Users)}})
+  {(str (base-path context) "/space/admin") {:weight 150 :title (t :extra-spaces/Memberadmin) :top-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Admin)}
+   (str (base-path context) "/space/stats") {:weight 250 :title (t :extra-spaces/Statistics) :site-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Statistics)}
+   (str (base-path context) "/space/manage") {:weight 300 :title (t :extra-spaces/Manage)  :site-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Manage)}
+   (str (base-path context) "/space/users") {:weight 400 :title (t :extra-spaces/Users)  :site-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Users)}})
 
 (defn ^:export navi [context]
  (let [member-admin? (and  (not= (session/get-in [:user :role]) "admin") (= "admin" (session/get-in [:user :current-space :role])))]

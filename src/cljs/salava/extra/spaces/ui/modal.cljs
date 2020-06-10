@@ -11,8 +11,6 @@
     [salava.extra.spaces.ui.creator :as creator]
     [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]))
 
-
-
 (defn init-data [id state]
   (ajax/GET
     (path-for (str "/obpv1/spaces/"id))
@@ -186,8 +184,8 @@
      (t :extra-spaces/Status)]
     [:div.panel-body
      [:div.row
-      [:div.col-md-12 {:style {:line-height "4"}}
-       [:div.blob {:class @(cursor state [:space :status])}] @(cursor state [:space :status])
+      [:div.col-md-12 {:style {:line-height "3"}}
+       [:div.blob {:class @(cursor state [:space :status])}] [:span.weighted @(cursor state [:space :status])]
        [:div.pull-right
         (case @(cursor state [:space :status])
           "active" [:div.btn-toolbar

@@ -99,12 +99,13 @@
 
 (defn space-list []
  (let [state (atom {:selected  nil})
-       user-id (session/get-in [:user :id])]
+       user-id (session/get-in [:user :id])
+       current-space (session/get-in [:user :current-space])]
 
   (init-spaces state)
   (fn []
    (let [spaces @(cursor state [:spaces])
-         default-space (->> spaces (filter #(pos? (:default_space %))) first :name)]
+         default-space (->> spaces (filter #(pos? (:default_space %))) first)]
      (when (seq spaces) #_(seq @(cursor state [:spaces]))
        [:div#space-list
         [:div.dropdown
@@ -113,7 +114,9 @@
                               :role "button"
                               :aria-haspopup true
                               :aria-expanded false}
-            [:span [:i.fa.fa-building-o.fa-1x.fa-fw] (or @(cursor state [:selected]) default-space (t :extra-spaces/Switchorganization))[:span.caret]]]
+            [:div.selected-space
+             [:img.space-img {:src (str "/" (or (:logo current-space) (:logo default-space))) :alt " "}]
+             [:div.name (or @(cursor state [:selected]) (:name default-space) (t :extra-spaces/Switchorganization))] [:span.caret]]]
          (reduce
            (fn [r space]
             (let [selected? (= @(cursor state [:selected])  (:name space))]
@@ -125,9 +128,9 @@
                                                                           {:handler (fn [data]
                                                                                       (js-navigate-to (next-url space)))}))}
 
-                                                (if selected? [:b [:i (:name space)]] (:name space))]])))
-          [:ul.dropdown-menu.pull-left]
-          (sort-by :name spaces #_@(cursor state [:spaces])))]])))))
+                                                [:img.space-img {:src (str "/" (:logo space)) :alt " "}](if selected? [:b [:i (:name space)]] (:name space))]])))
+          [:ul.dropdown-menu];.pull-left]
+          (sort-by :name spaces))]])))))
 
 (defn manage-spaces-handler [site-navi]
   (let [state (atom {})]

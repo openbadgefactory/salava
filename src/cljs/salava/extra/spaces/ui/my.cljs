@@ -51,7 +51,7 @@
                 (sort-by order > spaces))]
   (into [:div#grid.row.wrap-grid
          [:div.col-xs-12.col-sm-6.col-md-4
-          [:div {:class "media grid-container"}
+          [:div {:class "media grid-container space-card"}
            [:a.add-element-link {:href  (path-for "/admin/spaces/creator")}
              [:div.media-content
               [:div.media-body

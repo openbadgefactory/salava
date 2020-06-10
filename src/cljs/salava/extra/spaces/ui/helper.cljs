@@ -136,19 +136,11 @@
       name]]))
 
 (defn space-card [info state]
- (let [{:keys [id name logo valid_until visibility status ctime banner member_count]} info
-       bg (case status
-            "active" "green"
-            "suspended" "yellow"
-            "red")]
+ (let [{:keys [id name logo valid_until visibility status ctime banner member_count]} info]
    [:div {:class "col-xs-12 col-sm-6 col-md-4"}
           ;:key id}
-    [:div {:class "media grid-container"}
+    [:div {:class "media grid-container space-card"}
      [:a {:href "#" :on-click #(mo/open-modal [:space :info] {:id id :member_count member_count} {:hidden (fn [] (init-data state))}) :style {:text-decoration "none"}}
-      #_(when banner
-          [:div.banner
-           [:img {:src (str "/" banner)}]
-           [:hr.line]])
       [:div.media-content
        [:div.media-left
         (if logo
@@ -162,7 +154,7 @@
          [:div.status.join-date
           (t :extra-spaces/createdon) " " (date-from-unix-time (* 1000 ctime))]
          [:div.status
-           [:i.fa.fa-users.fa-fw.fa-1x] member_count " " (t :extra-spaces/members)] 
+           [:i.fa.fa-users] member_count " " (if (> member_count 1)(t :extra-spaces/members) (t :extra-spaces/member))]
 
          [:div.status
           [:div.blob {:class status}]

@@ -107,6 +107,11 @@
      [:img {:src (profile-picture (session/get-in [:user :profile_picture]))
             :alt "profile picture"}]]]])
 
+(defn spaces [nav?]
+ (into (if nav? [:li] [:div.navbar-right])
+       (for [f (plugin-fun (session/get :plugins) "block" "space_list")]
+         [f])))
+
 (defn top-navi [site-navi]
   (let [items (top-navi-list (:navi-items site-navi))]
     [:nav {:class "navbar"}
@@ -122,9 +127,11 @@
                                         (.preventDefault %)
                                         (navigate-to "/user/edit"))}
                        (t :user/Myaccount)]]
+        [spaces true]
         [:li.usermenu [:a {:href     "#"
                            :on-click #(logout)}
                        (t :user/Logout)]]]]]]))
+
 
 (defn top-navi-embed []
   [:nav {:class "navbar"}
@@ -209,11 +216,6 @@
                                                                          [:i.fa.fa-question-circle.fa-fw]])]
       (get-dropdown-breadcrumb site-navi))))
 
-(defn spaces []
- (into [:div]
-       (for [f (plugin-fun (session/get :plugins) "block" "space_list")]
-         [f])))
-
 (defn default-0 [top-items sub-items heading content]
   [:div {:role "main"}
    [:div {:id "navbar"}
@@ -237,8 +239,8 @@
    [:img {:id "print-logo" :src "/img/logo.png" :alt "site logo"}]
    [:div {:class "title-row"}
     [:div {:class "container"}
-     (breadcrumb site-navi)
-     [spaces]]]
+     (breadcrumb site-navi)]
+    [spaces nil]]
 
    [:div {:class "container main-container"}
     #_(when (session/get-in [:about-page])

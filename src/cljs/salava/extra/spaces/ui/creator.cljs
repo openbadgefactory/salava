@@ -54,21 +54,21 @@
 
 (defn create-form [state]
   (let [{:keys [logo banner name]} @(cursor state [:space])]
-   [:div
-    [:div.row
-     #_[:div.col-md-12
-        [:p (t :extra-spaces/Createinstructions)]]
-
-     [:div.col-md-12
-      [:div.panel.panel-default
-       [:div.panel-heading
-         [:div.panel-title
-          (if @(cursor state [:in-modal])
-            [:div (if logo [:img {:src (if (re-find #"^data:image" logo) logo (str "/" logo))
-                                  :style {:width "40px" :height "40px"}}]
-                           [:i.fa.fa-building.fa-fw.fa-2x])
-                [:h4.inline " " (t :extra-spaces/Edit) "/" name]]
-            (t :extra-spaces/Createmember))]]
+   ; [:div
+   ;  [:div.row
+   ;   #_[:div.col-md-12
+   ;      [:p (t :extra-spaces/Createinstructions)]]
+   ;
+   ;   [:div.col-md-12
+   ;    [:div.panel.panel-default
+   ;     [:div.panel-heading
+   ;       [:div.panel-title
+   ;        (if @(cursor state [:in-modal])
+   ;          [:div (if logo [:img {:src (if (re-find #"^data:image" logo) logo (str "/" logo))
+   ;                                :style {:width "40px" :height "40px"}}]
+   ;                         [:i.fa.fa-building.fa-fw.fa-2x])
+   ;              [:h4.inline " " (t :extra-spaces/Edit) "/" name]]
+   ;          (t :extra-spaces/Createmember))]]
        [:div.panel-body
         [:div.col-md-12.panel-section
          [:form.form-horizontal
@@ -112,7 +112,7 @@
           [:div.form-group
            [:label {:for "input-logo"} (t :extra-spaces/Logo) [:span.form-required " *"]]
            [:p (t :badge/Uploadimginstructions)]
-           [:div {:style {:margin "5px"}}
+           [:div ;{:style {:margin "5px"}}
             (when @(cursor state [:logo :error])
               [:div.alert.alert-warning
                (t (translate-text @(cursor state [:logo :error])))])
@@ -123,9 +123,9 @@
                              (str "/" logo))
                       :alt "image"
                       :style {:width "100px" :height "auto"}}]
-               [:i.fa.fa-building {:style {:font-size "60px" :color "#757575"}}])
+               [:i.fa.fa-picture-o {:style {:font-size "60px" :color "#757575"}}])
               [:span.fa.fa-spin.fa-cog.fa-2x])]
-           [:div.btn-toolbar {:style {:margin "5px"}} ;:width "100px"}}
+           [:div.btn-toolbar ;{:style {:margin "5px"}} ;:width "100px"}}
             [:div.btn-group
              [:span {:class "btn btn-primary btn-file btn-bulky"}
               [:input {:id "logo-upload"
@@ -144,7 +144,7 @@
           [:div.form-group
            [:label {:for "input-banner"} (t :extra-spaces/Banner)]
            [:div [:p (t :extra-spaces/Uploadbannerinstructions)]]
-           [:div {:style {:margin "5px"}}
+           [:div ;{:style {:margin "5px"}}
             (when @(cursor state [:banner :error])
               [:div.alert.alert-warning
                (t (translate-text @(cursor state [:banner :error])))])
@@ -158,7 +158,7 @@
                       ;:style {:width "100px" :height "auto"}}]
                [:div.space-banner-container]);[:p (t :extra-spaces/Uploadbannerinstructions)]])
               [:span.fa.fa-spin.fa-cog.fa-2x])]
-           [:div.btn-toolbar {:style {:margin "5px"}} ;:width "100px"}}
+           [:div.btn-toolbar ;{:style {:margin "5px"}} ;:width "100px"}}
             [:div.btn-group
              [:span {:class "btn btn-primary btn-file btn-bulky"}
               [:input {:id "banner-upload"
@@ -211,25 +211,22 @@
                              (reset! (cursor state [:space :css :t-color]) (.-target.value %)))}]]]
 
           (when-not (:in-modal @state)
+           [:hr.border]
            [:div#social-tab.form-group {:style {:background-color "ghostwhite" :padding "8px"}}
+
              [:span._label (t :extra-spaces/Admins)]
              [:p (t :extra-spaces/Aboutadmins)]
-             [:div
+             [:div.add-admins-link
                [:a {:href "#"
                     :on-click #(do
                                  (.preventDefault %)
-                                 (if-not (:in-modal @state)
-                                    (mo/open-modal [:gallery :profiles]
-                                     {:type "pickable"
-                                      :selected-users-atom (cursor state [:space :admins])
-                                      :context "space_admins"} {})
-                                    (mo/open-modal [:gallery :profiles]
-                                     {:type "pickable"
-                                      :selected-users-atom (cursor state [:new-admins])
-                                      :existing-users-atom (cursor state [:space :admins])
-                                      :context "space_admins_modal"})))}
+                                 (mo/open-modal [:gallery :profiles]
+                                  {:type "pickable"
+                                   :selected-users-atom (cursor state [:space :admins])
+                                   :context "space_admins"} {}))}
 
-                [:span [:i.fa.fa-user-plus.fa-fw.fa-lg] (t :extra-spaces/Addadmins)]]]
+
+                [:span [:i.fa.fa-user-plus.fa-fw.fa-lg] " " (t :extra-spaces/Addadmins)]]]
              #_(when (seq @(cursor state [:space :admins]))
                  [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw]
                   [:a {:href "#"
@@ -241,61 +238,69 @@
                                   [:a {:href "#" :on-click (fn [] (reset! (cursor state [:space :admins]) (->> @(cursor state [:space :admins]) (remove #(= id (:id %))) vec)))}
                                    [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
                      [:div.selected-users-container]
-                     (if (:in-modal @state)(concat @(cursor state [:space :admins])  @(cursor state [:new-admins]))))])]]]]]]]))
+                     (if (:in-modal @state)
+                       (concat @(cursor state [:space :admins])  @(cursor state [:new-admins]))
+                       @(cursor state [:space :admins])))])]]]))
+
 
 (defn modal-content [state]
   (let [{:keys [logo banner name]} @(cursor state [:space])]
-    [:div
+    [:div#space-creator
      [:div.row
-      [create-form state]
-
-      [:hr.border]
-      (when @(cursor state [:error-message])
-         [:div.alert.alert-danger @(cursor state [:error-message])])
-      [:div.text-center;.col-md-12
-       [:div.btn-toolbar
-        [:div.btn-group {:style {:float "unset"}}
-         [:button.btn.btn-primary.btn-bulky
-          {:type "button"
-           :on-click #(do
-                        (.preventDefault %)
-                        (edit-space state))}
-          (t :core/Save)]
-         [:button.btn.btn-warning.btn-bulky
-          {:type "button"
-           :on-click #(do
-                        (.preventDefault %)
-                        ;(reset! (cursor state [:space]) nil)
-                        (swap! state assoc :tab nil :tab-no 1))}
-                        ;(m/close-modal!))}
-          (t :core/Cancel)]]]]]]))
+      [:div.col-md-12
+       [:div.panel.panel-default
+        [:div.panel-heading
+          [:div.panel-title
+            [:div (if logo [:img {:src (if (re-find #"^data:image" logo) logo (str "/" logo))
+                                  :style {:width "40px" :height "40px"}}]
+                           [:i.fa.fa-building.fa-fw.fa-2x])
+                [:h4.inline " " (t :extra-spaces/Edit) "/" name]]]]
+        [create-form state]
+        [:hr.border]
+        [:div.panel-footer.text-center
+         (when @(cursor state [:error-message])
+            [:div.alert.alert-danger @(cursor state [:error-message])])
+         [:div.btn-toolbar
+          [:div.btn-group {:style {:float "unset"}}
+           [:button.btn.btn-primary.btn-bulky
+            {:type "button"
+             :on-click #(do
+                          (.preventDefault %)
+                          (edit-space state))}
+            (t :core/Save)]
+           [:button.btn.btn-warning.btn-bulky
+            {:type "button"
+             :on-click #(do
+                          (.preventDefault %)
+                          (swap! state assoc :tab nil :tab-no 1))}
+            (t :core/Cancel)]]]]]]]]))
 
 (defn content [state]
   (let [{:keys [logo banner]} @(cursor state [:space])]
-    [:div
+    [:div#space-creator
      [m/modal-window]
      [:div.row
-
-      [create-form state]
-
-
-      [:hr.border]
-      [:div.text-center;.col-md-12
-       [:div.btn-toolbar
-        [:div.btn-group {:style {:float "unset"}}
-         [:button.btn.btn-primary.btn-bulky
-          {:type "button"
-           :on-click #(do
-                        (.preventDefault %)
-                        (create-space state))}
-          (t :extra-spaces/Createspace)]
-         [:button.btn.btn-warning.btn-bulky
-          {:type "button"
-           :on-click #(do
-                        (.preventDefault %)
-                        (reset! (cursor state [:space]) nil)
-                        (navigate-to "admin/spaces"))}
-          (t :core/Cancel)]]]]]]))
+      [:div.col-md-12
+       [:div.panel.panel-default
+        [:div.panel-heading
+          [:div.panel-title (t :extra-spaces/Createmember)]]
+        [create-form state]
+        [:div.panel-footer.text-center
+         [:div.btn-toolbar
+          [:div.btn-group {:style {:float "unset"}}
+           [:button.btn.btn-primary.btn-bulky
+            {:type "button"
+             :on-click #(do
+                          (.preventDefault %)
+                          (create-space state))}
+            (t :extra-spaces/Createspace)]
+           [:button.btn.btn-warning.btn-bulky
+            {:type "button"
+             :on-click #(do
+                          (.preventDefault %)
+                          (reset! (cursor state [:space]) nil)
+                          (navigate-to "admin/spaces"))}
+            (t :core/Cancel)]]]]]]]]))
 
 
 
