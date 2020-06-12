@@ -6,7 +6,8 @@
   [salava.core.i18n :refer [t translate-text]]
   [reagent.session :as session]
   [reagent.core :refer [cursor atom]]
-  [dommy.core :as dommy :refer-macros [sel sel1]]))
+  [dommy.core :as dommy :refer-macros [sel sel1]]
+  [salava.extra.spaces.ui.helper :refer [space-card]]))
 
 
 (defn stylyze-buttons [btn-class color])
@@ -137,3 +138,28 @@
    (init-spaces state)
    (fn []
      (layout/default site-navi (manage-spaces state)))))
+
+#_(defn space-gallery [state]
+   (let [spaces @(cursor state [:spaces])
+         ;order (keyword (:order @state))
+         #_spaces #_(case order
+                      (:name) (sort-by (comp upper-case str order) spaces)
+                      (:mtime) (sort-by order > spaces)
+                      (sort-by order > spaces))]
+    (into [:div#grid.row.wrap-grid]
+      (doall
+        (for [space spaces]
+           (space-card space state))))))
+
+#_(defn gallery-content [state]
+   [:div#space-gallery
+    [space-gallery state]])
+
+#_(defn gallery-spaces-handler [site-navi]
+   (let [state (atom {})]
+     (ajax/POST
+      (path-for "/obpv1/spaces/gallery" true)
+      {:handler (fn [data]
+                  (swap! state assoc :spaces data))})
+     (fn []
+      (layout/default site-navi (gallery-content state)))))

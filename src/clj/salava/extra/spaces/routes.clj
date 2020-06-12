@@ -19,7 +19,11 @@
             (layout/main ctx "/spaces")
             (layout/main ctx "/spaces/creator")
             (layout/main ctx "/spaces/user/admin"))
+
    (context "/connections" []
+            (layout/main ctx "/spaces"))
+
+   (context "/gallery" []
             (layout/main ctx "/spaces"))
 
    (context "/space" []
@@ -45,6 +49,16 @@
                   :current-user current-user
                   (ok (space/get-space ctx id)))
 
+            (GET "/gallery/all" []
+                   :auth-rules access/authenticated
+                   :summary "Get all open and controlled spaces"
+                   :query [params {:name s/Str
+                                   :order  (s/enum "member_count" "mtime" "name")
+                                   :page_count s/Int}]
+                   :current-user current-user
+                   (let [{:keys [name order page_count]} params]
+                     (ok (db/get-gallery-spaces ctx name order page_count))))
+
             (POST "/stats/:id" []
                    :auth-rules access/space-admin
                    :summary "Get space stats"
@@ -68,6 +82,8 @@
                     :current-user current-user
                     ;(when (= user_id (:id current-user)))
                     (ok (space/leave! ctx id user_id)))
+
+
 
             (POST "/user" []
                    :auth-rules access/authenticated
@@ -117,22 +133,22 @@
                   (ok (space/create! ctx space)))
 
             (POST "/downgrade/:id/:admin-id" []
-                :return {:status (s/enum "success" "error")}
-                :path-params [id :- s/Int
-                              admin-id :- s/Int]
-                :summary "downgrade admin to space member"
-                :auth-rules access/space-admin
-                :current-user current-user
-                (ok (space/downgrade! ctx id admin-id)))
+                  :return {:status (s/enum "success" "error")}
+                  :path-params [id :- s/Int
+                                admin-id :- s/Int]
+                  :summary "downgrade admin to space member"
+                  :auth-rules access/space-admin
+                  :current-user current-user
+                  (ok (space/downgrade! ctx id admin-id)))
 
             (POST "/upgrade/:id/:admin-id" []
-             :return {:status (s/enum "success" "error")}
-             :path-params [id :- s/Int
-                           admin-id :- s/Int]
-             :summary "upgrade member to space admin"
-             :auth-rules access/space-admin
-             :current-user current-user
-             (ok (space/upgrade! ctx id admin-id)))
+                  :return {:status (s/enum "success" "error")}
+                  :path-params [id :- s/Int
+                                admin-id :- s/Int]
+                  :summary "upgrade member to space admin"
+                  :auth-rules access/space-admin
+                  :current-user current-user
+                  (ok (space/upgrade! ctx id admin-id)))
 
             (POST "/edit/:id" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
@@ -151,6 +167,15 @@
                   :summary "Update space status"
                   :current-user current-user
                   (ok (space/update-status! ctx id status (:id current-user))))
+
+            (POST "/update_visibility/:id" []
+                  :return {:status (s/enum "success" "error")}
+                  :auth-rules access/space-admin
+                  :path-params [id :- s/Str]
+                  :body-params [visibility :- (s/enum "private" "open" "controlled")]
+                  :summary "Update space visibility"
+                  :current-user current-user
+                  (ok (space/update-visibility! ctx id visibility (:id current-user))))
 
             #_(POST "/suspend/:id" []
                     :return {:success s/Bool}

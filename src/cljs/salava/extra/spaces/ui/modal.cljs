@@ -9,7 +9,8 @@
     [salava.core.i18n :refer [t]]
     [salava.core.time :refer [date-from-unix-time]]
     [salava.extra.spaces.ui.creator :as creator]
-    [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]))
+    [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]
+    [reagent.session :as session]))
 
 (defn init-data [id state]
   (ajax/GET
@@ -47,6 +48,14 @@
     :handler (fn [data]
                (when (= (:status data) "success")
                  (init-data (:id @state) state)))}))
+
+(defn set-visibility [v state]
+  (ajax/POST
+   (path-for (str "/obpv1/spaces/update_visibility/" (:id @state)) true)
+   {:params {:visibility v}
+    :handler (fn [data]
+               (when (= (:status data) "success")
+                (init-data (:id @state) state)))}))
 
 (defn space-logo [state]
   (let [{:keys [logo name]} @(cursor state [:space])]
@@ -132,7 +141,7 @@
                                                                                             (.preventDefault %)
                                                                                             (mo/open-modal [:profile :view] {:user-id id}))}
                                                                  name]]
-           [:td {:style {:vertical-align "middle"}} (when (= id @(cursor state [:space :last_modified_by])) [:span.label.label-info "last-modified"])]
+           [:td {:style {:vertical-align "middle"}} (when (= id @(cursor state [:space :last_modified_by])) [:span.label.label-info (t :extra-spaces/lastmodifier)])]
            [:td {:style {:text-align "end"}} [:button.btn.btn-primary.btn-bulky
                                                {:on-click #(do
                                                              (.preventDefault %)
@@ -153,7 +162,7 @@
                            :existing-users-atom (cursor state [:space :admins])
                            :context "space_admins_modal"} {}))}
 
-        [:span [:i.fa.fa-user-plus.fa-fw.fa-lg] (t :extra-spaces/Addadmins)]]]
+        [:span [:i.fa.fa-user-plus.fa-fw.fa-lg {:style {:vertical-align "baseline"}}] " " (t :extra-spaces/Addadmins)]]]
      (reduce (fn [r u]
                (let [{:keys [id first_name last_name profile_picture]} u]
                  (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
@@ -228,7 +237,8 @@
                                         (update-status state "active"))
                            :type "button"
                            :aria-label (t :extra-spaces/Undodelete)}
-                         (t :extra-spaces/Undodelete)])]]]
+                         (t :extra-spaces/Undodelete)]
+           [:div])]]]
      (when @(cursor state [:delete])
        [:div;.row
          (when (> (:member_count @state) 1) [:p [:b (t :extra-spaces/Aboutdelete)]])
@@ -252,9 +262,79 @@
              :data-dismiss "modal"}
             (t :core/Delete)]]]])]]])
 
+
+(defn visibility-form [state]
+ (let [site-name (session/get :site-name)
+       vatom (cursor state [:space :visibility])]
+  [:div.row
+   [:div.col-md-12
+    [:div
+     [:div
+      [:p [:b (t :extra-spaces/Aboutmembershipsetting)]]
+      [:div.visibility-opts-group
+       [:div.visibility-opt
+         [:input.radio-btn {:id "private"
+                            :type "radio"
+                            :name "private"
+                            :on-change #(do
+                                          (.preventDefault %)
+                                          (set-visibility "private" state))
+                            :checked (= "private" @vatom)}]
+         [:div.radio-tile
+          [:div.icon [:i.fa.fa-user-secret]]
+          [:label.radio-tile-label {:for "private"} (t :extra-spaces/Privatespace)]]]
+       [:div.visibility-opt
+         [:input.radio-btn {:id "controlled"
+                            :type "radio"
+                            :name "controlled"
+                            :on-change #(do
+                                          (.preventDefault %)
+                                          (set-visibility "controlled" state))
+                            :checked (= "controlled" @vatom)}]
+         [:div.radio-tile
+          [:div.icon [:i.fa.fa-user-plus]]
+          [:label.radio-tile-label {:for "controlled"} (t :extra-spaces/Controlledspace)]]]
+       [:div.visibility-opt
+         [:input.radio-btn {:id "open"
+                            :type "radio"
+                            :name "open"
+                            :on-change #(do
+                                          (.preventDefault %)
+                                          (set-visibility "open" state))
+
+                            :checked (= "open" @vatom)}]
+         [:div.radio-tile
+          [:div.icon [:i.fa.fa-unlock]]
+          [:label.radio-tile-label {:for "open"} (t :extra-spaces/Openspace)]]]]
+      [:div {:style {:margin "10px auto"}}
+       (case @vatom
+         "private" [:div
+                    [:ul
+                     [:li (t :extra-spaces/Privatespaceinfo1)]
+                     [:li [:b (t :extra-spaces/Privatespaceinfo2)]]]]
+
+         "controlled" [:div
+                       [:ul
+                        [:li (t :extra-spaces/Visiblespace)]
+                        [:li [:b (t :extra-spaces/Controlledspaceinfo)]]]]
+
+         "open"  [:div
+                      [:ul
+                       [:li (t :extra-spaces/Visiblespace)]
+                       [:li [:b (t :extra-spaces/Openspaceinfo)]]]]
+         [:div])]]]]]))
+
+(defn manage-visibility [state]
+  [:div.panel.panel-default
+   [:div.panel-heading.weighted
+    (t :extra-spaces/Membership)]
+   [:div.panel-body
+    [visibility-form state]]])
+
 (defn manage-space [state]
   [:div.row
    [manage-status state]
+   [manage-visibility state]
    [manage-admins state]])
 
 (defn space-navi [state]

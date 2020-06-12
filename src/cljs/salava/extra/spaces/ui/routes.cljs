@@ -8,12 +8,14 @@
    [salava.extra.spaces.ui.block :as block]
    [salava.extra.spaces.ui.stats :as stats]
    [salava.extra.spaces.ui.userlist :as users]
+   [salava.extra.spaces.ui.explore :as exp]
    [reagent.session :as session]))
 
 (defn ^:export routes [context]
   {(str (base-path context) "/admin/spaces") [["" my/handler]
                                               ["/creator" sc/handler]]
    (str (base-path context) "/connections") [["/spaces" block/manage-spaces-handler]]
+   (str (base-path context) "/gallery") [["/spaces" exp/handler]]
    (str (base-path context) "/space") [["/admin" stats/handler]
                                        ["/users" users/handler]
                                        ["/stats" stats/handler]]})
@@ -23,7 +25,8 @@
 (defn base-navi [context]
   {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces)} ;:about (:selfie (about))}})
    (str (base-path context) "/admin/spaces/creator") {:weight 200 :title (t :extra-spaces/Createspace) :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces " / " :extra-spaces/Create)}
-   (str (base-path context) "/connections/spaces") {:weight 70 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :social/Connections " / " :extra-spaces/Spaces)}})
+   (str (base-path context) "/connections/spaces") {:weight 70 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :social/Connections " / " :extra-spaces/Spaces)}
+   (str (base-path context) "/gallery/spaces") {:weight 150 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :gallery/Gallery " / " :extra-spaces/Spaces)}})
 
 (defn member-admin-navi [context]
   {(str (base-path context) "/space/admin") {:weight 150 :title (t :extra-spaces/Memberadmin) :top-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Admin)}

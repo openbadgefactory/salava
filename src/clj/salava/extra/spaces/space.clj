@@ -81,6 +81,14 @@
    (log/error _)
    {:status "error"})))
 
+(defn update-visibility! [ctx space-id visibility admin-id]
+ (try+
+  (update-space-visibility! {:id space-id :v visibility :user_id admin-id} (get-db ctx))
+  {:status "success"} 
+  (catch Object _
+   (log/error _)
+   {:status "error"})))
+
 (defn get-space
  ([ctx id]
   (db/get-space-information ctx id))

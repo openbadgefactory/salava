@@ -18,6 +18,12 @@
     border-radius: 4px;
     min-height: 110px;
     color: $text-color;
+    position: relative;
+
+    span.space-membership-icon {
+      position: absolute;
+      right: 5px;
+    }
 
     .media-content {
       height: 65px;
@@ -27,7 +33,7 @@
         margin-right: 0;
         margin-top: 10px;
         text-overflow: ellipsis;
-        width: 200px;
+        width: 165px;
         white-space: nowrap;
         overflow: hidden;
       }
@@ -274,9 +280,9 @@ ul.navbar-nav {
   position: relative;
 
   #space-list {
-    position: fixed;
-    top: 125px;
-    right: 1%;
+    position: absolute;
+    top: 25%;
+    right: 2%;
     font-size: large;
     font-weight: 600;
 
@@ -305,26 +311,7 @@ ul.navbar-nav {
     }
   }
 }
-// .container {
-//   position: relative;
-//   #space-list {
-//     position: absolute;
-//     top: 20%;
-//     right: 40px;
-//     font-size: large;
-//     font-weight: 600;
-//     a {
-//       color: inherit !important;
-//     }
-//     ul {
-//       color: $link-color !important;
-//     }
-//
-//     @media (max-width: 768px) {
-//       visibility: hidden;
-//     }
-//   }
-// }
+
 #space-creator {
   #social-tab .add-admins-link {
     i {

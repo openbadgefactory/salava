@@ -101,7 +101,7 @@ UPDATE space SET status = :status, last_modified_by = :user_id, mtime = UNIX_TIM
 SELECT us.space_id, us.user_id, us.role, us.default_space, us.ctime, s.id, s.name, s.logo
 FROM user_space us
 JOIN space s ON s.id = us.space_id
-WHERE us.user_id = :id
+WHERE us.user_id = :id AND s.status = "active"  AND (s.valid_until IS NULL OR s.valid_until > UNIX_TIMESTAMP()) 
 GROUP BY us.space_id
 
 --name: remove-user-from-space!
@@ -115,3 +115,45 @@ UPDATE user_space SET default_space = 1, mtime = UNIX_TIMESTAMP() WHERE user_id 
 
 --name: select-user-space-role
 SELECT role FROM user_space WHERE space_id = :space_id AND user_id = :user_id
+
+--name: update-space-visibility!
+UPDATE space SET visibility = :v, last_modified_by = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: select-gallery-spaces
+SELECT space.id, space.logo, space.ctime, space.mtime, space.name, space.visibility,
+      (SELECT CAST(COUNT(DISTINCT us.user_id) AS UNSIGNED)
+       FROM user_space us
+       WHERE us.space_id = space.id) AS member_count
+FROM space space
+WHERE space.status = "active" AND space.visibility != "private" AND (space.valid_until IS NULL OR space.valid_until > UNIX_TIMESTAMP())
+GROUP BY space.id
+ORDER BY
+ CASE WHEN :order='name'  THEN space.name END,
+ CASE WHEN :order='member_count' THEN member_count END DESC,
+ CASE WHEN :order='mtime' THEN MAX(space.ctime) END DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-spaces-filtered
+SELECT space.id, space.logo, space.ctime, space.mtime, space.name, space.visibility,
+      (SELECT CAST(COUNT(DISTINCT us.user_id) AS UNSIGNED)
+       FROM user_space us
+       WHERE us.space_id = space.id) AS member_count
+FROM space space
+WHERE space.status = "active" AND space.visibility != "private" AND (space.valid_until IS NULL OR space.valid_until > UNIX_TIMESTAMP()) AND space.id IN (:space_ids)
+GROUP BY space.id
+ORDER BY
+ CASE WHEN :order='name'  THEN space.name END,
+ CASE WHEN :order='member_count' THEN member_count END DESC,
+ CASE WHEN :order='mtime' THEN MAX(space.ctime) END DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-spaces-ids-name
+SELECT id FROM space
+WHERE status = "active" AND visibility != "private" AND (valid_until IS NULL OR valid_until > UNIX_TIMESTAMP()) AND name LIKE :name
+ORDER BY ctime DESC
+LIMIT 100000
+
+--name: select-gallery-spaces-count
+SELECT COUNT(id) AS total
+FROM space
+WHERE space.status = "active" AND space.visibility != "private" AND (valid_until IS NULL OR valid_until > UNIX_TIMESTAMP())

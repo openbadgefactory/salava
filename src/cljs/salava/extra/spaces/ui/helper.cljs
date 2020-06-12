@@ -135,12 +135,18 @@
       [:img {:src (profile-picture picture) :alt (str name (t :user/Profilepicture))}]
       name]]))
 
-(defn space-card [info state]
+(defn space-card [info state init-fn admin-view?]
  (let [{:keys [id name logo valid_until visibility status ctime banner member_count]} info]
    [:div {:class "col-xs-12 col-sm-6 col-md-4"}
           ;:key id}
     [:div {:class "media grid-container space-card"}
-     [:a {:href "#" :on-click #(mo/open-modal [:space :info] {:id id :member_count member_count} {:hidden (fn [] (init-data state))}) :style {:text-decoration "none"}}
+     (when admin-view? [:span.space-membership-icon
+                        (case visibility
+                         "private" [:i.fa.fa-user-secret.fa-lg]
+                         "open" [:i.fa.fa-unlock.fa-lg]
+                         "controlled" [:i.fa.fa-user-plus.fa-lg]
+                         [:span])])
+     [:a {:href "#" :on-click #(mo/open-modal [:space :info] {:id id :member_count member_count} {:hidden (fn [] (if init-fn (init-fn) (init-data state))) :style {:text-decoration "none"}})}
       [:div.media-content
        [:div.media-left
         (if logo
@@ -155,10 +161,10 @@
           (t :extra-spaces/createdon) " " (date-from-unix-time (* 1000 ctime))]
          [:div.status
            [:i.fa.fa-users] member_count " " (if (> member_count 1)(t :extra-spaces/members) (t :extra-spaces/member))]
-
-         [:div.status
-          [:div.blob {:class status}]
-          [:b (t (keyword (str "extra-spaces/"status)) (when (and valid_until (= status "active")) (str " " (t :extra-spaces/until) " " (date-from-unix-time (* 1000 valid_until)))))]]]]]]]]))
+         (when status
+           [:div.status
+            [:div.blob {:class status}]
+            [:b (t (keyword (str "extra-spaces/"status)) (when (and valid_until (= status "active")) (str " " (t :extra-spaces/until) " " (date-from-unix-time (* 1000 valid_until)))))]])]]]]]]))
 
 (defn grid-buttons-with-translates [title buttons key all-key state]
   [:div.form-group

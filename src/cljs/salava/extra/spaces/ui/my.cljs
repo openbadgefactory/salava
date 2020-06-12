@@ -62,7 +62,7 @@
     (doall
       (for [space spaces]
        (when (element-visible? space state)
-         (space-card space state)))))))
+         (space-card space state nil true)))))))
 
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}

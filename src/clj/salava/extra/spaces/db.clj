@@ -45,7 +45,7 @@
   {:status "success"}
   (catch Object _
    (log/error _)
-   {:status "error"}))) 
+   {:status "error"})))
 
 (defn space-exists?
   "check if space name already exists"
@@ -125,6 +125,34 @@
 
 (defn get-user-spaces [ctx user-id]
   (select-user-spaces {:id user-id} (u/get-db ctx)))
+
+(defn- space-count [remaining page_count]
+  (let [limit 20
+        spaces-left (- remaining (* limit (inc page_count)))]
+    (if (pos? spaces-left)
+      spaces-left
+      0)))
+
+(defn get-space-ids [ctx name order]
+ (let [filters
+       (cond-> []
+        (not (clojure.string/blank? name))
+        (conj (set (select-gallery-spaces-ids-name {:name (str "%" name "%")} (u/get-db-col ctx :id)))))]
+   (when (seq filters)
+     (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))
+
+(defn get-gallery-spaces [ctx name order page_count]
+ (let [limit 20
+       offset (* limit page_count)
+       space-ids (get-space-ids ctx name order)
+       spaces (if (nil? space-ids)
+                  (select-gallery-spaces {:order order :limit limit :offset offset} (u/get-db ctx))
+                  (if (empty? space-ids) [] (select-gallery-spaces-filtered {:limit limit :offset offset :order order :space_ids space-ids} (u/get-db ctx))))]
+   {:spaces spaces
+    :space_count (space-count (if (nil? space-ids)
+                                  (select-gallery-spaces-count {} (into {:result-set-fn first :row-fn :total} (u/get-db ctx)))
+                                  (count space-ids))
+                              offset)}))
 
 (defn set-default-space [ctx space-id user-id]
  (try+
