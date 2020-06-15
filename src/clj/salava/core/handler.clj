@@ -56,8 +56,8 @@
                            (assoc-in [:security :anti-forgery] false)
                            (assoc-in [:session] false)
                            (assoc-in [:responses :absolute-redirects] false) ;; Disabled for OAuth2 custom redirect_uri schemes
-                           (assoc-in [:static :files] (get-data-dir ctx))
-                           ))
+                           (assoc-in [:static :files] (get-data-dir ctx))))
+
         (remove-x-frame-options)
         (wrap-flash)
         (wrap-app-session config))))
@@ -70,23 +70,22 @@
       (api
         (swagger-routes {:ui "/swagger-ui"
                          :info  {:version "0.1.0"
-                               :title "Salava REST API"
-                               :description ""
-                               :contact  {:name "Discendum Oy"
-                                          :email "contact@openbadgepassport.com"
-                                          :url "http://salava.org"}
-                               :license  {:name "Apache 2.0"
-                                          :url "http://www.apache.org/licenses/LICENSE-2.0"}}
-                       :tags  [{:name "badge", :description "plugin"}
-                               {:name "file", :description "plugin"}
-                               {:name "gallery", :description "plugin"}
-                               {:name "page", :description "plugin"}
-                               {:name "translator", :description "plugin"}
-                               {:name "user", :description "plugin"}]})
+                                 :title "Salava REST API"
+                                 :description ""
+                                 :contact  {:name "Discendum Oy"
+                                            :email "contact@openbadgepassport.com"
+                                            :url "http://salava.org"}
+                                 :license  {:name "Apache 2.0"
+                                            :url "http://www.apache.org/licenses/LICENSE-2.0"}}
+                         :tags  [{:name "badge", :description "plugin"}
+                                 {:name "file", :description "plugin"}
+                                 {:name "gallery", :description "plugin"}
+                                 {:name "page", :description "plugin"}
+                                 {:name "translator", :description "plugin"}
+                                 {:name "user", :description "plugin"}]})
 
         (context (get-base-path ctx) [] main-routes)
 
         (legacy-routes ctx)
 
         (ANY "*" [] (route/not-found "404 Not found"))))))
-
