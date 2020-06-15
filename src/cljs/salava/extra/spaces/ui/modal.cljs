@@ -12,11 +12,34 @@
     [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]
     [reagent.session :as session]))
 
+(defn check-membership [id state]
+ (ajax/POST
+  (path-for (str "/obpv1/spaces/check_membership/" id) true)
+  {:handler (fn [data]
+              (prn data "sadsadasdasdada")
+              (swap! state assoc :member_info data))}))
+
 (defn init-data [id state]
   (ajax/GET
     (path-for (str "/obpv1/spaces/"id))
     {:handler (fn [data]
-                (swap! state assoc :space data))}))
+                (swap! state assoc :space data :member_info nil)
+                (check-membership id state))}))
+
+(defn join-space [id state]
+  (ajax/POST
+   (path-for (str "/obpv1/spaces/user/join/" id) true)
+   {:handler (fn [data]
+               (when (= (:status data) "success")
+                 (init-data id state)))}))
+
+(defn leave-space [id state]
+  (ajax/POST
+   (path-for (str "/obpv1/spaces/user/leave/" id) true)
+   {:handler (fn [data]
+               (when (= (:status data) "success")
+                 ;(check-membership id state)
+                 (init-data id state)))}))
 
 (defn delete-space! [state]
   (ajax/DELETE
@@ -58,7 +81,8 @@
                 (init-data (:id @state) state)))}))
 
 (defn space-logo [state]
-  (let [{:keys [logo name]} @(cursor state [:space])]
+  (let [{:keys [logo name]} @(cursor state [:space])
+        {:keys [role status]} @(cursor state [:member_info])]
     [:div.text-center {:class "col-md-3" :style {:margin-bottom "20px"}}
      [:div
       (if-not (blank? logo)
@@ -66,7 +90,14 @@
                                   logo
                                  (str "/" logo))
                          :alt name}]
-        [:i.fa.fa-building-o.fa-5x {:style {:margin-top "10px"}}])]]))
+        [:i.fa.fa-building-o.fa-5x {:style {:margin-top "10px"}}])]
+     (when role
+       [:div {:style {:margin "5px auto"}}
+        (if (and status (= status "accepted"))
+         (if (= "admin" role)
+           [:span.label.label-danger (t :extra-spaces/admin)]
+           [:span.label.label-success (t :extra-spaces/member)])
+         [:span.label.label-info (t :extra-spaces/pendingmembership)])])]))
 
 (defn space-banner [state]
   (let [{:keys [banner]} @(cursor state [:space])]
@@ -91,7 +122,6 @@
           [:div [:span._label (str (t :extra-spaces/Primarycolor) ":  ")] [:span.color-span {:style {:background-color p-color}}]]
           [:div [:span._label (str (t :extra-spaces/Secondarycolor) ":  ")] [:span.color-span {:style {:background-color s-color}}]]
           [:div [:span._label (str (t :extra-spaces/Tertiarycolor) ":  ")] [:span.color-span {:style {:background-color t-color}}]]])]))
-
 
 (defn edit-space [state]
    [creator/modal-content state])
@@ -359,9 +389,38 @@
           [:a.nav-link {:class disable-link :href "#" :on-click #(swap! state assoc :tab [delete-space-content state] :tab-no 5)}
            [:div  [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]]]))
 
+(defn membership-btn [state]
+  ;(fn []
+   [:div.row
+    [:div.col-md-12
+     [:div.pull-right
+       (if (nil? @(cursor state [:member_info]))
+          [:div
+           [:button.btn.btn-primary.btn-bulky
+                {:type "button"
+                 :on-click #(do
+                              (.preventDefault %)
+                              (join-space (:id @state) state))}
+             (t :extra-spaces/Joinspace)]]
+
+          [:div
+           [:button.btn.btn-danger.btn-danger
+            {:type "button"
+             :on-click #(do
+                          (.preventDefault %)
+                          (leave-space (:id @state) state))}
+            (if (= "accepted"  @(cursor state [:member_info :status]))
+              (t :extra-spaces/Leavespace)
+              (t :extra-space/Cancelmembershiprequest))]])]]])
+
+
+
+
 (defn space-content [state]
   [:div#space
-   [space-navi state]
+   (membership-btn state)
+   (when (= "admin" (session/get-in [:user :role]))
+     [space-navi state])
    [:div.col-md-12
     [space-logo state]
     [:div.col-md-9

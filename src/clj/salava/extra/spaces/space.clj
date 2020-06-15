@@ -6,7 +6,7 @@
   [salava.extra.spaces.util :as u]
   [slingshot.slingshot :refer :all]
   [salava.core.time :refer [get-date-from-today]]
-  [salava.core.util :refer [get-db]]))
+  [salava.core.util :refer [get-db get-db-1]]))
 
 (defqueries "sql/extra/spaces/main.sql")
 
@@ -84,7 +84,7 @@
 (defn update-visibility! [ctx space-id visibility admin-id]
  (try+
   (update-space-visibility! {:id space-id :v visibility :user_id admin-id} (get-db ctx))
-  {:status "success"} 
+  {:status "success"}
   (catch Object _
    (log/error _)
    {:status "error"})))
@@ -106,8 +106,29 @@
     (log/error _)
     {:status "error"})))
 
+(defn join! [ctx space-id user-id]
+ (try+
+  (db/new-space-member ctx space-id user-id)
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error"})))
+
+(defn accept! [ctx space-id user-id]
+ (try+
+  (update-membership-status! {:status "accepted" :id space-id :user_id user-id} (get-db ctx))
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error"})))
+
+
 (defn members [ctx space-id]
   (select-space-members-all {:space_id space-id} (get-db ctx)))
+
+
+(defn is-member? [ctx space-id user-id]
+  (check-space-member {:id space-id :user_id user-id} (get-db-1 ctx)))
 
 
 (def space [:id :uuid :name :description :logo :banner :status :visibility :ctime :mtime :last-modified-by])

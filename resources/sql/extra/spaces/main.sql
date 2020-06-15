@@ -15,9 +15,9 @@ SELECT user_id, verified FROM user_email WHERE email = :email
 
 --name: create-space-member!
 INSERT INTO user_space
-  (user_id, space_id, role, ctime, mtime)
+  (user_id, space_id, role, status, ctime, mtime)
 VALUES
-  (:user_id, :space_id, :role, UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
+  (:user_id, :space_id, :role, :status, UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
 
 --name: create-pending-space-admin!
 INSERT INTO space_admin_pending (space_id, email, ctime) VALUES (:space_id, :email, UNIX_TIMESTAMP())
@@ -74,7 +74,7 @@ REPLACE INTO space_properties (space_id, name, value) VALUES (:space_id, :name, 
 UPDATE space SET status = "deleted", last_modified_by = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: count-space-members
-SELECT COUNT(DISTINCT user_id) AS count FROM user_space WHERE space_id = :id
+SELECT COUNT(DISTINCT user_id) AS count FROM user_space WHERE space_id = :id AND status = 'accepted'
 
 --name: downgrade-to-member!
 UPDATE user_space SET role = 'member', mtime = UNIX_TIMESTAMP() WHERE space_id = :id AND user_id = :admin
@@ -89,7 +89,7 @@ JOIN user u ON us.user_id = u.id
 WHERE us.space_id = :space_id AND us.role = 'member'
 
 --name: select-space-members-all
-SELECT us.user_id AS id, us.space_id, us.default_space, u.first_name, u.last_name, u.profile_picture, us.role, us.mtime
+SELECT us.user_id AS id, us.space_id, us.default_space, us.status, u.first_name, u.last_name, u.profile_picture, us.role, us.mtime
 FROM user_space us
 JOIN user u ON us.user_id = u.id
 WHERE us.space_id = :space_id
@@ -98,10 +98,10 @@ WHERE us.space_id = :space_id
 UPDATE space SET status = :status, last_modified_by = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: select-user-spaces
-SELECT us.space_id, us.user_id, us.role, us.default_space, us.ctime, s.id, s.name, s.logo
+SELECT us.space_id, us.user_id, us.role, us.default_space, us.status, us.ctime, s.id, s.name, s.logo
 FROM user_space us
 JOIN space s ON s.id = us.space_id
-WHERE us.user_id = :id AND s.status = "active"  AND (s.valid_until IS NULL OR s.valid_until > UNIX_TIMESTAMP()) 
+WHERE us.user_id = :id AND s.status = "active"  AND (s.valid_until IS NULL OR s.valid_until > UNIX_TIMESTAMP())
 GROUP BY us.space_id
 
 --name: remove-user-from-space!
@@ -123,7 +123,7 @@ UPDATE space SET visibility = :v, last_modified_by = :user_id, mtime = UNIX_TIME
 SELECT space.id, space.logo, space.ctime, space.mtime, space.name, space.visibility,
       (SELECT CAST(COUNT(DISTINCT us.user_id) AS UNSIGNED)
        FROM user_space us
-       WHERE us.space_id = space.id) AS member_count
+       WHERE us.space_id = space.id AND us.status = 'accepted') AS member_count
 FROM space space
 WHERE space.status = "active" AND space.visibility != "private" AND (space.valid_until IS NULL OR space.valid_until > UNIX_TIMESTAMP())
 GROUP BY space.id
@@ -137,7 +137,7 @@ LIMIT :limit OFFSET :offset
 SELECT space.id, space.logo, space.ctime, space.mtime, space.name, space.visibility,
       (SELECT CAST(COUNT(DISTINCT us.user_id) AS UNSIGNED)
        FROM user_space us
-       WHERE us.space_id = space.id) AS member_count
+       WHERE us.space_id = space.id AND us.status = 'accepted') AS member_count
 FROM space space
 WHERE space.status = "active" AND space.visibility != "private" AND (space.valid_until IS NULL OR space.valid_until > UNIX_TIMESTAMP()) AND space.id IN (:space_ids)
 GROUP BY space.id
@@ -157,3 +157,12 @@ LIMIT 100000
 SELECT COUNT(id) AS total
 FROM space
 WHERE space.status = "active" AND space.visibility != "private" AND (valid_until IS NULL OR valid_until > UNIX_TIMESTAMP())
+
+--name: check-space-member
+SELECT user_id, role, status FROM user_space WHERE space_id = :id AND user_id = :user_id
+
+--name: select-space-visibility
+SELECT visibility FROM space WHERE id = :id
+
+--name: update-membership-status!
+UPDATE user_space SET status = :status, mtime = UNIX_TIMESTAMP() WHERE user_id = :user_id AND space_id = :id

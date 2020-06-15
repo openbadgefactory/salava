@@ -43,7 +43,7 @@
                   (ok (db/all-spaces ctx)))
 
             (GET "/:id" []
-                  :auth-rules access/admin
+                  :auth-rules access/authenticated
                   :summary "Get space"
                   :path-params [id :- s/Int]
                   :current-user current-user
@@ -58,6 +58,13 @@
                    :current-user current-user
                    (let [{:keys [name order page_count]} params]
                      (ok (db/get-gallery-spaces ctx name order page_count))))
+
+            (POST "/check_membership/:id" []
+                   :auth-rules access/authenticated
+                   :summary "Check if user is a member of the organization"
+                   :path-params [id :- s/Int]
+                   :current-user current-user
+                   (ok (space/is-member? ctx id (:id current-user))))
 
             (POST "/stats/:id" []
                    :auth-rules access/space-admin
@@ -83,7 +90,14 @@
                     ;(when (= user_id (:id current-user)))
                     (ok (space/leave! ctx id user_id)))
 
-
+            (POST "/accept/:id/:user_id" []
+                    :return {:status (s/enum "success" "error")}
+                    :auth-rules access/space-admin
+                    :summary "accept user into space"
+                    :path-params [id :- s/Int
+                                  user_id :- s/Int]
+                    :current-user current-user
+                    (ok (space/accept! ctx id user_id)))
 
             (POST "/user" []
                    :auth-rules access/authenticated
@@ -91,10 +105,17 @@
                    :current-user current-user
                    (ok (db/get-user-spaces ctx (:id current-user))))
 
-            (DELETE "/user/leave/:id" []
+            (POST "/user/join/:id" []
+                   :return {:status (s/enum "success" "error")}
+                   :summary "Join space"
+                   :path-params [id :- s/Int]
+                   :current-user current-user
+                   (ok (space/join! ctx id (:id current-user))))
+
+            (POST "/user/leave/:id" []
                    :return {:status (s/enum "success" "error")}
                    :auth-rules access/authenticated
-                   :summary "Leave organization"
+                   :summary "Leave space"
                    :path-params [id :- s/Int]
                    :current-user current-user
                    (ok (space/leave! ctx id (:id current-user))))

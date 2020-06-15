@@ -9,7 +9,7 @@
             [clojure.string :refer [blank?]]))
 
 (defqueries "sql/extra/spaces/main.sql")
-(defrecord Space_member [id user_id space_id role default_space])
+(defrecord Space_member [user_id space_id role status default_space])
 (defrecord Pending_admin [id space_id email])
 
 (defn space-property [ctx id property]
@@ -25,27 +25,51 @@
 (defn space-members [ctx id]
  (select-space-members {:space_id id} (u/get-db ctx)))
 
-(defn create-space-admin!
-  "Adds existing user as a space member and sets role to admin
+(defn new-space-member [ctx space-id user-id]
+ (let [sv (select-space-visibility {:id space-id} (into {:result-set-fn first :row-fn :visibility} (u/get-db ctx)))
+       status (if (= "open" sv) "accepted" "pending")]
+  (create-space-member! (->Space_member user-id space-id "member" status 0) (u/get-db ctx))))
+
+#_(defn create-space-admin!
+    "Adds existing user as a space member and sets role to admin
    Otherwise, adds email as pending admin"
-  [ctx space-id email]
-  (log/info "Creating space admin " email)
-  (if-let [user-id (select-email-address {:email email} (into {:result-set-fn first :row-fn :user_id} (u/get-db ctx)))]
-   (create-space-member! (->Space_member nil user-id space-id "admin" 0) (u/get-db ctx))
-   (create-pending-space-admin! (->Pending_admin nil space-id email) (u/get-db ctx)))
-  (log/info "Space admin " email " created!"))
+    [ctx space-id email]
+    (log/info "Creating space admin " email)
+    (if-let [user-id (select-email-address {:email email} (into {:result-set-fn first :row-fn :user_id} (u/get-db ctx)))]
+     (create-space-member! (->Space_member user-id space-id "admin" 0) (u/get-db ctx))
+     (create-pending-space-admin! (->Pending_admin nil space-id email) (u/get-db ctx)))
+    (log/info "Space admin " email " created!"))
+
+(defn create-space-admin!
+ "Adds existing user as a space member and sets role to admin"
+ [ctx space-id user-id]
+ (log/info "Creating space admin id: " user-id)
+ (create-space-member! (->Space_member user-id space-id "admin" "accepted" 0) (u/get-db ctx))
+ (log/info "Space admin " user-id " created!"))
+
+#_(defn add-space-admins [ctx id admins]
+   (try+
+    (doseq [admin admins
+            :let [email (if (number? admin) (select-primary-address {:id admin} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
+     (if (some #(= admin (:id %)) (space-members ctx id))
+       (upgrade-member-to-admin! {:admin admin :id id} (u/get-db ctx))
+       (create-space-admin! ctx id email)))
+    {:status "success"}
+    (catch Object _
+     (log/error _)
+     {:status "error"})))
 
 (defn add-space-admins [ctx id admins]
  (try+
-  (doseq [admin admins
-          :let [email (if (number? admin) (select-primary-address {:id admin} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
+  (doseq [admin admins]
    (if (some #(= admin (:id %)) (space-members ctx id))
      (upgrade-member-to-admin! {:admin admin :id id} (u/get-db ctx))
-     (create-space-admin! ctx id email)))
+     (create-space-admin! ctx id admin)))
   {:status "success"}
   (catch Object _
    (log/error _)
    {:status "error"})))
+
 
 (defn space-exists?
   "check if space name already exists"
@@ -77,9 +101,9 @@
                    (assoc :logo (save-image! ctx (:logo space)) :banner (save-image! ctx (:banner space)))
                    (create-space<! {:connection tx})
                    :generated_key)]
-   (doseq [$ (:admins space)
-            :let [email (if (number? $) (select-primary-address {:id $} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
-          (create-space-admin! ctx space_id email))
+   (doseq [admin (:admins space)]
+            ;:let [email (if (number? $) (select-primary-address {:id $} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
+          (create-space-admin! ctx space_id admin))
    (when (:css space) (save-space-property ctx space_id "css" (:css space)))
 
    (log/info "Finished creating space!"))))
@@ -125,7 +149,7 @@
 
 (defn get-user-spaces [ctx user-id]
   (select-user-spaces {:id user-id} (u/get-db ctx)))
-
+ 
 (defn- space-count [remaining page_count]
   (let [limit 20
         spaces-left (- remaining (* limit (inc page_count)))]

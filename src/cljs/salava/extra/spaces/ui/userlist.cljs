@@ -25,6 +25,13 @@
                 (when (= (:status data) "success")
                   (init-data state)))}))
 
+(defn accept-member! [user-id state]
+  (ajax/POST
+   (path-for (str "/obpv1/spaces/accept/" (:id @state) "/" user-id) true)
+   {:handler (fn [data]
+               (when (= (:status data) "success")
+                 (init-data state)))}))
+
 (defn remove-member! [user-id state]
   (ajax/POST
     (path-for (str "/obpv1/spaces/remove_user/" (:id @state) "/" user-id) true)
@@ -84,12 +91,16 @@
        [:tr
         [:th {:style {:display "none"}}  "Logo"]
         [:th {:style {:display "none"}} (t :badge/Name)]
+        [:th {:style {:display "none"}} "role"]
+        [:th {:style {:display "none"}} "status"]
         [:th {:style {:display "none"}} "Action"]]]
       (into [:tbody]
         (for [user users
-              :let [{:keys [id profile_picture first_name last_name role space_id]} user
+              :let [{:keys [id profile_picture first_name last_name role space_id status]} user
                     name (str first_name " " last_name)
-                    member-admin? (= role "admin")]]
+                    member-admin? (= role "admin")
+                    pending-member? (= "pending" status)
+                    member? (= "accepted" status)]]
           (when (element-visible? user state)
             [:tr
               [:td  [:img {:style {:width "40px" :height "40px"} :alt "" :src (profile-picture profile_picture)}]]
@@ -97,7 +108,8 @@
                                                                                                (.preventDefault %)
                                                                                                (mo/open-modal [:profile :view] {:user-id id}))}
                                                                     name]]
-              [:td {:style {:vertical-align "middle"}} (when member-admin? [:span.label.label-info (t :extra-spaces/admin)])]
+              [:td {:style {:vertical-align "middle"}} (when member-admin? [:span.label.label-danger (t :extra-spaces/admin)])]
+              [:td {:style {:vertical-align "middle"}} (when pending-member? [:span.label.label-info (t :extra-spaces/pendingmembership)])]
               [:td {:style {:text-align "end"}}
                [:div.btn-group
                  [:button.btn-primary.btn.btn-bulky.dropdown-toggle
@@ -108,9 +120,11 @@
                    :disabled (and (= 1 (count users)) (= id (session/get-in [:user :id])))}
                   (t :extra-spaces/Manage) " " [:span.caret]]
                 ^{:key id} (as-> [:ul.dropdown-menu] $
-                                 (if-not (= 1 (count users)) (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Removemember)]]) (conj $ nil))
-                                 (if member-admin? (conj $ [:li [:a {:href "#" :on-click #(downgrade-member! id state)} (t :extra-spaces/Downgradetomember)]]) (conj $ nil))
-                                 (if-not member-admin? (conj $ [:li [:a {:href "#" :on-click #(upgrade-member! id state)} (t :extra-spaces/Upgradetoadmin)]]) (conj $ nil)))]]])))]]]]))
+                                 (if pending-member? (conj $ [:li [:a {:href "#" :on-click #(accept-member! id state)} (t :extra-spaces/Acceptrequest)]]) (conj $ nil))
+                                 (if pending-member? (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Declinerequest)]]) (conj $ nil))
+                                 (if (and member? (not= 1 (count users))) (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Removemember)]]) (conj $ nil))
+                                 (if (and member? member-admin?) (conj $ [:li [:a {:href "#" :on-click #(downgrade-member! id state)} (t :extra-spaces/Downgradetomember)]]) (conj $ nil))
+                                 (if (and member? (not member-admin?)) (conj $ [:li [:a {:href "#" :on-click #(upgrade-member! id state)} (t :extra-spaces/Upgradetoadmin)]]) (conj $ nil)))]]])))]]]]))
 
 (defn content [state]
  [:div#space.user-list

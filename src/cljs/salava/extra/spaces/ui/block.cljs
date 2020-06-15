@@ -76,7 +76,7 @@
            [:th {:style {:display "none"}} "Action"]]]
          (into [:tbody]
                (for [space spaces
-                     :let [{:keys [space_id name logo role default_space]} space]]
+                     :let [{:keys [space_id name logo role default_space status]} space]]
                  [:tr
                   [:td.name [:a {:href "#"
                                  :on-click #(do
@@ -84,8 +84,8 @@
                                               (.preventDefault %))}
                                 (if logo [:img.badge-icon {:src (str "/" logo) :alt (str name " icon")}]
                                          [:span [:i.fa.fa-building.fa-3x {:style {:margin-right "10px"}}]]) name]]
-                  [:td [:span.label {:class (if (= role "admin") "label-danger" "label-success")} (translate-text (str "extra-spaces/" role))]]
-                  [:td {:style {:min-width "150px"}} "" (default-btn space state)]
+                  [:td (if (= status "pending") [:span.label.label-info (t :extra-spaces/pendingmembership)] [:span.label {:class (if (= role "admin") "label-danger" "label-success")} (translate-text (str "extra-spaces/" role))])]
+                  (when-not (= status "pending") [:td {:style {:min-width "150px"}} "" (default-btn space state)])
                   [:td.action "" (leave-organization space_id state)]]))]]]]
 
     [:div.well.well-sm (t :extra-spaces/Notjoinedanyorg)])))
@@ -105,7 +105,7 @@
 
   (init-spaces state)
   (fn []
-   (let [spaces @(cursor state [:spaces])
+   (let [spaces (->> @(cursor state [:spaces]) (remove #(= "pending" (:status %))))
          default-space (->> spaces (filter #(pos? (:default_space %))) first)]
      (when (seq spaces) #_(seq @(cursor state [:spaces]))
        [:div#space-list
@@ -138,28 +138,3 @@
    (init-spaces state)
    (fn []
      (layout/default site-navi (manage-spaces state)))))
-
-#_(defn space-gallery [state]
-   (let [spaces @(cursor state [:spaces])
-         ;order (keyword (:order @state))
-         #_spaces #_(case order
-                      (:name) (sort-by (comp upper-case str order) spaces)
-                      (:mtime) (sort-by order > spaces)
-                      (sort-by order > spaces))]
-    (into [:div#grid.row.wrap-grid]
-      (doall
-        (for [space spaces]
-           (space-card space state))))))
-
-#_(defn gallery-content [state]
-   [:div#space-gallery
-    [space-gallery state]])
-
-#_(defn gallery-spaces-handler [site-navi]
-   (let [state (atom {})]
-     (ajax/POST
-      (path-for "/obpv1/spaces/gallery" true)
-      {:handler (fn [data]
-                  (swap! state assoc :spaces data))})
-     (fn []
-      (layout/default site-navi (gallery-content state)))))
