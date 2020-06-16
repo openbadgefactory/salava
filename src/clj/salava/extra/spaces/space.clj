@@ -81,9 +81,19 @@
    (log/error _)
    {:status "error"})))
 
+(defn space-token [ctx space-id]
+  (select-space-property {:id space-id :name "token"} (into {:result-set-fn first :row-fn :value} (get-db ctx))))
+
+(defn invite-link-status [ctx space-id]
+ (if-let [x (pos? (some-> (select-space-property {:id space-id :name "invite_link"} (into {:result-set-fn first :row-fn :value} (get-db ctx)))
+                          (read-string)))] true false))
+
+
 (defn update-visibility! [ctx space-id visibility admin-id]
  (try+
   (update-space-visibility! {:id space-id :v visibility :user_id admin-id} (get-db ctx))
+  (when (and (= visibility "private") (clojure.string/blank? (space-token ctx space-id)))
+    (insert-space-property! {:space_id space-id :name "token" :value (str (java.util.UUID/randomUUID))} (get-db ctx)))
   {:status "success"}
   (catch Object _
    (log/error _)
@@ -129,6 +139,27 @@
 
 (defn is-member? [ctx space-id user-id]
   (check-space-member {:id space-id :user_id user-id} (get-db-1 ctx)))
+
+(defn update-link-status [ctx space-id status]
+ (try+
+  (insert-space-property! {:space_id space-id :name "invite_link" :value status} (get-db ctx))
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error"})))
+
+(defn refresh-token [ctx space-id]
+ (try+
+  (insert-space-property! {:space_id space-id :name "token" :value (str (java.util.UUID/randomUUID))} (get-db ctx))
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error"})))
+
+(defn invite-link-info [ctx space-id]
+  {:status (invite-link-status ctx space-id)
+   :token (space-token ctx space-id)})
+
 
 
 (def space [:id :uuid :name :description :logo :banner :status :visibility :ctime :mtime :last-modified-by])

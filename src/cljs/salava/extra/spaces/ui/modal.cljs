@@ -72,13 +72,15 @@
                (when (= (:status data) "success")
                  (init-data (:id @state) state)))}))
 
-(defn set-visibility [v state]
+(defn set-visibility [v state init-fn]
   (ajax/POST
    (path-for (str "/obpv1/spaces/update_visibility/" (:id @state)) true)
    {:params {:visibility v}
     :handler (fn [data]
                (when (= (:status data) "success")
-                (init-data (:id @state) state)))}))
+                (if init-fn
+                  (init-fn)
+                  (init-data (:id @state) state))))}))
 
 (defn space-logo [state]
   (let [{:keys [logo name]} @(cursor state [:space])
@@ -293,7 +295,7 @@
             (t :core/Delete)]]]])]]])
 
 
-(defn visibility-form [state]
+(defn visibility-form [state init-fn]
  (let [site-name (session/get :site-name)
        vatom (cursor state [:space :visibility])]
   [:div.row
@@ -308,7 +310,7 @@
                             :name "private"
                             :on-change #(do
                                           (.preventDefault %)
-                                          (set-visibility "private" state))
+                                          (set-visibility "private" state init-fn))
                             :checked (= "private" @vatom)}]
          [:div.radio-tile
           [:div.icon [:i.fa.fa-user-secret]]
@@ -319,7 +321,7 @@
                             :name "controlled"
                             :on-change #(do
                                           (.preventDefault %)
-                                          (set-visibility "controlled" state))
+                                          (set-visibility "controlled" state init-fn))
                             :checked (= "controlled" @vatom)}]
          [:div.radio-tile
           [:div.icon [:i.fa.fa-user-plus]]
@@ -330,7 +332,7 @@
                             :name "open"
                             :on-change #(do
                                           (.preventDefault %)
-                                          (set-visibility "open" state))
+                                          (set-visibility "open" state init-fn))
 
                             :checked (= "open" @vatom)}]
          [:div.radio-tile
@@ -354,17 +356,17 @@
                        [:li [:b (t :extra-spaces/Openspaceinfo)]]]]
          [:div])]]]]]))
 
-(defn manage-visibility [state]
+(defn manage-visibility [state init-fn]
   [:div.panel.panel-default
    [:div.panel-heading.weighted
     (t :extra-spaces/Membership)]
    [:div.panel-body
-    [visibility-form state]]])
+    [visibility-form state init-fn]]])
 
 (defn manage-space [state]
   [:div.row
    [manage-status state]
-   [manage-visibility state]
+   [manage-visibility state nil]
    [manage-admins state]])
 
 (defn space-navi [state]

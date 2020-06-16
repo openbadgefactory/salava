@@ -30,8 +30,8 @@
             (layout/main ctx "/admin")
             (layout/main ctx "/stats")
             (layout/main ctx "/manage")
-            (layout/main ctx "/users"))
-
+            (layout/main ctx "/users")
+            (layout/main ctx "/edit"))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]
@@ -58,6 +58,31 @@
                    :current-user current-user
                    (let [{:keys [name order page_count]} params]
                      (ok (db/get-gallery-spaces ctx name order page_count))))
+
+            (POST "/invitelink/:id" []
+                   :return {:status s/Bool :token (s/maybe s/Str)}
+                   :auth-rules access/space-admin
+                   :summary "Get invite link info"
+                   :path-params [id :- s/Int]
+                   :current-user current-user
+                   (ok (space/invite-link-info ctx id)))
+
+            (POST "/invitelink/update_status/:id" []
+                   :return {:status (s/enum "success" "error")}
+                   :auth-rules access/space-admin
+                   :summary "Initialize member admin's page"
+                   :current-user current-user
+                   :body-params [status :- s/Bool]
+                   :path-params [id :- s/Int]
+                   (ok (space/update-link-status ctx id status)))
+
+            (POST "/invitelink/refresh_token/:id" []
+                   :return {:status (s/enum "success" "error")}
+                   :auth-rules access/space-admin
+                   :summary "refresh invite-link token"
+                   :current-user current-user
+                   :path-params [id :- s/Int]
+                   (ok (space/refresh-token ctx id)))
 
             (POST "/check_membership/:id" []
                    :auth-rules access/authenticated
@@ -173,7 +198,7 @@
 
             (POST "/edit/:id" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
-                  :auth-rules access/admin
+                  :auth-rules access/space-admin
                   :path-params [id :- s/Str]
                   :body [space schemas/edit-space]
                   :summary "Edit space"

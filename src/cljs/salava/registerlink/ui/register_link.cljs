@@ -58,18 +58,18 @@
                               (.preventDefault %))
                 :checked   @active-atom}]
        (t :admin/Activeregister)]]
-     
-     [:div 
+
+     [:div
       [:p (t :admin/Registerlinkhelp) ]
       [:div {:id "share-buttons" :class (if @active-atom "form-group" "share-disabled form-group")}
-       [:label 
+       [:label
         (str (t :admin/Url) ":")]
        [:input {:class    "form-control"
                 :value    @url-atom
                 :onChange #(reset! url-atom (.-target.value %))
                 :read-only true}]]
-      
-      
+
+
       [:p (t :admin/Registerresethelp)]
         (if (:confirm-delete? @state)
           [:div {:class "delete-confirm"}
@@ -77,13 +77,13 @@
             [:p (t :admin/Reseturlhelp) ]]
            [:button {:type     "button"
                      :class    "btn btn-primary"
-                     :on-click #(swap! state assoc :confirm-delete? false) 
+                     :on-click #(swap! state assoc :confirm-delete? false)
                      }
             (t :badge/Cancel)]
            [:button {:type         "button"
                      :class        "btn btn-warning"
                      :data-dismiss "modal"
-                     
+
                      :on-click #(do
                                   (post-register-token (random-key) state)
                                   (swap! state assoc :confirm-delete? false))
@@ -94,17 +94,17 @@
                                  (swap! state assoc :confirm-delete? true)
                                (.preventDefault %))}
            (t :admin/Reset)])]
-     
-     
 
-     
-     
-     
-     
+
+
+
+
+
+
      ]))
 
 (defn init-data [state]
-  (ajax/GET 
+  (ajax/GET
    (path-for "/obpv1/registerlink/register-token")
    {:handler (fn [data]
                (swap! state assoc :url (make-register-url (:token data) )

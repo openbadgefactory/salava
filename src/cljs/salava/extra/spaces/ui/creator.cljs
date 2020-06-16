@@ -52,23 +52,8 @@
                       (reset! (cursor state [type :error]) (:message data))
                       (m/modal! (upload-modal data) {:hidden #(reset! alert-atom false)}))))})))
 
-(defn create-form [state]
+(defn create-form [state create-admins?]
   (let [{:keys [logo banner name]} @(cursor state [:space])]
-   ; [:div
-   ;  [:div.row
-   ;   #_[:div.col-md-12
-   ;      [:p (t :extra-spaces/Createinstructions)]]
-   ;
-   ;   [:div.col-md-12
-   ;    [:div.panel.panel-default
-   ;     [:div.panel-heading
-   ;       [:div.panel-title
-   ;        (if @(cursor state [:in-modal])
-   ;          [:div (if logo [:img {:src (if (re-find #"^data:image" logo) logo (str "/" logo))
-   ;                                :style {:width "40px" :height "40px"}}]
-   ;                         [:i.fa.fa-building.fa-fw.fa-2x])
-   ;              [:h4.inline " " (t :extra-spaces/Edit) "/" name]]
-   ;          (t :extra-spaces/Createmember))]]
        [:div.panel-body
         [:div.col-md-12.panel-section
          [:form.form-horizontal
@@ -82,7 +67,7 @@
                            (reset! (cursor state [:space :name]) (.-target.value %))
                            (generate-alias state))}]]
                            ;(when (clojure.string/blank? @(cursor state [:space :alias])) (generate-alias state)))}]]
-          (when-not (:in-modal @state)
+          (when (and (not (:in-modal @state)) create-admins?)
            [:div.form-group
             [:label {:for "input-alias"} (t :extra-spaces/Alias) [:span.form-required " *"]]
             [:p (t :extra-spaces/Aboutalias)]
@@ -210,7 +195,7 @@
                              (.preventDefault %)
                              (reset! (cursor state [:space :css :t-color]) (.-target.value %)))}]]]
 
-          (when-not (:in-modal @state)
+          (when (and (not (:in-modal @state)) create-admins?)
            [:hr.border]
            [:div#social-tab.form-group {:style {:background-color "ghostwhite" :padding "8px"}}
 
@@ -255,7 +240,7 @@
                                   :style {:width "40px" :height "40px"}}]
                            [:i.fa.fa-building.fa-fw.fa-2x])
                 [:h4.inline " " (t :extra-spaces/Edit) "/" name]]]]
-        [create-form state]
+        [create-form state false]
         [:hr.border]
         [:div.panel-footer.text-center
          (when @(cursor state [:error-message])
@@ -284,7 +269,7 @@
        [:div.panel.panel-default
         [:div.panel-heading
           [:div.panel-title (t :extra-spaces/Createmember)]]
-        [create-form state]
+        [create-form state true]
         [:div.panel-footer.text-center
          [:div.btn-toolbar
           [:div.btn-group {:style {:float "unset"}}
