@@ -42,10 +42,10 @@ JOIN user_badge AS ub ON ub.id = ube.user_badge_id
 WHERE ube.user_badge_id = :id AND ube.status = 'accepted'
 
 --name:select-user-badge-endorsements-ext
-SELECT ube.external_id AS id, ube.issuer_name, ube.issuer_url, ube.content, ube.mtime, ub.assertion_url
-FROM user_badge_endorsement AS ube
-JOIN user_badge AS ub ON ub.id = ube.user_badge_id
-WHERE ube.user_badge_id = :id AND ube.status = 'accepted'
+SELECT ubex.external_id AS id, ubex.issuer_name, ubex.issuer_url, ubex.content, ubex.mtime, ub.assertion_url
+FROM user_badge_endorsement_ext AS ubex
+JOIN user_badge AS ub ON ub.id = ubex.user_badge_id
+WHERE ubex.user_badge_id = :id AND ubex.status = 'accepted'
 
 -- name: select-badge-by-assertion
 SELECT id FROM user_badge WHERE email = :email AND assertion_url = :url AND deleted = 0 AND status != 'declined'
