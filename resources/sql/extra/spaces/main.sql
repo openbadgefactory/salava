@@ -43,6 +43,11 @@ SELECT id, alias FROM space WHERE alias = :alias
 --name: select-deleted-spaces
 SELECT id, name, mtime FROM space WHERE status = 'deleted'
 
+--name:select-default-space
+SELECT s.id, us.user_id, s.name FROM user_space us
+JOIN space s ON s.id = us.space_id
+WHERE us.default_space = 1 AND s.status = 'active' AND us.user_id = :user_id
+
 --name: select-space-admins
 SELECT us.user_id AS id, us.space_id, us.default_space, u.first_name, u.last_name, u.profile_picture
 FROM user_space us

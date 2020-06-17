@@ -27,7 +27,7 @@
 
 (defn new-space-member [ctx space-id user-id]
  (let [sv (select-space-visibility {:id space-id} (into {:result-set-fn first :row-fn :visibility} (u/get-db ctx)))
-       status (if (= "open" sv) "accepted" "pending")]
+       status (if (or (= "open" sv) (= "private" sv)) "accepted" "pending")]
   (create-space-member! (->Space_member user-id space-id "member" status 0) (u/get-db ctx))))
 
 #_(defn create-space-admin!
@@ -149,7 +149,7 @@
 
 (defn get-user-spaces [ctx user-id]
   (select-user-spaces {:id user-id} (u/get-db ctx)))
- 
+
 (defn- space-count [remaining page_count]
   (let [limit 20
         spaces-left (- remaining (* limit (inc page_count)))]

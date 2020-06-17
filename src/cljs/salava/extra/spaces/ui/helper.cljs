@@ -64,7 +64,7 @@
               :aria-label "OK"}
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    [:h4.modal-title (translate-text message)]]
+    (when reason [:h4.modal-title (translate-text reason)])]
    [:div.modal-body
     [:div {:class (str "alert " (if (= status "error")
                                   "alert-warning"

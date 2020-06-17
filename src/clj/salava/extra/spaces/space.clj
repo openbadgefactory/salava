@@ -6,7 +6,9 @@
   [salava.extra.spaces.util :as u]
   [slingshot.slingshot :refer :all]
   [salava.core.time :refer [get-date-from-today]]
-  [salava.core.util :refer [get-db get-db-1]]))
+  [salava.core.util :refer [get-db get-db-1]]
+  [ring.util.http-response :refer [not-found]]))
+
 
 (defqueries "sql/extra/spaces/main.sql")
 
@@ -160,6 +162,40 @@
   {:status (invite-link-status ctx space-id)
    :token (space-token ctx space-id)})
 
+(defn alias->id [ctx alias]
+  (select-space-by-alias {:alias alias} (into {:result-set-fn first :row-fn :id} (get-db ctx))))
+
+(defn default-space [ctx user-id]
+  (select-default-space {:user_id user-id} (get-db-1 ctx)))
+
+(defn set-space-session [ctx space-id ok-status current-user]
+  (let [user-id (:id current-user)
+        already-member? (= user-id (:user_id (is-member? ctx space-id user-id)))]
+    (if already-member?
+     (switch! ctx ok-status current-user space-id)
+     (do
+      (join! ctx space-id user-id)
+      (switch! ctx ok-status current-user space-id)))))
+
+(defn set-user-space [ctx invitation user-id]
+  (let [{:keys [token id alias]} invitation
+        already-member? (= user-id (:user_id (is-member? ctx id user-id)))]
+    (if invitation
+     (if already-member?
+       (get-space ctx id user-id)
+       (do
+        (join! ctx id user-id)
+        (get-space ctx id user-id)))
+     (get-space ctx (:id (default-space ctx user-id)) user-id))))
+
+
+(defn invite-user [ctx alias invite-token]
+  (let [space-id (alias->id ctx alias)
+         {:keys [status token]} (invite-link-info ctx space-id)]
+
+     (if (and status (= invite-token token))
+       {:status "success" :id space-id}
+       {:status "error" :id space-id :message "extra-spaces/Invitelinkeerror"})))
 
 
 (def space [:id :uuid :name :description :logo :banner :status :visibility :ctime :mtime :last-modified-by])

@@ -2,8 +2,10 @@
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
             [ring.swagger.upload :as upload]
+            [ring.util.response :refer [redirect]]
             [schema.core :as s]
             [salava.core.helper :refer [dump]]
+            [salava.core.util :as u]
             [salava.core.layout :as layout]
             [salava.extra.spaces.space :as space]
             [salava.extra.spaces.db :as db]
@@ -31,7 +33,22 @@
             (layout/main ctx "/stats")
             (layout/main ctx "/manage")
             (layout/main ctx "/users")
-            (layout/main ctx "/edit"))
+            (layout/main ctx "/edit")
+
+            (GET "/member_invite/:uid/:token" req
+                  :path-params [uid :- s/Str
+                                token :- s/Str]
+                  :summary "join space via invitation link"
+                  :current-user current-user
+                  (let [{:keys [status message id]} (space/invite-user ctx uid token)]
+
+                   (if current-user
+                      (if (= status "success")
+                        (space/set-space-session ctx id (found (str (u/get-base-path ctx) (str "/connections/spaces"))) current-user)
+                        (redirect (str (u/get-base-path ctx) (str "/connections/spaces?error=" true))))
+                      (if (= status "success")
+                       (-> (redirect (str (u/get-base-path ctx) (str "/user/login?invite_token="token)))
+                           (assoc :session (assoc (get req :session {}) :invitation {:token token :alias uid :id id}))))))))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]
@@ -125,7 +142,7 @@
                     (ok (space/accept! ctx id user_id)))
 
             (POST "/user" []
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :summary "Get all spaces user belongs to"
                    :current-user current-user
                    (ok (db/get-user-spaces ctx (:id current-user))))

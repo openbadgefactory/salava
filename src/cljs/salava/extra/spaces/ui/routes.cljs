@@ -27,6 +27,7 @@
   {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces)} ;:about (:selfie (about))}})
    (str (base-path context) "/admin/spaces/creator") {:weight 200 :title (t :extra-spaces/Createspace) :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces " / " :extra-spaces/Create)}
    (str (base-path context) "/connections/spaces") {:weight 70 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :social/Connections " / " :extra-spaces/Spaces)}
+   (str (base-path context) "/connections/spaces\\S+") {:weight 70 :title (t :extra-spaces/Spaces) :breadcrumb (t :social/Connections " / " :extra-spaces/Spaces)}
    (str (base-path context) "/gallery/spaces") {:weight 150 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :gallery/Gallery " / " :extra-spaces/Spaces)}})
 
 (defn member-admin-navi [context]

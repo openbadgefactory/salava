@@ -434,11 +434,16 @@
   (let [{:keys [role id private activated]} (user-information ctx user-id)
         last-visited (last-visited ctx user-id)
         expires (+ (long (/ (System/currentTimeMillis) 1000)) (get-in ctx [:config :core :session :max-age]))
+        current-space (as-> (first (plugin-fun (get-plugins ctx) "space" "set-user-space")) $
+                            (when (ifn? $) ($ ctx (get-in ok-status [:body :invitation ] nil) user-id)))
         user-spaces (as-> (first (plugin-fun (get-plugins ctx) "db" "get-user-spaces")) $
-                          (if (ifn? $) ($ ctx user-id) nil))]
+                          (when (ifn? $) ($ ctx user-id)))
+        identity {:id id :role role :private private :activated activated :last-visited last-visited :expires expires :spaces user-spaces :current-space current-space}]
+    (prn user-spaces)
     (-> ok-status
-        (assoc-in [:session :identity] {:id id :role role :private private :activated activated :last-visited last-visited :expires expires :spaces user-spaces})
-        (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"}))))
+        (assoc-in [:session :identity] identity)
+        (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})
+        (update-in [:body] dissoc :invitation))))
 
 (defn finalize-login [ctx ok-res user-id pending-badge-id new-account]
   (save-pending-badge-and-email ctx user-id pending-badge-id new-account)

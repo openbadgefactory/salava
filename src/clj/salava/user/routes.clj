@@ -64,7 +64,8 @@
                         accepted-terms? (u/accepted-terms? ctx email)
                         login-status (-> (u/login-user ctx email password)
                                          (assoc :terms accepted-terms?)
-                                         (assoc :redirect-to (get-in req [:cookies "login_redirect" :value])))]
+                                         (assoc :redirect-to (get-in req [:cookies "login_redirect" :value]))
+                                         (assoc :invitation (get-in req [:session :invitation] nil)))]
                     (if (= "success" (:status login-status))
                       (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]) false)
                       (ok login-status))))
@@ -98,7 +99,7 @@
                        ;return error status from save
                       (ok save)
                       (if (not (private? ctx))
-                        (let [login-status (u/login-user ctx email password)]
+                        (let [login-status (assoc (u/login-user ctx email password) :invitation (get-in req [:session :invitation] nil))]
                           (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (or (= "accepted" (:input update-accept-term)) (= "disabled" (:input update-accept-term))))
                             (u/finalize-login ctx (assoc-in (ok login-status) [:session :new-user] (:id user-id)) (:id login-status) (get-in req [:session :pending :user-badge-id]) true)
                             (ok login-status)))

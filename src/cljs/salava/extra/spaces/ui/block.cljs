@@ -6,8 +6,11 @@
   [salava.core.i18n :refer [t translate-text]]
   [reagent.session :as session]
   [reagent.core :refer [cursor atom]]
+  [reagent-modals.modals :as m]
   [dommy.core :as dommy :refer-macros [sel sel1]]
-  [salava.extra.spaces.ui.helper :refer [space-card]]))
+  [salava.extra.spaces.ui.helper :refer [space-card upload-modal]]
+  [cemerick.url :as url]
+  [clojure.walk :refer [keywordize-keys]]))
 
 
 (defn stylyze-buttons [btn-class color])
@@ -31,12 +34,14 @@
                 (swap! state assoc :spaces data
                                    :selected (session/get-in [:user :current-space :name] nil))
                 (when-not (empty? (session/get-in [:user :current-space :css] nil))
-                  (stylyze)))}))
+                  (stylyze))
+                (when (:error @state)
+                  (m/modal! [upload-modal {:status "error" :message "extra-spaces/Invitelinkeerror" }])))})) {}
 
 
 (defn leave-organization [id state]
   [:a {:href "#" :on-click #(do (.preventDefault %)
-                                (ajax/DELETE
+                                (ajax/POST
                                  (path-for (str "/obpv1/spaces/user/leave/" id) true)
                                  {:handler (fn [data]
                                              (when (= "success" (:status data))
@@ -61,6 +66,7 @@
   (let [spaces (sort-by :name @(cursor state [:spaces]))]
    (if (seq spaces)
      [:div#badge-stats
+      [m/modal-window]
       [:h1.uppercase-header (t :extra-spaces/Organizations)]
       [:p (t :extra-spaces/Spaceconnectioninfo)]
       [:div.expandable-block {:class "panel issuer-panel panel-default"}
@@ -99,10 +105,10 @@
 
 
 (defn space-list []
- (let [state (atom {:selected  nil})
+ (let [state (atom {:selected  nil :spaces (session/get-in [:user :spaces])})
        user-id (session/get-in [:user :id])
        current-space (session/get-in [:user :current-space])]
-
+   (prn "dafdlkasd")
   (init-spaces state)
   (fn []
    (let [spaces (->> @(cursor state [:spaces]) (remove #(= "pending" (:status %))))
@@ -134,7 +140,8 @@
           (sort-by :name spaces))]])))))
 
 (defn manage-spaces-handler [site-navi]
-  (let [state (atom {})]
+  (let [error (:error (-> js/window .-location .-href url/url :query keywordize-keys))
+        state (atom {:error (if (= "true" error) true false)})]
    (init-spaces state)
    (fn []
      (layout/default site-navi (manage-spaces state)))))

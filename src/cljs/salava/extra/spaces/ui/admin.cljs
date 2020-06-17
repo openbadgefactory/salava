@@ -16,7 +16,7 @@
 (defn generate-invite-link [token state]
   (let [name @(cursor state [:space :name])
         alias @(cursor state [:space :alias])]
-   (str (session/get :site-url) (path-for (str "spaces/member/invite/" alias "/" token)))))
+   (str (session/get :site-url) (path-for (str "space/member_invite/" alias "/" token)))))
 
 (defn init-invite-link [state]
   (ajax/POST
