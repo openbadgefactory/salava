@@ -56,22 +56,18 @@
                        badge (b/get-badge-p ctx user-badge-id user-id)
                        badge-owner-id (:owner badge)
                        visibility (:visibility badge)
-                       owner? (and user-id badge-owner-id (= user-id badge-owner-id))]
-                   (if (or (= visibility "public") owner? (and user-id (= visibility "internal")))
+                       owner? (= user-id badge-owner-id)]
+                   (if (or (and user-id badge-owner-id owner?)
+                           (= visibility "public")
+                           (and user-id
+                                (= visibility "internal")))
                      (do
-                       (when (and badge (not owner?))
+                       (if (and badge (not owner?))
                          (b/badge-viewed ctx user-badge-id user-id))
                        (ok badge))
                      (if (and (not user-id) (= visibility "internal"))
                        (unauthorized)
-                       (not-found)))))
-
-            (GET "/congratulations/:user-badge-id" []
-                 :return schemas/congratulations-p
-                 :path-params [user-badge-id :- Long]
-                 :summary "badge congratulations"
-                 :current-user current-user
-                 (ok (b/get-congratulations-p ctx user-badge-id (:id current-user)))))
+                       (not-found))))))
 
    (context "/obpv1/badge" []
             :tags  ["badge"]
@@ -126,15 +122,6 @@
                  :auth-rules access/signed
                  :current-user current-user
                  (ok (p/pending-badges ctx (:id current-user))))
-
-            (GET "/pending_badges_first" []
-                 :summary "Check and return first of user's pending badges"
-                 ;:return [:id :- Long]
-                 :auth-rules access/signed
-                 :current-user current-user
-                 (if-let [pending (p/pending-badges-first ctx (:id current-user))]
-                   (ok pending)
-                   (not-found)))
 
             (GET "/issuer/:issuerid" []
                  :return schemas/IssuerContent
@@ -389,7 +376,7 @@
             :tags ["badge_user_endorsements"]
 
             (GET "/:user-badge-id" []
-                 ;:no-doc true
+                 :no-doc true
                  :return endoschemas/user-badge-endorsement
                  :path-params [user-badge-id :- Long]
                  :summary "Get user badge endorsements"

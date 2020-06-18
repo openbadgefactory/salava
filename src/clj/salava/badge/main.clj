@@ -118,10 +118,7 @@
   "Returns all the badges of a given user."
   [ctx user-id]
   (let [badges (some->> (select-user-badges-all-p {:user_id user-id} (u/get-db ctx))
-                        (r/map  (fn [b]
-                                  (-> b
-                                      (assoc :revoked (pos? (b :revoked)))
-                                      (assoc :png_image_file (png-convert-url ctx (:image_file b))))))
+                        (r/map  #(-> % (assoc :revoked (pos? (:revoked %)))))
                         (r/foldcat))
         tags (when (seq badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))]
     (hash-map :badges (map-badges-tags badges tags))))
@@ -221,7 +218,6 @@
         content  (some->> (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx))
                           (r/map #(-> %
                                       (assoc :criteria_content (u/md->html (:criteria_content %)))
-                                      (assoc :png_image_file (png-convert-url ctx (:image_file %)))
                                       (assoc :alignment (select-alignment-content {:badge_content_id (:badge_content_id %)} (u/get-db ctx)))
                                       (dissoc :badge_content_id)))
                           (r/foldcat))]
@@ -282,18 +278,9 @@
   [ctx badge-id user-id]
   (let [badge (some->> (fetch-badge-p ctx badge-id) #_(badge-issued-and-verified-by-obf ctx))]
     (some-> badge
-            (merge (select-badge-detail-count-p {:id badge-id} (u/get-db-1 ctx)))
             (assoc :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge)))
                   ;:qr_code (u/str->qr-base64 (badge-url ctx badge-id)))
             (dissoc :badge_id :deleted :obf_url))))
-
-(defn get-congratulations-p
-  "Get badge by id, public route"
-  [ctx badge-id user-id]
-  {:congratulations
-   (if user-id
-     (select-all-badge-congratulations {:user_badge_id badge-id} (u/get-db ctx))
-     [])})
 
 (defn get-endorsements [ctx badge-id]
   (map (fn [e]

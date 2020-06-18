@@ -84,3 +84,8 @@
                                         :issuer [endorsement-m]
                                         :user   [endorsement-m]})
 
+(s/defschema congratulations-m {:congratulations [{:id s/Int
+                                                   :first_name (s/maybe s/Str)
+                                                   :last_name (s/maybe s/Str)
+                                                   :profile_picture (s/maybe s/Str)
+                                                   :ctime s/Int}]})

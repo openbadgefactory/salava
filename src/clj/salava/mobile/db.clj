@@ -76,3 +76,13 @@
                             (update :issuer_image_file #(png-convert-url ctx %))
                             (assoc :issuer_email "")
                             (assoc :issuer_description "")))))})
+
+(defn user-badge-congratulations
+  "Get badge by id, public route"
+  [ctx badge-id user-id]
+  {:congratulations (->> (select-user-badge-congratulations
+                           {:user_badge_id badge-id :owner user-id} (u/get-db ctx))
+                         (map (fn [c]
+                                (-> c
+                                    (update :profile_picture #(if (string/blank? %) % (str (u/get-site-url ctx) "/" %)))
+                                    ))))})

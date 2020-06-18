@@ -123,3 +123,11 @@ INNER JOIN user_ext u ON e.issuer_id = u.id
 INNER JOIN user_badge ub ON e.user_badge_id = ub.id
 WHERE ub.id = :id AND ub.user_id = :user_id AND e.status = 'accepted'
 ORDER BY issued_on;
+
+--name: select-user-badge-congratulations
+--get all users who congratulated another user from specific badge
+SELECT u.id, u.first_name, u.last_name, u.profile_picture, bc.ctime FROM user u
+INNER JOIN badge_congratulation AS bc ON u.id = bc.user_id
+INNER JOIN user_badge ub ON bc.user_badge_id = ub.id
+WHERE ub.id = :user_badge_id AND ub.user_id = :owner;
+

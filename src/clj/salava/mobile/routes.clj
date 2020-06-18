@@ -50,4 +50,13 @@
                   :current-user current-user
                   (ok (db/user-badge-endorsements ctx user-badge-id (:id current-user))))
 
+
+             (GET "/badge/:user-badge-id/congratulations" []
+                  :return schemas/congratulations-m
+                  :path-params [user-badge-id :- Long]
+                  :summary "badge congratulations"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (db/user-badge-congratulations ctx user-badge-id (:id current-user))))
+
              )))
