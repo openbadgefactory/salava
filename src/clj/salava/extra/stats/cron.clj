@@ -13,16 +13,17 @@
                                    :source (get-in ctx [:config :core :site-url])
                                    :ts (System/currentTimeMillis)})
           checksum (u/hmac-sha256-hex payload (get-in ctx [:config :factory :secret]))
-          url (str (get-in ctx [:config :factory :url]) "/c/badge/passport_stats?&c=" checksum)]
-      (http/http-post url {:body payload}))))
+          url (str (get-in ctx [:config :factory :url]) "/c/badge/passport_stats?c=" checksum)]
+      (http/http-post url {:body payload :throw-exceptions false}))))
 
 (defn- id->assertion-url [ctx badge-hits]
   (let [db-conn (:connection (u/get-db ctx))
         sql "SELECT assertion_url AS url FROM user_badge WHERE id = ?"]
     (reduce (fn [coll id]
-              (if-let [[a-url] (some->> (jdbc/query db-conn [sql id]) first :url (re-find #"^https?://[^\?&;#]+/v[0-9]/assertion/\w+\.json"))]
-                (assoc coll a-url (get badge-hits id))
-                coll))
+              (let [a-url (some->> (jdbc/query db-conn [sql id]) first :url)]
+                (if (and a-url (re-find #"^https?://[^\?&;#]+/v[0-9]/assertion/\w+\.json" a-url))
+                  (assoc coll a-url (get badge-hits id))
+                  coll)))
             {} (keys badge-hits))))
 
 (defn- hit-count [filename services]
