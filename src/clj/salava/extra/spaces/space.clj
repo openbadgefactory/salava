@@ -18,7 +18,7 @@
  (try+
    (let [{:keys [name description status visibility logo banner admins alias valid_until css url]} space
          valid_until (get-date-from-today 12 0 0)
-         space (->Space nil (u/uuid) name description "active" "public" logo banner alias valid_until url)]
+         space (->Space nil (u/uuid) name description "active" "private" logo banner alias valid_until url)]
     (db/create-new-space! ctx (assoc space :admins admins :css css)) ;:admin admin))
     {:status "success"})
    (catch Object _

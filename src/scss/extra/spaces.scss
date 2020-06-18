@@ -358,13 +358,24 @@ ul.navbar-nav {
 
 #space-info-banner {
   .logo {
-      height: 40px;
-      width: 40px;
+      height: 30px;
+      width: 30px;
   }
 
   .banner-container {
     background-repeat: no-repeat;
     background-size: cover;
+    border-bottom-left-radius: unset;
+    border-bottom-right-radius: unset;
+    min-height: 100px;
+  }
+
+  .no-banner-container {
+    min-height: 100px;
+    background-color: #211868;
+    border-radius: 3px;
+    border-bottom-left-radius: unset;
+    border-bottom-right-radius: unset;
   }
 
   .navbar-header {

@@ -35,8 +35,9 @@
      (stylyze-element (sel1 [:#theme-0 :.panel-right]) p-color)
      (stylyze-element (sel1 [:#theme-0 :.panel-left]) p-color)
      (stylyze-links (sel :a) p-color)
-     (stylyze-links (sel [:.help :p]) p-color)
+     (stylyze-links (sel [:.help :a :p]) p-color)
      (stylyze-links (sel [:#dashboard :.block :.title]) p-color)
+     (stylyze-links (sel [:#badge-info :a]) p-color)
      (stylyze-element-multi (sel [:.button]) p-color)])))
 
 (defn init-spaces [state]
@@ -162,7 +163,7 @@
                                          (path-for (str "/obpv1/spaces/reset_switch") true)
                                          {:handler (fn [data]
                                                     (js-navigate-to (current-route-path)))}))}
-             [:div.logo-image.system-image-url {:style {:display "inline-block"}}] (if current-space (str (t :extra-spaces/backto) " " (session/get :site-name)) [:b (session/get :site-name)])]])]])))))
+             [:div.logo-image.system-image-url] (if current-space (str (t :extra-spaces/backto) " " (session/get :site-name)) [:b (session/get :site-name)])]])]])))))
 
 
 (defn manage-spaces-handler [site-navi]
@@ -235,11 +236,18 @@
 
 (defn space_info []
  (when-let [current-space (session/get-in [:user :current-space] nil)]
-   [:div.navbar.navbar-default.banner-container
-    (when (:banner current-space)
-     {:style {:background-image (str "url(" (session/get :site-url) "/" (:banner current-space) ")")}})
+   [:div
+    (if (:banner current-space)
+     [:div.banner-container
+      [:img.img-responsive {:src (str "/" (:banner current-space))}]]
+      ;{:style {:background-image (str "url(" (session/get :site-url) "/" (:banner current-space) ")")}}]
+     [:div.no-banner-container
+      {:style {:background-color (get-in current-space [:css :p-color])}}])
+    [:div.navbar.navbar-default
+     #_(when (:banner current-space)
+        {:style {:background-image (str "url(" (session/get :site-url) "/" (:banner current-space) ")")}})
 
-    [:div.container-fluid
-     [:div.navbar-header
-      [:a.navbar-brand {:href "#"}
-       [:img.logo {:src (str "/" (:logo current-space))}]]]]]))
+     [:div.container-fluid
+      [:div.navbar-header
+       [:a.navbar-brand {:href "#"}
+        [:img.logo {:src (str "/" (:logo current-space))}]]]]]]))
