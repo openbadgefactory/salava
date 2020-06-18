@@ -4,10 +4,11 @@
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]))
 
+;; TODO translations, app name from config
 (defn content [form]
   [:div
    [:h1 "Authorize application"]
-   [:p "TODO describe app access"]
+   [:p "Open Badge Passport mobile app would like to access your data."]
    [:form {:method "post" :action (path-for "/user/oauth2/authorize")}
     [:input {:type "hidden" :name "client_id" :value (.get form "client_id")}]
     [:input {:type "hidden" :name "state" :value (.get form "state")}]
