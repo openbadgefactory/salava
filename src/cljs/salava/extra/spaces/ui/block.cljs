@@ -13,19 +13,31 @@
   [clojure.walk :refer [keywordize-keys]]))
 
 
-(defn stylyze-buttons [btn-class color])
-(defn stylyze-links [color]
+(defn stylyze-element [element color]
+  (when-let [$ element] (dommy/set-style! $ :background "none" :background-color color)))
+
+(defn stylyze-links [selector color]
   (doall
-   (doseq [a (sel :a)]
+   (doseq [a (remove (fn [e] (some #(= e %) (sel :.btn))) selector)]
       (dommy/set-style! a :color color))))
+
+(defn stylyze-element-multi [elements color]
+ (when elements
+  (doall
+   (doseq [$ elements]
+     (dommy/set-style! $ :background-color "transparent" :background (str color))))))
 
 (defn stylyze []
   (let [{:keys [p-color s-color t-color]} (session/get-in [:user :current-space :css])]
    (doall
-    [(dommy/set-style! (sel1 ".title-row") :background "none" :background-color p-color)
-     (stylyze-buttons ".btn-default" p-color)
-     (stylyze-links p-color)])))
-
+    [(stylyze-element (sel1 ".welcome-block") p-color)
+     (stylyze-element (sel1 ".title-row") p-color)
+     (stylyze-element (sel1 [:#theme-0 :.panel-right]) p-color)
+     (stylyze-element (sel1 [:#theme-0 :.panel-left]) p-color)
+     (stylyze-links (sel :a) p-color)
+     (stylyze-links (sel [:.help :p]) p-color)
+     (stylyze-links (sel [:#dashboard :.block :.title]) p-color)
+     (stylyze-element-multi (sel [:.button]) p-color)])))
 
 (defn init-spaces [state]
   (ajax/POST
@@ -108,7 +120,6 @@
  (let [state (atom {:selected  nil :spaces (session/get-in [:user :spaces])})
        user-id (session/get-in [:user :id])
        current-space (session/get-in [:user :current-space])]
-   (prn "dafdlkasd")
   (init-spaces state)
   (fn []
    (let [spaces (->> @(cursor state [:spaces]) (remove #(= "pending" (:status %))))
@@ -121,23 +132,38 @@
                               :role "button"
                               :aria-haspopup true
                               :aria-expanded false}
-            [:div.selected-space
-             [:img.space-img {:src (str "/" (or (:logo current-space) (:logo default-space))) :alt " "}]
-             [:div.name (or @(cursor state [:selected]) (:name default-space) (t :extra-spaces/Switchorganization))] [:span.caret]]]
-         (reduce
-           (fn [r space]
-            (let [selected? (= @(cursor state [:selected])  (:name space))]
-             (conj r
-               ^{:key (:space_id space)}[:li [:a {:href "#" :on-click #(do
-                                                                         (reset! (cursor state [:selected]) (:name space))
-                                                                         (ajax/POST
-                                                                          (path-for (str "/obpv1/spaces/switch/" (:id space))true)
-                                                                          {:handler (fn [data]
-                                                                                      (js-navigate-to (next-url space)))}))}
+            (if current-space
+             [:div.selected-space
+              [:img.space-img {:src (str "/" (or (:logo current-space) (:logo default-space))) :alt " "}]
+              [:div.name (or @(cursor state [:selected]) (:name default-space) (t :extra-spaces/Switchorganization))] [:span.caret]]
+             [:div.selected-space
+              [:div.logo-image.system-image-url {:style {:display "inline-block"}}]
+              [:div.name (session/get :site-name)] [:span.caret]])]
+         (conj
+           (conj (reduce
+                   (fn [r space]
+                    (let [selected? (= @(cursor state [:selected])  (:name space))]
+                     (conj r
+                       ^{:key (:space_id space)}[:li [:a {:href "#" :on-click #(do
+                                                                                 (reset! (cursor state [:selected]) (:name space))
+                                                                                 (ajax/POST
+                                                                                  (path-for (str "/obpv1/spaces/switch/" (:id space))true)
+                                                                                  {:handler (fn [data]
+                                                                                              (js-navigate-to (next-url space)))}))}
 
-                                                [:img.space-img {:src (str "/" (:logo space)) :alt " "}](if selected? [:b [:i (:name space)]] (:name space))]])))
-          [:ul.dropdown-menu];.pull-left]
-          (sort-by :name spaces))]])))))
+                                                        [:img.space-img {:src (str "/" (:logo space)) :alt " "}](if selected? [:b [:i (:name space)]] (:name space))]])))
+                  [:ul.dropdown-menu];.pull-left]
+                  (sort-by :name spaces))
+                 [:li.divider {:role "seperator"}])
+           [:li
+            [:a {:href "#" :on-click #(do
+                                        (reset! (cursor state [:selected]) (session/get :site-name))
+                                        (ajax/POST
+                                         (path-for (str "/obpv1/spaces/reset_switch") true)
+                                         {:handler (fn [data]
+                                                    (js-navigate-to (current-route-path)))}))}
+             [:div.logo-image.system-image-url {:style {:display "inline-block"}}] (if current-space (str (t :extra-spaces/backto) " " (session/get :site-name)) [:b (session/get :site-name)])]])]])))))
+
 
 (defn manage-spaces-handler [site-navi]
   (let [error (:error (-> js/window .-location .-href url/url :query keywordize-keys))
@@ -145,3 +171,75 @@
    (init-spaces state)
    (fn []
      (layout/default site-navi (manage-spaces state)))))
+
+(defn space_list_dashboard []
+  (let [spaces (session/get-in [:user :spaces])
+        current-space (session/get-in [:user :current-space])
+        state (atom {:spaces spaces})]
+   (init-spaces state)
+   (fn []
+    (let [spaces (->> @(cursor state [:spaces]) (remove #(= "pending" (:status %))))
+          default-space (->> spaces (filter #(pos? (:default_space %))) first)]
+      (when (seq spaces)
+       [:div.box.col-md-4.col-sm-12.space-list-block
+        [:div#box_6
+         [:div.col-md-12.block
+          [:div.row_2
+           [:div.heading_1
+            [:i.fa.fa-th-large.icon]
+            [:a {:href (str (path-for "/connections/spaces"))}
+             [:span.title (t :extra-spaces/Spaces)]]
+            [:span.small.icon]]
+           [:div.content
+            [:p {:style {:font-size "medium"}} (t :extra-spaces/Selectspacebelow)]
+            [:div#space-list
+             (conj
+              (reduce
+               (fn [r space]
+                (let [selected? (= @(cursor state [:selected])  (:name space))
+                      p-color (get-in space [:css :p-color])]
+                  (conj r
+                   [:div.space-list-item {:class (when selected? "selected-space") :style {:border-left (str "4px solid " p-color)}};
+
+                    [:a
+                     {:on-click #(do
+                                  (reset! (cursor state [:selected]) (:name space))
+                                  (ajax/POST
+                                   (path-for (str "/obpv1/spaces/switch/" (:id space))true)
+                                   {:handler (fn [data]
+                                               (js-navigate-to (next-url space)))}))}
+                     [:div.media
+                      [:div.media-left
+                       [:img.space-img {:src (str "/" (:logo space)) :alt " "}]]
+                      [:div.media-body
+                       (if selected? [:b [:i (:name space)]] (:name space))
+                       (when (= (:id space) (:id default-space)) [:span.default [:i.fa.fa-bookmark] " " [:b (t :extra-space/default)]])
+                       (when selected? [:span.current [:i.fa.fa-thumb-tack] " " [:b (t :extra-space/currentspace)]])]]]])))
+               [:div]
+               (sort-by :name spaces))
+
+              [:div.space-list-item ;{:class (when selected? "selected-space")}
+               [:a {:href "#" :on-click #(do
+                                           (reset! (cursor state [:selected]) (session/get :site-name))
+                                           (ajax/POST
+                                            (path-for (str "/obpv1/spaces/reset_switch") true)
+                                            {:handler (fn [data]
+                                                       (js-navigate-to (current-route-path)))}))}
+                [:div.media
+                  [:div.media-left
+                   [:div.logo-image.system-image-url]]
+                  [:div.media-body
+                    (str (t :extra-spaces/backto) " " (session/get :site-name))
+                    (when (empty? default-space) [:span.default [:i.fa.fa-bookmark] " " (t :extra-space/default)])
+                    (when (empty? current-space) [:span.current [:i.fa.fa-thumb-tack] " " [:b (t :extra-space/currentspace)]])]]]])]]]]]])))))
+
+(defn space_info []
+ (when-let [current-space (session/get-in [:user :current-space] nil)]
+   [:div.navbar.navbar-default.banner-container
+    (when (:banner current-space)
+     {:style {:background-image (str "url(" (session/get :site-url) "/" (:banner current-space) ")")}})
+
+    [:div.container-fluid
+     [:div.navbar-header
+      [:a.navbar-brand {:href "#"}
+       [:img.logo {:src (str "/" (:logo current-space))}]]]]]))

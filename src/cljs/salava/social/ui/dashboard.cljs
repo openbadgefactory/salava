@@ -585,6 +585,11 @@
        [:p  {:style {:font-size "20px" :color "black"}} (t :social/Iwantto)]
        [quicklinks]]]]]])
 
+(defn space-list []
+  (into [:div]
+    (for [f (plugin-fun (session/get :plugins) "block" "space_list_dashboard")]
+      (when (ifn? f) [f]))))
+
 (defn content [state]
   [:div#dashboard-container
    [m/modal-window]
@@ -599,7 +604,9 @@
    [:div.row.flip
     [connections-block state]
     [explore-block state]
-    [help-block]]])
+    [help-block]]
+   [:div.row.flip
+    [space-list]]])
 
 (defn new-user-oauth []
   (let [[service _] (-> (clojure.string/split js/window.location.search #"&"))

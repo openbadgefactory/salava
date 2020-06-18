@@ -242,7 +242,8 @@ div.input-banner {
     text-overflow: ellipsis;
   }
 
-  img {
+
+  img, .system-image-url {
     max-width: 35px;
     max-height: 35px;
     width: auto;
@@ -252,6 +253,13 @@ div.input-banner {
     border-radius: 3px;
     margin-right: 3px;
     vertical-align: bottom;
+  }
+
+  .system-image-url {
+    height: 35px;
+    width: 35px;
+    background-color: white;
+    display: inline-block;
   }
 
   .dropdown-menu li {
@@ -325,5 +333,41 @@ ul.navbar-nav {
 
   label {
     min-width: 10em;
+  }
+}
+
+#dashboard #space-list {
+  .space-list-item {
+    margin: 8px 0;
+    border-bottom: 1px solid #000;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 14px;
+
+    .default, .current {
+      display: block;
+      font-size: small;
+      color: $text-color;
+    }
+
+    .current {
+      color: $dark-red !important;
+    }
+  }
+}
+
+#space-info-banner {
+  .logo {
+      height: 40px;
+      width: 40px;
+  }
+
+  .banner-container {
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .navbar-header {
+    padding: 5px 0;
   }
 }

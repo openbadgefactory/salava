@@ -475,10 +475,10 @@ a.popup-info {
     }
 
     .button {
-      background-color: $button-color !important;
+      background-color: $button-color; //!important;
 
       &:hover, &:active, &:focus {
-        background-color: $button-hover !important;
+        background-color: $button-hover; //!important;
       }
     }
 

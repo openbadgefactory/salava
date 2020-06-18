@@ -175,25 +175,25 @@
                :on-change #(do
                              (.preventDefault %)
                              (reset! (cursor state [:space :css :p-color]) (.-target.value %)))}]]
-            [:div.form-group
-             [:label {:for "s-color"} (str (t :extra-spaces/Secondarycolor) ": ")]
-             [:input#s-color.form-control
-              {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
-               :type "color"
-               :value @(cursor state [:space :css :s-color])
-               :on-change #(do
-                             (.preventDefault %)
-                             (reset! (cursor state [:space :css :s-color]) (.-target.value %)))}]]
+            #_[:div.form-group
+               [:label {:for "s-color"} (str (t :extra-spaces/Secondarycolor) ": ")]
+               [:input#s-color.form-control
+                {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
+                 :type "color"
+                 :value @(cursor state [:space :css :s-color])
+                 :on-change #(do
+                               (.preventDefault %)
+                               (reset! (cursor state [:space :css :s-color]) (.-target.value %)))}]]
 
-            [:div.form-group
-             [:label {:for "t-color"} (str (t :extra-spaces/Tertiarycolor) ": ")]
-             [:input#t-color.form-control
-              {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
-               :type "color"
-               :value @(cursor state [:space :css :t-color])
-               :on-change #(do
-                             (.preventDefault %)
-                             (reset! (cursor state [:space :css :t-color]) (.-target.value %)))}]]]
+            #_[:div.form-group
+               [:label {:for "t-color"} (str (t :extra-spaces/Tertiarycolor) ": ")]
+               [:input#t-color.form-control
+                {:style {:max-width "100px" :display "inline-block" :margin "0 5px"}
+                 :type "color"
+                 :value @(cursor state [:space :css :t-color])
+                 :on-change #(do
+                               (.preventDefault %)
+                               (reset! (cursor state [:space :css :t-color]) (.-target.value %)))}]]]
 
           (when (and (not (:in-modal @state)) create-admins?)
            [:hr.border]

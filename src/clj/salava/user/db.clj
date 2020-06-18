@@ -439,7 +439,6 @@
         user-spaces (as-> (first (plugin-fun (get-plugins ctx) "db" "get-user-spaces")) $
                           (when (ifn? $) ($ ctx user-id)))
         identity {:id id :role role :private private :activated activated :last-visited last-visited :expires expires :spaces user-spaces :current-space current-space}]
-    (prn user-spaces)
     (-> ok-status
         (assoc-in [:session :identity] identity)
         (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})

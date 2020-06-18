@@ -187,6 +187,13 @@
                   :current-user current-user
                   (space/switch! ctx (ok {:status "success"}) current-user id))
 
+            (POST "/reset_switch" req
+                  ;:return {:status (s/enum "success" "error")}
+                  :auth-rules access/authenticated
+                  :summary "exit space"
+                  :current-user current-user
+                  (space/reset-switch! ctx (ok {:status "success"}) current-user))
+
             (POST "/create" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}
                   :body [space schemas/create-space]

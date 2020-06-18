@@ -110,6 +110,9 @@
 (defn switch! [ctx ok-status current-user space-id]
   (assoc-in ok-status [:session :identity] (assoc current-user :current-space (dissoc (get-space ctx space-id (:id current-user)) :admins))))
 
+(defn reset-switch! [ctx ok-status current-user]
+  (assoc-in ok-status [:session :identity] (dissoc current-user :current-space)))
+
 (defn leave! [ctx space-id user-id]
  (try+
   (remove-user-from-space! {:space_id space-id :user_id user-id} (get-db ctx))

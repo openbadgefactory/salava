@@ -6,9 +6,9 @@
              [schema.core :as s :include-macros true]
              [clojure.string :refer [blank?]])))
 
-(s/defschema space-properties {:css (s/maybe {:p-color (s/maybe s/Str)
-                                              :s-color (s/maybe s/Str)
-                                              :t-color (s/maybe s/Str)})})
+(s/defschema space-properties {:css (s/maybe {:p-color (s/maybe s/Str)})})
+                                              ;:s-color (s/maybe s/Str)
+                                              ;:t-color (s/maybe s/Str)})})
 
 (s/defschema space {:uuid s/Str
                     :name (s/conditional #(not (blank? %)) s/Str)

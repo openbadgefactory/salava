@@ -119,11 +119,11 @@
       [:div [:span._label (str (t :extra-spaces/Alias) ":  ")] alias]
       [:div [:span._label (str (t :extra-spaces/createdon) ":  ")] (date-from-unix-time (* 1000 ctime))]
       [:div [:span._label (str (t :extra-spaces/Status) ": ")] status]
-      (when css
+      (when (and css (= "admin" (session/get-in [:user :role])))
         [:div
           [:div [:span._label (str (t :extra-spaces/Primarycolor) ":  ")] [:span.color-span {:style {:background-color p-color}}]]
-          [:div [:span._label (str (t :extra-spaces/Secondarycolor) ":  ")] [:span.color-span {:style {:background-color s-color}}]]
-          [:div [:span._label (str (t :extra-spaces/Tertiarycolor) ":  ")] [:span.color-span {:style {:background-color t-color}}]]])]))
+          (when s-color [:div [:span._label (str (t :extra-spaces/Secondarycolor) ":  ")] [:span.color-span {:style {:background-color s-color}}]])
+          (when t-color [:div [:span._label (str (t :extra-spaces/Tertiarycolor) ":  ")] [:span.color-span {:style {:background-color t-color}}]])])]))
 
 (defn edit-space [state]
    [creator/modal-content state])

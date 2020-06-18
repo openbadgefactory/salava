@@ -148,7 +148,7 @@
   (select-deleted-spaces {} (u/get-db ctx)))
 
 (defn get-user-spaces [ctx user-id]
-  (select-user-spaces {:id user-id} (u/get-db ctx)))
+ (map #(assoc % :css (space-property ctx (:id %) "css")) (select-user-spaces {:id user-id} (u/get-db ctx))))
 
 (defn- space-count [remaining page_count]
   (let [limit 20

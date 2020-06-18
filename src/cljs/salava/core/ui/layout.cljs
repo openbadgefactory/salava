@@ -112,6 +112,11 @@
        (for [f (plugin-fun (session/get :plugins) "block" "space_list")]
          [f])))
 
+(defn space-info-banner []
+ (into [:div#space-info-banner]
+       (for [f (plugin-fun (session/get :plugins) "block" "space_info")]
+         [f])))
+
 (defn top-navi [site-navi]
   (let [items (top-navi-list (:navi-items site-navi))]
     [:nav {:class "navbar"}
@@ -243,11 +248,11 @@
     [spaces nil]]
 
    [:div {:class "container main-container"}
-    #_(when (session/get-in [:about-page])
-         [about-page (session/get-in [:about-page])])
     [:div {:class "row flip"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
-     [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]
+     [:div {:class "col-md-10 col-sm-9" :id "content"}
+      [space-info-banner]
+      content]]]
    (footer site-navi)])
 
 (defn default-no-sidebar [site-navi content]
