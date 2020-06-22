@@ -27,6 +27,7 @@
                             (update :revoked pos?)
                             (update :image_file #(png-convert-url ctx %))
                             (update :issuer_image_file #(png-convert-url ctx %))
+                            (update :creator_image_file #(png-convert-url ctx %))
                             ))))})
 
 (defn user-badge
@@ -46,6 +47,7 @@
             (update :show_recipient_name pos?)
             (update :image_file #(png-convert-url ctx %))
             (update :issuer_image_file #(png-convert-url ctx %))
+            (update :creator_image_file #(png-convert-url ctx %))
 
             (assoc :share_url (str (u/get-full-path ctx) "/badge/info/" user-badge-id))
             )))
@@ -86,3 +88,20 @@
                                 (-> c
                                     (update :profile_picture #(if (string/blank? %) % (str (u/get-site-url ctx) "/" %)))
                                     ))))})
+
+
+
+
+(defn gallery-badge [ctx gallery_id badge_id]
+  (let [badge (select-gallery-badge {:gallery_id gallery_id :badge_id badge_id} (u/get-db-1 ctx))]
+    (some-> badge
+            (assoc :content (->> (select-badge-content {:badge_id (:badge_id badge)} (u/get-db ctx))
+                                 (map (fn [c]
+                                        (assoc c :alignment (select-badge-content-alignments
+                                                              {:badge_id (:badge_id badge)
+                                                               :language (:language_code c)}
+                                                              (u/get-db ctx)))))))
+            (update :image_file #(png-convert-url ctx %))
+            (update :issuer_image_file #(png-convert-url ctx %))
+            (update :creator_image_file #(png-convert-url ctx %))
+            )))

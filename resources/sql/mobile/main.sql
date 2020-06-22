@@ -131,3 +131,26 @@ INNER JOIN badge_congratulation AS bc ON u.id = bc.user_id
 INNER JOIN user_badge ub ON bc.user_badge_id = ub.id
 WHERE ub.id = :user_badge_id AND ub.user_id = :owner;
 
+
+--name: select-gallery-badge
+-- get gallery badge by gallery.id
+SELECT g.id, g.badge_id, bc.name, bc.description, bc.image_file, b.default_language_code,
+    ic.id AS issuer_id, ic.name AS issuer_name, ic.email AS issuer_email, ic.url AS issuer_url, ic.image_file AS issuer_image_file, ic.description AS issuer_description,
+    cc.id AS creator_id, cc.name AS creator_name, cc.email AS creator_email, cc.url AS creator_url, cc.image_file AS creator_image_file, cc.description AS creator_description,
+    (SELECT COUNT(*) FROM user_badge WHERE deleted = 0 AND status != 'declined' AND visibility != 'private' AND revoked = 0 AND gallery_id = :gallery_id) AS recipient_count
+FROM gallery g
+INNER JOIN user_badge ub
+INNER JOIN badge b ON g.badge_id = b.id
+INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
+INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
+INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
+INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
+LEFT JOIN badge_tag bt ON ub.id = bt.user_badge_id
+LEFT JOIN badge_creator_content bcc ON b.id = bcc.badge_id
+LEFT JOIN creator_content cc ON bcc.creator_content_id = cc.id
+WHERE g.id = :gallery_id AND g.badge_id = :badge_id
+    AND ub.deleted = 0 AND ub.revoked = 0 AND ub.status != 'declined' AND ub.visibility != 'private'
+    AND bc.language_code = b.default_language_code
+    AND ic.language_code = b.default_language_code
+ORDER BY ub.ctime DESC
+LIMIT 1;
