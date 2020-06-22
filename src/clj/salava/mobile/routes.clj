@@ -59,4 +59,16 @@
                   :current-user current-user
                   (ok (db/user-badge-congratulations ctx user-badge-id (:id current-user))))
 
+
+             (GET "/gallery/badge/:gallery-id/:badge-id" []
+                  :return schemas/gallery-badge-m
+                  :path-params [gallery-id :- s/Int
+                                badge-id :- s/Str]
+                  :summary "Get gallery badge content"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (db/gallery-badge ctx gallery-id badge-id)))
+
+
+
              )))
