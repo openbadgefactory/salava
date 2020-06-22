@@ -147,6 +147,9 @@
 (defn deleted-spaces [ctx]
   (select-deleted-spaces {} (u/get-db ctx)))
 
+(defn expired-spaces [ctx]
+  (select-expired-spaces {} (u/get-db ctx)))
+
 (defn get-user-spaces [ctx user-id]
  (map #(assoc % :css (space-property ctx (:id %) "css")) (select-user-spaces {:id user-id} (u/get-db ctx))))
 

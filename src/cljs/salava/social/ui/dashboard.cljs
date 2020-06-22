@@ -236,7 +236,7 @@
         message (welcome-block-body user-language)
         arrow-class (cursor state [:arrow-class])]
     [:div#welcome-block {:class ""}
-     [:div.welcome-block.block-content.row
+     [:div.welcome-block.block-content.row (when (session/get-in [:user :current-space]) {:class "welcome-block-ed"})
       (if (blank? message)
         [:div.content
          [:div.row.welcome-message
@@ -597,6 +597,8 @@
    (if (not-activated?)
      (not-activated-banner))
    [welcome-block state]
+   [:div.row
+    [:div [layout/space-info-banner]]]
    [:div.row.flip
     [notifications-block state]
     [badges-block state]

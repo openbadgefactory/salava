@@ -280,12 +280,11 @@
   [:div {:role "main"}
    [:div {:id "navbar"}
     (top-navi site-navi)]
-   #_[:div {:class "title-row"}
-      [:div {:class "container"}
-       (breadcrumb site-navi)]]
    [:div#dashboard {:class "container-fluid main-container"}
     [:div {:class "row"}
-     [:div {:class "col-md-12" :id "content"} content]]]
+     [:div {:class "col-md-12" :id "content"}]
+     content]]
+
    (footer site-navi)])
 
 (defn embed-page [content]

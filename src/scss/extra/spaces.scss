@@ -70,7 +70,8 @@
           font-family: monospace;
           color: $text-color;
           margin: 2px;
-          i{
+
+          i {
             font-size: 16px;
             margin-right: 5px;
           }
@@ -242,8 +243,8 @@ div.input-banner {
     text-overflow: ellipsis;
   }
 
-
-  img, .system-image-url {
+  .system-image-url,
+  img {
     max-width: 35px;
     max-height: 35px;
     width: auto;
@@ -343,8 +344,10 @@ ul.navbar-nav {
     padding: 8px;
     cursor: pointer;
     font-size: 14px;
+    opacity: .7;
 
-    .default, .current {
+    .current,
+    .default {
       display: block;
       font-size: small;
       color: $text-color;
@@ -352,23 +355,40 @@ ul.navbar-nav {
 
     .current {
       color: $dark-red !important;
+      opacity: 1;
     }
   }
 }
 
 #space-info-banner {
   .logo {
-      height: 30px;
-      width: 30px;
+    height: 30px;
+    width: 30px;
+  }
+
+  .content-container {
+    border-left: 3px solid;
+    border-right: 2px solid;
+    border-radius: 2px;
+  }
+
+  .container-fluid {
+    padding-right: unset;
   }
 
   .banner-container {
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     border-bottom-left-radius: unset;
     border-bottom-right-radius: unset;
-    min-height: 100px;
+    //min-height: 100px;
+    background-position: right;
+
+    .media {
+      padding-top: 10px;
+    }
   }
+
 
   .no-banner-container {
     min-height: 100px;
@@ -382,3 +402,29 @@ ul.navbar-nav {
     padding: 5px 0;
   }
 }
+
+#dashboard .welcome-block-ed {
+  border-bottom-right-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+
+#dashboard #space-info-banner {
+  .content-container {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+
+  .banner-container {
+    padding-right: 0;
+  }
+
+  .navbar {
+    margin-bottom: unset;
+  }
+}
+
+  @media (max-width: 767px) {
+    #space-info-banner .banner-container {
+      background-image: none !important;
+    }
+  }

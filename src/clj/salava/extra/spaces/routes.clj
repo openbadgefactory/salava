@@ -132,6 +132,14 @@
                     ;(when (= user_id (:id current-user)))
                     (ok (space/leave! ctx id user_id)))
 
+            (POST "/reset_theme/:id" []
+                    :return {:status (s/enum "success" "error")}
+                    :auth-rules access/space-admin
+                    :summary "Reset theme"
+                    :path-params [id :- s/Int]
+                    :current-user current-user
+                    (ok (space/reset-theme! ctx id (:id current-user))))
+
             (POST "/accept/:id/:user_id" []
                     :return {:status (s/enum "success" "error")}
                     :auth-rules access/space-admin
@@ -193,6 +201,14 @@
                   :summary "exit space"
                   :current-user current-user
                   (space/reset-switch! ctx (ok {:status "success"}) current-user))
+
+            (POST "/extend/:id" []
+                  :return {:status (s/enum "success" "error") :this "edff"}
+                  :auth-rules access/space-admin
+                  :path-params [id :- s/Int]
+                  :summary "extend Subscription by one year"
+                  :current-user current-user
+                  (space/extend! ctx id (:id current-user)))
 
             (POST "/create" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}

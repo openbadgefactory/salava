@@ -66,6 +66,9 @@ DELETE FROM user_space WHERE space_id = :space_id
 --name:delete-space-properties!
 DELETE FROM space_properties WHERE space_id = :space_id
 
+--name:delete-space-property!
+DELETE FROM space_properties WHERE space_id = :space_id AND name = :name
+
 --name: select-primary-address
 SELECT email FROM user_email WHERE user_id = :id AND primary_address = 1
 
@@ -171,3 +174,12 @@ SELECT visibility FROM space WHERE id = :id
 
 --name: update-membership-status!
 UPDATE user_space SET status = :status, mtime = UNIX_TIMESTAMP() WHERE user_id = :user_id AND space_id = :id
+
+--name: update-last-modifier!
+UPDATE space SET last_modified_by = :admin WHERE id = :id
+
+--name: select-expired-spaces
+SELECT name, id, valid_until FROM space WHERE status != "expired" AND vaid_until < UNIX_TIMESTAMP()
+
+--name: extend-space-subscription!
+UPDATE space SET valid_until = :time, last_modified_by = :admin WHERE id = :id

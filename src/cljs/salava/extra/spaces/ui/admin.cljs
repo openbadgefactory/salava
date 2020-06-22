@@ -8,6 +8,7 @@
   [salava.core.ui.ajax-utils :as ajax]
   [salava.core.ui.layout :as layout]
   [salava.core.i18n :refer [t]]
+  [salava.core.time :as time :refer [no-of-days-passed]]
   [salava.extra.spaces.ui.modal :as sm]
   [salava.extra.spaces.ui.creator :as sc]
   [salava.extra.spaces.ui.helper :as sh]
@@ -125,8 +126,19 @@
                         (swap! state assoc :confirm-delete? true))}
           (t :extra-spaces/Resetinvitelink)])]]])))
 
+(defn manage-status [state]
+  [:div#space-gallery.form-group
+   [:div.panel.panel-default
+    [:div.panel-heading.weighted
+     (t :extra-spaces/Status)]
+    [:div.panel-body
+     [:div.row
+      [:div.col-md-12 {:style {:line-height "3"}}
+       [:div.blob {:class @(cursor state [:space :status])}] [:span.weighted @(cursor state [:space :status])]
+       [:div.pull-right.weighted
+        (when (and @(cursor state [:space :valid_until]) (= "active" @(cursor state [:space :status])))
+          (str (t :extra-spaces/Subcriptionexpires) " " (sh/num-days-left @(cursor state [:space :valid_until])) " " (t :badge/days)))]]]]]])
 
-(defn manage [])
 
 (defn edit-space-content [state]
  (let [{:keys [logo banner name]} @(cursor state [:space])]
@@ -175,8 +187,9 @@
  (create-class
   {:reagent-render
    (fn []
-     [:div
+     [:div#space
       [m/modal-window]
+      [manage-status state]
       [sm/manage-visibility state (fn [] (init-data state))]
       [invite-link state]])
    :component-did-mount

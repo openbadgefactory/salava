@@ -9,6 +9,7 @@
     [salava.core.i18n :refer [t]]
     [salava.core.time :refer [date-from-unix-time]]
     [salava.extra.spaces.ui.creator :as creator]
+    [salava.extra.spaces.ui.helper :as sh]
     [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]
     [reagent.session :as session]))
 
@@ -16,7 +17,6 @@
  (ajax/POST
   (path-for (str "/obpv1/spaces/check_membership/" id) true)
   {:handler (fn [data]
-              (prn data "sadsadasdasdada")
               (swap! state assoc :member_info data))}))
 
 (defn init-data [id state]
@@ -25,6 +25,14 @@
     {:handler (fn [data]
                 (swap! state assoc :space data :member_info nil)
                 (check-membership id state))}))
+
+(defn extend-subscription [state]
+  (let [id @(cursor state [:space :id])]
+    (ajax/POST
+      (path-for (str "/obpv1/spaces/extend/" id) true)
+      {:handler (fn [data]
+                  (when (= (:status data) "success")
+                    (init-data id state)))})))
 
 (defn join-space [id state]
   (ajax/POST
@@ -81,6 +89,7 @@
                 (if init-fn
                   (init-fn)
                   (init-data (:id @state) state))))}))
+
 
 (defn space-logo [state]
   (let [{:keys [logo name]} @(cursor state [:space])
@@ -222,7 +231,10 @@
   [:div#space-gallery.form-group
    [:div.panel.panel-default
     [:div.panel-heading.weighted
-     (t :extra-spaces/Status)]
+     (t :extra-spaces/Status)
+     [:span.pull-right
+      (when (and @(cursor state [:space :valid_until]))
+        (str (t :extra-spaces/Subcriptionexpires) " " (sh/num-days-left @(cursor state [:space :valid_until])) " " (t :badge/days)))]]
     [:div.panel-body
      [:div.row
       [:div.col-md-12 {:style {:line-height "3"}}
@@ -231,6 +243,10 @@
         (case @(cursor state [:space :status])
           "active" [:div.btn-toolbar
                     [:div.btn-group
+                     [:button.btn.btn-primary.btn-bulky
+                      {:type "button"
+                       :on-click #(extend-subscription state)}
+                      (t :extra-spaces/Extendsubscription)]
                      [:button.btn.btn-warning.btn-bulky
                       {:on-click #(do
                                     (.preventDefault %)
@@ -238,6 +254,7 @@
                        :role "button"
                        :aria-label (t :extra-spaces/Suspend)}
                       (t :extra-spaces/Suspend)]
+
                      [:button.btn.btn-danger.btn-bulky
                       {:on-click #(do
                                     (.preventDefault %)
@@ -246,6 +263,7 @@
                        :type "button"
                        :aria-label (t :core/Delete)}
                       (t :core/Delete)]]]
+
            "suspended" [:div.btn-toolbar
                         [:div.btn-group
                          [:button.btn.btn-primary.btn-bulky
@@ -392,7 +410,7 @@
            [:div  [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]]]))
 
 (defn membership-btn [state]
-  ;(fn []
+ (when-not (= "private" (get-in @state [:space :visibility]))
    [:div.row
     [:div.col-md-12
      [:div.pull-right
@@ -413,7 +431,7 @@
                           (leave-space (:id @state) state))}
             (if (= "accepted"  @(cursor state [:member_info :status]))
               (t :extra-spaces/Leavespace)
-              (t :extra-space/Cancelmembershiprequest))]])]]])
+              (t :extra-space/Cancelmembershiprequest))]])]]]))
 
 
 

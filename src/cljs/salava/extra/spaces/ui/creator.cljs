@@ -10,7 +10,7 @@
    [salava.core.ui.input :refer [text-field textarea]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]
-   [salava.extra.spaces.ui.helper :refer [upload-modal profile-link-inline-modal create-space edit-space generate-alias]]))
+   [salava.extra.spaces.ui.helper :refer [upload-modal profile-link-inline-modal create-space edit-space generate-alias init-space]]))
 
 #_(defn create-space [state]
     (ajax/POST
@@ -175,6 +175,19 @@
                :on-change #(do
                              (.preventDefault %)
                              (reset! (cursor state [:space :css :p-color]) (.-target.value %)))}]]
+            (when @(cursor state [:space :css])
+             [:div.form-group
+              [:button.btn.btn-warning.btn-bulky {:type "button"
+                                                  :on-click #(if @(cursor state [:space :id])
+                                                                 (ajax/POST
+                                                                   (path-for (str "/obpv1/spaces/reset_theme/" @(cursor state [:space :id])))
+                                                                   {:handler (fn [data]
+                                                                               (when (= "success" (:status data))
+                                                                                (init-space @(cursor state [:space :id])  state)))})
+                                                                 (reset! (cursor state [:space :css]) nil))}
+                  (t :extra-spaces/Resettheme)]])
+
+
             #_[:div.form-group
                [:label {:for "s-color"} (str (t :extra-spaces/Secondarycolor) ": ")]
                [:input#s-color.form-control
@@ -212,11 +225,6 @@
 
 
                 [:span [:i.fa.fa-user-plus.fa-fw.fa-lg] " " (t :extra-spaces/Addadmins)]]]
-             #_(when (seq @(cursor state [:space :admins]))
-                 [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw]
-                  [:a {:href "#"
-                       :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom (cursor state [:space :admins]) :context "space_admins"})}
-                   (t :badge/Editselectedusers)]])
              (reduce (fn [r u]
                        (let [{:keys [id first_name last_name profile_picture]} u]
                          (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]

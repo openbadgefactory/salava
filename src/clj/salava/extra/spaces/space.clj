@@ -6,8 +6,9 @@
   [salava.extra.spaces.util :as u]
   [slingshot.slingshot :refer :all]
   [salava.core.time :refer [get-date-from-today]]
-  [salava.core.util :refer [get-db get-db-1]]
+  [salava.core.util :refer [get-db get-db-1 now]]
   [ring.util.http-response :refer [not-found]]))
+  ;[clj-time.coerce :as c]))
 
 
 (defqueries "sql/extra/spaces/main.sql")
@@ -63,6 +64,7 @@
   (catch Object _
    (log/error _)
    {:status "error"})))
+
 
 (defn upgrade! [ctx id admin-id]
  (try+
@@ -200,8 +202,35 @@
        {:status "success" :id space-id}
        {:status "error" :id space-id :message "extra-spaces/Invitelinkeerror"})))
 
+(defn reset-theme! [ctx id admin-id]
+ (try+
+   (delete-space-property! {:space_id id :name "css"} (get-db ctx))
+   (update-last-modifier! {:id id :admin admin-id} (get-db ctx))
+   {:status "success"}
+   (catch Object _
+     (log/error _)
+     {:status "error"})))
 
-(def space [:id :uuid :name :description :logo :banner :status :visibility :ctime :mtime :last-modified-by])
-(def user_space [:id :user_id :space_id :role :default_space :ctime :mtime])
-(def space_properties [:space_id :name :space]) ;;blocks, config, theme etc..
-(def space_admin_pending [:id :space_id :email :ctime])
+(defn- extend-time [valid_time]
+ (let [extension (get-date-from-today 12 0 0)]
+  (if-let [x (and valid_time (> valid_time (now)))]
+    (+ valid_time (- extension valid_time))
+    extension)))
+
+
+(defn extend! [ctx id admin-id]
+ (try+
+   (let [valid_until (:valid_until (get-space ctx id))
+         extension  (int (extend-time valid_until))]
+       (extend-space-subscription! {:id id :time extension :admin admin-id} (get-db ctx))
+       {:status "success"})
+   (catch Object _
+    (log/error _)
+    {:status "error"})))
+
+
+(comment
+  (def space [:id :uuid :name :description :logo :banner :status :visibility :ctime :mtime :last-modified-by])
+  (def user_space [:id :user_id :space_id :role :default_space :ctime :mtime])
+  (def space_properties [:space_id :name :space]) ;;blocks, config, theme etc..
+  (def space_admin_pending [:id :space_id :email :ctime]))

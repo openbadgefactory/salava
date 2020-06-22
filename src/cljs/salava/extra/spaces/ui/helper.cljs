@@ -11,6 +11,12 @@
   [salava.user.ui.helper :refer [profile-picture]]
   [salava.extra.spaces.schemas :as schemas]))
 
+(defn init-space [id state]
+  (ajax/GET
+    (path-for (str "/obpv1/spaces/"id))
+    {:handler (fn [data]
+                (swap! state assoc :space data))}))
+
 (defn init-data [state]
   (ajax/GET
    (path-for "/obpv1/spaces/")
@@ -119,7 +125,7 @@
 
        (ajax/POST
         (path-for (str "/obpv1/spaces/edit/" @(cursor state [:space :id])))
-        {:params data
+        {:params (update-in data [:css] dissoc :s-color :t-color)
          :handler (fn [data]
                    (when (= (:status data) "error")
                      (reset! (cursor state [:error-message]) data))
@@ -196,3 +202,6 @@
                                     (swap! state assoc (keyword key)
                                            (conj buttons-checked value))))}
              (t (keyword (str "extra-spaces/" value)))])))])]])
+
+(defn num-days-left [timestamp]
+  (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))

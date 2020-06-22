@@ -214,8 +214,8 @@
                        [:img.space-img {:src (str "/" (:logo space)) :alt " "}]]
                       [:div.media-body
                        (if selected? [:b [:i (:name space)]] (:name space))
-                       (when (= (:id space) (:id default-space)) [:span.default [:i.fa.fa-bookmark] " " [:b (t :extra-space/default)]])
-                       (when selected? [:span.current [:i.fa.fa-thumb-tack] " " [:b (t :extra-space/currentspace)]])]]]])))
+                       (when (= (:id space) (:id default-space)) [:span.default [:i.fa.fa-bookmark] " " [:b (t :extra-spaces/default)]])
+                       (when selected? [:span.current [:i.fa.fa-thumb-tack] " " [:b (t :extra-spaces/currentspace)]])]]]])))
                [:div]
                (sort-by :name spaces))
 
@@ -231,23 +231,20 @@
                    [:div.logo-image.system-image-url]]
                   [:div.media-body
                     (str (t :extra-spaces/backto) " " (session/get :site-name))
-                    (when (empty? default-space) [:span.default [:i.fa.fa-bookmark] " " (t :extra-space/default)])
-                    (when (empty? current-space) [:span.current [:i.fa.fa-thumb-tack] " " [:b (t :extra-space/currentspace)]])]]]])]]]]]])))))
+                    (when (empty? default-space) [:span.default [:i.fa.fa-bookmark] " " (t :extra-spaces/default)])
+                    (when (empty? current-space) [:span.current [:i.fa.fa-thumb-tack] " " [:b (t :extra-spaces/currentspace)]])]]]])]]]]]])))))
 
 (defn space_info []
  (when-let [current-space (session/get-in [:user :current-space] nil)]
-   [:div
-    (if (:banner current-space)
-     [:div.banner-container
-      [:img.img-responsive {:src (str "/" (:banner current-space))}]]
-      ;{:style {:background-image (str "url(" (session/get :site-url) "/" (:banner current-space) ")")}}]
-     [:div.no-banner-container
-      {:style {:background-color (get-in current-space [:css :p-color])}}])
+   [:div.content-container (when (get-in current-space [:css :p-color] nil) {:style {:border-color (get-in current-space [:css :p-color])}})
     [:div.navbar.navbar-default
-     #_(when (:banner current-space)
-        {:style {:background-image (str "url(" (session/get :site-url) "/" (:banner current-space) ")")}})
-
      [:div.container-fluid
-      [:div.navbar-header
-       [:a.navbar-brand {:href "#"}
-        [:img.logo {:src (str "/" (:logo current-space))}]]]]]]))
+      [:div.navbar-header.banner-container
+       (when (:banner current-space)
+          {:style {:background-image (str "url(" (session/get :site-url) "/" (:banner current-space) ")")}})
+       [:div.media
+        [:div.media-left;.navbar-brand
+         [:img.logo { :src (str "/" (:logo current-space))}]]
+        [:div.media-body {:style {:vertical-align "middle"}}
+         [:h3.media-heading {:style {:font-weight "600"}} (:name current-space)]
+         (:description current-space)]]]]]]))
