@@ -6,7 +6,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
-            [salava.core.ui.helper :refer [path-for js-navigate-to]]
+            [salava.core.ui.helper :refer [path-for js-navigate-to plugin-fun]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [cljsjs.recharts]
@@ -60,7 +60,7 @@
 
 
 (defn graphic-content [state]
-  (let [{:keys [issuers users userbadges pages created issued user-badge-correlation]} @state
+  (let [{:keys [issuers users userbadges pages created issued user-badge-correlation spaces]} @state
         {:keys [factorybadges Totalbadgesno pendingbadgescount acceptedbadgescount declinedbadgescount privatebadgescount publicbadgescount internalbadgescount badgessincelastlogin
                 badgessincelastmonth badgessince3month badgessince6month badgessince1year]} userbadges
         {:keys [notactivatedusers internalusers publicusers Totalusersno userssincelastlogin userssincelastmonth
@@ -68,7 +68,8 @@
         {:keys [pagessincelastlogin pagessince1year pagessince6month pagessince3month pagessincelastmonth internalpagescount privatepagescount publicpagescount Totalpagesno]} pages
         {:keys [issuerssince1year issuerssince6month issuerssince3month issuerssincelastmonth issuerssincelastlogin Totalissuersno]} issuers
         {:keys [Totalissuedno issuedsincelastmonth issuedsincelastlogin]} issued
-        {:keys [Totalcreatedno createdsincelastmonth createdsincelastlogin]} created]
+        {:keys [Totalcreatedno createdsincelastmonth createdsincelastlogin]} created
+        {:keys [Totalspacesno spacessincelastmonth spacessincelastlogin spacessince3month spacessince6month spacessince1year]} spaces]
     [:div {:class "admin-stats"}
      [:div#panel-boxes
       [:div.row
@@ -76,7 +77,8 @@
        [dh/panel-box {:heading (t :admin/Totalbadgesno) :icon "fa-certificate" :info {:total Totalbadgesno :lastlogin badgessincelastlogin :lastmonth badgessincelastmonth}  :type "b-badge"}]
        [dh/panel-box {:heading (t :admin/Totalpagesno) :icon "fa-file-text-o" :info {:total Totalpagesno :lastlogin pagessincelastlogin :lastmonth pagessincelastmonth} :type "b-page"}]
        [dh/panel-box {:heading (t :admin/Totalissuersno) :icon "fa-building-o" :info {:total Totalissuersno :lastlogin issuerssincelastlogin :lastmonth issuerssincelastmonth} :type "b-page"}]
-       (when created [dh/panel-box {:heading (t :badgeIssuer/Selfiebadges) :icon "fa-plus-square" :info {:total Totalcreatedno :lastlogin createdsincelastlogin :lastmonth createdsincelastmonth} :type "b-user"}])]
+       (when created [dh/panel-box {:heading (t :badgeIssuer/Selfiebadges) :icon "fa-plus-square" :info {:total Totalcreatedno :lastlogin createdsincelastlogin :lastmonth createdsincelastmonth} :type "b-user"}])
+       (when spaces [dh/panel-box {:heading (t :extra-spaces/Spaces) :icon "fa-th-large" :info {:total Totalspacesno :lastlogin spacessincelastlogin :lastmonth spacessincelastmonth} :type "b-page"}])]
       [:div.row
        [dh/panel-box-chart {:size :lg
                             ;:heading (t :admin/Sharing)
@@ -110,40 +112,49 @@
                             :icon "fa-line-chart"
                             :type "b-user"
                             :chart-type :line
-                            :chart-data [{:info [{:name 12  :total  (- Totalusersno userssince1year)} ;:active-users (:1yearlogincount users)}
-                                                 {:name 6  :total (- Totalusersno userssince6month)} ;:active-users (:6monthlogincount users)}
-                                                 {:name 3  :total (- Totalusersno userssince3month)} ;:active-users (:3monthlogincount users)}
-                                                 {:name 1  :total (- Totalusersno userssincelastmonth)} ;:active-users (:1monthlogincount users)}
-                                                 {:name 0  :total Totalusersno}] ;:active-users logincountsincelastlogin}]
-                                           :lines [{:name (t :admin/Totalusersno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
-                                                   ;{:name (t :admin/Activeusers) :key "active-users" :stroke (:danger colors)}]
-                                           :title (t :admin/userGrowth)
-                                           :xlabel (t :admin/noofmonths)}
-                                         {:info [{:name 12  :total (- Totalbadgesno badgessince1year)}
-                                                 {:name 6  :total (- Totalbadgesno badgessince6month)}
-                                                 {:name 3 :total (- Totalbadgesno badgessince3month)}
-                                                 {:name 1  :total (- Totalbadgesno badgessincelastmonth)}
-                                                 {:name 0  :total Totalbadgesno}]
-                                          :lines [{:name (t :admin/Totalbadgesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
-                                          :title (t :admin/badgeGrowth)
-                                          :xlabel (t :admin/noofmonths)}
-                                         {:info [{:name 12  :total (- Totalpagesno pagessince1year)}
-                                                 {:name 6  :total (- Totalpagesno pagessince6month)}
-                                                 {:name 3  :total (- Totalpagesno pagessince3month)}
-                                                 {:name 1  :total (- Totalpagesno pagessincelastmonth)}
-                                                 {:name 0  :total Totalpagesno}]
-                                          :lines [{:name (t :admin/Totalpagesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
-                                          :title (t :admin/pageGrowth)
-                                          :xlabel (t :admin/noofmonths)}
-
-                                         {:info [{:name 12 :total (- Totalissuersno issuerssince1year)}
-                                                 {:name 6 :total (- Totalissuersno issuerssince6month)}
-                                                 {:name 3 :total (- Totalissuersno issuerssince3month)}
-                                                 {:name 1 :total (- Totalissuersno issuerssincelastmonth)}
-                                                 {:name 0 :total Totalissuersno}]
-                                          :lines [{:name (t :admin/Totalissuersno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
-                                          :title (t :admin/issuerGrowth)
-                                          :xlabel (t :admin/noofmonths)}]
+                            :chart-data (as-> [{:info [{:name 12  :total  (- Totalusersno userssince1year)} ;:active-users (:1yearlogincount users)}
+                                                       {:name 6  :total (- Totalusersno userssince6month)} ;:active-users (:6monthlogincount users)}
+                                                       {:name 3  :total (- Totalusersno userssince3month)} ;:active-users (:3monthlogincount users)}
+                                                       {:name 1  :total (- Totalusersno userssincelastmonth)} ;:active-users (:1monthlogincount users)}
+                                                       {:name 0  :total Totalusersno}] ;:active-users logincountsincelastlogin}]
+                                                :lines [{:name (t :admin/Totalusersno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                                :title (t :admin/userGrowth)
+                                                :xlabel (t :admin/noofmonths)}
+                                               {:info [{:name 12  :total (- Totalbadgesno badgessince1year)}
+                                                       {:name 6  :total (- Totalbadgesno badgessince6month)}
+                                                       {:name 3 :total (- Totalbadgesno badgessince3month)}
+                                                       {:name 1  :total (- Totalbadgesno badgessincelastmonth)}
+                                                       {:name 0  :total Totalbadgesno}]
+                                                :lines [{:name (t :admin/Totalbadgesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                                :title (t :admin/badgeGrowth)
+                                                :xlabel (t :admin/noofmonths)}
+                                               {:info [{:name 12  :total (- Totalpagesno pagessince1year)}
+                                                       {:name 6  :total (- Totalpagesno pagessince6month)}
+                                                       {:name 3  :total (- Totalpagesno pagessince3month)}
+                                                       {:name 1  :total (- Totalpagesno pagessincelastmonth)}
+                                                       {:name 0  :total Totalpagesno}]
+                                                :lines [{:name (t :admin/Totalpagesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                                :title (t :admin/pageGrowth)
+                                                :xlabel (t :admin/noofmonths)}
+                                               {:info [{:name 12 :total (- Totalissuersno issuerssince1year)}
+                                                       {:name 6 :total (- Totalissuersno issuerssince6month)}
+                                                       {:name 3 :total (- Totalissuersno issuerssince3month)}
+                                                       {:name 1 :total (- Totalissuersno issuerssincelastmonth)}
+                                                       {:name 0 :total Totalissuersno}]
+                                                :lines [{:name (t :admin/Totalissuersno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                                :title (t :admin/issuerGrowth)
+                                                :xlabel (t :admin/noofmonths)}] $
+                                             (if spaces
+                                               (conj $
+                                                {:info [{:name 12 :total (- Totalspacesno spacessince1year)}
+                                                        {:name 6 :total (- Totalspacesno spacessince6month)}
+                                                        {:name 3 :total (- Totalspacesno spacessince3month)}
+                                                        {:name 1 :total (- Totalspacesno spacessincelastmonth)}
+                                                        {:name 0 :total Totalspacesno}]
+                                                 :lines [{:name (t :admin/Totalspacesno) :key "total" :stroke (:primary colors) :activeDot {:r 10} :strokeWidth 3}]
+                                                 :title (t :extra-spaces/spaceGrowth)
+                                                 :xlabel (t :admin/noofmonths)})
+                                               (conj $ nil)))
 
 
                              :tooltipLabel (t :admin/monthsago)}]]
@@ -163,30 +174,37 @@
                             :tooltipLabel (t :admin/userbadges)}]]]]))
 
 (defn export-stats [state]
-  (let [url (str "/obpv1/admin/export_statistics")]
-    (js-navigate-to url)))
+  (let [url (if (pos? @(cursor state [:space-id]))
+               (str "/obpv1/space/export_statistics?id=" @(cursor state [:space-id]))
+               (str "/obpv1/admin/export_statistics"))]
+     (js-navigate-to url)))
 
 (defn content [state]
  (let [visible-content (cursor state [:visible])]
   [:div
    [m/modal-window]
    [:div
-    [:div.row
-     [:div.col-md-12
-      [:div.btn-toolbar.pull-right {:style {:margin-bottom "20px"}}
-       [:a.btn.btn-primary.btn-bulky
-        {:href "#"
-         :on-click #(if (= "text" @visible-content) (reset! visible-content "graphic") (reset! visible-content "text"))}
-        (if (= "graphic" @visible-content) (t :admin/Plaintext) (t :admin/Showgraphicalui))]
-       [:a.btn.btn-primary.btn-bulky
-        {:href "#"
-         :on-click #(export-stats state)}
-        (t :admin/ExportCSV)]]]]
-    [:div.row
-     [:div.col-md-12
-      (if (= "text" @visible-content)
-         [text-content state]
-         [graphic-content state])]]]]))
+     [:div.row
+      [:div.col-md-12
+       [:div.btn-toolbar.pull-right {:style {:margin-bottom "20px"}}
+        [:a.btn.btn-primary.btn-bulky
+         {:href "#"
+          :on-click #(if (= "text" @visible-content) (reset! visible-content "graphic") (reset! visible-content "text"))}
+         (if (= "graphic" @visible-content) (t :admin/Plaintext) (t :admin/Showgraphicalui))]
+        [:a.btn.btn-primary.btn-bulky
+         {:href "#"
+          :on-click #(export-stats state)}
+         (t :admin/ExportCSV)]]]
+
+      (into [:div]
+       (for [f (plugin-fun (session/get :plugins) "block" "spaces_stats_dropdown")]
+         (when f [f state])))
+
+      [:div.row
+       [:div.col-md-12
+        (if (= "text" @visible-content)
+           [text-content state]
+           [graphic-content state])]]]]]))
 
 (defn init-data [state]
   (ajax/GET

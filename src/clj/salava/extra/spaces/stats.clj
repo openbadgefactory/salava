@@ -4,7 +4,9 @@
    [salava.core.util :as util :refer [get-db get-plugins]]
    [salava.core.time :refer [get-date-from-today]]
    [slingshot.slingshot :refer :all]
-   [clojure.tools.logging :as log]))
+   [clojure.tools.logging :as log]
+   [salava.admin.helper :refer [make-csv]]
+   [salava.core.i18n :refer [t]]))
 
 (defqueries "sql/extra/spaces/stats.sql")
 
@@ -69,15 +71,44 @@
   :issuerssince6month (count-badge-issuers-after-date {:id id :time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
   :issuerssince1year (count-badge-issuers-after-date {:id id :time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})
 
+(defn user-badge-correlation [ctx id]
+ (let [data (select-user-ids-and-badge-count {:id id} (util/get-db ctx))]
+  (->> data
+       (group-by :badge_count)
+       (reduce-kv (fn [r k v] (conj r {:badge_count k :user_count (count v)})) []))))
+
 (defn space-stats [ctx space-id last-login]
   (try+
    (as-> {:users (user-stats ctx space-id last-login)
           :userbadges (badge-stats ctx space-id last-login)
           :pages (pages-stats ctx space-id last-login)
-          :issuers (issuer-stats ctx space-id last-login)} $
-        ;:user-badge-correlation (user-badge-correlation ctx)}
+          :issuers (issuer-stats ctx space-id last-login)
+          :user-badge-correlation (user-badge-correlation ctx space-id)} $
          (if (some #(= % :badgeIssuer) (get-plugins ctx)) (merge $ (selfie-stats ctx space-id last-login)) (merge $ {})))
    (catch Object _
      (log/error (.getMessage _))
      "error")))
- 
+
+(defn export-space-statistics [ctx space-id user]
+  (let [{:keys [id last-visited]} user
+        ul (select-user-language {:id id} (into {:result-set-fn first :row-fn :language} (get-db ctx)))
+        data (-> (space-stats ctx space-id last-visited) (dissoc :user-badge-correlation))
+        data->csvformat (reduce-kv
+                          (fn [r k v]
+                           (do
+                            (when v
+                             (conj r
+                              [(t (keyword (str "admin/" (name k))) ul)]))
+                            (when (map? v)
+                             (reduce-kv (fn [_ y z] (conj _ [(t (keyword (str "admin/" (name y))) ul) z])) r v))))
+                          []
+                          data)]
+    (make-csv ctx data->csvformat)))
+
+(defn admin_space_stats [ctx last-login]
+  {:Totalspacesno (count-all-spaces {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :spacessincelastlogin (count-spaces-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :spacessincelastmonth (count-spaces-after-date {:time (get-date-from-today -1 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :spacessince3month (count-spaces-after-date {:time (get-date-from-today -3 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :spacessince6month (count-spaces-after-date {:time (get-date-from-today -6 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+   :spacessince1year (count-spaces-after-date {:time (get-date-from-today -12 0 0)} (into {:result-set-fn first :row-fn :count} (get-db ctx)))})

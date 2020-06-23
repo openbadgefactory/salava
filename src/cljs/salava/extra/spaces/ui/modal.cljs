@@ -9,7 +9,8 @@
     [salava.core.i18n :refer [t]]
     [salava.core.time :refer [date-from-unix-time]]
     [salava.extra.spaces.ui.creator :as creator]
-    [salava.extra.spaces.ui.helper :as sh]
+    [salava.extra.spaces.ui.helper :as sh :refer [button]]
+    [salava.extra.spaces.ui.invitelink :refer [invite-link]]
     [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]
     [reagent.session :as session]))
 
@@ -29,7 +30,7 @@
 (defn extend-subscription [state]
   (let [id @(cursor state [:space :id])]
     (ajax/POST
-      (path-for (str "/obpv1/spaces/extend/" id) true)
+      (path-for (str "/obpv1/spaces/extend/" id)) ;true)
       {:handler (fn [data]
                   (when (= (:status data) "success")
                     (init-data id state)))})))
@@ -239,79 +240,34 @@
      [:div.row
       [:div.col-md-12 {:style {:line-height "3"}}
        [:div.blob {:class @(cursor state [:space :status])}] [:span.weighted @(cursor state [:space :status])]
-       [:div.pull-right
-        (case @(cursor state [:space :status])
-          "active" [:div.btn-toolbar
-                    [:div.btn-group
-                     [:button.btn.btn-primary.btn-bulky
-                      {:type "button"
-                       :on-click #(extend-subscription state)}
-                      (t :extra-spaces/Extendsubscription)]
-                     [:button.btn.btn-warning.btn-bulky
-                      {:on-click #(do
-                                    (.preventDefault %)
-                                    (update-status state "suspended"))
-                       :role "button"
-                       :aria-label (t :extra-spaces/Suspend)}
-                      (t :extra-spaces/Suspend)]
+       (when-not @(cursor state [:delete])
+         [:div.pull-right
 
-                     [:button.btn.btn-danger.btn-bulky
-                      {:on-click #(do
-                                    (.preventDefault %)
-                                    (reset! (cursor state [:delete]) true))
-                                    ;(delete-space! state))
-                       :type "button"
-                       :aria-label (t :core/Delete)}
-                      (t :core/Delete)]]]
+          (case @(cursor state [:space :status])
+            "active" [:div.btn-toolbar
+                      [:div.btn-group
+                       [button {:func #(extend-subscription state) :name (t :extra-spaces/Extendsubscription) :type :primary}]
+                       [button {:func #(update-status state "suspended") :name (t :extra-spaces/Suspend) :type :warning}]
+                       [button {:func #(reset! (cursor state [:delete]) true) :name (t :core/Delete) :type :danger}]]]
 
-           "suspended" [:div.btn-toolbar
-                        [:div.btn-group
-                         [:button.btn.btn-primary.btn-bulky
-                          {:on-click #(do
-                                        (.preventDefault %)
-                                        (update-status state "active"))
-                           :type "button"
-                           :aria-label (t :extra-spaces/Activate)}
-                          (t :extra-spaces/Activate)]
-                         [:button.btn.btn-danger.btn-bulky
-                          {:on-click #(do
-                                        (.preventDefault %)
-                                        (reset! (cursor state [:delete]) true))
-                                        ;(delete-space! state))
-                           :type "button"
-                           :aria-label (t :core/Delete)}
-                          (t :core/Delete)]]]
-           "deleted"    [:button.btn.btn-primary.btn-bulky
-                          {:on-click #(do
-                                        (.preventDefault %)
-                                        (update-status state "active"))
-                           :type "button"
-                           :aria-label (t :extra-spaces/Undodelete)}
-                         (t :extra-spaces/Undodelete)]
-           [:div])]]]
+             "suspended" [:div.btn-toolbar
+                          [:div.btn-group
+                           [button {:func #(update-status state "active") :name (t :extra-spaces/Activate) :type :primary}]
+                           [button {:func #(extend-subscription state) :name (t :extra-spaces/Extendsubscription) :type :primary}]
+                           [button {:func #(reset! (cursor state [:delete]) true) :name (t :core/Delete) :type :danger}]]]
+
+             "deleted"    [button {:func #(update-status state "active") :name (t :extra-spaces/Undodelete) :type :primary}]
+             [:div])])]]
+
      (when @(cursor state [:delete])
-       [:div;.row
-         (when (> (:member_count @state) 1) [:p [:b (t :extra-spaces/Aboutdelete)]])
+       [:div {:style {:margin-top "15px"}}
          [:div.alert.alert-danger
-          (t :badge/Confirmdelete)]
+          (if (> (:member_count @state) 1) (t :extra-spaces/Aboutdelete) (t :badge/Confirmdelete))]
          [:hr.line]
          [:div.btn-toolbar.text-center
           [:div.btn-group {:style {:float "unset"}}
-           [:button.btn.btn-primary
-            {:type "button"
-             :aria-label (t :core/Cancel)
-             :on-click #(do
-                          (.preventDefault %)
-                          (reset! (cursor state [:delete]) false))}
-            (t :core/Cancel)]
-           [:button.btn.btn-danger
-            {:type "button"
-             :on-click #(do
-                          (.preventDefault %)
-                          (delete-space! state))
-             :data-dismiss "modal"}
-            (t :core/Delete)]]]])]]])
-
+           [button {:func #(reset! (cursor state [:delete]) false) :name (t :core/Cancel) :type :primary}]
+           [button {:name (t :core/Delete) :func #(delete-space! state) :type :danger :data-dismiss "modal"}]]]])]]])
 
 (defn visibility-form [state init-fn]
  (let [site-name (session/get :site-name)
@@ -385,6 +341,8 @@
   [:div.row
    [manage-status state]
    [manage-visibility state nil]
+   (when (= "private" @(cursor state [:space :visibility]))
+     [invite-link (select-keys (:space @state) [:id :name :alias])])
    [manage-admins state]])
 
 (defn space-navi [state]

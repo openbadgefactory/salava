@@ -248,3 +248,40 @@
         [:div.media-body {:style {:vertical-align "middle"}}
          [:h3.media-heading {:style {:font-weight "600"}} (:name current-space)]
          (:description current-space)]]]]]]))
+
+(defn ^:export spaces_stats_dropdown [state]
+ (let [v (atom {:spaces [] :selected 0})]
+   (ajax/GET
+    (path-for "/obpv1/spaces/")
+    {:handler (fn [data]
+                (swap! v assoc :spaces data))})
+   (fn []
+    (when (seq @(cursor v [:spaces]))
+     [:div.row
+      [:div.col-md-12
+       [:div.form-group {:style {:margin "20px 0"}}
+        [:label {:for "space-select"}
+         (t :extra-spaces/Selectforstats)]
+        (reduce
+         (fn [r space]
+           (conj r
+            [:option
+             {:value (:id space)}
+             (:name space)]))
+         [:select#space-select.form-control
+           {:on-change (fn [x]
+                         (do
+                          (reset! (cursor v [:selected]) (-> x .-target .-value))
+                          (if (pos? @(cursor v [:selected]))
+                            (ajax/POST
+                             (path-for (str "/obpv1/space/stats/" @(cursor v [:selected])))
+                             {:handler (fn [data]
+                                         (reset! state (assoc data :visible "graphic" :space-id @(cursor v [:selected]))))})
+                            (ajax/GET
+                             (path-for "/obpv1/admin/stats")
+                             {:handler (fn [data]
+                                         (reset! state (assoc data :visible "graphic")))}))))}
+
+           [:option {:value 0} (session/get :site-name)]]
+
+         (:spaces @v))]]]))))

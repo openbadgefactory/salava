@@ -8,6 +8,7 @@
   [salava.core.time :refer [date-from-unix-time]]
   [salava.core.ui.helper :refer [input-valid? path-for navigate-to url?]]
   [salava.core.ui.modal :as mo]
+  [salava.core.ui.share :refer [clipboard-button]]
   [salava.user.ui.helper :refer [profile-picture]]
   [salava.extra.spaces.schemas :as schemas]))
 
@@ -205,3 +206,33 @@
 
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
+
+(defn button [{:keys [func type aria-label name data-dismiss]}]
+  [:button.btn.btn-bulky
+    {:type "button"
+     :on-click #(do
+                  (.preventDefault %)
+                  (func))
+     :aria-label (if-not (clojure.string/blank? aria-label) aria-label name)
+     :class (case type
+              :danger "btn-danger"
+              :warning "btn-warning"
+              :primary "btn-primary")
+     :data-dismiss data-dismiss}
+   name])
+
+(defn input-button [name id textatom]
+ (let [status (atom "")]
+   (fn []
+     [:div {:class "form-group" :key id}
+      [:fieldset
+       [:label {:class " sub-heading"} name]
+       [:div.input-group
+        [:input {:class       "form-control"
+                 :id          id
+                 :name        "email-text"
+                 :type        "text"
+                 :read-only true
+                 :value       @textatom}]
+        [:span {:class "input-group-btn"}
+         [clipboard-button (str "#" id) status]]]]])))

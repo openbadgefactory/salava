@@ -182,16 +182,23 @@
       (join! ctx space-id user-id)
       (switch! ctx ok-status current-user space-id)))))
 
+(defn- active-space? [ctx id]
+  (let [{:keys [valid_until status]} (get-space ctx id)]
+    (prn "dasdsadasda")
+    (and (= status "active") (or (nil? valid_until) (> valid_until (now))))))
+
 (defn set-user-space [ctx invitation user-id]
   (let [{:keys [token id alias]} invitation
-        already-member? (= user-id (:user_id (is-member? ctx id user-id)))]
+        already-member? (= user-id (:user_id (is-member? ctx id user-id)))
+        default-space (default-space ctx user-id)]
     (if invitation
      (if already-member?
-       (get-space ctx id user-id)
-       (do
+       (when (active-space? ctx id) (get-space ctx id user-id))
+       (when (active-space? ctx id)
         (join! ctx id user-id)
         (get-space ctx id user-id)))
-     (get-space ctx (:id (default-space ctx user-id)) user-id))))
+     (when (active-space? ctx (:id default-space))
+       (get-space ctx (:id default-space) user-id)))))
 
 
 (defn invite-user [ctx alias invite-token]
@@ -217,20 +224,12 @@
     (+ valid_time (- extension valid_time))
     extension)))
 
-
-(defn extend! [ctx id admin-id]
+(defn extend-space-validity! [ctx id admin-id]
  (try+
-   (let [valid_until (:valid_until (get-space ctx id))
-         extension  (int (extend-time valid_until))]
-       (extend-space-subscription! {:id id :time extension :admin admin-id} (get-db ctx))
-       {:status "success"})
-   (catch Object _
-    (log/error _)
-    {:status "error"})))
-
-
-(comment
-  (def space [:id :uuid :name :description :logo :banner :status :visibility :ctime :mtime :last-modified-by])
-  (def user_space [:id :user_id :space_id :role :default_space :ctime :mtime])
-  (def space_properties [:space_id :name :space]) ;;blocks, config, theme etc..
-  (def space_admin_pending [:id :space_id :email :ctime]))
+  (let [valid_until (:valid_until (get-space ctx id))
+        extension (int (extend-time valid_until))]
+    (extend-space-subscription! {:id id :time extension :admin admin-id} (get-db ctx)))
+  {:status "success"}
+  (catch Object _
+   (log/error _)
+   {:status "error"})))

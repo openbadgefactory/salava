@@ -3,6 +3,7 @@
             [ring.util.http-response :refer :all]
             [ring.swagger.upload :as upload]
             [ring.util.response :refer [redirect]]
+            [ring.util.io :as io]
             [schema.core :as s]
             [salava.core.helper :refer [dump]]
             [salava.core.util :as u]
@@ -49,6 +50,25 @@
                       (if (= status "success")
                        (-> (redirect (str (u/get-base-path ctx) (str "/user/login?invite_token="token)))
                            (assoc :session (assoc (get req :session {}) :invitation {:token token :alias uid :id id}))))))))
+   (context "/obpv1/space" []
+             :tags ["space"]
+
+            (GET  "/export_statistics" [id]
+                  :summary "Export admin stats to csv format"
+                  :auth-rules access/space-admin
+                  :current-user current-user
+                  (let [alias (:alias (space/get-space ctx id))]
+                    (-> (io/piped-input-stream (stats/export-space-statistics ctx id current-user))
+                        ok
+                        (header "Content-Disposition" (str "attachment; filename=\""alias"_statistics.csv\""))
+                        (header "Content-Type" "text/csv"))))
+
+            (POST "/stats/:id" []
+                   :auth-rules access/space-admin
+                   :summary "Get space stats"
+                   :path-params [id :- s/Int]
+                   :current-user current-user
+                   (ok (stats/space-stats ctx id (:last-visited current-user)))))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]
@@ -107,13 +127,6 @@
                    :path-params [id :- s/Int]
                    :current-user current-user
                    (ok (space/is-member? ctx id (:id current-user))))
-
-            (POST "/stats/:id" []
-                   :auth-rules access/space-admin
-                   :summary "Get space stats"
-                   :path-params [id :- s/Int]
-                   :current-user current-user
-                   (ok (stats/space-stats ctx id (:last-visited current-user))))
 
             (POST "/userlist/:id" []
                    :auth-rules access/space-admin
@@ -203,12 +216,12 @@
                   (space/reset-switch! ctx (ok {:status "success"}) current-user))
 
             (POST "/extend/:id" []
-                  :return {:status (s/enum "success" "error") :this "edff"}
-                  :auth-rules access/space-admin
+                  :return {:status (s/enum "success" "error")}
                   :path-params [id :- s/Int]
                   :summary "extend Subscription by one year"
+                  :auth-rules access/space-admin
                   :current-user current-user
-                  (space/extend! ctx id (:id current-user)))
+                  (ok (space/extend-space-validity! ctx id (:id current-user))))
 
             (POST "/create" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}

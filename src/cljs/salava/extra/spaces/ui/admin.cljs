@@ -12,18 +12,19 @@
   [salava.extra.spaces.ui.modal :as sm]
   [salava.extra.spaces.ui.creator :as sc]
   [salava.extra.spaces.ui.helper :as sh]
+  [salava.extra.spaces.ui.invitelink :refer [invite-link]]
   [salava.extra.spaces.schemas :as schemas]))
 
-(defn generate-invite-link [token state]
-  (let [name @(cursor state [:space :name])
-        alias @(cursor state [:space :alias])]
-   (str (session/get :site-url) (path-for (str "space/member_invite/" alias "/" token)))))
+#_(defn generate-invite-link [token state]
+    (let [name @(cursor state [:space :name])
+          alias @(cursor state [:space :alias])]
+     (str (session/get :site-url) (path-for (str "space/member_invite/" alias "/" token)))))
 
-(defn init-invite-link [state]
-  (ajax/POST
-   (path-for (str "/obpv1/spaces/invitelink/" (:id @state)))
-   {:handler (fn [{:keys [status token]}]
-               (swap! state assoc :link_status status :token token :url (generate-invite-link token state)))}))
+#_(defn init-invite-link [state]
+    (ajax/POST
+     (path-for (str "/obpv1/spaces/invitelink/" (:id @state)))
+     {:handler (fn [{:keys [status token]}]
+                 (swap! state assoc :link_status status :token token :url (generate-invite-link token state)))}))
 
 (defn init-data [state]
  (let [id (:id @state)]
@@ -31,23 +32,23 @@
     (path-for (str "/obpv1/spaces/" id) true)
     {:handler (fn [data]
                 (reset! (cursor state [:space]) data)
-                (when (= @(cursor state [:space :visibility] ) "private")
-                  (init-invite-link state)))})))
+                #_(when (= @(cursor state [:space :visibility] ) "private")
+                    (init-invite-link state)))})))
 
-(defn update-link-status [status state]
-  (ajax/POST
-   (path-for (str "/obpv1/spaces/invitelink/update_status/" (:id @state)) true)
-   {:params {:status status}
-    :handler (fn [data]
-               (when (= (:status data) "success")
-                 (init-invite-link state)))}))
+#_(defn update-link-status [status state]
+    (ajax/POST
+     (path-for (str "/obpv1/spaces/invitelink/update_status/" (:id @state)) true)
+     {:params {:status status}
+      :handler (fn [data]
+                 (when (= (:status data) "success")
+                   (init-invite-link state)))}))
 
-(defn refresh-token [state]
-  (ajax/POST
-   (path-for (str "/obpv1/spaces/invitelink/refresh_token/" (:id @state)) true)
-   {:handler (fn [data]
-               (when (= (:status data) "success")
-                 (init-invite-link state)))}))
+#_(defn refresh-token [state]
+    (ajax/POST
+     (path-for (str "/obpv1/spaces/invitelink/refresh_token/" (:id @state)) true)
+     {:handler (fn [data]
+                 (when (= (:status data) "success")
+                   (init-invite-link state)))}))
 
 (defn edit-space [state]
   (reset! (cursor state [:error-message]) nil)
@@ -76,55 +77,55 @@
                     (m/modal! (sh/upload-modal (assoc data :message "extra-spaces/Spaceinfosaved"))  {:hidden (fn []  (js-navigate-to "/space/edit"))})))}))))
 
 
-(defn invite-link [state]
- (let [status (cursor state [:link_status])
-       url (cursor state [:url])
-       space (cursor state [:space])]
-   (when (= "private" @(cursor state [:space :visibility]))
-    [:div.panel.panel-default
-     [:div.panel-heading.weighted
-      (t :extra-spaces/Invitelink)]
-     [:div.panel-body
-      [:div.checkbox
-       [:label
-        [:input {:name      "visibility"
-                 :type      "checkbox"
-                 :on-change #(do
-                               (update-link-status (if @status false true) state)
-                               (.preventDefault %))
-                 :checked   @status}]
-        (t :extra-spaces/Activatelink)]]
-      [:div#share
-       [:p (t :extra-spaces/Aboutinvitelink)]
-       [:div.form-group {:id "share-buttons" :class (when-not @status "share-disabled")}
-        [:label {:for "invitelink"} (str (t :admin/Url) ": ")]
-        [:input.form-control
-         {:value @url
-          :onChange #(reset! url (.-target.value %))
-          :read-only true}]]
-       [:p (t :extra-spaces/Aboutresetlink)]
-       (if (:confirm-delete? @state)
-         [:div
-          [:div.alert.alert-warning
-           (t :extra-spaces/Confirmlinkreset)]
-          [:div.btn-toolbar
-           [:div.btn-group
-            [:button.btn.btn-primary.btn-bulky
-             {:type "button"
-              :on-click #(swap! state assoc :confirm-delete? false)}
-             (t :badge/Cancel)]
-            [:button.btn.btn-warning.btn-bulky
-             {:type "button"
-              :on-click #(do
-                           (refresh-token state)
-                           (swap! state assoc :confirm-delete? false))}
-             (t :admin/Reset)]]]]
-         [:button.btn.btn-warning.btn-bulky
-          {:type "button"
-           :on-click #(do
-                        (.preventDefault %)
-                        (swap! state assoc :confirm-delete? true))}
-          (t :extra-spaces/Resetinvitelink)])]]])))
+#_(defn invite-link [state]
+   (let [status (cursor state [:link_status])
+         url (cursor state [:url])
+         space (cursor state [:space])]
+     (when (= "private" @(cursor state [:space :visibility]))
+      [:div.panel.panel-default
+       [:div.panel-heading.weighted
+        (t :extra-spaces/Invitelink)]
+       [:div.panel-body
+        [:div.checkbox
+         [:label
+          [:input {:name      "visibility"
+                   :type      "checkbox"
+                   :on-change #(do
+                                 (update-link-status (if @status false true) state)
+                                 (.preventDefault %))
+                   :checked   @status}]
+          (t :extra-spaces/Activatelink)]]
+        [:div#share
+         [:p (t :extra-spaces/Aboutinvitelink)]
+         [:div.form-group {:id "share-buttons" :class (when-not @status "share-disabled")}
+          [:label {:for "invitelink"} (str (t :admin/Url) ": ")]
+          [:input.form-control
+           {:value @url
+            :onChange #(reset! url (.-target.value %))
+            :read-only true}]]
+         [:p (t :extra-spaces/Aboutresetlink)]
+         (if (:confirm-delete? @state)
+           [:div
+            [:div.alert.alert-warning
+             (t :extra-spaces/Confirmlinkreset)]
+            [:div.btn-toolbar
+             [:div.btn-group
+              [:button.btn.btn-primary.btn-bulky
+               {:type "button"
+                :on-click #(swap! state assoc :confirm-delete? false)}
+               (t :badge/Cancel)]
+              [:button.btn.btn-warning.btn-bulky
+               {:type "button"
+                :on-click #(do
+                             (refresh-token state)
+                             (swap! state assoc :confirm-delete? false))}
+               (t :admin/Reset)]]]]
+           [:button.btn.btn-warning.btn-bulky
+            {:type "button"
+             :on-click #(do
+                          (.preventDefault %)
+                          (swap! state assoc :confirm-delete? true))}
+            (t :extra-spaces/Resetinvitelink)])]]])))
 
 (defn manage-status [state]
   [:div#space-gallery.form-group
@@ -191,7 +192,7 @@
       [m/modal-window]
       [manage-status state]
       [sm/manage-visibility state (fn [] (init-data state))]
-      [invite-link state]])
+      (when (= @(cursor state [:space :visibility] ) "private") [invite-link (select-keys (:space @state) [:id :name :alias])])])
    :component-did-mount
    (fn [] (init-data state))}))
 

@@ -146,7 +146,7 @@
                               :tooltipLabel (t :admin/userbadges)}]]]]))
 
 (defn export-stats [state]
-  (let [url (str "/obpv1/admin/export_statistics")]
+  (let [url (str "/obpv1/space/export_statistics?id=" (session/get-in [:user :current-space :id]))]
     (js-navigate-to url)))
 
 (defn content [state]
@@ -173,10 +173,9 @@
 
 (defn handler [site-navi]
   (let [id (session/get-in [:user :current-space :id])
-
          t (atom {})]
    (ajax/POST
-    (path-for (str "/obpv1/spaces/stats/" id))
+    (path-for (str "/obpv1/space/stats/" id))
     {:handler (fn [data]
                 (reset! t (assoc data :visible "graphic")))})
 

@@ -51,7 +51,7 @@ WHERE ub.deleted = 0  AND ub.revoked = 0 AND ub.status= "declined" AND us.space_
 --name: count-all-badges-after-date
 SELECT COUNT(DISTINCT ub.id) AS count FROM user_badge ub
 JOIN user_space us ON us.user_id = ub.user_id
-WHERE ub.deleted = 0  AND ub.revoked = 0 AND ub.status= "pending" AND ub.ctime > :time AND us.space_id = :id;
+WHERE ub.deleted = 0  AND ub.revoked = 0 AND ub.status!= "declined" AND ub.ctime > :time AND us.space_id = :id;
 
 --name: count-private-badges
 SELECT COUNT(DISTINCT ub.id) AS count FROM user_badge ub
@@ -132,3 +132,19 @@ JOIN badge_issuer_content bic ON bic.badge_id = ub.badge_id
 JOIN issuer_content ic ON bic.issuer_content_id = ic.id
 JOIN user_space us ON us.user_id = ub.user_id
 WHERE us.space_id = :id;
+
+--name: select-user-language
+SELECT language FROM user WHERE id = :id
+
+--name:select-user-ids-and-badge-count
+SELECT u.id, COUNT(ub.id) AS badge_count FROM user u
+JOIN user_space us ON us.user_id = u.id
+LEFT JOIN user_badge ub ON u.id=ub.user_id
+WHERE us.space_id = :id AND u.activated = 1 AND ub.status != "declined" AND ub.revoked = 0 AND ub.deleted = 0
+GROUP BY u.id;
+
+--name: count-all-spaces
+SELECT COUNT(DISTINCT id) AS count FROM space
+
+--name: count-spaces-after-date
+SELECT COUNT(DISTINCT id) AS count FROM space WHERE ctime > :time;

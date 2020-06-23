@@ -98,6 +98,7 @@
                                 {state :- s/Str nil}
                                 {error :- s/Str nil}]
                  :current-user current-user
+                 (prn (get-in req [:session :invitation] nil))
                  (let [r (g/google-login ctx code (:id current-user) error)
                        {:keys [status user-id message new-user]} r
                        _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
