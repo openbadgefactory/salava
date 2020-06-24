@@ -5,7 +5,7 @@
     [reagent-modals.modals :as m]
     [salava.core.ui.ajax-utils :as ajax]
     [salava.core.ui.modal :as mo]
-    [salava.core.ui.helper :refer [path-for]]
+    [salava.core.ui.helper :refer [path-for js-navigate-to current-route-path]]
     [salava.core.i18n :refer [t]]
     [salava.core.time :refer [date-from-unix-time]]
     [salava.extra.spaces.ui.creator :as creator]
@@ -42,13 +42,15 @@
                (when (= (:status data) "success")
                  (init-data id state)))}))
 
-(defn leave-space [id state]
+(defn leave-space [id state in-space?]
   (ajax/POST
    (path-for (str "/obpv1/spaces/user/leave/" id) true)
-   {:handler (fn [data]
+   {:params {:current-space in-space?}
+    :handler (fn [data]
                (when (= (:status data) "success")
                  ;(check-membership id state)
-                 (init-data id state)))}))
+                 (init-data id state)
+                 (when in-space? (js-navigate-to (current-route-path)))))}))
 
 (defn delete-space! [state]
   (ajax/DELETE
@@ -340,10 +342,12 @@
 (defn manage-space [state]
   [:div.row
    [manage-status state]
-   [manage-visibility state nil]
-   (when (= "private" @(cursor state [:space :visibility]))
-     [invite-link (select-keys (:space @state) [:id :name :alias])])
-   [manage-admins state]])
+   (when-not (= "deleted" @(cursor state [:space :status]))
+    [:div
+     [manage-visibility state nil]
+     (when (= "private" @(cursor state [:space :visibility]))
+       [invite-link (select-keys (:space @state) [:id :name :alias])])
+     [manage-admins state]])])
 
 (defn space-navi [state]
  (let [disable-link (when (= "deleted" @(cursor state [:space :status])) "btn disabled")]
@@ -368,28 +372,31 @@
            [:div  [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]]]))
 
 (defn membership-btn [state]
- (when-not (= "private" (get-in @state [:space :visibility]))
-   [:div.row
-    [:div.col-md-12
-     [:div.pull-right
-       (if (nil? @(cursor state [:member_info]))
-          [:div
-           [:button.btn.btn-primary.btn-bulky
+ (let [current-space (session/get-in [:user :current-space])
+       in-space? (= (:id current-space (:id @state)))]
+   (when-not (= "private" (get-in @state [:space :visibility]))
+       [:div.row
+        [:div.col-md-12
+         [:div.pull-right
+           (if (nil? @(cursor state [:member_info]))
+              [:div
+               [:button.btn.btn-primary.btn-bulky
+                    {:type "button"
+                     :on-click #(do
+                                  (.preventDefault %)
+                                  (join-space (:id @state) state))}
+                 (t :extra-spaces/Joinspace)]]
+
+              [:div
+               [:button.btn.btn-danger.btn-danger
                 {:type "button"
                  :on-click #(do
                               (.preventDefault %)
-                              (join-space (:id @state) state))}
-             (t :extra-spaces/Joinspace)]]
-
-          [:div
-           [:button.btn.btn-danger.btn-danger
-            {:type "button"
-             :on-click #(do
-                          (.preventDefault %)
-                          (leave-space (:id @state) state))}
-            (if (= "accepted"  @(cursor state [:member_info :status]))
-              (t :extra-spaces/Leavespace)
-              (t :extra-space/Cancelmembershiprequest))]])]]]))
+                              (if in-space? (m/close-modal!))
+                              (leave-space (:id @state) state in-space?))}
+                (if (= "accepted"  @(cursor state [:member_info :status]))
+                  (t :extra-spaces/Leavespace)
+                  (t :extra-space/Cancelmembershiprequest))]])]]])))
 
 
 

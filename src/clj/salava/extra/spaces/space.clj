@@ -109,19 +109,27 @@
  ([ctx id user-id]
   (assoc (get-space ctx id) :role (select-user-space-role {:user_id user-id :space_id id} (into {:result-set-fn first :row-fn :role} (get-db ctx))))))
 
+(defn- active-space? [ctx id]
+  (let [{:keys [valid_until status]} (get-space ctx id)]
+    (and (= status "active") (or (nil? valid_until) (> valid_until (now))))))
+
 (defn switch! [ctx ok-status current-user space-id]
-  (assoc-in ok-status [:session :identity] (assoc current-user :current-space (dissoc (get-space ctx space-id (:id current-user)) :admins))))
+  (assoc-in ok-status [:session :identity] (assoc current-user :current-space (if (active-space? ctx space-id) (dissoc (get-space ctx space-id (:id current-user)) :admins) nil))))
 
 (defn reset-switch! [ctx ok-status current-user]
   (assoc-in ok-status [:session :identity] (dissoc current-user :current-space)))
 
-(defn leave! [ctx space-id user-id]
- (try+
-  (remove-user-from-space! {:space_id space-id :user_id user-id} (get-db ctx))
-  {:status "success"}
-  (catch Object _
-    (log/error _)
-    {:status "error"})))
+(defn leave!
+ ([ctx space-id user-id]
+  (try+
+   (remove-user-from-space! {:space_id space-id :user_id user-id} (get-db ctx))
+   {:status "success"}
+   (catch Object _
+     (log/error _)
+     {:status "error"})))
+ ([ctx space-id current-user ok-status]
+  (leave! ctx space-id (:id current-user))
+  (reset-switch! ctx ok-status current-user)))
 
 (defn join! [ctx space-id user-id]
  (try+
@@ -173,6 +181,7 @@
 (defn default-space [ctx user-id]
   (select-default-space {:user_id user-id} (get-db-1 ctx)))
 
+
 (defn set-space-session [ctx space-id ok-status current-user]
   (let [user-id (:id current-user)
         already-member? (= user-id (:user_id (is-member? ctx space-id user-id)))]
@@ -182,12 +191,8 @@
       (join! ctx space-id user-id)
       (switch! ctx ok-status current-user space-id)))))
 
-(defn- active-space? [ctx id]
-  (let [{:keys [valid_until status]} (get-space ctx id)]
-    (prn "dasdsadasda")
-    (and (= status "active") (or (nil? valid_until) (> valid_until (now))))))
-
 (defn set-user-space [ctx invitation user-id]
+  (prn "called")
   (let [{:keys [token id alias]} invitation
         already-member? (= user-id (:user_id (is-member? ctx id user-id)))
         default-space (default-space ctx user-id)]
@@ -205,7 +210,7 @@
   (let [space-id (alias->id ctx alias)
          {:keys [status token]} (invite-link-info ctx space-id)]
 
-     (if (and status (= invite-token token))
+     (if (and status (= invite-token token)  (active-space? ctx space-id))
        {:status "success" :id space-id}
        {:status "error" :id space-id :message "extra-spaces/Invitelinkeerror"})))
 

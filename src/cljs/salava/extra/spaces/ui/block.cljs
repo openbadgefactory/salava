@@ -52,14 +52,16 @@
                   (m/modal! [upload-modal {:status "error" :message "extra-spaces/Invitelinkeerror" }])))})) {}
 
 
-(defn leave-organization [id state]
+(defn leave-organization [id state current-space?]
   [:a {:href "#" :on-click #(do (.preventDefault %)
                                 (ajax/POST
                                  (path-for (str "/obpv1/spaces/user/leave/" id) true)
-                                 {:handler (fn [data]
+                                 {:params {:current-space current-space?}
+                                  :handler (fn [data]
                                              (when (= "success" (:status data))
-                                               (init-spaces state)))}))}
-    [:i.fa.fa-user-times.fa-fw] (str " " (t :extra-spaces/Leaveorganization))])
+                                               (init-spaces state)
+                                               (when current-space? (js-navigate-to (current-route-path)))))}))}
+    [:i.fa.fa-user-times.fa-fw] (str " " (t :extra-spaces/Leavespace))])
 
 (defn default-btn [space state]
  (let [{:keys [id default_space]} space]
@@ -76,7 +78,8 @@
 
 
 (defn manage-spaces [state]
-  (let [spaces (sort-by :name @(cursor state [:spaces]))]
+  (let [spaces (sort-by :name @(cursor state [:spaces]))
+        current-space (session/get-in [:user :current-space])]
    (if (seq spaces)
      [:div#badge-stats
       [m/modal-window]
@@ -95,7 +98,8 @@
            [:th {:style {:display "none"}} "Action"]]]
          (into [:tbody]
                (for [space spaces
-                     :let [{:keys [space_id name logo role default_space status]} space]]
+                     :let [{:keys [space_id name logo role default_space status]} space
+                           current-space? (= (:id current-space) space_id)]]
                  [:tr
                   [:td.name [:a {:href "#"
                                  :on-click #(do
@@ -105,7 +109,7 @@
                                          [:span [:i.fa.fa-building.fa-3x {:style {:margin-right "10px"}}]]) name]]
                   [:td (if (= status "pending") [:span.label.label-info (t :extra-spaces/pendingmembership)] [:span.label {:class (if (= role "admin") "label-danger" "label-success")} (translate-text (str "extra-spaces/" role))])]
                   (when-not (= status "pending") [:td {:style {:min-width "150px"}} "" (default-btn space state)])
-                  [:td.action "" (leave-organization space_id state)]]))]]]]
+                  [:td.action "" (leave-organization space_id state current-space?)]]))]]]]
 
     [:div.well.well-sm (t :extra-spaces/Notjoinedanyorg)])))
 

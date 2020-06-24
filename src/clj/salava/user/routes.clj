@@ -99,7 +99,8 @@
                        ;return error status from save
                       (ok save)
                       (if (not (private? ctx))
-                        (let [login-status (assoc (u/login-user ctx email password) :invitation (get-in req [:session :invitation] nil))]
+                        (let [invitation (get-in req [:session :invitation] nil)
+                              login-status (assoc (u/login-user ctx email password) :invitation invitation)]
                           (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (or (= "accepted" (:input update-accept-term)) (= "disabled" (:input update-accept-term))))
                             (u/finalize-login ctx (assoc-in (ok login-status) [:session :new-user] (:id user-id)) (:id login-status) (get-in req [:session :pending :user-badge-id]) true)
                             (ok login-status)))

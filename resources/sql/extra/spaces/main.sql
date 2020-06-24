@@ -82,7 +82,9 @@ REPLACE INTO space_properties (space_id, name, value) VALUES (:space_id, :name, 
 UPDATE space SET status = "deleted", last_modified_by = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: count-space-members
-SELECT COUNT(DISTINCT user_id) AS count FROM user_space WHERE space_id = :id AND status = 'accepted'
+SELECT COUNT(DISTINCT us.user_id) AS count FROM user_space us
+JOIN user u ON u.id = us.user_id
+WHERE us.space_id = :id AND us.status = 'accepted'
 
 --name: downgrade-to-member!
 UPDATE user_space SET role = 'member', mtime = UNIX_TIMESTAMP() WHERE space_id = :id AND user_id = :admin
@@ -131,6 +133,7 @@ UPDATE space SET visibility = :v, last_modified_by = :user_id, mtime = UNIX_TIME
 SELECT space.id, space.logo, space.ctime, space.mtime, space.name, space.visibility,
       (SELECT CAST(COUNT(DISTINCT us.user_id) AS UNSIGNED)
        FROM user_space us
+       JOIN user u ON us.user_id = u.id
        WHERE us.space_id = space.id AND us.status = 'accepted') AS member_count
 FROM space space
 WHERE space.status = "active" AND space.visibility != "private" AND (space.valid_until IS NULL OR space.valid_until > UNIX_TIMESTAMP())
@@ -145,6 +148,7 @@ LIMIT :limit OFFSET :offset
 SELECT space.id, space.logo, space.ctime, space.mtime, space.name, space.visibility,
       (SELECT CAST(COUNT(DISTINCT us.user_id) AS UNSIGNED)
        FROM user_space us
+       JOIN user u ON us.user_id = u.id
        WHERE us.space_id = space.id AND us.status = 'accepted') AS member_count
 FROM space space
 WHERE space.status = "active" AND space.visibility != "private" AND (space.valid_until IS NULL OR space.valid_until > UNIX_TIMESTAMP()) AND space.id IN (:space_ids)
@@ -179,7 +183,7 @@ UPDATE user_space SET status = :status, mtime = UNIX_TIMESTAMP() WHERE user_id =
 UPDATE space SET last_modified_by = :admin WHERE id = :id
 
 --name: select-expired-spaces
-SELECT name, id, valid_until FROM space WHERE status != "expired" AND vaid_until < UNIX_TIMESTAMP()
+SELECT name, id, valid_until FROM space WHERE status != "expired" AND valid_until < UNIX_TIMESTAMP()
 
 --name: extend-space-subscription!
 UPDATE space SET valid_until = :time, last_modified_by = :admin WHERE id = :id

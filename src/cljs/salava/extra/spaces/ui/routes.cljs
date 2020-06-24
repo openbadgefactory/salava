@@ -10,7 +10,8 @@
    [salava.extra.spaces.ui.userlist :as users]
    [salava.extra.spaces.ui.explore :as exp]
    [salava.extra.spaces.ui.admin :as admin]
-   [reagent.session :as session]))
+   [reagent.session :as session]
+   [salava.extra.spaces.ui.error :as err]))
 
 (defn ^:export routes [context]
   {(str (base-path context) "/admin/spaces") [["" my/handler]
@@ -21,7 +22,8 @@
                                        ["/users" users/handler]
                                        ["/stats" stats/handler]
                                        ["/manage" admin/handler]
-                                       ["/edit" admin/edit-handler]]})
+                                       ["/edit" admin/edit-handler]
+                                       ["/error" err/handler]]})
 
 (defn base-navi [context]
   {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces)} ;:about (:selfie (about))}})

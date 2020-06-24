@@ -70,7 +70,6 @@
    (log/error _)
    {:status "error"})))
 
-
 (defn space-exists?
   "check if space name already exists"
   [ctx space]

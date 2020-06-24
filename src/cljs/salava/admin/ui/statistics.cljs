@@ -56,7 +56,7 @@
            [:div]
            v))]))
   [:div.admin-stats]
-  (-> @state (dissoc :user-badge-correlation :visible))))
+  (-> @state (dissoc :user-badge-correlation :visible :space-id))))
 
 
 (defn graphic-content [state]

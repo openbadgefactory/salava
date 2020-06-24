@@ -432,22 +432,34 @@
 
 (defn set-session [ctx ok-status user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)
+        invitation (get-in ok-status [:body :invitation] (get ok-status :invitation nil))
         last-visited (last-visited ctx user-id)
         expires (+ (long (/ (System/currentTimeMillis) 1000)) (get-in ctx [:config :core :session :max-age]))
         current-space (as-> (first (plugin-fun (get-plugins ctx) "space" "set-user-space")) $
-                            (when (ifn? $) ($ ctx (get-in ok-status [:body :invitation ] nil) user-id)))
+                            (when (ifn? $) ($ ctx invitation  user-id)))
         user-spaces (as-> (first (plugin-fun (get-plugins ctx) "db" "get-user-spaces")) $
                           (when (ifn? $) ($ ctx user-id)))
         identity {:id id :role role :private private :activated activated :last-visited last-visited :expires expires :spaces user-spaces :current-space current-space}]
-    (-> ok-status
-        (assoc-in [:session :identity] identity)
-        (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})
-        (update-in [:body] dissoc :invitation))))
+   (as-> (-> ok-status
+             (assoc-in [:session :identity] identity)
+             (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})) $
+         (if invitation
+          (if (get-in ok-status [:body :invitation])
+              (update-in $ [:body] dissoc :invitation)
+              (dissoc $ :invitation))
+          (merge $ {})))))
+
+(defn activate-invited-user-and-verify-email [ctx user-id invitation new-user?]
+ (when (and new-user? invitation)
+  (update-verify-primary-email-address! {:user_id user-id} (get-db ctx))
+  (update-user-activate! {:id user-id} (get-db ctx))))
 
 (defn finalize-login [ctx ok-res user-id pending-badge-id new-account]
+ (let [invitation (get-in ok-res [:body :invitation] (get ok-res :invitation nil))]
   (save-pending-badge-and-email ctx user-id pending-badge-id new-account)
+  (activate-invited-user-and-verify-email ctx user-id invitation new-account)
   (send-email-verification-maybe ctx user-id)
-  (set-session ctx ok-res user-id))
+  (set-session ctx ok-res user-id)))
 
 ;; --- Email sender --- ;;
 

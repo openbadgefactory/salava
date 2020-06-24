@@ -98,23 +98,23 @@
                                 {state :- s/Str nil}
                                 {error :- s/Str nil}]
                  :current-user current-user
-                 (prn (get-in req [:session :invitation] nil))
                  (let [r (g/google-login ctx code (:id current-user) error)
                        {:keys [status user-id message new-user]} r
                        _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
-                       accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
+                       accepted-terms? (u/get-accepted-terms-by-id ctx user-id)
+                       invitation (get-in req [:session :invitation] nil)]
                       (if (= status "success")
 
                         (if (and (not= accepted-terms? "accepted") (not= false accepted-terms?))
                          (if current-user
                            (redirect (str (get-base-path ctx) "/user/terms/" (:id current-user)))
-                           (u/finalize-login ctx (redirect (str (get-base-path ctx) "/user/terms?service=google&new-user=" new-user)) user-id (get-in req [:session :pending :user-badge-id]) false))
+                           (u/finalize-login ctx (assoc (redirect (str (get-base-path ctx) "/user/terms?service=google&new-user=" new-user)) :invitation invitation) user-id (get-in req [:session :pending :user-badge-id]) false))
 
                          (if current-user
                             (redirect (str (get-base-path ctx) "/user/oauth/google"))
                             (if new-user
-                             (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social?service=google&new-user=" new-user)) user-id (get-in req [:session :pending :user-badge-id]) false)
-                             (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social")) user-id (get-in req [:session :pending :user-badge-id]) false))))
+                             (u/finalize-login ctx (assoc (redirect (str (get-base-path ctx) "/social?service=google&new-user=" new-user)) :invitation invitation) user-id (get-in req [:session :pending :user-badge-id]) false)
+                             (u/finalize-login ctx (assoc (redirect (str (get-base-path ctx) "/social")) :invitation invitation) user-id (get-in req [:session :pending :user-badge-id]) false))))
 
                         (if current-user
                              (assoc (redirect (str (get-base-path ctx) "/user/oauth/google")) :flash message)
@@ -139,22 +139,20 @@
               :current-user current-user
               (let [{:keys [status user-id message role private new-user]} (f/facebook-login ctx code (:id current-user) error)
                     _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
-                    accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
+                    accepted-terms? (u/get-accepted-terms-by-id ctx user-id)
+                    invitation (get-in req [:session :invitation] nil)]
                 (if (= status "success")
 
                   (if (and (not= accepted-terms? "accepted") (not= false accepted-terms?))
                     (if current-user
                       (redirect (str (get-base-path ctx) "/user/terms/"))
-                      ;(u/set-session ctx (found (str (get-base-path ctx) "/user/terms/")) user-id)
-                      (u/finalize-login ctx (redirect (str (get-base-path ctx) "/user/terms?service=facebook&new-user=" new-user)) user-id (get-in req [:session :pending :user-badge-id]) false))
+                      (u/finalize-login ctx (assoc (redirect (str (get-base-path ctx) "/user/terms?service=facebook&new-user=" new-user)) :invitation invitation) user-id (get-in req [:session :pending :user-badge-id]) false))
 
                     (if current-user
                       (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
-                      ;(u/set-session ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id)
                       (if new-user
-                       (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social?service=facebook&new-user=" new-user)) user-id (get-in req [:session :pending :user-badge-id]) false)
-                       (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social")) user-id (get-in req [:session :pending :user-badge-id]) false))
-                      #_(u/finalize-login ctx (redirect (str (get-base-path ctx) "/social")) user-id (get-in req [:session :pending :user-badge-id]) false)))
+                       (u/finalize-login ctx (assoc (redirect (str (get-base-path ctx) "/social?service=facebook&new-user=" new-user)) :invitation invitation) user-id (get-in req [:session :pending :user-badge-id]) false)
+                       (u/finalize-login ctx (assoc (redirect (str (get-base-path ctx) "/social")) :invitation invitation) user-id (get-in req [:session :pending :user-badge-id]) false))))
 
                   (if current-user
                     (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
@@ -179,22 +177,21 @@
               (let [r (l/linkedin-login ctx code state (:id current-user) error)
                     {:keys [status user-id message new-user]} r
                     _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
-                    accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
+                    accepted-terms? (u/get-accepted-terms-by-id ctx user-id)
+                    invitation (get-in req [:session :invitation] nil)]
                 (if (= status "success")
 
                   (if (and (not= accepted-terms? "accepted") (not= false accepted-terms?))
 
                     (if current-user
                       (redirect (str (get-base-path ctx) "/user/terms/" (:id current-user)))
-                      ;(u/set-session ctx (found (str (get-base-path ctx) "/user/terms/" user-id)) user-id)
-                      (u/finalize-login ctx (redirect (str (get-base-path ctx) "/user/terms?service=linkedin&new-user=" new-user)) user-id (get-in req [:session :pending :user-badge-id]) false))
+                      (u/finalize-login ctx (assoc (redirect (str (get-base-path ctx) "/user/terms?service=linkedin&new-user=" new-user)) :invitation invitation) user-id (get-in req [:session :pending :user-badge-id]) false))
 
                     (if current-user
                       (redirect (str (get-base-path ctx) "/user/oauth/linkedin"))
-                      ;(u/set-session ctx (found (str (get-base-path ctx) "/social/stream/")) user-id)
                       (if new-user
-                       (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social?service=linkedin&new-user=" new-user)) user-id (get-in req [:session :pending :user-badge-id]) false)
-                       (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social")) user-id (get-in req [:session :pending :user-badge-id]) false))))
+                       (u/finalize-login ctx (assoc (redirect (str (get-base-path ctx) "/social?service=linkedin&new-user=" new-user)) :invitation invitation) user-id (get-in req [:session :pending :user-badge-id]) false)
+                       (u/finalize-login ctx (assoc (redirect (str (get-base-path ctx) "/social")) :invitation invitation) user-id (get-in req [:session :pending :user-badge-id]) false))))
 
                   (if current-user
                     (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)

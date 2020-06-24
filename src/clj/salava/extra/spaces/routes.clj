@@ -35,6 +35,7 @@
             (layout/main ctx "/manage")
             (layout/main ctx "/users")
             (layout/main ctx "/edit")
+            (layout/main ctx "/error")
 
             (GET "/member_invite/:uid/:token" req
                   :path-params [uid :- s/Str
@@ -48,8 +49,10 @@
                         (space/set-space-session ctx id (found (str (u/get-base-path ctx) (str "/connections/spaces"))) current-user)
                         (redirect (str (u/get-base-path ctx) (str "/connections/spaces?error=" true))))
                       (if (= status "success")
+
                        (-> (redirect (str (u/get-base-path ctx) (str "/user/login?invite_token="token)))
-                           (assoc :session (assoc (get req :session {}) :invitation {:token token :alias uid :id id}))))))))
+                           (assoc :session (assoc (get req :session {}) :invitation {:token token :alias uid :id id})))
+                       (redirect (str (u/get-base-path ctx) (str "/space/error"))))))))
    (context "/obpv1/space" []
              :tags ["space"]
 
@@ -180,8 +183,12 @@
                    :auth-rules access/authenticated
                    :summary "Leave space"
                    :path-params [id :- s/Int]
+                   :body-params [current-space :- s/Bool]
                    :current-user current-user
-                   (ok (space/leave! ctx id (:id current-user))))
+                   (if current-space
+                     (space/leave! ctx id current-user (ok {:status "success"}))
+                     (ok (space/leave! ctx id (:id current-user)))))
+
 
             (POST "/user/default/:id" []
                    :return {:status (s/enum "success" "error")}
