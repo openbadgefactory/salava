@@ -75,7 +75,7 @@
          :image (png-convert-url ctx image)
          :body (str (:name badge) " " (t :badge/fromissuer lang) " " (:name issuer))}
 
-        {:title "You got a new Open Badge!"
+        {:title "You got a new open badge!"
          :body "Click here to see it."}))))
 
 (defn new-badge-notification [ctx input]
@@ -88,9 +88,15 @@
       (doseq [chunk (partition-all 100 emails)]
         (let [body (->> (select-firebase-tokens-by-emails {:emails chunk} (u/get-db ctx))
                         (map (fn [user]
-                               (http-batch-message auth url {:message
-                                                             {:token (:firebase_token user)
-                                                              :notification (content (:language user))}})))
+                               (http-batch-message
+                                 auth url
+                                 {:message
+                                  {:token (:firebase_token user)
+                                   :notification (content (:language user))
+                                   :android {:notification (merge {:default_sound true
+                                                                   :default_vibrate_timings true
+                                                                   :default_light_settings true}
+                                                                  (content (:language user)))}}})))
                         (apply str))]
 
           (http/http-post
