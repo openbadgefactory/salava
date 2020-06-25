@@ -1,9 +1,12 @@
 (ns salava.social.routes
   (:require [compojure.api.sweet :refer :all]
+            [clojure.string :as string]
             [ring.util.http-response :refer :all]
+            [ring.util.response :refer [redirect]]
             [salava.core.layout :as layout]
             [schema.core :as s]
             [salava.core.access :as access]
+            [salava.core.util :refer [get-base-path]]
             [salava.social.db :as so]
             [salava.user.db :as u]
             [salava.factory.db :as f]
@@ -14,7 +17,8 @@
 (defn route-def [ctx]
   (routes
    (context "/social" []
-            (GET "/" []
+
+            (GET "/" req
                  :no-doc true
                  :summary ""
                  :auth-rules access/signed
