@@ -189,7 +189,6 @@
                      (space/leave! ctx id current-user (ok {:status "success"}))
                      (ok (space/leave! ctx id (:id current-user)))))
 
-
             (POST "/user/default/:id" []
                    :return {:status (s/enum "success" "error")}
                    :auth-rules access/authenticated

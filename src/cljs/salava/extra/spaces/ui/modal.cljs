@@ -236,8 +236,10 @@
     [:div.panel-heading.weighted
      (t :extra-spaces/Status)
      [:span.pull-right
-      (when (and @(cursor state [:space :valid_until]))
-        (str (t :extra-spaces/Subcriptionexpires) " " (sh/num-days-left @(cursor state [:space :valid_until])) " " (t :badge/days)))]]
+      (when (and @(cursor state [:space :valid_until]) (= "active" @(cursor state [:space :status])))
+        (str (t :extra-spaces/Subcriptionexpires) " " (sh/num-days-left @(cursor state [:space :valid_until])) " " (t :badge/days)))
+      (when (= "expired" @(cursor state [:space :status]))
+        (t :extra-spaces/Subscriptionhasexpired))]]
     [:div.panel-body
      [:div.row
       [:div.col-md-12 {:style {:line-height "3"}}
@@ -257,6 +259,11 @@
                            [button {:func #(update-status state "active") :name (t :extra-spaces/Activate) :type :primary}]
                            [button {:func #(extend-subscription state) :name (t :extra-spaces/Extendsubscription) :type :primary}]
                            [button {:func #(reset! (cursor state [:delete]) true) :name (t :core/Delete) :type :danger}]]]
+             "expired"  [:div.btn-toolbar
+                         (when (pos? (sh/num-days-left  @(cursor state [:space :valid_until])))
+                           [button {:func #(update-status state "active") :name (t :extra-spaces/Activate) :type :primary}])
+                         [button {:func #(extend-subscription state) :name (t :extra-spaces/Extendsubscription) :type :primary}]
+                         [button {:func #(reset! (cursor state [:delete]) true) :name (t :core/Delete) :type :danger}]]
 
              "deleted"    [button {:func #(update-status state "active") :name (t :extra-spaces/Undodelete) :type :primary}]
              [:div])])]]
@@ -342,7 +349,7 @@
 (defn manage-space [state]
   [:div.row
    [manage-status state]
-   (when-not (= "deleted" @(cursor state [:space :status]))
+   (when-not (or (= "deleted" @(cursor state [:space :status])) (= "expired" @(cursor state [:space :status])))
     [:div
      [manage-visibility state nil]
      (when (= "private" @(cursor state [:space :visibility]))

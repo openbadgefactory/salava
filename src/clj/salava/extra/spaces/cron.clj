@@ -27,7 +27,7 @@
    (try+
     (doseq [space deleted-spaces
             :let [days-since-delete (time/no-of-days-passed (long (:mtime space)))]]
-      (when (= days-since-delete 7)
+      (when (>= days-since-delete 7)
        (log/info "Performing hard delete on space id: " (:id space))
        (db/clear-space-data! ctx (:id space))
        (log/info "Finished deleting space info")))
