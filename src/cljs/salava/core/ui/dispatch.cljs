@@ -34,6 +34,7 @@
 (session/put! :factory-url (:factory-url ctx))
 (session/put! :show-terms? (:show-terms? ctx))
 (session/put! :filter-options (:filter-options ctx))
+(session/put! :custom-fields (:custom-fields ctx))
 ;;;
 
 

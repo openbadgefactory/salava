@@ -81,6 +81,7 @@
                    :factory-url     (get-in ctx [:config :factory :url])
                    :show-terms?     (get-in ctx [:config :core :show-terms?] false)
                    :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))
+                   :custom-fields   (get-in ctx [:config :extra/customField :fields] nil)
                    }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 

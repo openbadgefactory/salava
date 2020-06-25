@@ -34,6 +34,11 @@
       [connections]
       [:div ""])))
 
+(defn gender-form-setting []
+ (into [:div]
+   (for [f (plugin-fun (session/get :plugins) "block" "user_gender_form")]
+       [f])))
+
 (defn content [state]
   (let [language-atom (cursor state [:user :language])
         first-name-atom (cursor state [:user :first_name])
@@ -72,6 +77,8 @@
          (t :user/Country)]
         [:div.col-md-9
          [input/country-selector country-atom]]]
+
+       [gender-form-setting]
        (if (:email-notifications @state)
          [:div.form-group
           [:span._label {;:for   "input-email-notifications"

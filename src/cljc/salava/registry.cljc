@@ -31,4 +31,5 @@
                 [salava.profile.ui.routes]
                 [salava.location.ui.routes]
                 [salava.badgeIssuer.ui.routes]
-                [salava.extra.spaces.ui.routes]])))
+                [salava.extra.spaces.ui.routes]
+                [salava.extra.customField.ui.routes]])))
