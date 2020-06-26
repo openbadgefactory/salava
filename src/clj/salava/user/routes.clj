@@ -94,15 +94,15 @@
                         save (u/register-user ctx email first_name last_name country language password password_verify)
                         user-id (u/get-user-by-email ctx email)
                         update-accept-term (u/insert-user-terms ctx (:id user-id) accept_terms)]
-
                     (if (= "error" (:status save))
                        ;return error status from save
                       (ok save)
                       (if (not (private? ctx))
                         (let [invitation (get-in req [:session :invitation] nil)
-                              login-status (assoc (u/login-user ctx email password) :invitation invitation)]
+                              custom-fields (get-in req [:session :custom-fields] nil)
+                              login-status (assoc (u/login-user ctx email password) :invitation invitation :custom-fields custom-fields)]
                           (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (or (= "accepted" (:input update-accept-term)) (= "disabled" (:input update-accept-term))))
-                            (u/finalize-login ctx (assoc-in (ok login-status) [:session :new-user] (:id user-id)) (:id login-status) (get-in req [:session :pending :user-badge-id]) true)
+                            (u/finalize-login ctx (assoc-in (ok login-status) [:session :new-user] (:id user-id) ) (:id login-status) (get-in req [:session :pending :user-badge-id]) true)
                             (ok login-status)))
                         (cond
                           (not (right-token? ctx (:token form-content)))        (forbidden)

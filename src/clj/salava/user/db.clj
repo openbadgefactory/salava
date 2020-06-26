@@ -442,20 +442,29 @@
         identity {:id id :role role :private private :activated activated :last-visited last-visited :expires expires :spaces user-spaces :current-space current-space}]
    (as-> (-> ok-status
              (assoc-in [:session :identity] identity)
-             (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})) $
+             (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})
+             (update-in [:body] dissoc :custom-fields)) $
+
          (if invitation
           (if (get-in ok-status [:body :invitation])
               (update-in $ [:body] dissoc :invitation)
               (dissoc $ :invitation))
-          (merge $ {})))))
+          (merge (update-in $ [:body] dissoc :invitation) {})))))
 
 (defn activate-invited-user-and-verify-email [ctx user-id invitation new-user?]
  (when (and new-user? invitation)
   (update-verify-primary-email-address! {:user_id user-id} (get-db ctx))
   (update-user-activate! {:id user-id} (get-db ctx))))
 
+(defn save-user-custom-fields [ctx user-id custom-fields]
+  (when-let [f (first (plugin-fun (get-plugins ctx) "db" "update-custom-fields"))]
+    (f ctx user-id custom-fields)))
+
+
 (defn finalize-login [ctx ok-res user-id pending-badge-id new-account]
- (let [invitation (get-in ok-res [:body :invitation] (get ok-res :invitation nil))]
+ (let [invitation (get-in ok-res [:body :invitation] (get ok-res :invitation nil))
+       custom-fields (get-in ok-res [:body :custom-fields] nil)]
+  (save-user-custom-fields ctx user-id custom-fields)
   (save-pending-badge-and-email ctx user-id pending-badge-id new-account)
   (activate-invited-user-and-verify-email ctx user-id invitation new-account)
   (send-email-verification-maybe ctx user-id)

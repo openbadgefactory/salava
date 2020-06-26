@@ -22,4 +22,12 @@
                  :auth-rules access/signed
                  :current-user current-user
                  :body-params [gender :- (s/enum "male" "female" "other")]
-                 (ok (db/update-field ctx "gender" gender (:id current-user)))))))
+                 (ok (db/update-field ctx "gender" gender (:id current-user))))
+
+            (POST "/gender/register" req
+                 :summary "Save new user gender"
+                 :body-params [gender :- (s/enum "male" "female" "other")]
+                 :current-user current-user
+                 (-> (ok)
+                     (assoc-in [:session] {:custom-fields {:gender gender}}))))))
+                     ;(assoc :session (assoc (get-in req :session {}) :gender gender)))))))
