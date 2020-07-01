@@ -10,7 +10,7 @@
   (routes
    (context "/obpv1/customField" []
             (GET "/gender" []
-                 :return (s/enum "male" "female" "other")
+                 :return (s/maybe (s/enum "male" "female" "other"))
                  :summary "Get user gender"
                  :auth-rules access/signed
                  :current-user current-user
@@ -29,5 +29,31 @@
                  :body-params [gender :- (s/enum "male" "female" "other")]
                  :current-user current-user
                  (-> (ok)
-                     (assoc-in [:session] {:custom-fields {:gender gender}}))))))
-                     ;(assoc :session (assoc (get-in req :session {}) :gender gender)))))))
+                     (assoc-in [:session :custom-fields]  (merge (get-in req [:session :custom-fields] {}) {:gender gender}))))
+
+            (POST "/org/register" req
+                 :summary "Save new user organization"
+                 :body-params [organization :- s/Str]
+                 :current-user current-user
+                 (-> (ok)
+                     (assoc-in [:session :custom-fields]  (merge (get-in req [:session :custom-fields] {}) {:organization organization}))))
+
+            (POST "/org/list" []
+                  :summary "Get organization list"
+                  :current-user current-user
+                  (ok (db/organizations ctx)))
+
+            (POST "/org/value" []
+                  :return (s/maybe s/Str)
+                  :summary "Get user organization"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (db/custom-field-value ctx "organization" (:id current-user))))
+
+            (POST "/org" []
+                  :return {:status (s/enum "success" "error")}
+                  :summary "set user organization"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  :body-params [org :- s/Str]
+                  (ok (db/update-field ctx "organization" org (:id current-user)))))))

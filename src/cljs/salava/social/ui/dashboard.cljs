@@ -590,12 +590,26 @@
     (for [f (plugin-fun (session/get :plugins) "block" "space_list_dashboard")]
       (when (ifn? f) [f]))))
 
+(defn custom-field-init [state]
+  (as-> (first (plugin-fun (session/get :plugins) "block" "custom_fields_init")) f
+        (when (ifn? f) (f state))))
+
+#_(defn custom-field-modal [state]
+    (as-> (first (plugin-fun (session/get :plugins) "block" "custom_fields_modal")) f
+          (when (ifn? f) (f state))))
+
+(defn custom-field-notice [state]
+  (into [:div]
+    (for [f (plugin-fun (session/get :plugins) "block" "custom_fields_alert")]
+      (when (ifn? f) [f state]))))
+
 (defn content [state]
   [:div#dashboard-container
    [m/modal-window]
    [:h1 {:style {:display "none"}} "Dashboard"]
    (if (not-activated?)
      (not-activated-banner))
+   [custom-field-notice state]
    [welcome-block state]
    [:div.row
     [:div [layout/space-info-banner]]]
@@ -609,6 +623,7 @@
     [help-block]]
    [:div.row.flip
     [space-list]]])
+
 
 (defn new-user-oauth []
   (let [[service _] (-> (clojure.string/split js/window.location.search #"&"))
@@ -629,4 +644,6 @@
                      :arrow-class "fa-angle-down"})]
     (new-user-oauth)
     (init-dashboard state)
-    (fn [] (layout/dashboard site-navi [content state]))))
+    (custom-field-init state)
+    (fn []
+     (layout/dashboard site-navi [content state]))))

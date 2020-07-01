@@ -49,7 +49,7 @@
                 (when-not (empty? (session/get-in [:user :current-space :css] nil))
                   (stylyze))
                 (when (:error @state)
-                  (m/modal! [upload-modal {:status "error" :message "extra-spaces/Invitelinkeerror" }])))})) {}
+                  (m/modal! [upload-modal {:status "error" :message "extra-spaces/Invitelinkeerror" }] {})))}))
 
 
 (defn leave-organization [id state current-space?]

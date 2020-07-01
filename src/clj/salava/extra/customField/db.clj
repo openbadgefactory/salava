@@ -21,3 +21,6 @@
 (defn update-custom-fields [ctx user-id custom-fields]
   (doseq [field (keys custom-fields)]
     (update-field ctx (name field) (field custom-fields) user-id)))
+
+(defn organizations [ctx]
+  (select-organizations {} (get-db ctx)))

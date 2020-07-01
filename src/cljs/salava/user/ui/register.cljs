@@ -172,8 +172,8 @@
          [:span.form-required " *"]]
         [:div {:class (str "form-bar " (if (input/country-valid? @country-atom) "form-bar-success" "form-bar-error"))}
          [input/country-selector country-atom]]]
-       (custom-fields "user_gender_form_register" state)
-       #_[gender-field]]]
+       (custom-fields "user_gender_field_register" state)
+       (custom-fields "org_field_register" state)]]
 
      [:button {:class "btn btn-primary col-sm-4 col-sm-offset-4 col-xs-8 col-xs-offset-2 management-links"
                :on-click #(do

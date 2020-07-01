@@ -8,11 +8,11 @@
 
 (def genders ["male" "female" "other"])
 
-(defn init-user-gender [state]
+(defn init-field-value [field-atom]
   (ajax/GET
    (path-for "/obpv1/customField/gender" true)
    {:handler (fn [data]
-               (reset! (cursor state [:gender]) data))}))
+               (reset! field-atom #_(cursor state [:gender]) data))}))
 
 (defn update-gender-setting [gender state]
   (reset! (cursor state [:gender]) gender)
@@ -21,7 +21,7 @@
    {:params {:gender gender}
     :handler (fn [data]
                (when (= "success" (:status data))
-                 (init-user-gender state)))}))
+                 (init-field-value (cursor state [:gender]))))}))
 
 (defn save-new-user-gender [gender state]
  (reset! (cursor state [:gender]) gender)
@@ -30,7 +30,7 @@
   {:params {:gender gender}
    :handler (fn [data])}))
 
-(defn gender-form-registration [form-state]
+(defn gender-field-registration [form-state]
   (let [visible (h/field-enabled? "gender")
         compulsory-field? (h/compulsory-field? "gender")
         state (atom {:visible visible :compulsory? compulsory-field? :gender ""})]
@@ -54,18 +54,15 @@
                                   :checked (= @gender-atom value)
                                   :on-change  #(do
                                                  (swap! (cursor form-state [:custom-fields]) assoc :gender value)
-                                                 (prn @(cursor form-state [:custom-fields]))
                                                  (save-new-user-gender value state))
                                   :id (str "language-" value)}]
 
                          (t (keyword (str "extra-customField/" value)))]) genders))]]])))))
 
-(defn gender-form-modal [])
-
-(defn gender-form []
+(defn gender-field []
  (let [visible (h/field-enabled? "gender")
        state (atom {:gender nil :visible visible})]
-   (init-user-gender state)
+   (init-field-value (cursor state [:gender]))
    (fn []
      (let [gender-atom (cursor state [:gender])
            visible (cursor state [:visible])]
@@ -86,3 +83,10 @@
                                   :id (str "language-" value)}]
 
                          (t (keyword (str "extra-customField/" value)))]) genders))]])))))
+
+(defn ^:export init_field_value [field-atom]
+  (ajax/GET
+   (path-for "/obpv1/customField/gender" true)
+   {:handler (fn [data]
+               (reset! field-atom data))
+    :finally (fn [])}))

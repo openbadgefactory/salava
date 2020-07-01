@@ -19,11 +19,11 @@
   (let [schema (if (compulsory-field? field)
                  (case field
                   "gender" schemas/gender*
-                  nil)
+                  "organization" schemas/organization*)
                  (case field
                   "gender" schemas/gender
+                  "organization" schemas/organization
                   nil))]
-     (prn schema "fdfd" field (compulsory-field? field) value)
-    (when-not (input-valid? schema value)
-      (reset! error-atom (t (keyword (str "extra-customField/" field "fielderror"))))
-      false)))
+    (when (and (not (input-valid? schema value)) error-atom)
+      (reset! error-atom (t (keyword (str "extra-customField/" field "fielderror")))))
+    (input-valid? schema value)))
