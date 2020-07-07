@@ -21,6 +21,7 @@
                     :status (s/enum "active" "suspended")
                     (s/optional-key :css) (:css space-properties)
                     (s/optional-key :admins) [s/Int]
+                    (s/optional-key  :valid_until) s/Str
                     :ctime s/Int
                     :mtime s/Int})
 

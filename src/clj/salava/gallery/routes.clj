@@ -167,6 +167,17 @@
                   (ok {:users     (g/public-profiles-context ctx search-params (:id current-user) user_badge_id context)
                        :countries (g/profile-countries ctx (:id current-user))}))
 
+            (POST "/profiles/all" []
+                  :no-doc true
+                  :return {:users     [schemas/UserProfiles]
+                           :countries [schemas/Countries]}
+                  :body [search-params schemas/UserSearch]
+                  :summary "Get profiles with pagination"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (ok {:users     (g/profiles-all ctx search-params)
+                       :countries (g/profile-countries ctx (:id current-user))}))
+
             (GET "/user_owns_badge/:badge_id" []
                  :return s/Bool
                  :path-params [badge_id :- s/Str]

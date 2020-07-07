@@ -114,8 +114,10 @@
     [:div.well.well-sm (t :extra-spaces/Notjoinedanyorg)])))
 
 (defn next-url [space]
+  (prn "sdasdadas")
   (let [current-path (current-route-path)
         admin? (= (:role space) "admin")]
+    (prn current-path)
     (if admin?
       current-path
       (if (clojure.string/starts-with? current-path "/space") "/social" current-path))))

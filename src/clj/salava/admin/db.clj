@@ -200,7 +200,6 @@
          "error")))
 
 (defn get-stats [ctx last-login]
-  (prn (space-stats ctx last-login))
   (try+
    (-> {:users (user-stats ctx last-login)
         :userbadges (badge-stats ctx last-login)
@@ -535,3 +534,7 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
 (defn update-admin-to-user [ctx user-id]
   (log/info "admin set user-id:" user-id "to admin.")
   (update-admin-to-user! {:id user-id} (get-db ctx)))
+
+(defn apply-custom-filters [ctx filters users]
+ (as-> (first (plugin-fun (get-plugins ctx) "db" "apply-custom-filters-users")) $
+       (when $ ($ ctx filters users))))

@@ -62,10 +62,12 @@
                   :summary "User logs in"
                   (let [{:keys [email password]} login-content
                         accepted-terms? (u/accepted-terms? ctx email)
+                        invitation (get-in req [:session :invitation] nil)
                         login-status (-> (u/login-user ctx email password)
                                          (assoc :terms accepted-terms?)
-                                         (assoc :redirect-to (get-in req [:cookies "login_redirect" :value]))
-                                         (assoc :invitation (get-in req [:session :invitation] nil)))]
+                                         (assoc :redirect-to (get-in req [:cookies "login_redirect" :value])))
+                        login-status (if invitation (assoc login-status :invitation invitation) login-status)]
+
                     (if (= "success" (:status login-status))
                       (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]) false)
                       (ok login-status))))

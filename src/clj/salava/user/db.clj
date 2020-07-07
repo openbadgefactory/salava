@@ -444,12 +444,12 @@
              (assoc-in [:session :identity] identity)
              (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})
              (update-in [:body] dissoc :custom-fields)) $
-
          (if invitation
           (if (get-in ok-status [:body :invitation])
               (update-in $ [:body] dissoc :invitation)
               (dissoc $ :invitation))
           (merge (update-in $ [:body] dissoc :invitation) {})))))
+
 
 (defn activate-invited-user-and-verify-email [ctx user-id invitation new-user?]
  (when (and new-user? invitation)
@@ -464,11 +464,12 @@
 (defn finalize-login [ctx ok-res user-id pending-badge-id new-account]
  (let [invitation (get-in ok-res [:body :invitation] (get ok-res :invitation nil))
        custom-fields (get-in ok-res [:body :custom-fields] nil)]
-  (save-user-custom-fields ctx user-id custom-fields)
+  (when custom-fields (save-user-custom-fields ctx user-id custom-fields))
   (save-pending-badge-and-email ctx user-id pending-badge-id new-account)
   (activate-invited-user-and-verify-email ctx user-id invitation new-account)
   (send-email-verification-maybe ctx user-id)
   (set-session ctx ok-res user-id)))
+
 
 ;; --- Email sender --- ;;
 

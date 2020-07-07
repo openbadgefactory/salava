@@ -291,7 +291,9 @@
                                          :country  (s/maybe s/Str)
                                          :order_by (s/enum "name" "ctime" "common_badge_count")
                                          :email    (s/maybe s/Str)
-                                         :filter   (s/enum 1 0)}]
+                                         :filter   (s/enum 1 0)
+                                         (s/optional-key :custom-field-filters) (s/maybe {(s/optional-key :gender) (s/maybe (s/enum "male" "female" "other" "notset"))
+                                                                                          (s/optional-key :organization) (s/maybe s/Str)})}]
                    :summary "Get public user profiles"
                    :auth-rules access/admin
                    :current-user current-user
@@ -300,6 +302,9 @@
                          countries (a/profile-countries ctx (:id current-user))
                          accepted-terms-fn (first (plugin-fun (get-plugins ctx) "db" "get-accepted-terms-by-id"))
                          users-with-terms (map #(-> %
-                                                    (assoc :terms (:status (accepted-terms-fn ctx (:id %))))) users)]
-                     (ok {:users     (vec users-with-terms)
+                                                    (assoc :terms (:status (accepted-terms-fn ctx (:id %))))) users)
+                         users-with-custom-field-filters (if (empty? (:custom-field-filters search-params))
+                                                             (vec users-with-terms)
+                                                             (a/apply-custom-filters ctx (:custom-field-filters search-params) (vec users-with-terms)))]
+                     (ok {:users     (vec users-with-custom-field-filters)
                           :countries countries}))))))

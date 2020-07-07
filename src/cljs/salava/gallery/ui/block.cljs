@@ -171,6 +171,16 @@
                  [:span common_badge_count " " (if (= common_badge_count 1)
                                                  (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]]]])))
 
+(defn select-all-checkbox [state]
+  (let [select-all (cursor state [:select-all?])]
+    [:div.checkbox
+     [:label
+      [:input {:type "checkbox"
+               :checked @select-all
+               :on-change #(do
+                             (reset! select-all  (not @select-all)))}]
+      [:b (str (t :core/Selectall))]]]))
+
 (defn allprofilesmodal [params]
   (let [country (session/get-in [:user :country] "all")
         filter-options (session/get :filter-options nil)
@@ -186,15 +196,22 @@
                          :country-selected (session/get-in [:filter-options :country] country)
                          :user_badge_id user_badge_id
                          :context context
-                         :url (if (= context "endorsement")
+                         :url (case context
+                                "endorsement" (str "/obpv1/gallery/profiles/" user_badge_id "/" context)
+                                "space_members_modal" (str "/obpv1/gallery/profiles/all")
+                                (str "/obpv1/gallery/profiles"))
+                            #_(if (= context "endorsement")
                                (str "/obpv1/gallery/profiles/" user_badge_id "/" context)
                                (str "/obpv1/gallery/profiles"))
                          :sent-requests []
                          :email ""})]
+    (prn context (:url @data-atom))
     (create-class {:reagent-render (fn []
                                      [:div
                                       [:div {:id "social-tab"}
-                                       [profiles/profile-gallery-grid-form data-atom true]
+                                       (if (= context  "space_members_modal")
+                                         [profiles/profile-gallery-grid-form data-atom true {:email-filter true :select-all true}]
+                                         [profiles/profile-gallery-grid-form data-atom true])
                                        (if (:ajax-message @data-atom)
                                          [:div.ajax-message
                                           [:i {:class "fa fa-cog fa-spin fa-2x "}]
@@ -211,6 +228,12 @@
                                                         [:p (t :extra-spaces/AboutAdmins2)]
                                                         [:hr.line]])
 
+                                                     (when (= "space_members_modal" context)
+                                                       [:div.col-md-12 {:style {:margin "20px auto" :padding "10px" :background-color "ghostwhite"}}
+                                                        [:hr.line]
+                                                        [:p "found " (count (:users @data-atom)) " users"]
+                                                        [select-all-checkbox data-atom]
+                                                        [:hr.line]])
                                                      (when (or (= "endorsement_selfie" context)(= "endorsement" context))
                                                        [:div.col-md-12 {:style {:font-weight "bold"}}
                                                         [:hr.line]
@@ -256,7 +279,7 @@
                                                            (filter #(every? nil? (-> % :endorsement vals))))
                                                       (= "selfie_issue" context)
                                                       (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id]))))
-                                                      (= "space_admins_modal" context)
+                                                      (or (= "space_admins_modal" context) (= "space_members_modal" context))
                                                       (remove (fn [u] (some #(= (:id u) (:id %)) @existing-users-atom)) @(cursor data-atom [:users]))
                                                       :else
                                                       @(cursor data-atom [:users]))
@@ -308,9 +331,10 @@
 
                    :component-will-mount (fn []
                                            (ajax/POST
-                                            (if (= context "endorsement")
-                                              (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
-                                              (path-for (str "/obpv1/gallery/profiles")))
+                                            (path-for (:url @data-atom))
+                                            #_(if (= context "endorsement")
+                                                (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
+                                                (path-for (str "/obpv1/gallery/profiles")))
                                             {:params {:country (session/get-in [:filter-options :country] country)
                                                       :name ""
                                                       :common_badges common-badges?

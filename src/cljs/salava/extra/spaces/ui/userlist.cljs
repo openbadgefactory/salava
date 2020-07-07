@@ -3,7 +3,7 @@
   [reagent.session :as session]
   [reagent.core :refer [atom cursor]]
   [reagent-modals.modals :as m]
-  [salava.core.ui.helper :refer [path-for unique-values]]
+  [salava.core.ui.helper :refer [path-for unique-values plugin-fun]]
   [salava.core.ui.layout :as layout]
   [salava.core.ui.modal :as mo]
   [salava.core.ui.ajax-utils :as ajax]
@@ -50,14 +50,21 @@
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
    {:value "name" :id "radio-name" :label (t :core/byname)}])
 
+(defn custom-field-filters [field state]
+  (into [:div]
+    (for [f (plugin-fun (session/get :plugins) field "custom_field_filter_space")]
+       (when f [f state :users nil])))) ;(:users @state)]))))
+
 (defn grid-form [state]
  [:div#grid-filter.form-horizontal
   [g/grid-search-field (t :core/Search ":") "usersearch" (t :core/Searchbyname) :search state]
   [g/translated-grid-buttons  (t :extra-spaces/Role ":") (unique-values :role @(cursor state [:users]))  "role-selected" "role-all" state "extra-spaces"]
-  [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]])
+  [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]
+  [custom-field-filters "gender" state]])
 
 (defn element-visible? [element state]
   (if (and
+       (or (= (select-keys element (keys (:custom-field-filters @state))) (:custom-field-filters @state)))
        (or (> (count
                (clojure.set/intersection
                 (into #{} (:role-selected @state))
@@ -86,45 +93,58 @@
     [:div.panel.panel-default
      [:div.panel-heading.weighted]
 
-     [:table {:class "table" :summary (t :badge/Issuers)}
-      [:thead
-       [:tr
-        [:th {:style {:display "none"}}  "Logo"]
-        [:th {:style {:display "none"}} (t :badge/Name)]
-        [:th {:style {:display "none"}} "role"]
-        [:th {:style {:display "none"}} "status"]
-        [:th {:style {:display "none"}} "Action"]]]
-      (into [:tbody]
-        (for [user users
-              :let [{:keys [id profile_picture first_name last_name role space_id status]} user
-                    name (str first_name " " last_name)
-                    member-admin? (= role "admin")
-                    pending-member? (= "pending" status)
-                    member? (= "accepted" status)]]
-          (when (element-visible? user state)
-            [:tr
-              [:td  [:img {:style {:width "40px" :height "40px"} :alt "" :src (profile-picture profile_picture)}]]
-              [:td.text-center {:style {:vertical-align "middle"}} [:a {:href "#" :on-click #(do
-                                                                                               (.preventDefault %)
-                                                                                               (mo/open-modal [:profile :view] {:user-id id}))}
-                                                                    name]]
-              [:td {:style {:vertical-align "middle"}} (when member-admin? [:span.label.label-danger (t :extra-spaces/admin)])]
-              [:td {:style {:vertical-align "middle"}} (when pending-member? [:span.label.label-info (t :extra-spaces/pendingmembership)])]
-              [:td {:style {:text-align "end"}}
-               [:div.btn-group
-                 [:button.btn-primary.btn.btn-bulky.dropdown-toggle
-                  {:type "button"
-                   :data-toggle "dropdown"
-                   :aria-haspopup true
-                   :aria-expanded false
-                   :disabled (and (= 1 (count users)) (= id (session/get-in [:user :id])))}
-                  (t :extra-spaces/Manage) " " [:span.caret]]
-                ^{:key id} (as-> [:ul.dropdown-menu] $
-                                 (if pending-member? (conj $ [:li [:a {:href "#" :on-click #(accept-member! id state)} (t :extra-spaces/Acceptrequest)]]) (conj $ nil))
-                                 (if pending-member? (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Declinerequest)]]) (conj $ nil))
-                                 (if (and member? (not= 1 (count users))) (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Removemember)]]) (conj $ nil))
-                                 (if (and member? member-admin?) (conj $ [:li [:a {:href "#" :on-click #(downgrade-member! id state)} (t :extra-spaces/Downgradetomember)]]) (conj $ nil))
-                                 (if (and member? (not member-admin?)) (conj $ [:li [:a {:href "#" :on-click #(upgrade-member! id state)} (t :extra-spaces/Upgradetoadmin)]]) (conj $ nil)))]]])))]]]]))
+     [:div.user-list-content [:table.table.table-responsive ;{:class "table" :summary (t :badge/Issuers)}
+                              [:thead
+                               [:tr
+                                [:th {:style {:display "none"}}  "Logo"]
+                                [:th {:style {:display "none"}} (t :badge/Name)]
+                                [:th {:style {:display "none"}} "role"]
+                                [:th {:style {:display "none"}} "status"]
+                                [:th {:style {:display "none"}} "Action"]]]
+                              (into [:tbody]
+                                (for [user users
+                                      :let [{:keys [id profile_picture first_name last_name role space_id status]} user
+                                            name (str first_name " " last_name)
+                                            member-admin? (= role "admin")
+                                            pending-member? (= "pending" status)
+                                            member? (= "accepted" status)]]
+                                  (when (element-visible? user state)
+                                    [:tr
+                                      [:td  [:img {:style {:width "40px" :height "40px"} :alt "" :src (profile-picture profile_picture)}]]
+                                      [:td.text-center {:style {:vertical-align "middle"}} [:a {:href "#" :on-click #(do
+                                                                                                                       (.preventDefault %)
+                                                                                                                       (mo/open-modal [:profile :view] {:user-id id}))}
+                                                                                            name]]
+                                      [:td {:style {:vertical-align "middle"}} (when member-admin? [:span.label.label-danger (t :extra-spaces/admin)])]
+                                      [:td {:style {:vertical-align "middle"}} (when pending-member? [:span.label.label-info (t :extra-spaces/pendingmembership)])]
+                                      [:td {:style {:text-align "end"}}
+                                       [:div.btn-group
+                                         [:button.btn-primary.btn.btn-bulky.dropdown-toggle
+                                          {:type "button"
+                                           :data-toggle "dropdown"
+                                           :aria-haspopup true
+                                           :aria-expanded false
+                                           :disabled (and (= 1 (count users)) (= id (session/get-in [:user :id])))}
+                                          (t :extra-spaces/Manage) " " [:span.caret]]
+                                        ^{:key id} (as-> [:ul.dropdown-menu] $
+                                                         (if pending-member? (conj $ [:li [:a {:href "#" :on-click #(accept-member! id state)} (t :extra-spaces/Acceptrequest)]]) (conj $ nil))
+                                                         (if pending-member? (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Declinerequest)]]) (conj $ nil))
+                                                         (if (and member? (not= 1 (count users))) (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Removemember)]]) (conj $ nil))
+                                                         (if (and member? member-admin?) (conj $ [:li [:a {:href "#" :on-click #(downgrade-member! id state)} (t :extra-spaces/Downgradetomember)]]) (conj $ nil))
+                                                         (if (and member? (not member-admin?)) (conj $ [:li [:a {:href "#" :on-click #(upgrade-member! id state)} (t :extra-spaces/Upgradetoadmin)]]) (conj $ nil)))]]])))]]
+     [:div.panel-footer
+        [:a {:href "#"
+             :on-click #(do
+                          (.preventDefault %)
+                          (mo/open-modal [:gallery :profiles]
+                           {:type "pickable"
+                            :selected-users-atom (cursor state [:new-users])
+                            :existing-users-atom (cursor state [:users])
+                            :context "space_members_modal"} {}))}
+
+         [:span [:i.fa.fa-user-plus.fa-fw.fa-lg {:style {:vertical-align "baseline"}}] " " (t :extra-spaces/Addmembers)]]]]]]))
+
+
 
 (defn content [state]
  [:div#space.user-list
@@ -138,7 +158,9 @@
                     :id (:id current-space)
                     :role-selected []
                     :role-all true
-                    :order "mtime"})]
+                    :order "mtime"
+                    :custom-field-filters {}
+                    :new-users []})]
 
    (init-data state)
    (fn []

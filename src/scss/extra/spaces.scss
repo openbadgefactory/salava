@@ -116,6 +116,15 @@ div.input-banner {
 }
 
 #space {
+  .user-list.modal-view{
+    ._label {
+      min-width: unset;
+    }
+  }
+  .user-list .user-list-content {
+    max-height: 900px;
+    overflow: auto;
+  }
   .space-img {
     width: 80px;
     height: auto;

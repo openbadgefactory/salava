@@ -186,4 +186,4 @@ UPDATE space SET last_modified_by = :admin WHERE id = :id
 SELECT name, id, valid_until FROM space WHERE status != "expired" AND valid_until < UNIX_TIMESTAMP()
 
 --name: extend-space-subscription!
-UPDATE space SET valid_until = :time, last_modified_by = :admin WHERE id = :id
+UPDATE space SET valid_until = :time, last_modified_by = :admin, mtime = UNIX_TIMESTAMP() WHERE id = :id

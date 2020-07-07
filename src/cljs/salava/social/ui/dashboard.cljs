@@ -40,6 +40,7 @@
                (swap! state merge data))})
   (stream/init-data state))
 
+
 (defn selfie-issue-event [event state]
   (let [{:keys [event_id subject verb image_file message ctime event_id name object first_name last_name profile_picture]}  event]
     [:div {:style {:height "100%"}}
@@ -594,10 +595,6 @@
   (as-> (first (plugin-fun (session/get :plugins) "block" "custom_fields_init")) f
         (when (ifn? f) (f state))))
 
-#_(defn custom-field-modal [state]
-    (as-> (first (plugin-fun (session/get :plugins) "block" "custom_fields_modal")) f
-          (when (ifn? f) (f state))))
-
 (defn custom-field-notice [state]
   (into [:div]
     (for [f (plugin-fun (session/get :plugins) "block" "custom_fields_alert")]
@@ -606,10 +603,11 @@
 (defn content [state]
   [:div#dashboard-container
    [m/modal-window]
+
    [:h1 {:style {:display "none"}} "Dashboard"]
    (if (not-activated?)
      (not-activated-banner))
-   [custom-field-notice state]
+   #_[custom-field-notice state]
    [welcome-block state]
    [:div.row
     [:div [layout/space-info-banner]]]
@@ -641,9 +639,12 @@
                      :connections {:badges 0}
                      ;:pages_count 0
                      ;:files_count 0
-                     :arrow-class "fa-angle-down"})]
+                     :arrow-class "fa-angle-down"
+                     :custom-fields nil})]
+                     ;:show-custom-field-alert? false})]
     (new-user-oauth)
+    #_(custom-field-init state)
     (init-dashboard state)
-    (custom-field-init state)
+
     (fn []
      (layout/dashboard site-navi [content state]))))

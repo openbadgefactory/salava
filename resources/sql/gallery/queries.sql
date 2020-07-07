@@ -402,3 +402,39 @@ SELECT COUNT(id) AS users_count FROM user WHERE location_lng IS NOT NULL AND loc
 
 --name: select-user-owns-badge-id
 SELECT user_id FROM user_badge WHERE gallery_id = :gallery_id AND user_id = :user_id AND status != 'declined' AND deleted = 0 AND revoked = 0
+
+--name: select-all-profile-ids-name
+SELECT DISTINCT id FROM user u
+WHERE CONCAT(first_name, ' ', last_name) LIKE :name AND deleted = 0 AND activated = 1
+ORDER BY ctime DESC
+LIMIT 100000;
+
+--name: select-all-profile-ids-email
+SELECT DISTINCT u.id FROM user u
+JOIN user_email ue ON u.id= ue.user_id
+WHERE u.id IN (SELECT user_id FROM user_email WHERE email LIKE :email) AND u.deleted = 0 AND u.activated = 1
+ORDER BY u.ctime DESC
+LIMIT 100000;
+
+--name: select-profiles-count
+SELECT COUNT(DISTINCT u.id) AS total
+FROM user u
+WHERE u.deleted = 0 AND u.activated= 1 AND (:country = 'all' OR u.country = :country);
+
+--name: select-profiles-all
+SELECT id, first_name, last_name, country, profile_picture, ctime
+FROM user
+WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1 AND (:country = 'all' OR country= :country)
+ORDER BY
+ CASE WHEN :order='name'  THEN last_name, first_name END,
+ CASE WHEN :order='ctime' THEN ctime END DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-profiles-filtered
+SELECT id, first_name, last_name, country, profile_picture, ctime
+FROM user
+WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1 AND (:country = 'all' OR country= :country) AND id IN (:ids)
+ORDER BY
+ CASE WHEN :order='name'  THEN last_name, first_name END,
+ CASE WHEN :order='ctime' THEN ctime END DESC
+LIMIT :limit OFFSET :offset

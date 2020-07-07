@@ -1,18 +1,19 @@
 (ns salava.extra.spaces.ui.modal
   (:require
-    [clojure.string :refer [blank?]]
+    [clojure.string :refer [blank? join split]]
     [reagent.core :refer [cursor atom]]
     [reagent-modals.modals :as m]
     [salava.core.ui.ajax-utils :as ajax]
     [salava.core.ui.modal :as mo]
     [salava.core.ui.helper :refer [path-for js-navigate-to current-route-path]]
     [salava.core.i18n :refer [t]]
-    [salava.core.time :refer [date-from-unix-time]]
+    [salava.core.time :refer [date-from-unix-time iso8601-to-unix-time]]
     [salava.extra.spaces.ui.creator :as creator]
     [salava.extra.spaces.ui.helper :as sh :refer [button]]
     [salava.extra.spaces.ui.invitelink :refer [invite-link]]
     [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]
-    [reagent.session :as session]))
+    [reagent.session :as session]
+    [salava.extra.spaces.ui.userlist :as ul]))
 
 (defn check-membership [id state]
  (ajax/POST
@@ -20,20 +21,30 @@
   {:handler (fn [data]
               (swap! state assoc :member_info data))}))
 
+(defn init-member-list [id state]
+  (ajax/POST
+   (path-for (str "/obpv1/spaces/userlist/" id) true)
+   {:handler (fn [data]
+               (swap! state assoc :users data))}))
+
 (defn init-data [id state]
   (ajax/GET
     (path-for (str "/obpv1/spaces/"id))
     {:handler (fn [data]
                 (swap! state assoc :space data :member_info nil)
-                (check-membership id state))}))
+                (check-membership id state)
+                (init-member-list id state))}))
 
 (defn extend-subscription [state]
-  (let [id @(cursor state [:space :id])]
+  (let [id @(cursor state [:space :id])
+        valid_until @(cursor state [:space :valid_until])]
     (ajax/POST
-      (path-for (str "/obpv1/spaces/extend/" id)) ;true)
-      {:handler (fn [data]
-                  (when (= (:status data) "success")
-                    (init-data id state)))})))
+          (path-for (str "/obpv1/spaces/extend/" id)) ;true)
+          {:params {:valid_until  (iso8601-to-unix-time valid_until)}
+           :handler (fn [data]
+                      (when (= (:status data) "success")
+                        (reset! (cursor state [:show-date-input]) false)
+                        (init-data id state)))})))
 
 (defn join-space [id state]
   (ajax/POST
@@ -122,11 +133,17 @@
                         (str "/" banner))}]])))
 
 (defn view-space [state]
-  (let [{:keys [name description ctime status alias css]} @(cursor state [:space])
+  (let [{:keys [name description ctime status alias css visibility]} @(cursor state [:space])
         {:keys [p-color s-color t-color]} css]
     [:div {:style {:line-height "2.5"}}
       [space-banner state]
       [:h1.uppercase-header {:style {:word-break "break-word"}} name]
+      [:div.well.well-sm ;{:style {:margin "10px 0"}}
+       (case visibility
+        "private" [:div [:i.fa.fa-user-secret.fa-lg] " " [:span [:b (t :extra-spaces/Privatespaceinfo2)]]]
+        "controlled" [:div [:i.fa.fa-user-plus.fa-lg] " " [:span [:b (t :extra-spaces/Controlledspaceinfo)]]]
+        "open" [:div [:i.fa.fa-unlock.fa-lg] " " [:span [:b  (t :extra-spaces/Openspaceinfo)]]]
+        [:div])]
       [:p [:b description]]
       [:div [:span._label (str (t :extra-spaces/Alias) ":  ")] alias]
       [:div [:span._label (str (t :extra-spaces/createdon) ":  ")] (date-from-unix-time (* 1000 ctime))]
@@ -230,39 +247,52 @@
                        (reset! (cursor state [:new-admins]) []))}
          (t :core/Delete)]]])]]])
 
+(defn- process-time [time]
+ (if (string? time)
+   time
+   (let [t  (as-> (date-from-unix-time (* time 1000)) $
+                  (split $ ".")
+                  (reverse $))]
+       (->> t (map #(if (= 1 (count %)) (str "0"%) %)) (join "-")))))
+
 (defn manage-status [state]
+ (let [validity-atom (cursor state [:space :valid_until])
+       valid_until (if (number? @validity-atom) @validity-atom (iso8601-to-unix-time @validity-atom))]
   [:div#space-gallery.form-group
    [:div.panel.panel-default
     [:div.panel-heading.weighted
      (t :extra-spaces/Status)
      [:span.pull-right
       (when (and @(cursor state [:space :valid_until]) (= "active" @(cursor state [:space :status])))
-        (str (t :extra-spaces/Subcriptionexpires) " " (sh/num-days-left @(cursor state [:space :valid_until])) " " (t :badge/days)))
+        (str (t :extra-spaces/Subcriptionexpires) " " (sh/num-days-left valid_until) " " (t :badge/days)))
       (when (= "expired" @(cursor state [:space :status]))
         (t :extra-spaces/Subscriptionhasexpired))]]
     [:div.panel-body
      [:div.row
       [:div.col-md-12 {:style {:line-height "3"}}
-       [:div.blob {:class @(cursor state [:space :status])}] [:span.weighted @(cursor state [:space :status])]
+       [:div.blob {:class @(cursor state [:space :status])}]
+       [:span.weighted @(cursor state [:space :status])
+        (when (and @(cursor state [:space :valid_until]) (= @(cursor state [:space :status]) "active"))
+         (str " " (t :extra-spaces/until) " " (date-from-unix-time (* 1000 valid_until))))]
        (when-not @(cursor state [:delete])
          [:div.pull-right
 
           (case @(cursor state [:space :status])
             "active" [:div.btn-toolbar
                       [:div.btn-group
-                       [button {:func #(extend-subscription state) :name (t :extra-spaces/Extendsubscription) :type :primary}]
+                       [button {:func #(reset! (cursor state [:show-date-input]) true) :name (t :extra-spaces/Extendsubscription) :type :primary}]
                        [button {:func #(update-status state "suspended") :name (t :extra-spaces/Suspend) :type :warning}]
                        [button {:func #(reset! (cursor state [:delete]) true) :name (t :core/Delete) :type :danger}]]]
 
              "suspended" [:div.btn-toolbar
                           [:div.btn-group
                            [button {:func #(update-status state "active") :name (t :extra-spaces/Activate) :type :primary}]
-                           [button {:func #(extend-subscription state) :name (t :extra-spaces/Extendsubscription) :type :primary}]
+                           [button {:func #(reset! (cursor state [:show-date-input]) true) :name (t :extra-spaces/Extendsubscription) :type :primary}]
                            [button {:func #(reset! (cursor state [:delete]) true) :name (t :core/Delete) :type :danger}]]]
              "expired"  [:div.btn-toolbar
                          (when (pos? (sh/num-days-left  @(cursor state [:space :valid_until])))
                            [button {:func #(update-status state "active") :name (t :extra-spaces/Activate) :type :primary}])
-                         [button {:func #(extend-subscription state) :name (t :extra-spaces/Extendsubscription) :type :primary}]
+                         [button {:func #(reset! (cursor state [:show-date-input]) true) :name (t :extra-spaces/Extendsubscription) :type :primary}]
                          [button {:func #(reset! (cursor state [:delete]) true) :name (t :core/Delete) :type :danger}]]
 
              "deleted"    [button {:func #(update-status state "active") :name (t :extra-spaces/Undodelete) :type :primary}]
@@ -276,7 +306,27 @@
          [:div.btn-toolbar.text-center
           [:div.btn-group {:style {:float "unset"}}
            [button {:func #(reset! (cursor state [:delete]) false) :name (t :core/Cancel) :type :primary}]
-           [button {:name (t :core/Delete) :func #(delete-space! state) :type :danger :data-dismiss "modal"}]]]])]]])
+           [button {:name (t :core/Delete) :func #(delete-space! state) :type :danger :data-dismiss "modal"}]]]])
+
+     (when @(cursor state [:show-date-input])
+      [:div.row
+       [:div.col-md-12
+        [:div.input-group
+           [:input.form-control
+            {:style {:max-width "unset"}
+             :type "date"
+             :id "date"
+             :value (process-time @(cursor state [:space :valid_until]))
+             :on-change #(do
+                           (reset! (cursor state [:space :valid_until]) (.-target.value %)))}]
+           [:span.input-group-btn
+            [:button.btn.btn-primary.input-btn
+             {:type "button"
+              :style {:margin-top  "unset"}
+              :on-click #(extend-subscription state)
+              :disabled (number? @(cursor state [:space :valid_until]))}
+             "OK"]]]]])]]]))
+
 
 (defn visibility-form [state init-fn]
  (let [site-name (session/get :site-name)
@@ -356,6 +406,11 @@
        [invite-link (select-keys (:space @state) [:id :name :alias])])
      [manage-admins state]])])
 
+(defn memberlist [state]
+ [:div#space.user-list.modal-view
+  [ul/grid-form state]
+  [ul/user-list state]])
+
 (defn space-navi [state]
  (let [disable-link (when (= "deleted" @(cursor state [:space :status])) "btn disabled")]
   [:div.row.flip-table
@@ -368,15 +423,12 @@
        [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 2 (:tab-no @state))) "active")}
         [:a.nav-link {:class disable-link :href "#" :on-click #(swap! state assoc :tab [edit-space state]  :tab-no 2)}
          [:div  [:i.nav-icon.fa.fa-edit.fa-lg] (t :extra-spaces/Edit)]]]
-       #_[:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 3 (:tab-no @state))) "active")}
-          [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [edit-space state]  :tab-no 3)}
-           [:div  [:i.nav-icon.fa.fa-cog.fa-lg] (t :extra-spaces/Manage)]]]
        [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 4 (:tab-no @state))) "active")}
         [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [manage-space state]  :tab-no 4)}
          [:div  [:i.nav-icon.fa.fa-cogs.fa-lg] (t :extra-spaces/Manage)]]]
-       #_[:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 5 (:tab-no @state))) "active")}
-          [:a.nav-link {:class disable-link :href "#" :on-click #(swap! state assoc :tab [delete-space-content state] :tab-no 5)}
-           [:div  [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]]]))
+       [:li.nav-item {:class  (if (or (nil? (:tab-no @state)) (= 5 (:tab-no @state))) "active")}
+        [:a.nav-link {:class disable-link :href "#" :on-click #(swap! state assoc :tab [memberlist state] :tab-no 5)}
+         [:div  [:i.nav-icon {:class "fa fa-users fa-lg"}] (t :extra-spaces/Members)]]]]]]))
 
 (defn membership-btn [state]
  (let [current-space (session/get-in [:user :current-space])
@@ -422,7 +474,7 @@
          (case (:tab-no @state)
            2 [edit-space state]
            4 [manage-space state]
-           ;5 [delete-space-content state]
+           5 [memberlist state]
            [view-space state]))]]]])
 
 (defn handler [params]
@@ -433,7 +485,12 @@
                      :in-modal true
                      :member_count no-of-members
                      :new-admins []
-                     :delete false})]
+                     :delete false
+                     :show-date-input false
+                     :role-selected []
+                     :role-all true
+                     :order "mtime"
+                     :custom-field-filters {}})]
     (init-data id state)
     (fn []
       [space-content state])))

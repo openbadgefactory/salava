@@ -5,7 +5,8 @@
    [salava.extra.customField.ui.helper :as h]
    [salava.core.ui.ajax-utils :as ajax]
    [salava.core.ui.helper :refer [path-for]]
-   [salava.core.i18n :refer [t]]))
+   [salava.core.i18n :refer [t]]
+   [reagent.session :as session]))
 
 (defn init-organizations [state]
   (ajax/POST
@@ -13,11 +14,12 @@
    {:handler (fn [data]
                (reset! (cursor state [:orgs]) data))}))
 
-(defn init-field-value [field-atom]
- (ajax/POST
-  (path-for "/obpv1/customField/org/value")
-  {:handler (fn [data]
-              (reset! field-atom #_(cursor state [:org]) data))}))
+(defn init-field-value [field-atom user-id]
+ (let [url (if user-id (str "/obpv1/customField/org/value/" user-id) "/obpv1/customField/org/value")]
+   (ajax/POST
+    (path-for url true)
+    {:handler (fn [data]
+                (reset! field-atom #_(cursor state [:org]) data))})))
 
 (defn organization-field-registration [form-state]
   (let [visible (h/field-enabled? "organization")
@@ -54,7 +56,7 @@
   (let [visible (h/field-enabled? "organization")
         state (atom {:org nil :visible visible :orgs []})]
    (init-organizations state)
-   (init-field-value (cursor state [:org]))
+   (init-field-value (cursor state [:org]) nil)
    (fn []
     (let [orgs (cursor state [:orgs])
           org-atom (cursor state [:org])
@@ -75,12 +77,53 @@
                           {:params {:org @org-atom}
                            :handler (fn [data]
                                       (when (= (:status data) "success")
-                                        (init-field-value org-atom)))})))}
+                                        (init-field-value org-atom nil)))})))}
           [:option {:value nil :disabled (not (clojure.string/blank? @org-atom))} (t :extra-customField/SelectOrganization)]]
          @orgs)]])))))
 
-(defn ^:export init_field_value [field-atom]
+(defn ^:export init_custom_field_value [field-atom]
  (ajax/POST
   (path-for "/obpv1/customField/org/value")
   {:handler (fn [data]
               (reset! field-atom data))}))
+
+(defn ^:export admintool_custom_field [user-id]
+  (let [visible (h/field-enabled? "organization")
+        state (atom {:org nil :visible visible :orgs []})]
+    (init-field-value (cursor state [:org]) user-id)
+    (fn []
+      (let [org-atom (cursor state [:org])
+            visible (cursor state [:visible])]
+        (when @visible
+          [:div.row
+           [:span._label.col-xs-4 (t :extra-customField/Organization) ": "]
+           [:div.col-xs-6 (or @org-atom (t :extra-customField/Notset))]])))))
+
+(defn ^:export custom_field_filter [content-state fetch-fn]
+  (let [visible (h/field-enabled? "organization")
+        state (atom {:visible visible :org (session/get :site-name) :orgs []})]
+    (init-organizations state)
+    (fn []
+     (let [visible (cursor state [:visible])
+           org-atom (cursor state [:org])
+           orgs (cursor state [:orgs])
+           custom-filters (cursor content-state [:custom-field-filters])]
+
+       (when @visible
+        [:div.form-group
+         [:span._label.filter-opt {:class "control-label col-sm-2"} (t :extra-customField/Organization)]
+         [:div.col-md-10
+          (reduce
+           (fn [r org]
+             (conj r [:option {:value (:name org) :selected (= (:name org) @org-atom)} (:name org)]))
+           (conj [:select#select-org.form-control
+                   {:on-change (fn [x]
+                                (do
+                                  (reset! org-atom (-> x .-target .-value))
+                                  (if (clojure.string/blank?  @org-atom)
+                                    (reset! custom-filters (dissoc @custom-filters :organization))
+                                    (reset! custom-filters (assoc @custom-filters :organization @org-atom)))
+                                  (fetch-fn)))}
+                   [:option {:value ""} (t :extra-customField/All)]]
+                 [:option {:value "notset"} (t :extra-customField/notset)])
+           @orgs)]])))))

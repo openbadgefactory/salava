@@ -1,3 +1,4 @@
+
 (ns salava.extra.spaces.routes
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
@@ -208,7 +209,7 @@
 
             (POST "/switch/:id" req
                   ;:return {:status (s/enum "success" "error")}
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :summary "Switch space"
                   :path-params [id :- s/Int]
                   :current-user current-user
@@ -216,7 +217,7 @@
 
             (POST "/reset_switch" req
                   ;:return {:status (s/enum "success" "error")}
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :summary "exit space"
                   :current-user current-user
                   (space/reset-switch! ctx (ok {:status "success"}) current-user))
@@ -224,10 +225,11 @@
             (POST "/extend/:id" []
                   :return {:status (s/enum "success" "error")}
                   :path-params [id :- s/Int]
+                  :body-params [valid_until :- s/Int]
                   :summary "extend Subscription by one year"
                   :auth-rules access/space-admin
                   :current-user current-user
-                  (ok (space/extend-space-validity! ctx id (:id current-user))))
+                  (ok (space/extend-space-validity! ctx id valid_until (:id current-user))))
 
             (POST "/create" []
                   :return {:status (s/enum  "success" "error") (s/optional-key :message) s/Str}

@@ -9,12 +9,20 @@
 (defn route-def [ctx]
   (routes
    (context "/obpv1/customField" []
-            (GET "/gender" []
+            (POST "/gender/value" []
                  :return (s/maybe (s/enum "male" "female" "other"))
                  :summary "Get user gender"
                  :auth-rules access/signed
                  :current-user current-user
                  (ok (db/custom-field-value ctx "gender" (:id current-user))))
+
+            (POST "/gender/value/:user_id" []
+                 :return (s/maybe (s/enum "male" "female" "other"))
+                 :summary "Get user gender"
+                 :auth-rules access/signed
+                 :path-params [user_id :- s/Int]
+                 :current-user current-user
+                 (ok (db/custom-field-value ctx "gender" user_id)))
 
             (POST "/gender" []
                  :return {:status (s/enum "success" "error")}
@@ -49,6 +57,14 @@
                   :auth-rules access/signed
                   :current-user current-user
                   (ok (db/custom-field-value ctx "organization" (:id current-user))))
+
+            (POST "/org/value/:user_id" []
+                  :return (s/maybe s/Str)
+                  :summary "Get user organization"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  :path-params [user_id :- s/Int]
+                  (ok (db/custom-field-value ctx "organization" user_id)))
 
             (POST "/org" []
                   :return {:status (s/enum "success" "error")}

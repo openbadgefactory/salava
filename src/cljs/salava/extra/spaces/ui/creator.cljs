@@ -233,7 +233,17 @@
                      [:div.selected-users-container]
                      (if (:in-modal @state)
                        (concat @(cursor state [:space :admins])  @(cursor state [:new-admins]))
-                       @(cursor state [:space :admins])))])]]]))
+                       @(cursor state [:space :admins])))])
+          (when (and (not (:in-modal @state)) create-admins?)
+            [:div.form-group
+             [:label {:for "valid_until"} (str (t :extra-spaces/Subscriptionvaliduntil))
+              [:p (t :extra-spaces/Aboutspacevalidity)]]
+             [:input.form-control
+              {:type "date"
+               :id "date"
+               :on-change #(do
+                             (reset! (cursor state [:space :valid_until]) (.-target.value %)))}]])]]]))
+
 
 
 (defn modal-content [state]

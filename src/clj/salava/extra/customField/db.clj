@@ -24,3 +24,16 @@
 
 (defn organizations [ctx]
   (select-organizations {} (get-db ctx)))
+
+(defn apply-custom-filters-users [ctx filters users]
+ (let [users (reduce
+              (fn [m v]
+               (conj m
+                (into {}
+                 (for [f (keys filters)
+                       :let [val (custom-field-value ctx (name f) (:id v))]]
+                   (assoc v f (or val "notset"))))))
+
+              []
+              users)]
+     (filter #(= filters (select-keys % (keys filters))) users)))

@@ -184,6 +184,8 @@
                                (fetch-users state))}]
         (t :core/bycommonbadges)]]])))
 
+
+
 (defn profile-gallery-grid-form
   ([state]
    [:div {:id "grid-filter"
@@ -203,7 +205,17 @@
        [country-selector state modal?]
        [text-field {:key :name :label (t :gallery/Username) :placeholder (t :gallery/Searchbyusername) :state state :modal? true}]
        [common-badges-checkbox state]]
-      [order-buttons state modal?]])))
+      [order-buttons state modal?]]))
+  ([state modal? {:keys [email-filter]}]
+   [:div {:id "grid-filter-modal"
+          :class "form-horizontal"}
+    [:div
+     [country-selector state modal?]
+     [text-field {:key :name :label (t :gallery/Username) :placeholder (t :gallery/Searchbyusername) :state state :modal? true}]
+     (when email-filter [text-field {:key :email :label (t :badge/Email) :placeholder (t :admin/Searchbyemail) :state state :modal? true}])
+     [common-badges-checkbox state]]
+    [order-buttons state modal?]]))
+
 
 
 (defn profile-gallery-grid-element [element-data]

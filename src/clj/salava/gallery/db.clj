@@ -10,7 +10,7 @@
             [salava.page.main :as p]
             ;[salava.social.db :as so]
             [clojure.set :refer [subset?]]
-            [clojure.string :as string]
+            [clojure.string :as string :refer [blank?]]
             [schema.core :as schema]
             [salava.gallery.schemas :as g]
             [salava.badge.main :as b]
@@ -246,7 +246,7 @@
   (->> (public-pages ctx country owner)
        (clojure.core.reducers/map #(-> % (dissoc :first_name :last_name :profile_picture)))
        (clojure.core.reducers/foldcat)))
-
+ 
 (defn public-profiles
   "Search public user profiles by user's name and country"
   [ctx search-params user-id]
@@ -294,6 +294,40 @@
                   "endorsement" (as-> (first (plugin-fun (get-plugins ctx) "endorsement" "user-endorsements-status")) f)
                   nil)]
     (map #(assoc % (keyword context) (if data-fn (data-fn ctx user_badge_id user-id (:id %)) {})) profiles)))
+
+(defn profile-ids-all [ctx search-params]
+ (let [{:keys [name country order_by email]} search-params
+       filters
+       (cond-> []
+         (not (blank? name))
+         (conj (set (select-all-profile-ids-name {:name (str "%" name "%")} (get-db-col ctx :id))))
+         (not (blank? email))
+         (conj (set (select-all-profile-ids-name {:email (str "%" email "%")} (get-db-col ctx :id)))))]
+   (when (seq filters)
+     (into [] clojure.set/intersection (first filters) (rest filters)))))
+
+(defn select-profiles [ctx country ids order page_count]
+  (let [limit 100
+        offset (* limit page_count)]
+    (prn country ids order page_count)
+    (if (nil? ids)
+        (select-profiles-all {:country country :limit limit :offset offset :order order} (get-db ctx))
+        (if (empty? ids)
+          []
+          (select-profiles-filtered {:country country :limit limit :offset offset :order order :ids ids} (get-db ctx))))))
+
+(defn profiles-all [ctx search-params]
+  (let [{:keys [country order_by page_count]} search-params
+        profile-ids (profile-ids-all ctx search-params)
+        profiles (select-profiles ctx country profile-ids order_by 0)
+        offset (string->number "0" #_(:page_count search-params))]
+     (prn search-params)
+     (prn profile-ids)
+     {:profiles profiles
+      :profile_count (badge-count (if (nil? profile-ids)
+                                      (get (select-profiles-count {:country (:country search-params)} (get-db-1 ctx)) :total 0)
+                                      (count profile-ids))
+                                  offset)}))
 
 (defn meta-tags [ctx badge-content-id]
   (let [badge-content (select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))]

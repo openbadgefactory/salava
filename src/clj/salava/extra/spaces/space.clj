@@ -5,11 +5,8 @@
   [salava.extra.spaces.db :as db]
   [salava.extra.spaces.util :as u]
   [slingshot.slingshot :refer :all]
-  [salava.core.time :refer [get-date-from-today]]
-  [salava.core.util :refer [get-db get-db-1 now]]
-  [ring.util.http-response :refer [not-found]]))
-  ;[clj-time.coerce :as c]))
-
+  [salava.core.time :refer [get-date-from-today iso8601-to-unix-time]]
+  [salava.core.util :refer [get-db get-db-1 now get-plugins plugin-fun]]))
 
 (defqueries "sql/extra/spaces/main.sql")
 
@@ -18,7 +15,7 @@
 (defn create! [ctx space]
  (try+
    (let [{:keys [name description status visibility logo banner admins alias valid_until css url]} space
-         valid_until (get-date-from-today 12 0 0)
+         valid_until (if-not (clojure.string/blank? valid_until) (iso8601-to-unix-time valid_until)  (get-date-from-today 12 0 0))
          space (->Space nil (u/uuid) name description "active" "private" logo banner alias valid_until url)]
     (db/create-new-space! ctx (assoc space :admins admins :css css)) ;:admin admin))
     {:status "success"})
@@ -148,9 +145,26 @@
     {:status "error"})))
 
 
-(defn members [ctx space-id]
-  (select-space-members-all {:space_id space-id} (get-db ctx)))
+#_(defn members [ctx space-id]
+    (select-space-members-all {:space_id space-id} (get-db ctx)))
 
+(defn members [ctx space-id]
+ (let [custom-fields (map :name (get-in ctx [:config :extra/customField :fields]))
+       members (select-space-members-all {:space_id space-id} (get-db ctx))]
+  (prn custom-fields "dsdsdsd")
+  (if (seq custom-fields)
+    (reduce
+      (fn [m v]
+       (conj m
+        (into {}
+         (for [f custom-fields
+               :let [val (as-> (first (plugin-fun (get-plugins ctx) "db" "custom-field-value")) $
+                               (when $ ($ ctx f (:id v))))]]
+           (assoc v f (or val "notset"))))))
+
+      []
+      members)
+    members)))
 
 (defn is-member? [ctx space-id user-id]
   (check-space-member {:id space-id :user_id user-id} (get-db-1 ctx)))
@@ -192,7 +206,6 @@
       (switch! ctx ok-status current-user space-id)))))
 
 (defn set-user-space [ctx invitation user-id]
-  (prn "called")
   (let [{:keys [token id alias]} invitation
         already-member? (= user-id (:user_id (is-member? ctx id user-id)))
         default-space (default-space ctx user-id)]
@@ -223,18 +236,26 @@
      (log/error _)
      {:status "error"})))
 
-(defn- extend-time [valid_time]
- (let [extension (get-date-from-today 12 0 0)]
-  (if-let [x (and valid_time (> valid_time (now)))]
-    (+ valid_time (- extension valid_time))
-    extension)))
+#_(defn- extend-time [valid_time]
+     (let [extension (get-date-from-today 12 0 0)]
+      (if-let [x (and valid_time (> valid_time (now)))]
+        (+ valid_time (- extension valid_time))
+        extension)))
 
-(defn extend-space-validity! [ctx id admin-id]
- (try+
-  (let [valid_until (:valid_until (get-space ctx id))
-        extension (int (extend-time valid_until))]
-    (extend-space-subscription! {:id id :time extension :admin admin-id} (get-db ctx)))
-  {:status "success"}
-  (catch Object _
-   (log/error _)
-   {:status "error"})))
+#_(defn extend-space-validity! [ctx id admin-id]
+     (try+
+      (let [valid_until (:valid_until (get-space ctx id))
+            extension (int (extend-time valid_until))]
+        (extend-space-subscription! {:id id :time extension :admin admin-id} (get-db ctx)))
+      {:status "success"}
+      (catch Object _
+       (log/error _)
+       {:status "error"})))
+
+(defn extend-space-validity! [ctx id valid_until admin-id]
+  (try+
+    (extend-space-subscription! {:id id :time valid_until :admin admin-id} (get-db ctx))
+    {:status "success"}
+    (catch Object _
+     (log/error _)
+     {:status "error"})))

@@ -22,7 +22,6 @@
 (defn ^:export field_input_valid [field value error-atom]
  #(h/valid-input? field value error-atom))
 
-
 (defn ^:export org_field_register [state]
   (org/organization-field-registration state))
 
@@ -32,27 +31,31 @@
 (defn init-custom-fields [state fields]
  (doall
   (for [f fields]
-    (as-> (first (plugin-fun (session/get :plugins) f "init_field_value") ) $
+    (as-> (first (plugin-fun (session/get :plugins) f "init_custom_field_value") ) $
           (when (ifn? $) ($ (cursor state [:custom-fields (keyword f)])))))))
 
 (defn ^:export custom_fields_alert [state]
- (let [fields (filter :compulsory? (session/get :custom-fields))
+ (let [visible (atom false)
        values (cursor state [:custom-fields])]
-    (when (some nil? (vals @values))
-      [:div.alert.alert-info.alert-dismissible {:role "alert"}
-       [:button.close
-        {:type "button"
-         :data-dismiss "alert"
-         :aria-label "Close"}
-        [:span {:aria-hidden             "true"
-                :dangerouslySetInnerHTML {:__html "&times;"}}]]
-       [:p (t :extra-customField/Attentionrequired) " " [:strong [:a.alert-link {:href (path-for "/user/edit")} (t :user/Accountsettings)]]]
-       (reduce-kv
-        (fn [r k v]
-          (when (nil? v)
-            (conj r [:li (t (keyword (str "extra-customField/" (capitalize (name k)))))])))
-        [:ul]
-        @values)])))
+
+  (fn []
+    (js/setTimeout #(when (some nil? (vals @values)) (reset! visible true)) 500)
+    (when @visible
+     [:div.alert.alert-info.alert-dismissible {:role "alert"}
+      [:button.close
+       {:type "button"
+        :data-dismiss "alert"
+        :aria-label "Close"}
+       [:span {:aria-hidden             "true"
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]
+      [:p (t :extra-customField/Attentionrequired) " " [:strong [:a.alert-link {:href (path-for "/user/edit")} (t :user/Accountsettings)]]]
+      (reduce-kv
+       (fn [r k v]
+        (if (nil? v)
+          (conj r [:li (t (keyword (str "extra-customField/" (capitalize (name k)))))])
+          (conj r nil)))
+       [:ul]
+       @values)]))))
 
 (defn ^:export custom_fields_init [state]
  (let [fields (map :name (filter :compulsory? (session/get :custom-fields)))
