@@ -246,7 +246,7 @@
   (->> (public-pages ctx country owner)
        (clojure.core.reducers/map #(-> % (dissoc :first_name :last_name :profile_picture)))
        (clojure.core.reducers/foldcat)))
- 
+
 (defn public-profiles
   "Search public user profiles by user's name and country"
   [ctx search-params user-id]
@@ -295,37 +295,41 @@
                   nil)]
     (map #(assoc % (keyword context) (if data-fn (data-fn ctx user_badge_id user-id (:id %)) {})) profiles)))
 
-(defn profile-ids-all [ctx search-params]
+(defn profile-ids-all [ctx search-params space-id]
  (let [{:keys [name country order_by email]} search-params
        filters
        (cond-> []
          (not (blank? name))
-         (conj (set (select-all-profile-ids-name {:name (str "%" name "%")} (get-db-col ctx :id))))
+         (conj (set (select-all-profile-ids-name {:name (str "%" name "%") :space_id space-id } (get-db-col ctx :id))))
          (not (blank? email))
-         (conj (set (select-all-profile-ids-name {:email (str "%" email "%")} (get-db-col ctx :id)))))]
+         (conj (set (select-all-profile-ids-email {:email (str "%" email "%") :space_id space-id} (get-db-col ctx :id)))))]
    (when (seq filters)
-     (into [] clojure.set/intersection (first filters) (rest filters)))))
+     (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))
 
-(defn select-profiles [ctx country ids order page_count]
-  (let [limit 100
+(defn select-profiles [ctx country ids order page_count space-id]
+  (let [limit 10
         offset (* limit page_count)]
-    (prn country ids order page_count)
     (if (nil? ids)
-        (select-profiles-all {:country country :limit limit :offset offset :order order} (get-db ctx))
+        (select-profiles-all {:country country :limit limit :offset offset :order order :space_id space-id} (get-db ctx))
         (if (empty? ids)
           []
           (select-profiles-filtered {:country country :limit limit :offset offset :order order :ids ids} (get-db ctx))))))
 
-(defn profiles-all [ctx search-params]
+(defn- profile-count [remaining page_count]
+  (let [limit 10
+        badges-left (- remaining (* limit (inc page_count)))]
+    (if (pos? badges-left)
+      badges-left
+      0)))
+
+(defn profiles-all [ctx search-params space-id]
   (let [{:keys [country order_by page_count]} search-params
-        profile-ids (profile-ids-all ctx search-params)
-        profiles (select-profiles ctx country profile-ids order_by 0)
-        offset (string->number "0" #_(:page_count search-params))]
-     (prn search-params)
-     (prn profile-ids)
-     {:profiles profiles
-      :profile_count (badge-count (if (nil? profile-ids)
-                                      (get (select-profiles-count {:country (:country search-params)} (get-db-1 ctx)) :total 0)
+        profile-ids (profile-ids-all ctx search-params space-id)
+        offset page_count;(string->number page_count)
+        profiles (select-profiles ctx country profile-ids order_by offset space-id)]
+     {:users profiles
+      :users_count (profile-count (if (nil? profile-ids)
+                                      (get (select-profiles-count {:country (:country search-params) :space_id space-id} (get-db-1 ctx)) :total 0)
                                       (count profile-ids))
                                   offset)}))
 

@@ -29,11 +29,66 @@
        :handler (fn [data] (swap! state assoc :users (:users data)))
        :finally (fn [] (ajax-stop ajax-message-atom))})))
 
+(defn fetch-users+ [state]
+  (let [{:keys [name country-selected common-badges? order_by url email]} @state
+        ajax-message-atom (cursor state [:ajax-message])]
+    (reset! ajax-message-atom (t :gallery/Searchingprofiles))
+    (reset! (cursor state [:page_count]) 0)
+    (reset! (cursor state [:select-all?]) false)
+    (ajax/POST
+      (path-for (or url "/obpv1/gallery/profiles"))
+      {:params  {:country       country-selected
+                 :name          (trim (str name))
+                 :common_badges (boolean common-badges?)
+                 :order_by      order_by
+                 :email         email
+                 :page_count @(cursor state [:page_count])}
+       :handler (fn [data] (swap! state assoc :users (:users data) :users_count (:users_count data) :page_count (inc @(cursor state [:page_count]))))
+       :finally (fn [] (ajax-stop ajax-message-atom))})))
+
+(defn get-more-users [state]
+  (let [{:keys [name country-selected common-badges? order_by url email]} @state
+        ajax-message-atom (cursor state [:ajax-message])
+        page-count-atom (cursor state [:page_count])]
+    (ajax/POST
+     (path-for (or url "/obpv1/gallery/profiles"))
+     {:params  {:country       country-selected
+                :name          (trim (str name))
+                :common_badges (boolean common-badges?)
+                :order_by      order_by
+                :email         email
+                :page_count @page-count-atom}
+      :handler (fn [data]
+                 (swap! page-count-atom inc)
+                 (swap! state assoc
+                        :users (into (:users @state) (:users data))
+                        :users_count (:users_count data)))
+      :finally (fn [])})))
+
+(defn load-more [state]
+  (if (pos? (:users_count @state))
+    [:div.col-md-12 {:style {:font-weight 600}}
+     ;[:div {:class "media message-item"}
+      ;[:div {:class "media-body"}
+       [:span [:a {:href     "#"
+                   :id    "loadmore"
+                   :on-click #(do
+                                (get-more-users state)
+                                (.preventDefault %))}
+
+               (str (t :social/Loadmore) " (" (:users_count @state) " " (t :extra-spaces/usersleft) ")")]]]))
+
 (defn search-timer [state]
   (let [timer-atom (cursor state [:timer])]
     (if @timer-atom
       (js/clearTimeout @timer-atom))
     (reset! timer-atom (js/setTimeout (fn [] (fetch-users state)) 500))))
+
+(defn search-timer+ [state]
+  (let [timer-atom (cursor state [:timer])]
+    (if @timer-atom
+      (js/clearTimeout @timer-atom))
+    (reset! timer-atom (js/setTimeout (fn [] (fetch-users+ state)) 500))))
 
 (defn text-field
  ([opts]
@@ -68,6 +123,21 @@
                                  (reset! search-atom (.-target.value %))
                                  (search-timer state))}]]])))
 
+(defn text-field+ [opts]
+  (let [{:keys [key label placeholder state modal?]} opts
+        search-atom (cursor state [key])
+        field-id (if modal? (str key "-field-modal") (str key "-field"))]
+   [:div.form-group
+    [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
+    [:div.col-sm-10
+     [:input {:class       (str "form-control")
+              :id          field-id
+              :type        "text"
+              :placeholder placeholder
+              :value       @search-atom
+              :on-change   #(do
+                              (reset! search-atom (.-target.value %))
+                              (search-timer+ state))}]]]))
 (defn country-selector
   ([state]
    (let [country-atom (cursor state [:country-selected])]
@@ -102,6 +172,24 @@
         (for [[country-key country-name] (map identity (:countries @state))]
           [:option {:value country-key
                     :key country-key} country-name])]]])))
+
+(defn country-selector+ [state]
+  (let [country-atom (cursor state [:country-selected])]
+
+    [:div.form-group
+     [:label {:class "control-label col-sm-2" :for "country-selector-modal"} (str (t :gallery/Country) ": ")]
+     [:div.col-sm-10
+      [:select {:class     "form-control"
+                :id        "country-selector-modal"
+                :name      "country"
+                :value     @country-atom
+                :on-change #(do
+                              (reset! country-atom (.-target.value %))
+                              (fetch-users+ state))}
+       [:option {:value "all" :key "all"} (t :core/All)]
+       (for [[country-key country-name] (map identity (:countries @state))]
+         [:option {:value country-key
+                   :key country-key} country-name])]]]))
 
 
 (defn common-badges-checkbox [state]
@@ -184,6 +272,29 @@
                                (fetch-users state))}]
         (t :core/bycommonbadges)]]])))
 
+(defn order-buttons+ [state]
+ (let [order-atom (cursor state [:order_by])]
+   [:div.form-group
+    [:span._label {:class "control-label filter-opt col-sm-2"} (str (t :core/Order) ":")]
+    [:div.col-sm-10
+     [:label.radio-inline {:for "radio-date_"}
+      [:input {:id "radio-date_"
+               :name "radio-date_"
+               :type "radio"
+               :checked (= @order-atom "ctime")
+               :on-change #(do
+                             (reset! order-atom "ctime")
+                             (fetch-users+ state))}]
+      (t :core/bydatejoined)]
+     [:label.radio-inline {:for "radio-name_"}
+      [:input {:id "radio-name_"
+               :name "radio-name_"
+               :type "radio"
+               :checked (= @order-atom "name")
+               :on-change #(do
+                             (reset! order-atom "name")
+                             (fetch-users+ state))}]
+      (t :core/byname)]]]))
 
 
 (defn profile-gallery-grid-form
@@ -205,18 +316,15 @@
        [country-selector state modal?]
        [text-field {:key :name :label (t :gallery/Username) :placeholder (t :gallery/Searchbyusername) :state state :modal? true}]
        [common-badges-checkbox state]]
-      [order-buttons state modal?]]))
-  ([state modal? {:keys [email-filter]}]
-   [:div {:id "grid-filter-modal"
-          :class "form-horizontal"}
-    [:div
-     [country-selector state modal?]
-     [text-field {:key :name :label (t :gallery/Username) :placeholder (t :gallery/Searchbyusername) :state state :modal? true}]
-     (when email-filter [text-field {:key :email :label (t :badge/Email) :placeholder (t :admin/Searchbyemail) :state state :modal? true}])
-     [common-badges-checkbox state]]
-    [order-buttons state modal?]]))
+      [order-buttons state modal?]])))
 
-
+(defn profile-gallery-grid-form+ [state]
+  [:div#grid-filter-modal.form-horizontal
+   [:div
+    [country-selector+ state]
+    [text-field+ {:key :name :label (t :gallery/Username) :placeholder (t :gallery/Searchbyusername) :state state :modal? true}]
+    [text-field+ {:key :email :label (t :badge/Email) :placeholder (t :admin/Searchbyemail) :state state :modal? true}]]
+   [order-buttons+ state]])
 
 (defn profile-gallery-grid-element [element-data]
   (let [{:keys [id first_name last_name ctime profile_picture common_badge_count]} element-data

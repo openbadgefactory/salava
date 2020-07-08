@@ -21,7 +21,9 @@
                                                                    (<= (count %) 255)))
                          :country       (apply s/enum (conj (keys all-countries) "all"))
                          :common_badges s/Bool
-                         :order_by      (s/enum "name" "ctime" "common_badge_count")})
+                         :order_by      (s/enum "name" "ctime" "common_badge_count")
+                         (s/optional-key :email) (s/maybe s/Str)
+                         (s/optional-key :page_count) (s/maybe s/Int)})
 
 (s/defschema UserProfiles (-> u/User
                               (select-keys [:first_name :last_name :country :profile_picture])

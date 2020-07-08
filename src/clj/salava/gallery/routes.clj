@@ -167,16 +167,18 @@
                   (ok {:users     (g/public-profiles-context ctx search-params (:id current-user) user_badge_id context)
                        :countries (g/profile-countries ctx (:id current-user))}))
 
-            (POST "/profiles/all" []
+            (POST "/profiles/all/filter/:space_id" []
                   :no-doc true
-                  :return {:users     [schemas/UserProfiles]
-                           :countries [schemas/Countries]}
+                  #_:return #_{:users     [schemas/UserProfiles]
+                               :countries [schemas/Countries]
+                               :users_count s/Int}
                   :body [search-params schemas/UserSearch]
-                  :summary "Get profiles with pagination"
+                  :path-params [space_id :- s/Int]
+                  :summary "Get profiles with pagination, filter out existing space members"
                   :auth-rules access/admin
                   :current-user current-user
-                  (ok {:users     (g/profiles-all ctx search-params)
-                       :countries (g/profile-countries ctx (:id current-user))}))
+                  (ok  (assoc (g/profiles-all ctx search-params space_id) :countries (g/profile-countries ctx (:id current-user))))) #_{:users     (g/profiles-all ctx search-params)
+                                                                                                                                        :countries (g/profile-countries ctx (:id current-user))}
 
             (GET "/user_owns_badge/:badge_id" []
                  :return s/Bool

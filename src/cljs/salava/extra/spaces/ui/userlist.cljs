@@ -7,7 +7,7 @@
   [salava.core.ui.layout :as layout]
   [salava.core.ui.modal :as mo]
   [salava.core.ui.ajax-utils :as ajax]
-  [salava.user.ui.helper :refer [profile-picture]]
+  [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]
   [salava.core.i18n :refer [t]]
   [salava.core.ui.grid :as g]))
 
@@ -45,6 +45,18 @@
     {:handler (fn [data]
                 (when (= (:status data) "success")
                   (init-data state)))}))
+
+(defn add-new-members [state]
+ (let [status (cursor state [:populating-space])]
+  (reset! status true)
+  (ajax/POST
+   (path-for (str "/obpv1/space/populate/"(:id @state)) true)
+   {:params {:users (mapv :id (distinct @(cursor state [:new-members])))}
+    :handler (fn [data]
+               (when (= (:status data) "success")
+                 (reset! status false)
+                 (reset! (cursor state [:new-members]) [])
+                 (init-data state)))})))
 
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
@@ -132,17 +144,50 @@
                                                          (if (and member? (not= 1 (count users))) (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Removemember)]]) (conj $ nil))
                                                          (if (and member? member-admin?) (conj $ [:li [:a {:href "#" :on-click #(downgrade-member! id state)} (t :extra-spaces/Downgradetomember)]]) (conj $ nil))
                                                          (if (and member? (not member-admin?)) (conj $ [:li [:a {:href "#" :on-click #(upgrade-member! id state)} (t :extra-spaces/Upgradetoadmin)]]) (conj $ nil)))]]])))]]
-     [:div.panel-footer
-        [:a {:href "#"
-             :on-click #(do
-                          (.preventDefault %)
-                          (mo/open-modal [:gallery :profiles]
-                           {:type "pickable"
-                            :selected-users-atom (cursor state [:new-users])
-                            :existing-users-atom (cursor state [:users])
-                            :context "space_members_modal"} {}))}
+     (when (= "admin" (session/get-in [:user :role] "user"))
+      [:div.panel-footer
+         [:a {:href "#"
+              :on-click #(do
+                           (.preventDefault %)
+                           (mo/open-modal [:gallery :profiles]
+                            {:type "pickable"
+                             :selected-users-atom (cursor state [:new-members])
+                             :existing-users-atom (cursor state [:users])
+                             :context "space_members_modal"
+                             :space-id (:id @state)}))}
 
-         [:span [:i.fa.fa-user-plus.fa-fw.fa-lg {:style {:vertical-align "baseline"}}] " " (t :extra-spaces/Addmembers)]]]]]]))
+          [:span [:i.fa.fa-user-plus.fa-fw.fa-lg {:style {:vertical-align "baseline"}}] " " (t :extra-spaces/Addmembers)]]
+       [:div {:style {:margin "10px 0"}}
+        (if @(cursor state [:populating-space])
+         [:div
+          [:i.fa.fa-spinner.fa-pulse.fa-2x.fa-fw] [:span " " (t :extra-spaces/Populatingspace) "..."]
+          [:span.sr-only (t :extra-spaces/Populatingspace)]]
+
+         (reduce (fn [r u]
+                   (let [{:keys [id first_name last_name profile_picture]} u]
+                     (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
+                              [:a {:href "#" :on-click (fn [] (reset! (cursor state [:new-members]) (->> @(cursor state [:new-members]) (remove #(= id (:id %))) vec)))}
+                               [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
+                 [:div#social-tab.selected-users-container] (distinct @(cursor state [:new-members]))))]
+
+       (when (seq @(cursor state [:new-members]))
+        [:div.btn-toolbar
+         [:div.btn-group
+          [:button.btn-primary.btn.btn-bulky
+           {:type "button"
+            :on-click #(do
+                         (.preventDefault %)
+                         (add-new-members state))
+            :disabled (empty? @(cursor state [:new-members]))}
+           (t :core/Add)]
+          [:button.btn-danger.btn.btn-bulky
+           {:type "button"
+            :on-click #(do
+                         (.preventDefault %)
+                         (reset! (cursor state [:new-members]) [])
+                         (reset! (cursor state [:populating-space]) false))}
+           (t :core/Cancel)]]])])]]]))
+
 
 
 
@@ -160,7 +205,8 @@
                     :role-all true
                     :order "mtime"
                     :custom-field-filters {}
-                    :new-users []})]
+                    :new-members []
+                    :populating-space false})]
 
    (init-data state)
    (fn []

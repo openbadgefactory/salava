@@ -72,7 +72,15 @@
                    :summary "Get space stats"
                    :path-params [id :- s/Int]
                    :current-user current-user
-                   (ok (stats/space-stats ctx id (:last-visited current-user)))))
+                   (ok (stats/space-stats ctx id (:last-visited current-user))))
+
+            (POST "/populate/:id" []
+                   :auth-rules access/admin
+                   :summary "Populate space with users"
+                   :path-params [id :- s/Int]
+                   :body-params [users :- [s/Int]]
+                   :current-user current-user
+                   (ok (space/populate-space ctx id users (:id current-user)))))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]

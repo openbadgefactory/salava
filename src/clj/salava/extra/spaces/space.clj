@@ -151,7 +151,6 @@
 (defn members [ctx space-id]
  (let [custom-fields (map :name (get-in ctx [:config :extra/customField :fields]))
        members (select-space-members-all {:space_id space-id} (get-db ctx))]
-  (prn custom-fields "dsdsdsd")
   (if (seq custom-fields)
     (reduce
       (fn [m v]
@@ -257,5 +256,15 @@
     (extend-space-subscription! {:id id :time valid_until :admin admin-id} (get-db ctx))
     {:status "success"}
     (catch Object _
+     (log/error _)
+     {:status "error"})))
+
+(defn populate-space [ctx space-id users admin-id]
+  (try+
+   (doseq [id users]
+     (create-space-member! (db/->Space_member id space-id "member" "accepted" 0) (get-db ctx)))
+   (update-last-modifier! {:id space-id :admin admin-id} (get-db ctx))
+   {:status "success"}
+   (catch Object _
      (log/error _)
      {:status "error"})))
