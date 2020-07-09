@@ -402,8 +402,8 @@
    (when-not (or (= "deleted" @(cursor state [:space :status])) (= "expired" @(cursor state [:space :status])))
     [:div
      [manage-visibility state nil]
-     (when (= "private" @(cursor state [:space :visibility]))
-       [invite-link (select-keys (:space @state) [:id :name :alias])])
+     ;(when (= "private" @(cursor state [:space :visibility]))
+     [invite-link (select-keys (:space @state) [:id :name :alias])]
      [manage-admins state]])])
 
 (defn memberlist [state]

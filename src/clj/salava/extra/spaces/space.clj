@@ -83,18 +83,22 @@
    {:status "error"})))
 
 (defn space-token [ctx space-id]
-  (select-space-property {:id space-id :name "token"} (into {:result-set-fn first :row-fn :value} (get-db ctx))))
+ (if-let [token (select-space-property {:id space-id :name "token"} (into {:result-set-fn first :row-fn :value} (get-db ctx)))]
+   token
+   (do
+    (insert-space-property! {:space_id space-id :name "token" :value (str (java.util.UUID/randomUUID))} (get-db ctx))
+    (space-token ctx space-id))))
 
 (defn invite-link-status [ctx space-id]
- (if-let [x (pos? (some-> (select-space-property {:id space-id :name "invite_link"} (into {:result-set-fn first :row-fn :value} (get-db ctx)))
-                          (read-string)))] true false))
+ (if-let [x (some-> (select-space-property {:id space-id :name "invite_link"} (into {:result-set-fn first :row-fn :value} (get-db ctx))) (read-string) (pos?))] 
+   true false))
 
 
 (defn update-visibility! [ctx space-id visibility admin-id]
  (try+
   (update-space-visibility! {:id space-id :v visibility :user_id admin-id} (get-db ctx))
-  (when (and (= visibility "private") (clojure.string/blank? (space-token ctx space-id)))
-    (insert-space-property! {:space_id space-id :name "token" :value (str (java.util.UUID/randomUUID))} (get-db ctx)))
+  #_(when (and (= visibility "private") (clojure.string/blank? (space-token ctx space-id)))
+      (insert-space-property! {:space_id space-id :name "token" :value (str (java.util.UUID/randomUUID))} (get-db ctx)))
   {:status "success"}
   (catch Object _
    (log/error _)
@@ -135,6 +139,14 @@
   (catch Object _
     (log/error _)
     {:status "error"})))
+
+(defn join-via-invitation! [ctx space-id user-id]
+  (try+
+   (create-space-member! (db/->Space_member user-id space-id "member" "accepted" 0) (get-db ctx))
+   {:status "success"}
+   (catch Object _
+     (log/error _)
+     {:status "error"})))
 
 (defn accept! [ctx space-id user-id]
  (try+
@@ -194,7 +206,6 @@
 (defn default-space [ctx user-id]
   (select-default-space {:user_id user-id} (get-db-1 ctx)))
 
-
 (defn set-space-session [ctx space-id ok-status current-user]
   (let [user-id (:id current-user)
         already-member? (= user-id (:user_id (is-member? ctx space-id user-id)))]
@@ -207,15 +218,15 @@
 (defn set-user-space [ctx invitation user-id]
   (let [{:keys [token id alias]} invitation
         already-member? (= user-id (:user_id (is-member? ctx id user-id)))
-        default-space (default-space ctx user-id)]
+        d-space (default-space ctx user-id)]
     (if invitation
      (if already-member?
        (when (active-space? ctx id) (get-space ctx id user-id))
        (when (active-space? ctx id)
-        (join! ctx id user-id)
+        (join-via-invitation! ctx id user-id)
         (get-space ctx id user-id)))
-     (when (active-space? ctx (:id default-space))
-       (get-space ctx (:id default-space) user-id)))))
+     (when (active-space? ctx (:id d-space))
+       (get-space ctx (:id d-space) user-id)))))
 
 
 (defn invite-user [ctx alias invite-token]

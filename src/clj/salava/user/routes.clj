@@ -67,7 +67,6 @@
                                          (assoc :terms accepted-terms?)
                                          (assoc :redirect-to (get-in req [:cookies "login_redirect" :value])))
                         login-status (if invitation (assoc login-status :invitation invitation) login-status)]
-
                     (if (= "success" (:status login-status))
                       (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]) false)
                       (ok login-status))))

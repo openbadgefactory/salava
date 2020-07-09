@@ -439,16 +439,14 @@
                             (when (ifn? $) ($ ctx invitation  user-id)))
         user-spaces (as-> (first (plugin-fun (get-plugins ctx) "db" "get-user-spaces")) $
                           (when (ifn? $) ($ ctx user-id)))
-        identity {:id id :role role :private private :activated activated :last-visited last-visited :expires expires :spaces user-spaces :current-space current-space}]
-   (as-> (-> ok-status
-             (assoc-in [:session :identity] identity)
-             (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})
-             (update-in [:body] dissoc :custom-fields)) $
-         (if invitation
-          (if (get-in ok-status [:body :invitation])
-              (update-in $ [:body] dissoc :invitation)
-              (dissoc $ :invitation))
-          (merge (update-in $ [:body] dissoc :invitation) {})))))
+        identity {:id id :role role :private private :activated activated :last-visited last-visited :expires expires #_:spaces #_user-spaces :current-space current-space}
+        ok-status (if (get-in ok-status [:body :custom-fields] nil) (update-in ok-status [:body] dissoc :custom-fields) ok-status)]
+     (as-> ok-status $
+           (assoc-in $ [:session :identity] identity)
+           (assoc-in $ [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})
+           (if (get-in $ [:body :invitation] nil)
+               (update-in $ [:body] dissoc :invitation)
+               (dissoc $ :invitation)))))
 
 
 (defn activate-invited-user-and-verify-email [ctx user-id invitation new-user?]
@@ -466,7 +464,7 @@
        custom-fields (get-in ok-res [:body :custom-fields] nil)]
   (when custom-fields (save-user-custom-fields ctx user-id custom-fields))
   (save-pending-badge-and-email ctx user-id pending-badge-id new-account)
-  (activate-invited-user-and-verify-email ctx user-id invitation new-account)
+  #_(activate-invited-user-and-verify-email ctx user-id invitation new-account)
   (send-email-verification-maybe ctx user-id)
   (set-session ctx ok-res user-id)))
 

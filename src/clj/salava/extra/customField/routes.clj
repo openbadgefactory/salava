@@ -37,14 +37,14 @@
                  :body-params [gender :- (s/enum "male" "female" "other")]
                  :current-user current-user
                  (-> (ok)
-                     (assoc-in [:session :custom-fields]  (merge (get-in req [:session :custom-fields] {}) {:gender gender}))))
+                     (assoc-in [:session] (assoc (get req :session {}) :custom-fields (merge (get-in req [:session :custom-fields] {}) {:gender gender})))))
 
             (POST "/org/register" req
                  :summary "Save new user organization"
                  :body-params [organization :- s/Str]
                  :current-user current-user
                  (-> (ok)
-                     (assoc-in [:session :custom-fields]  (merge (get-in req [:session :custom-fields] {}) {:organization organization}))))
+                     (assoc-in [:session] (assoc (get req :session {}) :custom-fields  (merge (get-in req [:session :custom-fields] {}) {:organization organization})))))
 
             (POST "/org/list" []
                   :summary "Get organization list"

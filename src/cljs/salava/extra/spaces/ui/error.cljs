@@ -6,7 +6,7 @@
 (defn content []
   [:div.panel
    [:div.panel-body
-    [:div.alert.alert-danger
+    [:div.alert.alert-warning
      (t :extra-spaces/Invitelinkeerror)]]])
 
 (defn handler [site-navi]

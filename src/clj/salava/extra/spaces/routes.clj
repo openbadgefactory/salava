@@ -52,7 +52,8 @@
                       (if (= status "success")
 
                        (-> (redirect (str (u/get-base-path ctx) (str "/user/login?invite_token="token)))
-                           (assoc :session (assoc (get req :session {}) :invitation {:token token :alias uid :id id})))
+                           (assoc-in [:session] (assoc (get req :session {}) :invitation {:token token :alias uid :id id}))
+                           #_(assoc :session (assoc (get req :session {}) :invitation {:token token :alias uid :id id})))
                        (redirect (str (u/get-base-path ctx) (str "/space/error"))))))))
    (context "/obpv1/space" []
              :tags ["space"]

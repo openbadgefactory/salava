@@ -114,10 +114,8 @@
     [:div.well.well-sm (t :extra-spaces/Notjoinedanyorg)])))
 
 (defn next-url [space]
-  (prn "sdasdadas")
   (let [current-path (current-route-path)
         admin? (= (:role space) "admin")]
-    (prn current-path)
     (if admin?
       current-path
       (if (clojure.string/starts-with? current-path "/space") "/social" current-path))))
@@ -182,7 +180,7 @@
 (defn space_list_dashboard []
   (let [spaces (session/get-in [:user :spaces])
         current-space (session/get-in [:user :current-space])
-        state (atom {:spaces spaces})]
+        state (atom {:spaces []})]
    (init-spaces state)
    (fn []
     (let [spaces (->> @(cursor state [:spaces]) (remove #(= "pending" (:status %))))

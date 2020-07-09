@@ -4,7 +4,7 @@
   [reagent.core :refer [cursor atom create-class]]
   [reagent-modals.modals :as m]
   [reagent.session :as session]
-  [salava.core.ui.helper :refer [path-for js-navigate-to]]
+  [salava.core.ui.helper :refer [path-for js-navigate-to navigate-to]]
   [salava.core.ui.ajax-utils :as ajax]
   [salava.core.ui.layout :as layout]
   [salava.core.i18n :refer [t]]
@@ -168,9 +168,9 @@
          [:button.btn.btn-warning.btn-bulky
           {:type "button"
            :on-click #(do
-                        (.preventDefault %))}
+                        (.preventDefault %)
                        ; (reset! (cursor state [:space]) nil)
-                        ;(navigate-to "admin/spaces"))}
+                        (navigate-to "space/admin"))}
           (t :core/Cancel)]]]]]]]]))
 
 
@@ -192,7 +192,8 @@
       [m/modal-window]
       [manage-status state]
       [sm/manage-visibility state (fn [] (init-data state))]
-      (when (= @(cursor state [:space :visibility] ) "private") [invite-link (select-keys (:space @state) [:id :name :alias])])])
+      ;(when (= @(cursor state [:space :visibility] ) "private")) 
+      [invite-link (select-keys (:space @state) [:id :name :alias])]])
    :component-did-mount
    (fn [] (init-data state))}))
 
