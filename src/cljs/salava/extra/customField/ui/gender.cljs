@@ -7,7 +7,7 @@
    [salava.extra.customField.ui.helper :as h]
    [salava.core.ui.grid :as grid]))
 
-(def genders ["male" "female" "other"])
+(def genders ["Male" "Female" "Not specified"])
 
 (defn init-value [field-atom user-id]
   (let [url (if user-id (str "/obpv1/customField/gender/value/" user-id) "/obpv1/customField/gender/value")]

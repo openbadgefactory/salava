@@ -607,7 +607,7 @@
    [:h1 {:style {:display "none"}} "Dashboard"]
    (if (not-activated?)
      (not-activated-banner))
-   #_[custom-field-notice state]
+   [custom-field-notice state]
    [welcome-block state]
    [:div.row
     [:div [layout/space-info-banner]]]
@@ -643,7 +643,7 @@
                      :custom-fields nil})]
                      ;:show-custom-field-alert? false})]
     (new-user-oauth)
-    #_(custom-field-init state)
+    (custom-field-init state)
     (init-dashboard state)
 
     (fn []
