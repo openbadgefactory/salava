@@ -7,3 +7,12 @@ REPLACE INTO user_properties (user_id, name, value) VALUES (:user_id, :name, :va
 --name: select-organizations
 SELECT id, alias, name FROM space
 WHERE visibility != "private" AND status = "active" AND (valid_until IS NULL OR valid_until > UNIX_TIMESTAMP());
+
+--name: select-custom-field-organizations
+SELECT id, name FROM custom_org_list ORDER BY ctime DESC
+
+--name: insert-custom-field-org!
+INSERT INTO custom_org_list (name, ctime) VALUES (:name, UNIX_TIMESTAMP());
+
+--name: delete-custom-field-org!
+DELETE FROM custom_org_list WHERE id = :id

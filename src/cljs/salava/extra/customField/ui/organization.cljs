@@ -37,20 +37,37 @@
           [:label.col-sm-4 {:for "select-org"}
            (t :extra-customField/Organization) (when @compulsory? [:span.form-required " *"])]
           [:div.col-sm-8
-           (reduce
-            (fn [r org]
-              (conj r [:option {:value (:name org)} (:name org)]))
-            [:select#select-org.form-control
-             {:on-change (fn [x]
-                           (do
-                            (reset! org-atom (-> x .-target .-value))
-                            (swap! (cursor form-state [:custom-fields]) assoc :organization @org-atom)
+
+           [:div.input-group
+            [:input.form-control
+              {:type "text"
+               :placeholder (t :extra-customField/SelectOrganization)
+               :list "select-org"
+               :on-change (fn [x]
+                           (reset! org-atom (-> x .-target .-value)))}]
+
+
+            [:span.input-group-btn
+             [:button.btn.btn-primary
+              {:style {:word-break "unset"}
+               :type "button"
+               :on-click #(do
+                            (.preventDefault %)
                             (ajax/POST
                              (path-for "/obpv1/customField/org/register" true)
                              {:params {:organization @org-atom}
-                              :handler (fn [data])})))}
-             [:option {:value nil :disabled (not (clojure.string/blank? @org-atom))} (t :extra-customField/SelectOrganization)]]
-            @organizations)]]])))))
+                              :handler (fn [data])
+                              :finally (fn [] (swap! (cursor form-state [:custom-fields]) assoc :organization @org-atom))}))}
+
+              "OK"]]
+
+
+            (reduce
+             (fn [r org]
+               (conj r [:option {:value (:name org)} (:name org)]))
+             [:datalist#select-org]
+             @organizations)]
+           [:span.help-block.text-muted (t :extra-customField/Selectorganizationinstruction)]]]])))))
 
 (defn organization-field []
   (let [visible (h/field-enabled? "organization")

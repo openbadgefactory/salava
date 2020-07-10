@@ -3,7 +3,8 @@
   [clojure.tools.logging :as log]
   [slingshot.slingshot :refer :all]
   [yesql.core :refer [defqueries]]
-  [salava.core.util :refer [get-db get-db-1]]))
+  [salava.core.util :refer [get-db get-db-1]]
+  [clojure.data.json :as json]))
 
 (defqueries "sql/extra/customField/main.sql")
 
@@ -23,7 +24,16 @@
     (update-field ctx (name field) (field custom-fields) user-id)))
 
 (defn organizations [ctx]
-  (select-organizations {} (get-db ctx)))
+ (select-custom-field-organizations {} (get-db ctx)))
+
+(defn update-organization-list [ctx orgs]
+ (try+
+   (doseq [name orgs]
+    (insert-custom-field-org!  {:name name} (get-db ctx)))
+   {:status "success"}
+  (catch Object _
+   (log/error _)
+   {:status "error"})))
 
 (defn apply-custom-filters-users [ctx filters users]
  (let [users (reduce
@@ -37,3 +47,11 @@
               []
               users)]
      (filter #(= filters (select-keys % (keys filters))) users)))
+
+(defn delete-organization! [ctx id]
+ (try+
+   (delete-custom-field-org! {:id id} (get-db ctx))
+   {:status "success"}
+   (catch Object _
+     (log/error _)
+     {:status "error"})))
