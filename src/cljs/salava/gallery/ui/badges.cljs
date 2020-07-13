@@ -235,10 +235,12 @@
   (let [show-advanced-search (cursor state [:advanced-search])]
     [:div {:id "grid-filter"
            :class "form-horizontal"}
+     (prn (session/get-in [:user :current-space] nil))
      (if (not (:user-id @state))
        [:div
 
-        [country-selector state]
+        (if (empty? (session/get-in [:user :current-space] nil))
+         [country-selector state])
         [:div
          [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
               :href "#"}
