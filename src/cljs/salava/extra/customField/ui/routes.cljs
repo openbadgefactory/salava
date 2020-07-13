@@ -10,4 +10,4 @@
   {(str (base-path context) "/admin/customField") [["" manage/handler]]})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/admin/customField") {:weight 600 :title (t :extra-customField/Config) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-customField/customField "/" :extra-customField/Manage)}})
+  {(str (base-path context) "/admin/customField") {:weight 600 :title (t :extra-customField/customField) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-customField/customField)}})

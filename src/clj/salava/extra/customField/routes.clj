@@ -8,12 +8,16 @@
   [salava.extra.customField.schemas :as schemas]
   [salava.core.layout :as layout]))
 
+
 (defn route-def [ctx]
   (routes
    (context "/admin" []
             (layout/main ctx "/customField"))
 
    (context "/obpv1/customField" []
+            :tags ["customField"]
+            :no-doc true
+
             (POST "/gender/value" []
                  :return schemas/gender #_(s/maybe (s/enum "male" "female" "other"))
                  :summary "Get user gender"
@@ -73,7 +77,7 @@
 
             (POST "/config/update/orglist" []
                   :return {:status (s/enum "success" "error")}
-                  :summary "Update field config"
+                  :summary "Update org list"
                   :auth-rules access/admin
                   :current-user current-user
                   :body-params [org :- [s/Str]]
@@ -81,7 +85,7 @@
 
             (DELETE "/config/update/orglist/:id" []
                   :return {:status (s/enum "success" "error")}
-                  :summary "Update field config"
+                  :summary "Update org list"
                   :auth-rules access/admin
                   :current-user current-user
                   :path-params [id :- s/Int]
@@ -92,5 +96,5 @@
                   :summary "set user organization"
                   :auth-rules access/signed
                   :current-user current-user
-                  :body-params [org :- s/Str]
-                  (ok (db/update-field ctx "organization" org (:id current-user)))))))
+                  :body-params [organization :- s/Str]
+                  (ok (db/update-field ctx "organization" organization (:id current-user)))))))

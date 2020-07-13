@@ -24,7 +24,7 @@
 (defn organization-field-registration [form-state]
   (let [visible (h/field-enabled? "organization")
         compulsory-field? (h/compulsory-field? "organization")
-        state (atom {:visible visible :compulsory? compulsory-field? :org nil :orgs []})]
+        state (atom {:visible visible :compulsory? compulsory-field? :org nil :orgs [] :input-confirmed false})]
    (init-organizations state)
    (fn []
     (let [compulsory? (cursor state [:compulsory?])
@@ -44,12 +44,13 @@
                :placeholder (t :extra-customField/SelectOrganization)
                :list "select-org"
                :on-change (fn [x]
+                           (reset! (cursor state [:input-confirmed]) false)
                            (reset! org-atom (-> x .-target .-value)))}]
 
 
-            [:span.input-group-btn
+            [:div.input-group-btn
              [:button.btn.btn-primary
-              {:style {:word-break "unset"}
+              {:style {:word-break "unset" :white-space "normal"}
                :type "button"
                :on-click #(do
                             (.preventDefault %)
@@ -57,46 +58,69 @@
                              (path-for "/obpv1/customField/org/register" true)
                              {:params {:organization @org-atom}
                               :handler (fn [data])
-                              :finally (fn [] (swap! (cursor form-state [:custom-fields]) assoc :organization @org-atom))}))}
 
-              "OK"]]
+                              :finally (fn []
+                                         (when-not (clojure.string/blank? @org-atom) (reset! (cursor state [:input-confirmed]) true))
+                                         (swap! (cursor form-state [:custom-fields]) assoc :organization @org-atom))}))}
+              (when @(cursor state [:input-confirmed]) [:i.fa.fa-check-circle.fa-fw.inline])
+              [:span {:style {:display "inline-block" :margin "0 2px"}}  " OK"]]]
+
+
 
 
             (reduce
              (fn [r org]
                (conj r [:option {:value (:name org)} (:name org)]))
              [:datalist#select-org]
-             @organizations)]
+             (sort-by :name @organizations))]
            [:span.help-block.text-muted (t :extra-customField/Selectorganizationinstruction)]]]])))))
 
+
 (defn organization-field []
-  (let [visible (h/field-enabled? "organization")
-        state (atom {:org nil :visible visible :orgs []})]
-   (init-organizations state)
-   (init-field-value (cursor state [:org]) nil)
-   (fn []
-    (let [orgs (cursor state [:orgs])
-          org-atom (cursor state [:org])
-          visible (cursor state [:visible])]
-     (when @visible
-      [:div.form-group
-       [:label.col-md-3 {:for "select-org"} (t :extra-customField/Organization)]
-       [:div.col-md-9
-        (reduce
-         (fn [r org]
-           (conj r [:option {:value (:name org) :selected (= (:name org) @org-atom)} (:name org)]))
-         [:select#select-org.form-control
-          {:on-change (fn [x]
-                        (do
-                         (reset! org-atom (-> x .-target .-value))
-                         (ajax/POST
-                          (path-for "/obpv1/customField/org" true)
-                          {:params {:org @org-atom}
-                           :handler (fn [data]
-                                      (when (= (:status data) "success")
-                                        (init-field-value org-atom nil)))})))}
-          [:option {:value nil :disabled (not (clojure.string/blank? @org-atom))} (t :extra-customField/SelectOrganization)]]
-         @orgs)]])))))
+ (let [visible (h/field-enabled? "organization")
+       state (atom {:org nil :visible visible :orgs [] :input-confirmed false})]
+    (init-organizations state)
+    (init-field-value (cursor state [:org]) nil)
+    (fn []
+      (let [orgs (cursor state [:orgs])
+            org-atom (cursor state [:org])
+            visible (cursor state [:visible])]
+       (when @visible
+        [:div.form-group
+         [:label.col-md-3 {:for "select-org"} (t :extra-customField/Organization)]
+         [:div.col-md-9
+          [:div.input-group
+           [:input.form-control.dropdowninput
+            {:type "text"
+             :placeholder (t :extra-customField/SelectOrganization)
+             :value @org-atom
+             :list "organization-list"
+             :on-change (fn [x]
+                         (reset! (cursor state [:input-confirmed]) false)
+                         (reset! org-atom (-> x .-target .-value)))}]
+
+           [:span.input-group-btn
+            [:button.btn.btn-primary.btn-bulky
+             {:style {:margin-top "unset"}
+              :type "button"
+              :on-click #(do
+                           (.preventDefault %)
+                           (ajax/POST
+                            (path-for "/obpv1/customField/org" true)
+                            {:params {:organization @org-atom}
+                             :handler (fn [data]
+                                        (when (= (:status data) "success")
+                                          (init-field-value org-atom nil)))
+                             :finally (fn []
+                                         (when-not (clojure.string/blank? @org-atom) (reset! (cursor state [:input-confirmed]) true)))}))}
+
+             (when @(cursor state [:input-confirmed]) [:i.fa.fa-check-circle.fa-fw]) "OK"]]
+           (reduce
+            (fn [r org]
+              (conj r [:option {:value (:name org)} (:name org)]))
+            [:datalist#organization-list]
+            (sort-by :name @orgs))]
+          [:span.help-block.text-muted (t :extra-customField/Selectorganizationinstruction)]]])))))
 
 (defn ^:export init_custom_field_value [field-atom]
  (ajax/POST
