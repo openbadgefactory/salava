@@ -26,7 +26,8 @@
    :order (get base :order "mtime")
    :recipient-name (get base :recipient-name "")
    :page_count 0
-   :only-selfie? false})
+   :only-selfie? false
+   :space-id (get base :space-id (session/get-in [:user :current-space :id] 0))})
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -235,12 +236,14 @@
   (let [show-advanced-search (cursor state [:advanced-search])]
     [:div {:id "grid-filter"
            :class "form-horizontal"}
-     (prn (session/get-in [:user :current-space] nil))
      (if (not (:user-id @state))
        [:div
 
         (if (empty? (session/get-in [:user :current-space] nil))
-         [country-selector state])
+         [country-selector state]
+         (into [:div]
+          (for [f (plugin-fun (session/get :plugins) "block" "gallery_badge_space_selector")]
+           (when (ifn? f) [f state (fn [] (fetch-badges state))]))))
         [:div
          [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
               :href "#"}
@@ -347,7 +350,8 @@
                       :advanced-search        false
                       :timer                  nil
                       :ajax-message           nil
-                      :only-selfie? false})]
+                      :only-selfie? false
+                      :space-id (session/get-in [:user :current-space :id] nil)})]
     (init-data params state)
     (fn []
       (if (session/get :user)

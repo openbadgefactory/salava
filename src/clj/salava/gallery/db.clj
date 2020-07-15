@@ -51,7 +51,7 @@
 
 (defn get-gallery-ids
   "Get gallery-ids with search params"
-  [ctx tags badge-name issuer-name recipient-name only-selfie? country]
+  [ctx tags badge-name issuer-name recipient-name only-selfie? country space-id]
   (let [filters ;; Build a list of filter sets from query parameters
         (cond-> []
           (not (string/blank? badge-name))
@@ -67,7 +67,11 @@
           (conj (set (select-gallery-ids-tags {:tags (->> (string/split tags #",") (map string/trim))} (get-db-col ctx :gallery_id))))
 
           (true? only-selfie?)
-          (conj (set (select-gallery-ids-selfie {:country country} (get-db-col ctx :gallery_id)))))]
+          (conj (set (select-gallery-ids-selfie {:country country} (get-db-col ctx :gallery_id))))
+
+          (and (number? space-id) (pos? space-id))
+          (conj (set (select-gallery-ids-space {:space_id space-id} (get-db-col ctx :gallery_id)))))]
+
     ;; Get final filtered gallery_id list
     (when (seq filters)
       (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))
@@ -90,9 +94,9 @@
 
 (defn gallery-badges
   "Get badges for gallery grid"
-  [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count only-selfie?]}]
+  [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count only-selfie? space-id]}]
   (let [offset (string->number page_count)
-        gallery-ids (get-gallery-ids ctx tags badge-name issuer-name recipient-name only-selfie? country)
+        gallery-ids (get-gallery-ids ctx tags badge-name issuer-name recipient-name only-selfie? country space-id)
         badges (some->> (select-badges ctx country gallery-ids order offset) (badge-checker) (remove nil?) (selfie-checker ctx gallery-ids))]
     {:badges badges
      :badge_count (badge-count (if (nil? gallery-ids)
@@ -242,6 +246,35 @@
                (jdbc/query conn (into [query] params)))]
     (p/page-badges ctx pages)))
 
+(defn- select-pages [ctx country page_ids]
+  (let [limit 75]
+    (if (nil? page_ids)
+      (select-gallery-pages-all {:country country :limit limit} (get-db ctx))
+      (if (empty? page_ids)
+        []
+        (select-gallery-pages-filtered {:country country :limit limit :page_ids page_ids} (get-db ctx))))))
+
+(defn get-page-ids [ctx country owner space-id]
+ (let [filters
+       (cond-> []
+        (not (clojure.string/blank? owner))
+        (conj (set (select-page-ids-owner {:owner (str "%" owner "%")} (get-db-col ctx :id))))
+        (and (number? space-id) (pos? space-id))
+        (conj (set (select-page-ids-space {:space_id space-id} (get-db-col ctx :id)))))]
+    (when (seq filters)
+     (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))
+
+(defn gallery-pages [ctx params user-id]
+  (let [{:keys [country owner space-id]} params
+        countries (page-countries ctx user-id)
+        current-country (if (clojure.string/blank? country) (:user-country countries) country)
+        space-id (if (string? space-id) (string->number space-id) space-id)
+        page-ids (get-page-ids ctx country owner space-id)
+        pages (some->> (select-pages ctx country page-ids) (p/page-badges ctx))]
+     (merge {:pages pages} countries)))
+
+
+
 (defn public-pages-p [ctx country owner]
   (->> (public-pages ctx country owner)
        (clojure.core.reducers/map #(-> % (dissoc :first_name :last_name :profile_picture)))
@@ -295,43 +328,77 @@
                   nil)]
     (map #(assoc % (keyword context) (if data-fn (data-fn ctx user_badge_id user-id (:id %)) {})) profiles)))
 
+(defn profile-ids-all-filtered [ctx search-params space-id]
+ (let [{:keys [name country order_by email]} search-params
+       filters
+       (cond-> []
+         (not (blank? name))
+         (conj (set (filtered-select-all-profile-ids-name {:name (str "%" name "%") :space_id space-id } (get-db-col ctx :id))))
+
+         (not (blank? email))
+         (conj (set (filtered-select-all-profile-ids-email {:email (str "%" email "%") :space_id space-id} (get-db-col ctx :id)))))]
+   (when (seq filters)
+     (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))
+
 (defn profile-ids-all [ctx search-params space-id]
  (let [{:keys [name country order_by email]} search-params
        filters
        (cond-> []
          (not (blank? name))
-         (conj (set (select-all-profile-ids-name {:name (str "%" name "%") :space_id space-id } (get-db-col ctx :id))))
+         (conj (set (select-all-profile-ids-name {:name (str "%" name "%")} (get-db-col ctx :id))))
+
          (not (blank? email))
-         (conj (set (select-all-profile-ids-email {:email (str "%" email "%") :space_id space-id} (get-db-col ctx :id)))))]
+         (conj (set (select-all-profile-ids-email {:email (str "%" email "%")} (get-db-col ctx :id))))
+
+         (and space-id (pos? space-id))
+         (conj (set (select-all-profile-ids-space {:space_id space-id} (get-db-col ctx :id)))))]
    (when (seq filters)
      (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))
 
-(defn select-profiles [ctx country ids order page_count space-id]
-  (let [limit 10
-        offset (* limit page_count)]
+(defn select-profiles [ctx country ids order page_count space-id filtered?]
+  (let [limit 100
+        offset (if filtered? (* limit page_count) 0)]
     (if (nil? ids)
-        (select-profiles-all {:country country :limit limit :offset offset :order order :space_id space-id} (get-db ctx))
+        (if filtered?
+          (filtered-select-profiles-all {:country country :limit limit :offset offset :order order :space_id space-id} (get-db ctx))
+          (select-profiles-all {:country country :limit limit :offset offset :order order} (get-db ctx)))
         (if (empty? ids)
           []
           (select-profiles-filtered {:country country :limit limit :offset offset :order order :ids ids} (get-db ctx))))))
 
 (defn- profile-count [remaining page_count]
-  (let [limit 10
+  (let [limit 100
         badges-left (- remaining (* limit (inc page_count)))]
     (if (pos? badges-left)
       badges-left
       0)))
 
-(defn profiles-all [ctx search-params space-id]
-  (let [{:keys [country order_by page_count]} search-params
-        profile-ids (profile-ids-all ctx search-params space-id)
+(defn apply-custom-filters [ctx filters users]
+ (as-> (first (plugin-fun (get-plugins ctx) "db" "apply-custom-filters-users")) $
+       (when $ ($ ctx filters users))))
+
+(defn profiles-all [ctx search-params user-id filtered?]
+  (let [{:keys [country order_by page_count common_badges space-id custom-field-filters]} search-params
+        profile-ids (if filtered? (profile-ids-all-filtered ctx search-params space-id) (profile-ids-all ctx search-params space-id))
         offset page_count;(string->number page_count)
-        profiles (select-profiles ctx country profile-ids order_by offset space-id)]
-     {:users profiles
-      :users_count (profile-count (if (nil? profile-ids)
-                                      (get (select-profiles-count {:country (:country search-params) :space_id space-id} (get-db-1 ctx)) :total 0)
-                                      (count profile-ids))
-                                  offset)}))
+        profiles (select-profiles ctx country profile-ids order_by offset space-id filtered?)
+        common-badge-counts (when (and (seq profiles) (not filtered?)) (->> (select-common-badge-counts {:user_id user-id} (get-db ctx)) (reduce #(assoc %1 (:user_id %2) (:c %2)) {})))
+        profiles-with-badges (map #(assoc % :common_badge_count (get common-badge-counts (:id %) 0)) profiles)
+        visible-profiles (filter #(if common_badges
+                                   (pos? (:common_badge_count %))
+                                   identity) profiles-with-badges)
+        profiles-with-filters (if (empty? custom-field-filters) visible-profiles (apply-custom-filters ctx custom-field-filters visible-profiles))]
+
+    (if filtered?
+      {:users profiles :countries (profile-countries ctx user-id)
+       :users_count (profile-count (if (nil? profile-ids)
+                                       (get (select-profiles-count {:country (:country search-params) :space_id space-id} (get-db-1 ctx)) :total 0)
+                                       (count profile-ids))
+                                   offset)}
+      {:users (if (= order_by "common_badge_count")
+                  (sort-by :common_badge_count > profiles-with-filters)
+                  profiles-with-filters)
+       :countries (profile-countries ctx user-id)})))
 
 (defn meta-tags [ctx badge-content-id]
   (let [badge-content (select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))]

@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
             [clojure.string :refer [trim]]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for plugin-fun]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -17,7 +17,7 @@
   (reset! ajax-message-atom nil))
 
 (defn fetch-users [state]
-  (let [{:keys [name country-selected common-badges? order_by url]} @state
+  (let [{:keys [name country-selected common-badges? order_by url space]} @state
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingprofiles))
     (ajax/POST
@@ -25,7 +25,9 @@
       {:params  {:country       country-selected
                  :name          (trim (str name))
                  :common_badges (boolean common-badges?)
-                 :order_by      order_by}
+                 :order_by      order_by
+                 :space-id      (int space)
+                 :custom-field-filters @(cursor state [:custom-field-filters])}
        :handler (fn [data] (swap! state assoc :users (:users data)))
        :finally (fn [] (ajax-stop ajax-message-atom))})))
 
@@ -296,16 +298,29 @@
                              (fetch-users+ state))}]
       (t :core/byname)]]]))
 
+(defn custom-field-filters [field state]
+  (into [:div]
+    (for [f (plugin-fun (session/get :plugins) field "custom_field_filter")]
+       (when f [f state (fn [] (fetch-users state))])))) ;(:users @state)]))))
 
 (defn profile-gallery-grid-form
   ([state]
    [:div {:id "grid-filter"
           :class "form-horizontal"}
     [:div
-     [country-selector state]
+     (if (empty? (session/get-in [:user :current-space]))
+         [country-selector state]
+         (into [:div]
+          (for [f (plugin-fun (session/get :plugins) "block" "gallery_profiles_space_select")]
+           (when (ifn? f) [f state (fn [] (fetch-users state))]))))
      [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
      [common-badges-checkbox state]]
-    [order-buttons state]])
+    [order-buttons state]
+    (when (= "admin" (session/get-in [:user :role] "user"))
+      [:div
+       [custom-field-filters "gender" state]
+       [custom-field-filters "organization" state]])])
+
 
   ([state modal?]
    (if-not modal?
@@ -371,14 +386,16 @@
   (let [country (session/get-in [:user :country] "all")
         filter-options (session/get :filter-options nil)
         common-badges? (if filter-options (:common-badges filter-options) true)
-        ajax-message-atom (cursor state [:ajax-message])]
+        ajax-message-atom (cursor state [:ajax-message])
+        space-id (session/get-in [:user :current-space :id] 0)]
     (reset! ajax-message-atom (str (t :core/Loading) "..."))
     (ajax/POST
       (path-for (str "/obpv1/gallery/profiles/"))
-      {:params {:country (session/get-in [:filter-options :country] country)
+      {:params {:country (if (pos? space-id) "all" (session/get-in [:filter-options :country] country))
                 :name ""
                 :common_badges common-badges?
-                :order_by "ctime"}
+                :order_by "ctime"
+                :space-id space-id}
        :handler (fn [{:keys [users countries]} data]
                   (swap! state assoc :users users
                          :countries countries
@@ -395,7 +412,8 @@
                       :order_by "ctime"
                       :timer nil
                       :ajax-message nil
-                      :common-badges? (if filter-options (:common-badges filter-options) true)})]
+                      :common-badges? (if filter-options (:common-badges filter-options) true)
+                      :space (session/get-in [:user :current-space :id] 0)})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))

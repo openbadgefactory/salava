@@ -292,7 +292,7 @@
                                          :order_by (s/enum "name" "ctime" "common_badge_count")
                                          :email    (s/maybe s/Str)
                                          :filter   (s/enum 1 0)
-                                         (s/optional-key :custom-field-filters) (s/maybe {(s/optional-key :gender) (s/maybe (s/enum "male" "female" "other" "notset"))
+                                         (s/optional-key :custom-field-filters) (s/maybe {(s/optional-key :gender) (s/maybe (s/enum "Male" "Female" "Notspecified" "notset"))
                                                                                           (s/optional-key :organization) (s/maybe s/Str)})}]
                    :summary "Get public user profiles"
                    :auth-rules access/admin

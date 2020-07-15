@@ -23,7 +23,10 @@
                          :common_badges s/Bool
                          :order_by      (s/enum "name" "ctime" "common_badge_count")
                          (s/optional-key :email) (s/maybe s/Str)
-                         (s/optional-key :page_count) (s/maybe s/Int)})
+                         (s/optional-key :page_count) (s/maybe s/Int)
+                         (s/optional-key :space-id) s/Int
+                         (s/optional-key :custom-field-filters) (s/maybe {(s/optional-key :gender) (s/maybe (s/enum "Male" "Female" "Notspecified" "notset"))
+                                                                          (s/optional-key :organization) (s/maybe s/Str)})})
 
 (s/defschema UserProfiles (-> u/User
                               (select-keys [:first_name :last_name :country :profile_picture])
@@ -31,8 +34,10 @@
                                       :ctime s/Int
                                       :common_badge_count s/Int})
                               (assoc (s/optional-key :endorsement) (s/maybe {(s/optional-key :received) (s/maybe (s/enum "pending" "accepted"))
-                                                                             (s/optional-key :request) (s/maybe s/Str)}))))
-
+                                                                             (s/optional-key :request) (s/maybe s/Str)})
+                                     (s/optional-key :gender) (s/maybe (s/enum "Male" "Female" "Notspecified" "notset"))
+                                     (s/optional-key :organization) (s/maybe s/Str))))
+                                                           
 (s/defschema Countries (s/constrained [s/Str] (fn [c]
                                                 (and
                                                   (some #(= (first c) %) (keys all-countries))
@@ -70,7 +75,8 @@
                          (s/optional-key :order) (describe (s/enum "recipients" "mtime" "name" "issuer_content_name") "Select order, default mtime")
                          (s/optional-key :recipient-name) (describe constrained-str "Filter by badge earner")
                          :page_count (describe constrained-str "Page offset. 0 for first page, Each page returns 20 badges")
-                         (s/optional-key :only-selfie?) (describe s/Bool "show only badges issued in passport")})
+                         (s/optional-key :only-selfie?) (describe s/Bool "show only badges issued in passport")
+                         (s/optional-key :space-id) (describe (s/maybe s/Int) "Show gallery badges within a space with space-id. ")})
 
 (s/defschema MultilanguageContent {:default_language_code s/Str
                                    :language_code         s/Str
@@ -140,7 +146,8 @@
 (s/defschema gallery-pages (-> gallery-pages-p (assoc :pages [(s/maybe page)])))
 
 (s/defschema pages-search {:country (describe (s/maybe s/Str) "Filter by country code. Use all to get all pages")
-                           (s/optional-key :owner)(describe (s/maybe s/Str) "Search by page owner")})
+                           (s/optional-key :owner)(describe (s/maybe s/Str) "Search by page owner")
+                           (s/optional-key :space-id) (describe (s/maybe  s/Int) "Show gallery pages within a space with space-id")})
 
 (s/defschema public-badge-recipient {:id (s/maybe s/Int)
                                      :first_name (s/maybe s/Str)

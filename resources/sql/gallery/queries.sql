@@ -397,24 +397,89 @@ WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
 ORDER BY ub.ctime DESC
 LIMIT 1;
 
+--name: select-gallery-ids-space
+SELECT DISTINCT ub.gallery_id FROM user_badge ub
+INNER JOIN user_space us ON us.user_id = ub.user_id
+INNER JOIN space s ON s.id = us.space_id
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+    AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
+    AND s.id = :space_id
+ORDER BY ub.ctime DESC
+LIMIT 100000;
+
+--name: select-page-ids-owner
+SELECT DISTINCT p.id FROM page p
+JOIN user AS u ON p.user_id = u.id
+WHERE CONCAT(u.first_name, ' ', u.last_name) LIKE :owner
+AND (p.visibility = 'public' OR p.visibility = 'internal') AND p.deleted = 0
+ORDER BY p.mtime DESC
+LIMIT 100000;
+
+--name: select-page-ids-space
+SELECT DISTINCT p.id FROM page p
+INNER JOIN user_space us ON us.user_id = p.user_id
+INNER JOIN space s ON s.id = us.space_id
+WHERE s.id = :space_id AND (p.visibility = 'public' OR p.visibility = 'internal') AND p.deleted = 0
+ORDER BY p.mtime DESC
+LIMIT 100000;
+
+--name: select-gallery-pages-all
+SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
+JOIN user AS u ON p.user_id = u.id
+LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
+WHERE (visibility = 'public' OR visibility = 'internal') AND p.deleted = 0 AND (:country = 'all' OR u.country= :country)
+GROUP BY p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture
+ORDER BY p.mtime DESC
+LIMIT :limit;
+
+--name: select-gallery-pages-filtered
+SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
+JOIN user AS u ON p.user_id = u.id
+LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
+WHERE (visibility = 'public' OR visibility = 'internal') AND p.deleted = 0 AND p.id IN (:page_ids) AND (:country = 'all' OR u.country= :country)
+GROUP BY p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture
+ORDER BY p.mtime DESC
+LIMIT :limit;
+
 --name: all-users-on-map-count
 SELECT COUNT(id) AS users_count FROM user WHERE location_lng IS NOT NULL AND location_lat IS NOT NULL AND deleted = 0
 
 --name: select-user-owns-badge-id
 SELECT user_id FROM user_badge WHERE gallery_id = :gallery_id AND user_id = :user_id AND status != 'declined' AND deleted = 0 AND revoked = 0
 
---name: select-all-profile-ids-name
+--name: filtered-select-all-profile-ids-name
 SELECT DISTINCT u.id FROM user u
 WHERE CONCAT(first_name, ' ', last_name) LIKE :name AND deleted = 0 AND activated = 1
       AND u.id NOT IN (SELECT user_id FROM user_space WHERE space_id = :space_id)
 ORDER BY ctime DESC
 LIMIT 100000;
 
---name: select-all-profile-ids-email
+--name: select-all-profile-ids-name
+SELECT DISTINCT u.id FROM user u
+WHERE CONCAT(first_name, ' ', last_name) LIKE :name AND deleted = 0 AND activated = 1
+ORDER BY ctime DESC
+LIMIT 100000;
+
+--name: filtered-select-all-profile-ids-email
 SELECT DISTINCT u.id FROM user u
 JOIN user_email ue ON u.id= ue.user_id
 WHERE u.id IN (SELECT user_id FROM user_email WHERE email LIKE :email) AND u.deleted = 0 AND u.activated = 1
       AND u.id NOT IN (SELECT user_id FROM user_space WHERE space_id = :space_id)
+ORDER BY u.ctime DESC
+LIMIT 100000;
+
+--name: select-all-profile-ids-email
+SELECT DISTINCT u.id FROM user u
+JOIN user_email ue ON u.id= ue.user_id
+WHERE u.id IN (SELECT user_id FROM user_email WHERE email LIKE :email) AND u.deleted = 0 AND u.activated = 1
+ORDER BY u.ctime DESC
+LIMIT 100000;
+
+--name: select-all-profile-ids-space
+SELECT DISTINCT u.id FROM user u
+JOIN user_space us ON u.id= us.user_id
+WHERE u.deleted = 0 AND u.activated = 1
+      AND u.id IN (SELECT user_id FROM user_space WHERE space_id = :space_id)
 ORDER BY u.ctime DESC
 LIMIT 100000;
 
@@ -424,11 +489,21 @@ FROM user u
 WHERE u.deleted = 0 AND u.activated= 1 AND (:country = 'all' OR u.country = :country)
       AND u.id NOT IN (SELECT user_id FROM user_space WHERE space_id = :space_id)
 
---name: select-profiles-all
+--name: filtered-select-profiles-all
 SELECT id, first_name, last_name, country, profile_picture, ctime
 FROM user
 WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1 AND (:country = 'all' OR country= :country)
       AND id NOT IN (SELECT user_id FROM user_space WHERE space_id = :space_id)
+GROUP BY id
+ORDER BY
+ CASE WHEN :order='name'  THEN first_name END,
+ CASE WHEN :order='ctime' THEN MAX(ctime) END DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-profiles-all
+SELECT id, first_name, last_name, country, profile_picture, ctime
+FROM user
+WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1 AND (:country = 'all' OR country= :country)
 GROUP BY id
 ORDER BY
  CASE WHEN :order='name'  THEN first_name END,

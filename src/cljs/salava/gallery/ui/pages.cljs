@@ -9,13 +9,13 @@
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for plugin-fun]]
             [salava.user.ui.helper :as u]
             [salava.core.ui.modal :as mo]
             [salava.admin.ui.admintool :refer [admintool-gallery-page]]
-            [salava.core.ui.page-grid :refer [page-grid-element]]
+            [salava.core.ui.page-grid :refer [page-grid-element]]))
             ; [salava.gallery.ui.badge-content :refer [badge-content-modal]]
-            ))
+
 
 (defn open-modal [page-id]
   (ajax/GET
@@ -26,28 +26,48 @@
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
 
-(defn init-data [state user-id]
-  (reset! (cursor state [:ajax-message]) (str (t :core/Loading) "..."))
-  (ajax/POST
-    (path-for (str "/obpv1/gallery/pages/" user-id))
-    {:params {:country (session/get-in [:filter-options :country] "")
-              :owner ""}
-     :handler (fn [data]
-                (let [{:keys [pages countries user-country]} data]
-                  (swap! state assoc :pages pages
-                         :countries countries
-                         :country-selected (session/get-in [:filter-options :country] user-country))))
-     :finally (fn []
-                (ajax-stop (cursor state [:ajax-message])))}))
+#_(defn init-data [state user-id]
+   (let [space-atom (cursor state [:space-id])]
+    (reset! (cursor state [:ajax-message]) (str (t :core/Loading) "..."))
+    (ajax/POST
+      (path-for (str "/obpv1/gallery/pages/" user-id) true)
+      {:params {:country  (session/get-in [:filter-options :country] "")
+                :owner ""
+                :space-id @space-atom}
+       :handler (fn [data]
+                  (let [{:keys [pages countries user-country]} data]
+                    (swap! state assoc :pages pages
+                           :countries countries)))
+                           ;:country-selected (session/get-in [:filter-options :country] user-country))))
+       :finally (fn []
+                  (ajax-stop (cursor state [:ajax-message])))})))
+
+(defn init-pages [state user-id]
+  (let [space-atom (cursor state [:space])]
+     (reset! (cursor state [:ajax-message]) (str (t :core/Loading) "..."))
+     (reset! space-atom (session/get-in [:user :current-space :id] 0))
+     (ajax/POST
+       (path-for (str "/obpv1/gallery/pages/" user-id) true)
+       {:params {:country  (session/get-in [:filter-options :country] "")
+                 :owner ""
+                 :space-id (session/get-in [:user :current-space :id] 0)}
+        :handler (fn [data]
+                   (let [{:keys [pages countries user-country]} data]
+                     (swap! state assoc :pages pages
+                            :countries countries
+                            :country-selected (session/get-in [:filter-options :country] user-country))))
+        :finally (fn []
+                   (ajax-stop (cursor state [:ajax-message])))})))
 
 (defn fetch-pages [state]
   (let [{:keys [user-id country-selected owner-name]} @state
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingpages))
     (ajax/POST
-      (path-for (str "/obpv1/gallery/pages/" user-id))
+      (path-for (str "/obpv1/gallery/pages/" user-id) true)
       {:params  {:country (trim country-selected)
-                 :owner   (trim owner-name)}
+                 :owner   (trim owner-name)
+                 :space-id (int (:space @state))}
        :handler (fn [data]
                   (swap! state assoc :pages (:pages data)))
        :finally (fn []
@@ -101,7 +121,11 @@
          :class "form-horizontal"}
    (if (not (:user-id @state))
      [:div
-      [country-selector state]
+      (if (empty? (session/get-in [:user :current-space]))
+          [country-selector state]
+          (into [:div]
+           (for [f (plugin-fun (session/get :plugins) "block" "gallery_page_space_select")]
+            (when (ifn? f) [f state (fn [] (fetch-pages state))]))))
       [text-field :owner-name (t :gallery/Pageowner) (t :gallery/Searchbypageowner) state]])
    [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
 
@@ -128,7 +152,7 @@
                           :src (str "/" (:image_file badge))}]))]]
          [:div {:class "media-right"}
           [:img {:src (u/profile-picture profile_picture)}]]]
-        (admintool-gallery-page id "page" state init-data user_id)]]))
+        (admintool-gallery-page id "page" state init-pages user_id)]]))
 
 (defn page-gallery-grid [state]
   (let [pages (:pages @state)
@@ -139,7 +163,7 @@
     (into [:div {:class "row wrap-grid"
                  :id    "grid"}]
           (for [element-data pages]
-            (page-grid-element element-data {:state state :init-data init-data :type "gallery"})
+            (page-grid-element element-data {:state state :init-data init-pages :type "gallery"})
             #_(page-gallery-grid-element element-data state)))))
 
 (defn content [state]
@@ -165,7 +189,8 @@
                      :order "mtime"
                      :timer nil
                      :ajax-message nil})]
-    (init-data state user-id)
+                     ;:space (session/get-in [:user :current-space :id] 0)})]
+    (init-pages state user-id)
     (fn []
       (if (session/get :user)
         (layout/default site-navi (content state))

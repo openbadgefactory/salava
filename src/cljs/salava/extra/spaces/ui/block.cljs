@@ -289,3 +289,73 @@
            [:option {:value 0} (session/get :site-name)]]
 
          (:spaces @v))]]]))))
+
+(defn ^:export gallery_badge_space_selector [state fetch-fn]
+  (let [params (cursor state [:params])
+        space (cursor state [:params :space-id])
+        spaces [(session/get-in [:user :current-space])]
+        country (cursor state [:params :country])]
+     [:div.form-group
+      [:label {:class "control-label col-sm-2" :for "space-selector"} (str (t :extra-spaces/Space) ":")]
+      [:div.col-sm-10
+       [:select {:class     "form-control"
+                 :id        "space-selector"
+                 :name      "space"
+                 :value     @space
+                 :on-change #(do
+                               (reset! space (.-target.value %))
+                               (reset! params (merge (:params @state) {:country "all" :space-id @space}))
+                               (fetch-fn))}
+        [:option {:value 0 :key "all"} (t :core/All)]
+        (for [s spaces]
+          [:option {:key (:id s) :value (:id s)} (:name s)])]
+       (when (pos? @space)
+        [:p.help-block.text-muted
+         [:i.fa.fa-fw.fa-lg.fa-info-circle]
+         [:b (t :extra-spaces/Badgeselectorinfo)]])]]))
+
+(defn ^:export gallery_page_space_select [state fetch-fn]
+ (let [space (cursor state [:space])
+       spaces [(session/get-in [:user :current-space])]
+       country (cursor state [:country-selected])]
+    [:div.form-group
+     [:label {:class "control-label col-sm-2" :for "space-selector-pages"} (str (t :extra-spaces/Space) ":")]
+     [:div.col-sm-10
+      [:select#space-selector-pages.form-control
+       {:name "space-selector"
+        :value @space
+        :on-change #(do
+                      (.preventDefault %)
+                      (reset! space (.-target.value %))
+                      (reset! country "all")
+                      (fetch-fn))}
+       [:option {:value 0 :key "all"} (t :core/All)]
+       (for [p spaces]
+         [:option {:key (:id p) :value (:id p)} (:name p)])]
+      (when (pos? @space)
+       [:p.help-block.text-muted
+        [:i.fa.fa-fw.fa-lg.fa-info-circle]
+        [:b (t :extra-spaces/Pageselectorinfo)]])]]))
+
+(defn ^:export gallery_profiles_space_select [state fetch-fn]
+ (let [space (cursor state [:space])
+       spaces [(session/get-in [:user :current-space])]
+       country (cursor state [:country-selected])]
+    [:div.form-group
+     [:label {:class "control-label col-sm-2" :for "space-selector-profiles"} (str (t :extra-spaces/Space) ":")]
+     [:div.col-sm-10
+      [:select#space-selector-profiles.form-control
+       {:name "space-selector"
+        :value @space
+        :on-change #(do
+                      (.preventDefault %)
+                      (reset! space (.-target.value %))
+                      (reset! country "all")
+                      (fetch-fn))}
+       [:option {:value 0 :key "all"} (t :core/All)]
+       (for [p spaces]
+         [:option {:key (:id p) :value (:id p)} (:name p)])]
+      (when (pos? @space)
+       [:p.help-block.text-muted
+        [:i.fa.fa-fw.fa-lg.fa-info-circle]
+        [:b (t :extra-spaces/Profileselectorinfo)]])]]))

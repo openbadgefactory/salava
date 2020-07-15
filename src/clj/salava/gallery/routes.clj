@@ -33,6 +33,15 @@
                   :auth-rules access/signed
                   (ok (g/gallery-badges ctx params)))
 
+             #_(GET "/badges/space/:space-id" []
+                    :return schemas/Badgesgallery
+                    :summary "Get badges, countries and tags"
+                    :query [params (dissoc schemas/BadgeQuery :country)]
+                    :current-user current-user
+                    :path-params [space-id :- s/Int]
+                    :auth-rules access/signed
+                    (ok (g/space-gallery-badges ctx params)))
+
              (GET "/badge_tags" []
                   :return schemas/BadgesgalleryTags
                   :summary "Get all tags in public badges"
@@ -89,12 +98,7 @@
                    :summary "Get public pages"
                    :auth-rules access/signed
                    :current-user current-user
-                   (let [{:keys [country owner]} params
-                         countries       (g/page-countries ctx (:id current-user))
-                         current-country (if (empty? country)
-                                           (:user-country countries)
-                                           country)]
-                     (ok (into {:pages (g/public-pages ctx current-country owner)} countries))))
+                   (ok (g/gallery-pages ctx params (:id current-user))))
 
              (POST "/p/pages" []
                    :return schemas/gallery-pages-p
@@ -116,6 +120,16 @@
                    :current-user current-user
                    (ok (hash-map :pages (g/public-pages-by-user ctx userid (if current-user "internal" "public")))))
 
+             #_(POST "/profiles" []
+                     :return {:users     [schemas/UserProfiles]
+                              :countries [schemas/Countries]}
+                     :body [search-params schemas/UserSearch]
+                     :summary "Get public user profiles"
+                     :auth-rules access/signed
+                     :current-user current-user
+                     (ok {:users     (g/public-profiles ctx search-params (:id current-user))
+                          :countries (g/profile-countries ctx (:id current-user))}))
+
              (POST "/profiles" []
                    :return {:users     [schemas/UserProfiles]
                             :countries [schemas/Countries]}
@@ -123,8 +137,8 @@
                    :summary "Get public user profiles"
                    :auth-rules access/signed
                    :current-user current-user
-                   (ok {:users     (g/public-profiles ctx search-params (:id current-user))
-                        :countries (g/profile-countries ctx (:id current-user))}))
+                   (ok (g/profiles-all ctx search-params (:id current-user) false)))
+
              (GET "/stats" []
                   :no-doc true
                   :summary "Get gallery stats"
@@ -177,8 +191,7 @@
                   :summary "Get profiles with pagination, filter out existing space members"
                   :auth-rules access/admin
                   :current-user current-user
-                  (ok  (assoc (g/profiles-all ctx search-params space_id) :countries (g/profile-countries ctx (:id current-user))))) #_{:users     (g/profiles-all ctx search-params)
-                                                                                                                                        :countries (g/profile-countries ctx (:id current-user))}
+                  (ok (g/profiles-all ctx (assoc search-params :space-id space_id) (:id current-user)  true)))
 
             (GET "/user_owns_badge/:badge_id" []
                  :return s/Bool
