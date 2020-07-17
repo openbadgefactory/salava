@@ -11,7 +11,8 @@
    [salava.extra.spaces.ui.explore :as exp]
    [salava.extra.spaces.ui.admin :as admin]
    [reagent.session :as session]
-   [salava.extra.spaces.ui.error :as err]))
+   [salava.extra.spaces.ui.error :as err]
+   [salava.extra.spaces.ui.report :as report]))
 
 (defn ^:export routes [context]
   {(str (base-path context) "/admin/spaces") [["" my/handler]
@@ -23,7 +24,8 @@
                                        ["/stats" stats/handler]
                                        ["/manage" admin/handler]
                                        ["/edit" admin/edit-handler]
-                                       ["/error" err/handler]]})
+                                       ["/error" err/handler]
+                                       ["/report" report/handler]]})
 
 (defn base-navi [context]
   {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces)} ;:about (:selfie (about))}})
@@ -37,7 +39,8 @@
    (str (base-path context) "/space/stats") {:weight 500 :title (t :extra-spaces/Statistics) :site-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Statistics)}
    (str (base-path context) "/space/manage") {:weight 300 :title (t :extra-spaces/Manage)  :site-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Manage)}
    (str (base-path context) "/space/users") {:weight 400 :title (t :extra-spaces/Users)  :site-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Users)}
-   (str (base-path context) "/space/edit") {:weight 250 :title (t :extra-spaces/Edit)  :site-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Edit)}})
+   (str (base-path context) "/space/edit") {:weight 250 :title (t :extra-spaces/Edit)  :site-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Edit)}
+   (str (base-path context) "/space/report") {:weight 650 :title (t :admin/Report)  :site-navi true :breadcrumb (t :extra-spaces/Space " / " :admin/Report)}})
 
 (defn ^:export navi [context]
  (let [member-admin? (and  (not= (session/get-in [:user :role]) "admin") (= "admin" (session/get-in [:user :current-space :role])))]

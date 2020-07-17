@@ -188,7 +188,7 @@
         filter-options (session/get :filter-options nil)
 
         common-badges? (if filter-options (:common-badges filter-options) true)
-        {:keys [type selected-users-atom context user_badge_id selfie func external-users-atom existing-users-atom space-id]} params
+        {:keys [type selected-users-atom context user_badge_id selfie func external-users-atom existing-users-atom space-id space]} params
         data-atom (atom {:users []
                          :selected []
                          :ajax-message nil
@@ -208,12 +208,13 @@
                                (str "/obpv1/gallery/profiles"))
                          :sent-requests []
                          :email ""
-                         :select-all? false})]
+                         :select-all? false
+                         :space space})]
 
     (create-class {:reagent-render (fn []
                                      [:div
                                       [:div {:id "social-tab"}
-                                       (if (= context  "space_members_modal")
+                                       (if (some #(= context %) ["space_members_modal"]) #_(= context  "space_members_modal")
                                          [profiles/profile-gallery-grid-form+ data-atom]
                                          [profiles/profile-gallery-grid-form data-atom true])
                                        (if (:ajax-message @data-atom)
@@ -302,6 +303,7 @@
 
                                            (profiles/load-more data-atom)
                                            [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
+
                                             (when (or (= context "endorsement") (= context "endorsement_selfie"))
                                              [:button.btn.btn-primary {:on-click #(mo/previous-view)
                                                                        :disabled (and (empty? @selected-users-atom) (empty? @external-users-atom))}
@@ -316,7 +318,8 @@
                                               [:button.btn.btn-danger.btn-bulky
                                                {:on-click #(do (reset! selected-users-atom []) (mo/previous-view))}
                                                (t :core/Cancel)]])
-                                            (when  (= context "space_admins")
+                                            (when (some #(= context %) ["report_space" "space_admins"])
+                                            ;(when  (= context "space_admins")
                                              [:div
                                               [:button.btn.btn-primary.btn-bulky
                                                {:on-click #(m/close-modal!)
@@ -342,12 +345,15 @@
                                             #_(if (= context "endorsement")
                                                 (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
                                                 (path-for (str "/obpv1/gallery/profiles")))
-                                            {:params {:country (session/get-in [:filter-options :country] country)
-                                                      :name ""
-                                                      :common_badges common-badges?
-                                                      :order_by "ctime"
-                                                      :email ""
-                                                      :page_count 0}
+                                            {:params (as-> {:country (session/get-in [:filter-options :country] country)
+                                                            :name ""
+                                                            :common_badges common-badges?
+                                                            :order_by "ctime"
+                                                            :email ""
+                                                            :page_count 0} $
+                                                            (if (some #(= context %) ["report_space"])
+                                                              (merge $ {:space-id space})
+                                                              (merge $ {})))
                                              :handler (fn [{:keys [users countries users_count]} data]
                                                         (swap! data-atom assoc :users users #_(if (= context "space_members_modal") (remove (fn [u] (some #(= (:id u) (:id %)) @existing-users-atom)) users) users)
                                                                :countries countries

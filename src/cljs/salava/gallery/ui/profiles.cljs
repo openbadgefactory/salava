@@ -17,7 +17,7 @@
   (reset! ajax-message-atom nil))
 
 (defn fetch-users [state]
-  (let [{:keys [name country-selected common-badges? order_by url space]} @state
+  (let [{:keys [name country-selected common-badges? order_by url space email ]} @state
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingprofiles))
     (ajax/POST
@@ -27,6 +27,7 @@
                  :common_badges (boolean common-badges?)
                  :order_by      order_by
                  :space-id      (int space)
+                 :email email
                  :custom-field-filters @(cursor state [:custom-field-filters])}
        :handler (fn [data] (swap! state assoc :users (:users data)))
        :finally (fn [] (ajax-stop ajax-message-atom))})))
@@ -308,16 +309,18 @@
    [:div {:id "grid-filter"
           :class "form-horizontal"}
     [:div
-     (if (empty? (session/get-in [:user :current-space]))
-         [country-selector state]
-         (into [:div]
-          (for [f (plugin-fun (session/get :plugins) "block" "gallery_profiles_space_select")]
-           (when (ifn? f) [f state (fn [] (fetch-users state))]))))
+     (when-not (some #(= (:context @state) %) ["report_space"])
+      (if (empty? (session/get-in [:user :current-space]))
+          [country-selector state]
+          (into [:div]
+           (for [f (plugin-fun (session/get :plugins) "block" "gallery_profiles_space_select")]
+            (when (ifn? f) [f state (fn [] (fetch-users state))])))))
      [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
-     [common-badges-checkbox state]]
+     (when-not (some #(= (:context @state) %) ["report_space"]) [common-badges-checkbox state])]
     [order-buttons state]
-    (when (= "admin" (session/get-in [:user :role] "user"))
+    (when (or (= "admin" (session/get-in [:user :role] "user")) (= "admin" (session/get-in [:user :current-space :role] "member")))
       [:div
+       [text-field {:key :email :label (t :badge/Email) :placeholder (t :admin/Searchbyemail) :state state :modal? true}]
        [custom-field-filters "gender" state]
        [custom-field-filters "organization" state]])])
 
@@ -328,10 +331,20 @@
      [:div {:id "grid-filter-modal"
             :class "form-horizontal"}
       [:div
-       [country-selector state modal?]
+       (when-not (some #(= (:context @state) %) ["report_space"])
+         (if (empty? (session/get-in [:user :current-space]))
+             [country-selector state]
+             (into [:div]
+              (for [f (plugin-fun (session/get :plugins) "block" "gallery_profiles_space_select")]
+               (when (ifn? f) [f state (fn [] (fetch-users state))])))))
        [text-field {:key :name :label (t :gallery/Username) :placeholder (t :gallery/Searchbyusername) :state state :modal? true}]
-       [common-badges-checkbox state]]
-      [order-buttons state modal?]])))
+       (when-not (some #(= (:context @state) %) ["report_space"]) [common-badges-checkbox state])]
+      [order-buttons state modal?]
+      (when (or (= "admin" (session/get-in [:user :role] "user")) (= "admin" (session/get-in [:user :current-space :role] "member")))
+        [:div
+         [text-field {:key :email :label (t :badge/Email) :placeholder (t :admin/Searchbyemail) :state state :modal? true}]
+         [custom-field-filters "gender" state]
+         [custom-field-filters "organization" state]])])))
 
 (defn profile-gallery-grid-form+ [state]
   [:div#grid-filter-modal.form-horizontal

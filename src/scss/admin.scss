@@ -526,3 +526,38 @@
     }
   }
 }
+
+#admin-report {
+  .mg10hr {
+    margin: 0 10px
+  }
+
+  .mg10vt {
+      margin: 10px 0
+    }
+
+  button.close {
+    color: $dark-red;
+    opacity: 0.7;
+  }
+
+  .table-item, .list-group-item {
+    .progress {
+      max-width: 200px;
+    }
+    img.logo {
+      width: 35px;
+      height: auto;
+    }
+
+    span.name {
+      margin: 0 5px;
+      display: inline-block;
+      width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+  }
+}

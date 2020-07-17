@@ -13,7 +13,8 @@
     [salava.extra.spaces.ui.invitelink :refer [invite-link]]
     [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]
     [reagent.session :as session]
-    [salava.extra.spaces.ui.userlist :as ul]))
+    [salava.extra.spaces.ui.userlist :as ul]
+    [salava.extra.spaces.ui.report :as report]))
 
 (defn check-membership [id state]
  (ajax/POST
@@ -496,4 +497,5 @@
       [space-content state])))
 
 (def ^:export modalroutes
-  {:space {:info handler}})
+  {:space {:info handler
+           :badges report/badges-modal}})

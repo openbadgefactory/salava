@@ -6,9 +6,12 @@
             [salava.extra.spaces.util :refer [save-image!]]
             [clojure.tools.logging :as log]
             [slingshot.slingshot :refer :all]
-            [clojure.string :refer [blank?]]))
+            [clojure.string :refer [blank?]]
+            [salava.profile.db :refer [profile-metrics]]))
 
 (defqueries "sql/extra/spaces/main.sql")
+(defqueries "sql/extra/spaces/report.sql")
+
 (defrecord Space_member [user_id space_id role status default_space])
 (defrecord Pending_admin [id space_id email])
 
@@ -188,3 +191,47 @@
   (catch Object _
     (log/error _)
     {:status "error"})))
+
+(defn user-ids [ctx filters]
+ (let [{:keys [badges users to from space-id]} filters
+       filters-col
+       (cond-> []
+        ;(and space-id (pos? space-id))
+        ;(conj (set (select-user-ids-space-report {:space_id space-id} (u/get-db-col ctx :user_id))))
+        (seq badges)
+        (conj (set (select-user-ids-badge {:badge_ids badges :to to :from from :expected_count (count badges) :space_id space-id} (u/get-db-col ctx :user_id))))
+        (seq users)
+        (conj (set users)))]
+
+   (when (seq filters-col)
+     (into [] (reduce clojure.set/intersection (first filters-col) (rest filters-col))))))
+
+(defn badge-ids [ctx filters]
+
+  (let [{:keys [badges users to from]} filters
+        filters-col
+        (cond-> []
+         (seq badges)
+         (conj (set badges))
+         (seq users)
+         (conj (set (select-badge-ids-report {:ids users :to to :from from} (u/get-db-col ctx :gallery_id)))))]
+      (when (seq filters-col)
+        (into [] (reduce clojure.set/intersection (first filters-col) (rest filters-col))))))
+
+(defn get-badges [ctx badge-ids]
+  (when (seq badge-ids)
+   (select-user-badges-report {:ids badge-ids} (u/get-db ctx))))
+
+(defn report!
+  [ctx filters admin-id]
+  (let [user-ids (user-ids ctx filters)
+        users (when (seq user-ids) (some->> (select-users-for-report {:ids user-ids} (u/get-db ctx))
+                                            (mapv #(assoc % :completion_percentage (:completion_percentage (profile-metrics ctx (:id %)))))))
+        users-with-badges (reduce
+                            (fn [r user]
+                              (conj r
+                               (assoc user :badges (some->> (badge-ids ctx (assoc filters :users [(:id user)]))
+                                                            (get-badges ctx)))))
+                            []
+                            users)]
+    {:users users-with-badges}))  

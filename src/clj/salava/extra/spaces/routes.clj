@@ -37,6 +37,7 @@
             (layout/main ctx "/users")
             (layout/main ctx "/edit")
             (layout/main ctx "/error")
+            (layout/main ctx "/report")
 
             (GET "/member_invite/:uid/:token" req
                   :path-params [uid :- s/Str
@@ -81,7 +82,18 @@
                    :path-params [id :- s/Int]
                    :body-params [users :- [s/Int]]
                    :current-user current-user
-                   (ok (space/populate-space ctx id users (:id current-user)))))
+                   (ok (space/populate-space ctx id users (:id current-user))))
+
+            (POST "/report" []
+                   :auth-rules access/space-admin
+                   :summary "Generate report based on filters"
+                   :body [filters {:users [(s/maybe s/Int)]
+                                   :badges [(s/maybe s/Int)]
+                                   :to (s/maybe s/Int)
+                                   :from (s/maybe s/Int)
+                                   :space-id s/Int}]
+                   :current-user current-user
+                   (ok (db/report! ctx filters (:id current-user)))))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]
