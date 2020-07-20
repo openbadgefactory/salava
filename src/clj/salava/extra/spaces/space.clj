@@ -14,10 +14,10 @@
 
 (defn create! [ctx space]
  (try+
-   (let [{:keys [name description status visibility logo banner admins alias valid_until css url]} space
+   (let [{:keys [name description status visibility logo banner admins alias valid_until css url messages]} space
          valid_until (if-not (clojure.string/blank? valid_until) (iso8601-to-unix-time valid_until)  (get-date-from-today 12 0 0))
          space (->Space nil (u/uuid) name description "active" "private" logo banner alias valid_until url)]
-    (db/create-new-space! ctx (assoc space :admins admins :css css)) ;:admin admin))
+    (db/create-new-space! ctx (assoc space :admins admins :css css :messages messages)) ;:admin admin))
     {:status "success"})
    (catch Object _
      (log/error "error: " _) ;(.getMessage _))
@@ -46,7 +46,7 @@
 
 (defn edit! [ctx id space user-id]
   (try+
-    (let [{:keys [id name description status visibility logo banner alias valid_until css]} space
+    (let [{:keys [id name description status visibility logo banner alias valid_until css messages]} space
           data (dissoc space :id)]
       (db/update-space-info ctx id data user-id)
       {:status "success"})
@@ -90,7 +90,7 @@
     (space-token ctx space-id))))
 
 (defn invite-link-status [ctx space-id]
- (if-let [x (some-> (select-space-property {:id space-id :name "invite_link"} (into {:result-set-fn first :row-fn :value} (get-db ctx))) (read-string) (pos?))] 
+ (if-let [x (some-> (select-space-property {:id space-id :name "invite_link"} (into {:result-set-fn first :row-fn :value} (get-db ctx))) (read-string) (pos?))]
    true false))
 
 

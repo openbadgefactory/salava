@@ -88,6 +88,15 @@
     :css (space-property ctx id "css")
     :admins (space-admins ctx id)))
 
+(defn update-message-setting [ctx id message-map]
+  (let [{:keys [messages_enabled enabled_issuers]} message-map]
+   (when-not (empty? message-map)
+      (insert-space-property! {:space_id id :name "message_enabled" :value messages_enabled} (u/get-db ctx))
+      (when (seq enabled_issuers)
+        (clear-enabled-issuers-list! {:space_id id} (u/get-db ctx))
+        (doseq [issuer enabled_issuers]
+          (update-message-issuers-list! {:space_id id :issuer issuer} (u/get-db ctx)))))))
+
 (defn create-new-space!
  "Initializes space and creates admins"
  [ctx space]
@@ -107,6 +116,7 @@
             ;:let [email (if (number? $) (select-primary-address {:id $} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
           (create-space-admin! ctx space_id admin))
    (when (:css space) (save-space-property ctx space_id "css" (:css space)))
+   (update-message-setting ctx space_id (:messages space))
 
    (log/info "Finished creating space!"))))
 
@@ -121,7 +131,8 @@
                          (save-image! ctx (:banner space))
                          (:banner space)))]
     (update-space-information! data (u/get-db ctx))
-    (when (:css space) (save-space-property ctx id "css" (:css data)))))
+    (when (:css space) (save-space-property ctx id "css" (:css data)))
+    (update-message-setting ctx id (:messages space))))
 
 (defn space-id [ctx id]
  (if (uuid? (java.util.UUID/fromString id)) (some-> (select-space-by-uuid {:uuid id} (u/get-db ctx)) :id) id))
@@ -234,4 +245,14 @@
                                                             (get-badges ctx)))))
                             []
                             users)]
-    {:users users-with-badges}))  
+    {:users users-with-badges}))
+
+(defn enabled-issuers [ctx space-id]
+  (select-enabled-issuers-list {:space_id space-id} (u/get-db ctx)))
+
+(defn all-issuers [ctx space-id]
+ (if (and space-id (pos? space-id))
+   (some->> (select-issuer-list {} (u/get-db ctx))
+            (mapv #(assoc % :enabled (or (some (fn [i] (= (:issuer_name %) (:issuer_name i))) (enabled-issuers ctx space-id)) false))))
+
+  (select-issuer-list {} (u/get-db ctx))))

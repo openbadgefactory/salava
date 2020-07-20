@@ -102,7 +102,8 @@
       (ajax/POST
        (path-for "/obpv1/spaces/create")
        {:params (-> @(cursor state [:space])
-                    (assoc :admins (mapv :id @(cursor state [:space :admins]))))
+                    (assoc :admins (mapv :id @(cursor state [:space :admins])))
+                    (assoc :messages (select-keys @(cursor state [:message_setting]) [:enabled_issuers :messages_enabled])))
         :handler (fn [data]
                   (when (= (:status data) "error")
                     (m/modal! (upload-modal data) {}))
@@ -111,6 +112,7 @@
 
 (defn edit-space [state]
   (reset! (cursor state [:error-message]) nil)
+  (prn (:message_setting @state))
   (let [data (select-keys @(cursor state [:space])[:id :name :description :alias :url :logo :css :banner])
          validate-info (validate-inputs schemas/edit-space data)]
     (if (some false? validate-info)
@@ -126,7 +128,8 @@
 
        (ajax/POST
         (path-for (str "/obpv1/spaces/edit/" @(cursor state [:space :id])))
-        {:params (update-in data [:css] dissoc :s-color :t-color)
+        {:params (-> (update-in data [:css] dissoc :s-color :t-color)
+                     (assoc :messages (select-keys @(cursor state [:message_setting]) [:enabled_issuers :messages_enabled])))
          :handler (fn [data]
                    (when (= (:status data) "error")
                      (reset! (cursor state [:error-message]) data))

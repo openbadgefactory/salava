@@ -208,6 +208,22 @@
                                (.preventDefault %)
                                (reset! (cursor state [:space :css :t-color]) (.-target.value %)))}]]]
 
+          (when (= "admin" (session/get-in [:user :role] "user"))
+           [:div.form-group
+            [:span._label (t :admin/Messagesetting)]
+            [:div.add-admins-link
+             [:a
+              {:href "#" :on-click #(mo/open-modal [:space :message_setting] state)}
+              (t :admin/Manage-issuer-list)]]
+            (when (seq @(cursor state [:message_setting :enabled_issuers]))
+             [:div.well.well-sm {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
+              [:div.col-md-12
+               [:p "Messages can be sent to email addresses that have been issued badges by the following issuers "]
+               (reduce
+                #(conj %1 [:li [:b %2]])
+                 [:ul]
+                 @(cursor state [:message_setting :enabled_issuers]))]])])
+
           (when (and (not (:in-modal @state)) create-admins?)
            [:hr.border]
            [:div#social-tab.form-group {:style {:background-color "ghostwhite" :padding "8px"}}
@@ -308,7 +324,7 @@
 
 
 (defn handler [site-navi]
- (let [state (atom {:space {:admins []}})]
-                            ;:css {}}})]
+ (let [state (atom {:space {:admins []}
+                    :search ""})]
    (fn []
     (layout/default site-navi [content state]))))

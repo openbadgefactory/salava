@@ -93,7 +93,14 @@
                                    :from (s/maybe s/Int)
                                    :space-id s/Int}]
                    :current-user current-user
-                   (ok (db/report! ctx filters (:id current-user)))))
+                   (ok (db/report! ctx filters (:id current-user))))
+
+            (POST "/message/issuers/:space-id" []
+                  :auth-rules access/admin
+                  :summary "Get badge issuers"
+                  :path-params [space-id :- s/Int]
+                  :current-user current-user
+                  (ok (db/all-issuers ctx space-id))))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]

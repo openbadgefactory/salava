@@ -23,7 +23,9 @@
                     (s/optional-key :admins) [s/Int]
                     (s/optional-key  :valid_until) s/Str
                     :ctime s/Int
-                    :mtime s/Int})
+                    :mtime s/Int
+                    (s/optional-key :messages) (s/maybe {(s/optional-key :messages_enabled) s/Bool
+                                                         (s/optional-key :enabled_issuers) [(s/maybe s/Str)]})})
 
 (s/defschema create-space (dissoc space :uuid :ctime :mtime :status :visibility))
 (s/defschema edit-space (-> create-space (assoc :id s/Int)))

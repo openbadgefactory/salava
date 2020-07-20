@@ -187,3 +187,15 @@ SELECT name, id, valid_until FROM space WHERE status != "expired" AND valid_unti
 
 --name: extend-space-subscription!
 UPDATE space SET valid_until = :time, last_modified_by = :admin, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: select-issuer-list
+SELECT DISTINCT(issuer_name) FROM gallery
+
+--name: select-enabled-issuers-list
+SELECT issuer_name FROM space_message_issuers WHERE space_id = :space_id
+
+--name: clear-enabled-issuers-list!
+DELETE FROM space_message_issuers WHERE space_id = :space_id
+
+--name: update-message-issuers-list!
+INSERT INTO space_message_issuers (space_id, issuer_name) VALUES (:space_id, :issuer)

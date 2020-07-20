@@ -491,11 +491,83 @@
                      :role-selected []
                      :role-all true
                      :order "mtime"
-                     :custom-field-filters {}})]
+                     :custom-field-filters {}
+                     :message_setting {:messages_enabled false :issuers [] :selected [] :enabled_issuers []}
+                     :search ""})]
     (init-data id state)
     (fn []
       [space-content state])))
 
+(defn- add-or-remove [x coll]
+   (if (some #(= x %) @coll #_(mapv :issuer_name @coll))
+     (reset! coll (->> @coll (remove #(= x %)) vec))
+     (reset! coll (conj @coll x))))
+
+(defn message-setting-modal [state]
+  (let [issuers @(cursor state [:message_setting :issuers])
+        selected (cursor state [:message_setting :selected])
+        enabled-issuers (cursor state [:message_setting :enabled_issuers])
+        ;{:keys [enabled issuers]} @message-atom
+        id (or @(cursor state [:space :id]) 0)]
+
+
+    (ajax/POST
+     (path-for (str "/obpv1/space/message/issuers/" id))
+     {:handler (fn [data]
+                 (reset! (cursor state [:message_setting :issuers]) data)
+                 (reset! enabled-issuers (filterv :enabled data))
+                 (prn @enabled-issuers))})
+    (fn []
+     (let [issuers @(cursor state [:message_setting :issuers])
+           issuers (->> issuers (remove #(clojure.string/blank? (:issuer_name %)))
+                                (filter #(re-find (re-pattern (str "(?i)" @(cursor state [:search]))) (:issuer_name %))))
+           enabled-issuers (cursor state [:message_setting :enabled_issuers])]
+       [:div.col-md-12
+        [:div.well.well-sm
+         [:p [:b "Select issuers whose badges can be used to send messages"]]
+         [:input.form-control
+           {:on-change #(reset! (cursor state [:search]) (.-target.value %))
+            :type "text"
+            :id "searchissuer"
+            :placeholder (str (t :admin/Filter) "...")
+            :style {:max-width "300px"}}]]
+        [:div {:style {:max-height "700px" :overflow "auto"}}
+         (reduce
+          (fn [r i]
+            (let [enabled? (or (some #(= (:enabled %) #_(:issuer_name i) %)  issuers #_@enabled-issuers) false)]
+             (conj r
+               [:li.list-group-item
+                [:input
+                 {:style {:margin "0 5px"}
+                  :type "checkbox"
+                  :name (:issuer_name i)
+                  :value (:issuer_name i)
+                  :id (str "input-"(:issuer_name i))
+                  :on-change #(add-or-remove (:issuer_name i) enabled-issuers)
+                  :checked enabled?}]
+                (:issuer_name i)])))
+          [:ul.list-group]
+          issuers)]
+        [:div.btn-toolbar.well.well-sm
+         [:div.btn-group
+          [:button.btn.btn-primary {:type "button"
+                                    :on-click #(if (:in-modal @state) (mo/previous-view) (m/close-modal!))}
+            (t :core/Continue)]
+          [:button.btn.btn-warning
+           {:type "button"
+            :on-click #(reset! selected (->> @(cursor state [:message_setting :issuers]) (filterv :enabled)))}
+           (t :core/Cancel)]]]]))))
+
+
+
+
+
+
+
+
+
+
 (def ^:export modalroutes
   {:space {:info handler
-           :badges report/badges-modal}})
+           :badges report/badges-modal
+           :message_setting message-setting-modal}})
