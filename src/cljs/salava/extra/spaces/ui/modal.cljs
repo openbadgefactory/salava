@@ -14,7 +14,8 @@
     [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]
     [reagent.session :as session]
     [salava.extra.spaces.ui.userlist :as ul]
-    [salava.extra.spaces.ui.report :as report]))
+    [salava.extra.spaces.ui.report :as report]
+    [salava.extra.spaces.ui.message-tool :as mt]))
 
 (defn check-membership [id state]
  (ajax/POST
@@ -397,6 +398,26 @@
    [:div.panel-body
     [visibility-form state init-fn]]])
 
+(defn manage-message-tool [state]
+  [:div#space-gallery.form-group
+   [:div.panel.panel-default
+    [:div.panel-heading.weighted
+     (t :admin/Messagetool)]
+    [:div.panel-body
+     [mt/manage-message-tool (get-in @state [:space :id] 0) state true]]
+    [:div.panel-footer
+     [:button.btn.btn-primary.btn-bulky
+      {:on-click #(do
+                   (.preventDefault %)
+                   (ajax/POST
+                    (path-for (str "/obpv1/space/message_tool/settings/" (get-in @state [:space :id] 0)))
+                    {:params {:settings (dissoc (assoc @(cursor state [:message_setting]) :issuers (map :issuer_name @(cursor state [:message_setting :enabled_issuers]))) :enabled_issuers)}
+                     :handler (fn [data]
+                                (when (= "success" (:status data))
+                                  (mt/init-message-tool-settings (get-in @state [:space :id] 0))) state)}))}
+      (t :admin/Savechanges)]]]])
+
+
 (defn manage-space [state]
   [:div.row
    [manage-status state]
@@ -405,7 +426,9 @@
      [manage-visibility state nil]
      ;(when (= "private" @(cursor state [:space :visibility]))
      [invite-link (select-keys (:space @state) [:id :name :alias])]
-     [manage-admins state]])])
+     [manage-admins state]
+     [manage-message-tool state]])])
+
 
 (defn memberlist [state]
  [:div#space.user-list.modal-view
@@ -492,14 +515,14 @@
                      :role-all true
                      :order "mtime"
                      :custom-field-filters {}
-                     :message_setting {:messages_enabled false :issuers [] :selected [] :enabled_issuers []}
+                     :message_setting {} ;{:messages_enabled false :issuers [] :selected [] :enabled_issuers []}
                      :search ""})]
     (init-data id state)
     (fn []
       [space-content state])))
 
 (defn- add-or-remove [x coll]
-   (if (some #(= x %) @coll #_(mapv :issuer_name @coll))
+   (if (some #(= x %) @coll)
      (reset! coll (->> @coll (remove #(= x %)) vec))
      (reset! coll (conj @coll x))))
 
@@ -507,16 +530,8 @@
   (let [issuers @(cursor state [:message_setting :issuers])
         selected (cursor state [:message_setting :selected])
         enabled-issuers (cursor state [:message_setting :enabled_issuers])
-        ;{:keys [enabled issuers]} @message-atom
         id (or @(cursor state [:space :id]) 0)]
 
-
-    (ajax/POST
-     (path-for (str "/obpv1/space/message/issuers/" id))
-     {:handler (fn [data]
-                 (reset! (cursor state [:message_setting :issuers]) data)
-                 (reset! enabled-issuers (filterv :enabled data))
-                 (prn @enabled-issuers))})
     (fn []
      (let [issuers @(cursor state [:message_setting :issuers])
            issuers (->> issuers (remove #(clojure.string/blank? (:issuer_name %)))
@@ -534,18 +549,17 @@
         [:div {:style {:max-height "700px" :overflow "auto"}}
          (reduce
           (fn [r i]
-            (let [enabled? (or (some #(= (:enabled %) #_(:issuer_name i) %)  issuers #_@enabled-issuers) false)]
-             (conj r
-               [:li.list-group-item
-                [:input
-                 {:style {:margin "0 5px"}
-                  :type "checkbox"
-                  :name (:issuer_name i)
-                  :value (:issuer_name i)
-                  :id (str "input-"(:issuer_name i))
-                  :on-change #(add-or-remove (:issuer_name i) enabled-issuers)
-                  :checked enabled?}]
-                (:issuer_name i)])))
+            (conj r
+              [:li.list-group-item
+               [:input
+                {:style {:margin "0 5px"}
+                 :type "checkbox"
+                 :name (str "input-"(:issuer_name i))
+                 :default-value (:issuer_name i)
+                 :id (str "input-"(:issuer_name i))
+                 :on-change #(add-or-remove (:issuer_name i) enabled-issuers)
+                 :default-checked (some #(= (:issuer_name i)  %)  @enabled-issuers)}]
+               (:issuer_name i)]))
           [:ul.list-group]
           issuers)]
         [:div.btn-toolbar.well.well-sm
@@ -557,15 +571,6 @@
            {:type "button"
             :on-click #(reset! selected (->> @(cursor state [:message_setting :issuers]) (filterv :enabled)))}
            (t :core/Cancel)]]]]))))
-
-
-
-
-
-
-
-
-
 
 (def ^:export modalroutes
   {:space {:info handler

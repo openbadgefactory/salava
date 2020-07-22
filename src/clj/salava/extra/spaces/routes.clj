@@ -95,12 +95,22 @@
                    :current-user current-user
                    (ok (db/report! ctx filters (:id current-user))))
 
-            (POST "/message/issuers/:space-id" []
+            (GET "/message_tool/settings/:space-id" []
+                  :return {:messages_enabled s/Bool :issuers (s/maybe [{:enabled s/Bool :issuer_name s/Str}])}
                   :auth-rules access/admin
                   :summary "Get badge issuers"
                   :path-params [space-id :- s/Int]
                   :current-user current-user
-                  (ok (db/all-issuers ctx space-id))))
+                  (ok (db/message-tool-settings ctx space-id)))
+
+            (POST "/message_tool/settings/:space-id" []
+                  :return {:status (s/enum "success" "error")}
+                  :auth-rules access/admin
+                  :summary "Get badge issuers"
+                  :body-params [settings :- {:messages_enabled s/Bool :issuers [(s/maybe s/Str)]}]
+                  :path-params [space-id :- s/Int]
+                  :current-user current-user
+                  (ok (db/update-message-tool-setting ctx space-id settings))))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]

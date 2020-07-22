@@ -112,9 +112,9 @@
 
 (defn edit-space [state]
   (reset! (cursor state [:error-message]) nil)
-  (prn (:message_setting @state))
   (let [data (select-keys @(cursor state [:space])[:id :name :description :alias :url :logo :css :banner])
          validate-info (validate-inputs schemas/edit-space data)]
+    (prn (select-keys @(cursor state [:message_setting]) [:enabled_issuers :messages_enabled]))
     (if (some false? validate-info)
         (reset! (cursor state [:error-message])
           (case (.indexOf validate-info false)

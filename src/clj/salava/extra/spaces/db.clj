@@ -7,7 +7,8 @@
             [clojure.tools.logging :as log]
             [slingshot.slingshot :refer :all]
             [clojure.string :refer [blank?]]
-            [salava.profile.db :refer [profile-metrics]]))
+            [salava.profile.db :refer [profile-metrics]]
+            [salava.core.helper :refer [string->number]]))
 
 (defqueries "sql/extra/spaces/main.sql")
 (defqueries "sql/extra/spaces/report.sql")
@@ -88,14 +89,19 @@
     :css (space-property ctx id "css")
     :admins (space-admins ctx id)))
 
-(defn update-message-setting [ctx id message-map]
+(defn update-message-tool-setting [ctx id message-map]
+ (try+
   (let [{:keys [messages_enabled enabled_issuers]} message-map]
    (when-not (empty? message-map)
       (insert-space-property! {:space_id id :name "message_enabled" :value messages_enabled} (u/get-db ctx))
       (when (seq enabled_issuers)
         (clear-enabled-issuers-list! {:space_id id} (u/get-db ctx))
         (doseq [issuer enabled_issuers]
-          (update-message-issuers-list! {:space_id id :issuer issuer} (u/get-db ctx)))))))
+          (update-message-issuers-list! {:space_id id :issuer issuer} (u/get-db ctx)))))
+   {:status "success"})
+  (catch Object _
+    (log/error _)
+    {:status "error"})))
 
 (defn create-new-space!
  "Initializes space and creates admins"
@@ -116,7 +122,7 @@
             ;:let [email (if (number? $) (select-primary-address {:id $} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
           (create-space-admin! ctx space_id admin))
    (when (:css space) (save-space-property ctx space_id "css" (:css space)))
-   (update-message-setting ctx space_id (:messages space))
+   (update-message-tool-setting ctx space_id (:messages space))
 
    (log/info "Finished creating space!"))))
 
@@ -132,7 +138,7 @@
                          (:banner space)))]
     (update-space-information! data (u/get-db ctx))
     (when (:css space) (save-space-property ctx id "css" (:css data)))
-    (update-message-setting ctx id (:messages space))))
+    (update-message-tool-setting ctx id (:messages space))))
 
 (defn space-id [ctx id]
  (if (uuid? (java.util.UUID/fromString id)) (some-> (select-space-by-uuid {:uuid id} (u/get-db ctx)) :id) id))
@@ -250,9 +256,10 @@
 (defn enabled-issuers [ctx space-id]
   (select-enabled-issuers-list {:space_id space-id} (u/get-db ctx)))
 
-(defn all-issuers [ctx space-id]
- (if (and space-id (pos? space-id))
-   (some->> (select-issuer-list {} (u/get-db ctx))
-            (mapv #(assoc % :enabled (or (some (fn [i] (= (:issuer_name %) (:issuer_name i))) (enabled-issuers ctx space-id)) false))))
+(defn message-tool-settings [ctx space-id]
+ {:messages_enabled (or (some-> (select-space-property {:id space-id :name "message_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)
+  :issuers (if (and space-id (pos? space-id))
+             (some->> (select-issuer-list {} (u/get-db ctx))
+                      (mapv #(assoc % :enabled (or (some (fn [i] (= (:issuer_name %) (:issuer_name i))) (enabled-issuers ctx space-id)) false))))
 
-  (select-issuer-list {} (u/get-db ctx))))
+            (select-issuer-list {} (u/get-db ctx)))})

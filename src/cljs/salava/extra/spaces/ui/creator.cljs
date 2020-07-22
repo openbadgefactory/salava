@@ -10,7 +10,8 @@
    [salava.core.ui.input :refer [text-field textarea]]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]
-   [salava.extra.spaces.ui.helper :refer [upload-modal profile-link-inline-modal create-space edit-space generate-alias init-space]]))
+   [salava.extra.spaces.ui.helper :refer [upload-modal profile-link-inline-modal create-space edit-space generate-alias init-space]]
+   [salava.extra.spaces.ui.message-tool :as mt]))
 
 #_(defn create-space [state]
     (ajax/POST
@@ -51,6 +52,29 @@
                   (if (:in-modal @state)
                       (reset! (cursor state [type :error]) (:message data))
                       (m/modal! (upload-modal data) {:hidden #(reset! alert-atom false)}))))})))
+
+#_(defn messaging-settings [state]
+    (when (= "admin" (session/get-in [:user :role] "user"))
+     [:div
+      [:div.form-group
+       [:div.checkbox
+        [:label
+         [:input {:type "checkbox" :on-change #(reset! (cursor state [:message_setting :messages_enabled])) :checked? (true? (cursor state [:message_setting :messages_enabled]))}]
+         "Can use the messaging tool to send message to badge earners"]]]
+      [:div.form-group
+       [:span._label (t :admin/Messagesetting)]
+       [:div.add-admins-link
+        [:a
+         {:href "#" :on-click #(mo/open-modal [:space :message_setting] state)}
+         (t :admin/Manage-issuer-list)]]
+       (when (seq @(cursor state [:message_setting :enabled_issuers]))
+        [:div.well.well-sm {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
+         [:div.col-md-12
+          [:p "Messages can be sent to email addresses that have been issued badges by the following issuers "]
+          (reduce
+           #(conj %1 [:li [:b %2]])
+            [:ul]
+            @(cursor state [:message_setting :enabled_issuers]))]])]]))
 
 (defn create-form [state create-admins?]
   (let [{:keys [logo banner name]} @(cursor state [:space])]
@@ -207,22 +231,22 @@
                  :on-change #(do
                                (.preventDefault %)
                                (reset! (cursor state [:space :css :t-color]) (.-target.value %)))}]]]
-
-          (when (= "admin" (session/get-in [:user :role] "user"))
-           [:div.form-group
-            [:span._label (t :admin/Messagesetting)]
-            [:div.add-admins-link
-             [:a
-              {:href "#" :on-click #(mo/open-modal [:space :message_setting] state)}
-              (t :admin/Manage-issuer-list)]]
-            (when (seq @(cursor state [:message_setting :enabled_issuers]))
-             [:div.well.well-sm {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
-              [:div.col-md-12
-               [:p "Messages can be sent to email addresses that have been issued badges by the following issuers "]
-               (reduce
-                #(conj %1 [:li [:b %2]])
-                 [:ul]
-                 @(cursor state [:message_setting :enabled_issuers]))]])])
+          [mt/manage-message-tool (or @(cursor state [:space :id]) 0) state create-admins?]
+          #_(when (= "admin" (session/get-in [:user :role] "user"))
+             [:div.form-group
+              [:span._label (t :admin/Messagesetting)]
+              [:div.add-admins-link
+               [:a
+                {:href "#" :on-click #(mo/open-modal [:space :message_setting] state)}
+                (t :admin/Manage-issuer-list)]]
+              (when (seq @(cursor state [:message_setting :enabled_issuers]))
+               [:div.well.well-sm {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
+                [:div.col-md-12
+                 [:p "Messages can be sent to email addresses that have been issued badges by the following issuers "]
+                 (reduce
+                  #(conj %1 [:li [:b %2]])
+                   [:ul]
+                   @(cursor state [:message_setting :enabled_issuers]))]])])
 
           (when (and (not (:in-modal @state)) create-admins?)
            [:hr.border]
@@ -322,9 +346,9 @@
             (t :core/Cancel)]]]]]]]]))
 
 
-
 (defn handler [site-navi]
  (let [state (atom {:space {:admins []}
-                    :search ""})]
+                    :search ""
+                    :message_setting {:messages_enabled false :issuers [] :selected [] :enabled_issuers []}})]
    (fn []
     (layout/default site-navi [content state]))))
