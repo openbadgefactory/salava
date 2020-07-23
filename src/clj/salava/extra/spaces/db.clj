@@ -87,18 +87,17 @@
 (defn get-space-information [ctx id]
   (assoc (select-space-by-id {:id id} (into {:result-set-fn first} (u/get-db ctx)))
     :css (space-property ctx id "css")
-    :admins (space-admins ctx id)))
+    :admins (space-admins ctx id)
+    :message-tool-enabled (or (some-> (select-space-property {:id id :name "message_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)))
 
-(defn update-message-tool-setting [ctx id message-map]
+(defn update-message-tool-setting [ctx id enabled? issuer-coll]
  (try+
-  (let [{:keys [messages_enabled enabled_issuers]} message-map]
-   (when-not (empty? message-map)
-      (insert-space-property! {:space_id id :name "message_enabled" :value messages_enabled} (u/get-db ctx))
-      (when (seq enabled_issuers)
-        (clear-enabled-issuers-list! {:space_id id} (u/get-db ctx))
-        (doseq [issuer enabled_issuers]
-          (update-message-issuers-list! {:space_id id :issuer issuer} (u/get-db ctx)))))
-   {:status "success"})
+   (insert-space-property! {:space_id id :name "message_enabled" :value enabled?} (u/get-db ctx))
+   (clear-enabled-issuers-list! {:space_id id} (u/get-db ctx))
+   (when (seq issuer-coll)
+     (doseq [issuer issuer-coll]
+       (update-message-issuers-list! {:space_id id :issuer issuer} (u/get-db ctx))))
+   {:status "success"}
   (catch Object _
     (log/error _)
     {:status "error"})))
@@ -122,7 +121,7 @@
             ;:let [email (if (number? $) (select-primary-address {:id $} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
           (create-space-admin! ctx space_id admin))
    (when (:css space) (save-space-property ctx space_id "css" (:css space)))
-   (update-message-tool-setting ctx space_id (:messages space))
+   (update-message-tool-setting ctx space_id (get-in space [:messages :messages_enabled] false) (get-in space [:messages :enabled_issuers] []))
 
    (log/info "Finished creating space!"))))
 
@@ -138,7 +137,7 @@
                          (:banner space)))]
     (update-space-information! data (u/get-db ctx))
     (when (:css space) (save-space-property ctx id "css" (:css data)))
-    (update-message-tool-setting ctx id (:messages space))))
+    #_(update-message-tool-setting ctx id (get-in space [:messages :messages_enabled] false) (get-in space [:messages :enabled_issuers] []))))
 
 (defn space-id [ctx id]
  (if (uuid? (java.util.UUID/fromString id)) (some-> (select-space-by-uuid {:uuid id} (u/get-db ctx)) :id) id))
@@ -258,8 +257,17 @@
 
 (defn message-tool-settings [ctx space-id]
  {:messages_enabled (or (some-> (select-space-property {:id space-id :name "message_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)
-  :issuers (if (and space-id (pos? space-id))
-             (some->> (select-issuer-list {} (u/get-db ctx))
-                      (mapv #(assoc % :enabled (or (some (fn [i] (= (:issuer_name %) (:issuer_name i))) (enabled-issuers ctx space-id)) false))))
+  :issuers    (some->> (select-issuer-list {} (u/get-db ctx))
+                       (mapv #(assoc % :enabled (or (some (fn [i] (= (:issuer_name %) (:issuer_name i))) (enabled-issuers ctx space-id)) false))))})
 
-            (select-issuer-list {} (u/get-db ctx)))})
+(defn message-tool-badges [ctx space-id]
+  (let [issuers (map :issuer_name (filter :enabled (:issuers (message-tool-settings ctx space-id))))]
+    (when (seq issuers)
+      (select-message-tool-badges {:issuers issuers} (u/get-db ctx)))))
+
+(defn badge-earners [ctx ids]
+  (let [assertions (when (seq ids) (select-assertions-from-galleryids {:ids ids} (u/get-db-col ctx :assertion_url)))
+        user-emails (when (seq assertions) (vec (select-emails-from-assertions {:assertions assertions} (u/get-db-col ctx :email))))
+        pending-emails (when (seq assertions) (select-emails-from-pending-assertions {:assertions assertions} (u/get-db-col ctx :email)))]
+
+    (->> (into user-emails pending-emails) distinct)))

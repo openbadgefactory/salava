@@ -409,13 +409,18 @@
      [:button.btn.btn-primary.btn-bulky
       {:on-click #(do
                    (.preventDefault %)
+                   (reset! (cursor state [:message_setting_updating]) true)
+                   (prn @(cursor state [:message_setting :enabled_issuers]))
                    (ajax/POST
                     (path-for (str "/obpv1/space/message_tool/settings/" (get-in @state [:space :id] 0)))
-                    {:params {:settings (dissoc (assoc @(cursor state [:message_setting]) :issuers (map :issuer_name @(cursor state [:message_setting :enabled_issuers]))) :enabled_issuers)}
+                    {:params {:settings (dissoc (assoc @(cursor state [:message_setting]) :issuers @(cursor state [:message_setting :enabled_issuers])) :enabled_issuers)}
                      :handler (fn [data]
                                 (when (= "success" (:status data))
-                                  (mt/init-message-tool-settings (get-in @state [:space :id] 0))) state)}))}
-      (t :admin/Savechanges)]]]])
+                                  (mt/init-message-tool-settings (get-in @state [:space :id] 0) state)
+                                  (reset! (cursor state [:message_setting_updating]) false)))}))}
+
+
+      [:span (when @(cursor state [:message_setting_updating]) [:i.fa.fa-spin.fa-cog.fa-lg]) " "(t :admin/Savechanges)]]]]])
 
 
 (defn manage-space [state]
@@ -575,4 +580,5 @@
 (def ^:export modalroutes
   {:space {:info handler
            :badges report/badges-modal
-           :message_setting message-setting-modal}})
+           :message_setting message-setting-modal
+           :badges-mt mt/badge-modal}})

@@ -12,7 +12,9 @@
    [salava.extra.spaces.ui.admin :as admin]
    [reagent.session :as session]
    [salava.extra.spaces.ui.error :as err]
-   [salava.extra.spaces.ui.report :as report]))
+   [salava.extra.spaces.ui.report :as report]
+   [salava.extra.spaces.ui.message-tool :as mt]))
+
 
 (defn ^:export routes [context]
   {(str (base-path context) "/admin/spaces") [["" my/handler]
@@ -25,7 +27,8 @@
                                        ["/manage" admin/handler]
                                        ["/edit" admin/edit-handler]
                                        ["/error" err/handler]
-                                       ["/report" report/handler]]})
+                                       ["/report" report/handler]
+                                       ["/message-tool" mt/handler]]})
 
 (defn base-navi [context]
   {(str (base-path context) "/admin/spaces") {:weight 100 :title (t :extra-spaces/Spaces) :site-navi true :breadcrumb (t :admin/Admin " / " :extra-spaces/Spaces)} ;:about (:selfie (about))}})
@@ -42,7 +45,13 @@
    (str (base-path context) "/space/edit") {:weight 250 :title (t :extra-spaces/Edit)  :site-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/Edit)}
    (str (base-path context) "/space/report") {:weight 650 :title (t :admin/Report)  :site-navi true :breadcrumb (t :extra-spaces/Space " / " :admin/Report)}})
 
+(defn message-tool-navi [context]
+  {(str (base-path context) "/space/message-tool") {:weight 550 :title (t :extra-spaces/MessageTool) :site-navi true :breadcrumb (t :extra-spaces/Space " / " :extra-spaces/MessageTool)}})
+
 (defn ^:export navi [context]
  (let [member-admin? (and  (not= (session/get-in [:user :role]) "admin") (= "admin" (session/get-in [:user :current-space :role])))]
   (as-> (base-navi context) $
-        (if member-admin? (merge $ (member-admin-navi context)) (merge $ {})))))
+        (if member-admin? (merge $ (member-admin-navi context)) (merge $ {}))
+        (if (and member-admin? (session/get-in [:user :current-space :message-tool-enabled] false))
+          (merge $ (message-tool-navi context))
+          (merge $ {})))))

@@ -199,3 +199,16 @@ DELETE FROM space_message_issuers WHERE space_id = :space_id
 
 --name: update-message-issuers-list!
 INSERT INTO space_message_issuers (space_id, issuer_name) VALUES (:space_id, :issuer)
+
+--name: select-message-tool-badges
+SELECT * FROM gallery WHERE issuer_name IN (:issuers)
+GROUP BY id
+
+--name: select-assertions-from-galleryids
+SELECT DISTINCT(assertion_url) FROM user_badge WHERE gallery_id IN (:ids)
+
+--name: select-emails-from-assertions
+SELECT DISTINCT(email) FROM user_badge WHERE assertion_url IN (:assertions)
+
+--name: select-emails-from-pending-assertions
+SELECT DISTINCT(email) FROM pending_factory_badge WHERE assertion_url IN (:assertions)

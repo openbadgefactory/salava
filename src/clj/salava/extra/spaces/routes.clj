@@ -38,6 +38,7 @@
             (layout/main ctx "/edit")
             (layout/main ctx "/error")
             (layout/main ctx "/report")
+            (layout/main ctx "/message-tool")
 
             (GET "/member_invite/:uid/:token" req
                   :path-params [uid :- s/Str
@@ -97,7 +98,7 @@
 
             (GET "/message_tool/settings/:space-id" []
                   :return {:messages_enabled s/Bool :issuers (s/maybe [{:enabled s/Bool :issuer_name s/Str}])}
-                  :auth-rules access/admin
+                  :auth-rules access/space-admin
                   :summary "Get badge issuers"
                   :path-params [space-id :- s/Int]
                   :current-user current-user
@@ -110,7 +111,21 @@
                   :body-params [settings :- {:messages_enabled s/Bool :issuers [(s/maybe s/Str)]}]
                   :path-params [space-id :- s/Int]
                   :current-user current-user
-                  (ok (db/update-message-tool-setting ctx space-id settings))))
+                  (ok (db/update-message-tool-setting ctx space-id (:messages_enabled settings) (:issuers settings))))
+
+            (POST "/message_tool/badges/:space-id" []
+                   :auth-rules access/space-admin
+                   :summary "Get badges"
+                   :path-params [space-id :- s/Int]
+                   :current-user current-user
+                   (ok (db/message-tool-badges ctx space-id)))
+
+            (POST "/message_tool/badge_earners" []
+                   :auth-rules access/space-admin
+                   :summary "Get badges"
+                   :body-params [ids :- [s/Int]]
+                   :current-user current-user
+                   (ok (db/badge-earners ctx ids))))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]
