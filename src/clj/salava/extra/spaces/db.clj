@@ -10,10 +10,14 @@
             [salava.profile.db :refer [profile-metrics]]
             [salava.core.helper :refer [string->number]]
             [hiccup.page :refer [html5]]
-            [postal.core :refer [send-message]]))
+            [postal.core :refer [send-message]]
+            [salava.admin.helper :refer [make-csv]]
+            [salava.core.i18n :refer [t]]
+            [salava.core.time :refer [date-from-unix-time]]))
 
 (defqueries "sql/extra/spaces/main.sql")
 (defqueries "sql/extra/spaces/report.sql")
+(defqueries "sql/extra/spaces/stats.sql")
 
 (defrecord Space_member [user_id space_id role status default_space])
 (defrecord Pending_admin [id space_id email])
@@ -244,7 +248,7 @@
   [ctx filters admin-id]
   (let [user-ids (user-ids ctx filters)
         users (when (seq user-ids) (some->> (select-users-for-report {:ids user-ids} (u/get-db ctx))
-                                            (mapv #(assoc % :completion_percentage (:completion_percentage (profile-metrics ctx (:id %)))))))
+                                            (mapv #(assoc % :completionPercentage (:completion_percentage (profile-metrics ctx (:id %)))))))
         users-with-badges (reduce
                             (fn [r user]
                               (conj r
@@ -253,6 +257,26 @@
                             []
                             users)]
     {:users users-with-badges}))
+
+(defn export-report [ctx users badges to from id current-user]
+  (let [filters {:users (clojure.edn/read-string users)
+                 :badges (clojure.edn/read-string badges)
+                 :to (clojure.edn/read-string to)
+                 :from (clojure.edn/read-string from)
+                 :space-id id}
+        ul (select-user-language {:id (:id current-user)} (into {:result-set-fn first :row-fn :language} (u/get-db ctx)))
+        report (report! ctx filters (:id current-user))
+        columns [:id :name :activated :completionPercentage :badgecount :sharedbadges :joined]
+        headers (map #(t (keyword (str "admin/" (name %))) ul) columns)
+        result_users (->> (:users report) (mapv #(assoc % :joined (date-from-unix-time (long (* 1000 (:ctime %)))))))
+        rows (mapv #(mapv % columns) result_users)
+        report->csvformat  (cons headers rows)]
+    (make-csv ctx report->csvformat \,)))
+
+
+
+
+ ;;------ MESSAGE  TOOL ------------;;
 
 (defn enabled-issuers [ctx space-id]
   (select-enabled-issuers-list {:space_id space-id} (u/get-db ctx)))

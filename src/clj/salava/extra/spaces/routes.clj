@@ -96,6 +96,16 @@
                    :current-user current-user
                    (ok (db/report! ctx filters (:id current-user))))
 
+            (GET "/report/export/:id" [users badges to from space_id]
+                   :summary "Export report to csv format"
+                   :auth-rules access/space-admin
+                   :current-user current-user
+                   :path-params [id :- s/Int]
+                   (-> (io/piped-input-stream (db/export-report ctx users badges to from id current-user))
+                       ok
+                       (header "Content-Disposition" (str "attachment; filename=\"""report.csv\""))
+                       (header "Content-Type" "text/csv")))
+
             (GET "/message_tool/settings/:space-id" []
                   :return {:messages_enabled s/Bool :issuers (s/maybe [{:enabled s/Bool :issuer_name s/Str}])}
                   :auth-rules access/space-admin
@@ -135,7 +145,7 @@
                   :body-params [ids :- [s/Int]
                                 message :- {:content s/Str :subject s/Str}]
                   :current-user current-user
-                  (ok (db/send-message-to-earners ctx message ids space-id))))   
+                  (ok (db/send-message-to-earners ctx message ids space-id))))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]

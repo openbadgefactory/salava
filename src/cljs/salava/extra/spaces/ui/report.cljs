@@ -3,7 +3,7 @@
   [reagent.core :refer [atom cursor]]
   [reagent.session :as session]
   [salava.core.ui.layout :as layout]
-  [salava.core.ui.helper :refer [path-for plugin-fun]]
+  [salava.core.ui.helper :refer [path-for plugin-fun js-navigate-to]]
   [salava.core.i18n :refer [t]]
   [salava.core.ui.modal :as mo]
   [reagent-modals.modals :as m]
@@ -26,6 +26,14 @@
     :handler (fn [data]
                (reset! (cursor state [:results]) data))})))
 
+(defn export-report [state]
+  (let [{:keys [users badges to from space-id]} @(cursor state [:filters])
+        users (mapv :id users)
+        badges (mapv :gallery_id badges)
+        to (if (number? to) to nil)
+        from (if (number? from) from nil)
+        url (str "/obpv1/space/report/export/" space-id "?users="users "&badges="badges "&to="to "&from="from "&space_id="space-id)]
+    (js-navigate-to url)))
 
 (defn query-params [base]
   {:country (get base :country "")
@@ -35,7 +43,8 @@
    :order (get base :order "mtime")
    :recipient-name (get base :recipient-name "")
    :page_count 0
-   :only-selfie? false})
+   :only-selfie? false
+   :space-id (session/get-in [:user :current-space :id] 0)})
 
 
 (defn ajax-stop [ajax-message-atom]
@@ -75,17 +84,28 @@
 (defn init-data [params state]
   (init-badges params state))
 
+
+(defn- add-or-remove [x coll]
+   (if (some #(= x %) @coll)
+     (reset! coll (->> @coll (remove #(= x %)) vec))
+     (reset! coll (conj @coll x))))
+
 (defn badge-grid-element [badge state]
  (let [{:keys [recipients image_file name id selfie_id badge_id gallery_id issuer_content_name description]} badge
        badge-filters (cursor state [:filters :badges])]
   [:div {:class "media grid-container" :style {:position "relative"}}
+   [:input.pull-right
+    {:id (str "checkbox-"gallery_id)
+     :type "checkbox"
+     :checked (some #(= gallery_id (:gallery_id %))  @badge-filters)
+     :on-change #(add-or-remove badge badge-filters)}]
    [:a {:href "#"
         :on-click #(do
                      (.preventDefault %)
-                     (when-not (some (fn [b] (= gallery_id (:gallery_id b))) @badge-filters)
-                       (reset! badge-filters (conj @badge-filters (select-keys badge [:gallery_id :image_file :name])))))
-        :title name
-        :data-dismiss "modal"}
+                     (mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id gallery_id} {:hidden (fn [] (reset! (cursor state [:select-all]) false))})
+                     #_(when-not (some (fn [b] (= gallery_id (:gallery_id b))) @badge-filters)
+                         (reset! badge-filters (conj @badge-filters (select-keys badge [:gallery_id :image_file :name])))))
+        :title name}
     [:div.media-content
      (if image_file
        [:div.media-left
@@ -99,14 +119,11 @@
             [:i.fa.fa-user.fa-fw.fa-lg {:title (str (t :badgeIssuer/Createdandissued) " " (session/get :site-name))
                                         :aria-label (str (t :badgeIssuer/Createdandissued) " " (session/get :site-name))}])
         issuer_content_name]]
-      (if recipients
-        [:div.media-recipients
-         recipients " " (if (= recipients 1)
-                          (t :gallery/recipient)
-                          (t :gallery/recipients))])
-      [:div.media-description description]]]
-    [:div.media-bottom
-     [:div {:class "pull-left"}]]]]))
+      #_(if recipients
+          [:div.media-recipients
+           recipients " " (if (= recipients 1)
+                            (t :gallery/recipient)
+                            (t :gallery/recipients))])]]]]))
 
 
 (defn gallery-grid-form [state]
@@ -114,7 +131,7 @@
     [:div {:id "grid-filter"
            :class "form-horizontal"}
      [:div
-      [gallery/country-selector state]
+      #_[gallery/country-selector state]
       [:div
        [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
             :href "#"}
@@ -159,12 +176,29 @@
    [:div.col-md-12
     [gallery-grid-form state]
     [:div {:style {:background-color "ghostwhite" :margin "10px auto" :padding "10px"}}
-     (t :admin/Clicktoselect)]
+       [:label
+         [:input
+          {:style {:margin "0 5px"}
+           :type "checkbox"
+           :default-checked @(cursor state [:select-all])
+           :on-change #(do
+                         (reset! (cursor state [:filters :badges]) [])
+                         (reset! (cursor state [:select-all]) (not @(cursor state [:select-all])))
+                         (when @(cursor state [:select-all])
+                           (reset! (cursor state [:filters :badges])  (:badges @state))))}]
+         [:b (t :extra-spaces/Selectall)]]]
+
     (if (:ajax-message @state)
       [:div.ajax-message
        [:i {:class "fa fa-cog fa-spin fa-2x "}]
        [:span (:ajax-message @state)]]
-      [gallery-grid state])]]))
+      [gallery-grid state])
+
+    [:div.well.well-sm.text-center
+     [:button.btn.btn-primary.btn-bulky
+      {:aria-label (t :core/Continue) :data-dismiss "modal"}
+      (t :core/Continue)]]]]))
+
 
 (defn badge-filter-section [state]
  (let [badge-filters (cursor state [:filters :badges])]
@@ -239,32 +273,36 @@
        [:div.panel-heading
         [:div.panel-title
           (str (t :admin/Results) " (" (count @results) ")")]]
-       [:div.table-responsive;.panel-body
+       [:div.table-responsive {:style {:max-height "500px" :overflow "auto"}}
         [:table.table
           [:thead
            [:tr
             [:th (t :admin/user)]
             [:th (t :admin/noofbadges)]
-            [:th (str (t :admin/ProfileCompletion) " (%)")]
+            [:th (t :admin/sharedbadges)]
+            [:th (str (t :admin/completionPercentage) " (%)")]
             [:th (t :gallery/Joined)]]]
 
          (reduce
           (fn [r u]
-           (let [{:keys [badge_count profile_visibility name activated profile_picture ctime completion_percentage]} u]
+           (let [{:keys [badgecount sharedbadges profile_visibility name activated profile_picture ctime completionPercentage]} u]
             (conj r
              [:tr.table-item
-              [:td [:img.logo {:src (profile-picture profile_picture) :alt name}]
-                   [:span.name name]]
-              [:td  (str badge_count " " (if (> badge_count 1) (t :badge/Badges) (t :badge/Badge)))]
+              [:td
+               [:div.inline-flex
+                [:img.logo {:src (profile-picture profile_picture) :alt name}]
+                [:span.name name]]]
+              [:td  (str badgecount " " (if (> badgecount 1) (t :badge/Badges) (t :badge/Badge)))]
+              [:td  (str sharedbadges " " (if (> sharedbadges 1) (t :badge/Badges) (t :badge/Badge)))]
               [:td
                [:div.progress
                 [:div.progress-bar.progress-bar-success
                  {:role "progressbar"
-                  :aria-valuenow (str completion_percentage)
+                  :aria-valuenow (str completionPercentage)
                   :aria-valuemin "0"
                   :aria-valuemax "100"
-                  :style {:width (str completion_percentage "%")}}
-                 [:span (str completion_percentage "% ")]]]]
+                  :style {:width (str completionPercentage "%")}}
+                 [:span (str completionPercentage "% ")]]]]
               [:td (date-from-unix-time (* 1000 ctime))]])))
 
           [:tbody]
@@ -275,7 +313,7 @@
   (let [results (cursor state [:results :users])
         user-filter (cursor state [:filters :users])]
      (if (seq @user-filter)
-      [:div.col-md-12
+      [:div {:style {:max-height "500px" :overflow "auto"}}
        [:div.panel.panel-default
         [:div.panel-heading
           [:div.panel-title
@@ -294,10 +332,10 @@
               [:table.table
                [:thead
                 [:tr
-                 [:th (t :badge/BadgeID)]
-                 [:th (t :badge/Badge)]
+                 [:th (t :admin/id)]
+                 [:th (t :admin/name)]
                  [:th (t :user/Status)]
-                 [:th (t :admin/visibility)]
+                 [:th (t :admin/badgeVisibility)]
                  [:th (t :badge/Issuedon)]
                  [:th (t :badge/Expireson)]]]
                (reduce
@@ -356,7 +394,7 @@
       [:div
        [:div.col-md-9.mg10vt
         [:div.form-group {:style {:padding "5px"}}
-         [:span._label "Issuing date between"]
+         [:span._label (t :admin/Issuingdatebtw)]
          [:div.form-inline
           [:input#from.form-control
            {:type "date"
@@ -380,11 +418,26 @@
                           (clear-seleted-dates state)
                           (fetch-report state))}
             (t :admin/Clear)]]]]]]]]
+   [:div.btn-toolbar
+    [:div.btn-group
+     [:button.btn-primary.btn.btn-bulky
+      {:on-click #(reset! (cursor state [:preview]) true)
+       :aria-label (t :admin/Preview)}
+      (t :admin/Preview)]
+     [:button.btn-primary.btn.btn-bulky
+      {:on-click #(export-report state)
+       :aria-label (t :admin/DownloadCSV)}
+      (t :admin/DownloadCSV)]]]
 
-   (when (= "users" @(cursor state [:find]))
-    [user-list state])
-   (when (= "badges" @(cursor state [:find]))
-    [badge-list state])])
+   [:div
+    [:p (str (count @(cursor state [:results :users])) " " (t :admin/rowsfound))]]
+
+   (if @(cursor state [:preview])
+     [:div
+      (when (= "users" @(cursor state [:find]))
+       [user-list state])
+      (when (= "badges" @(cursor state [:find]))
+       [badge-list state])])])
 
 
 
@@ -400,7 +453,7 @@
                      :countries              []
                      :country-selected       (session/get-in [:filter-options :country] "all")
                      :autocomplete           {:tags {:value #{} :items #{}}}
-                     :advanced-search        false
+                     :advanced-search        true
                      :timer                  nil
                      :ajax-message           nil
                      :only-selfie? false
@@ -408,7 +461,8 @@
                      :results []
                      :find "users"
                      :to nil
-                     :from nil})]
+                     :from nil
+                     :preview false})]
 
    (init-data params state)
    (fn []

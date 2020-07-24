@@ -194,58 +194,60 @@
               (reduce
                #(conj %1 ^{:key %2}[:li.list-group-item %2]) [:ul.list-group {:style {:margin "10px auto"}}] @(cursor state [:emails]))])])]]
       (when (seq @(cursor state [:emails]))
-       [:div.well.well-sm;.panel.panel-default
-        #_[:div.panel-heading.weighted
-           (t :extra-space/Composemessage)]
-        [:div.panel-body
-         [:div.form-group
-          [:label {:for "subject"} (t :extra-spaces/Subject) [:span.form-required " *"]]
-          [:input#subject.form-control
-           {:style {:max-width "500px"}
-            :type "text"
-            :value @(cursor state [:message :subject])
-            :on-change #(reset! (cursor state [:message :subject]) (.-target.value %))
-            :required true}]]
-         [:div.form-group
-          [:label {:for "message"} (t :extra-spaces/Message) [:span.form-required " *"]]
-          [:textarea#message.form-control
-           {:style {:max-width "500px"}
-            :on-change #(reset! (cursor state [:message :content]) (.-target.value %))
-            :rows 8
-            :value @(cursor state [:message :content])
-            :required true}]]
-         [:div.btn-toolbar
-          [:div.btn-group
-           [:button.btn.btn-primary.btn-bulky
-            {:aria-label (t :extra-spaces/Sendmessages)
-             :on-click #(do
-                         (.preventDefault %)
-                         (reset! (cursor state [:sending_messages]) true)
-                         (ajax/POST
-                           (path-for (str "/obpv1/space/message_tool/send_message/" space-id))
-                           {:params {:ids (mapv :id @(cursor state [:selected-badges]))
-                                     :message @(cursor state [:message])}
-                            :handler (fn [data]
-                                       (when (= "success" (:status data))
-                                         (reset! (cursor state [:sending_messages]) false)
-                                         (reset! (cursor state [:message_alert]) true)))
-
-                             :finally (fn [] (js/setTimeout
-                                               (fn [] (reset! (cursor state [:message_alert]) false))
-                                               3000))}))
-
-             :disabled (or (clojure.string/blank? @(cursor state [:message :subject]))
-                           (clojure.string/blank? @(cursor state [:message :content])))}
-            [:span (when @(cursor state [:sending_messages]) [:i.fa.fa-cog.fa-spin.fa-lg]) " " (t :extra-spaces/Sendmessage)]]
-           [:button.btn.btn-warning.btn-bulky
-            {:aria-label (t :core/Cancel)
-             :on-click #(do
+       [:div.col-md-12
+        [:div.well.well-sm;.panel.panel-default
+         #_[:div.panel-heading.weighted
+            (t :extra-space/Composemessage)]
+         [:div.panel-body
+          [:div.form-group
+           [:label {:for "subject"} (t :extra-spaces/Subject) [:span.form-required " *"]]
+           [:input#subject.form-control
+            {:style {:max-width "500px"}
+             :type "text"
+             :value @(cursor state [:message :subject])
+             :on-change #(reset! (cursor state [:message :subject]) (.-target.value %))
+             :required true}]]
+          [:div.form-group
+           [:label {:for "message"} (t :extra-spaces/Message) [:span.form-required " *"]]
+           [:textarea#message.form-control
+            {:style {:max-width "500px"}
+             :on-change #(reset! (cursor state [:message :content]) (.-target.value %))
+             :rows 8
+             :value @(cursor state [:message :content])
+             :required true}]]
+          [:div.btn-toolbar
+           [:div.btn-group
+            [:button.btn.btn-primary.btn-bulky
+             {:aria-label (t :extra-spaces/Sendmessages)
+              :on-click #(do
                           (.preventDefault %)
-                          (reset! (cursor state [:message]) {:content "" :subject ""}))}
-            (t :core/Cancel)]]]]])
+                          (reset! (cursor state [:sending_messages]) true)
+                          (ajax/POST
+                            (path-for (str "/obpv1/space/message_tool/send_message/" space-id))
+                            {:params {:ids (mapv :id @(cursor state [:selected-badges]))
+                                      :message @(cursor state [:message])}
+                             :handler (fn [data]
+                                        (when (= "success" (:status data))
+                                          (reset! (cursor state [:sending_messages]) false)
+                                          (reset! (cursor state [:message_alert]) true)))
+
+                              :finally (fn [] (js/setTimeout
+                                                (fn [] (reset! (cursor state [:message_alert]) false))
+                                                3000))}))
+
+              :disabled (or (clojure.string/blank? @(cursor state [:message :subject]))
+                            (clojure.string/blank? @(cursor state [:message :content])))}
+             [:span (when @(cursor state [:sending_messages]) [:i.fa.fa-cog.fa-spin.fa-lg]) " " (t :extra-spaces/Sendmessage)]]
+            [:button.btn.btn-warning.btn-bulky
+             {:aria-label (t :core/Cancel)
+              :on-click #(do
+                           (.preventDefault %)
+                           (reset! (cursor state [:message]) {:content "" :subject ""}))}
+             (t :core/Cancel)]]]]]])
       (when (empty? @(cursor state [:selected-badges]))
-       [:div.well.well-sm
-        (t :extra-spaces/Selectbadgefirst)])]]])
+       [:div.col-md-12
+        [:div.well.well-sm
+         (t :extra-spaces/Selectbadgefirst)]])]]])
 
 
 (defn init-badges [space-id state]
