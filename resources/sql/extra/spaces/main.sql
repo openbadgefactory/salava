@@ -208,7 +208,15 @@ GROUP BY id
 SELECT DISTINCT(assertion_url) FROM user_badge WHERE gallery_id IN (:ids)
 
 --name: select-emails-from-assertions
-SELECT DISTINCT(email) FROM user_badge WHERE assertion_url IN (:assertions)
+SELECT DISTINCT(ub.email), (SELECT COUNT(DISTINCT gallery_id) FROM user_badge WHERE assertion_url IN (:assertions) AND user_id = ub.user_id) AS count
+FROM user_badge ub
+WHERE assertion_url IN (:assertions)
+GROUP BY ub.email,count
+HAVING count = :expected_count
 
 --name: select-emails-from-pending-assertions
-SELECT DISTINCT(email) FROM pending_factory_badge WHERE assertion_url IN (:assertions)
+SELECT DISTINCT(pfb.email), (SELECT COUNT(DISTINCT assertion_url) FROM pending_factory_badge WHERE assertion_url IN (:assertions) AND email = pfb.email) AS count
+FROM pending_factory_badge pfb
+WHERE assertion_url IN (:assertions)
+GROUP BY pfb.email,count
+HAVING count = :expected_count

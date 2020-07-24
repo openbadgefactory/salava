@@ -125,7 +125,17 @@
                    :summary "Get badges"
                    :body-params [ids :- [s/Int]]
                    :current-user current-user
-                   (ok (db/badge-earners ctx ids))))
+                   (ok (db/badge-earners ctx ids)))
+
+            (POST "/message_tool/send_message/:space-id" []
+                  :return {:status (s/enum "success" "error")}
+                  :auth-rules access/space-admin
+                  :summary "Send message"
+                  :path-params [space-id :- s/Int]
+                  :body-params [ids :- [s/Int]
+                                message :- {:content s/Str :subject s/Str}]
+                  :current-user current-user
+                  (ok (db/send-message-to-earners ctx message ids space-id))))   
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]

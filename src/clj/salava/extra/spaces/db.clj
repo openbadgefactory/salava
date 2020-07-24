@@ -8,7 +8,9 @@
             [slingshot.slingshot :refer :all]
             [clojure.string :refer [blank?]]
             [salava.profile.db :refer [profile-metrics]]
-            [salava.core.helper :refer [string->number]]))
+            [salava.core.helper :refer [string->number]]
+            [hiccup.page :refer [html5]]
+            [postal.core :refer [send-message]]))
 
 (defqueries "sql/extra/spaces/main.sql")
 (defqueries "sql/extra/spaces/report.sql")
@@ -267,7 +269,29 @@
 
 (defn badge-earners [ctx ids]
   (let [assertions (when (seq ids) (select-assertions-from-galleryids {:ids ids} (u/get-db-col ctx :assertion_url)))
-        user-emails (when (seq assertions) (vec (select-emails-from-assertions {:assertions assertions} (u/get-db-col ctx :email))))
-        pending-emails (when (seq assertions) (select-emails-from-pending-assertions {:assertions assertions} (u/get-db-col ctx :email)))]
-
+        user-emails (when (seq assertions) (vec (select-emails-from-assertions {:assertions assertions :expected_count (count ids)} (u/get-db-col ctx :email))))
+        pending-emails (when (seq assertions) (select-emails-from-pending-assertions {:assertions assertions :expected_count (count ids)} (u/get-db-col ctx :email)))]
     (->> (into user-emails pending-emails) distinct)))
+
+
+(defn send-message-to-earners [ctx message ids space-id]
+  (let [{:keys [subject content]} message
+        emails (badge-earners ctx ids)
+        space-name (:name (get-space-information ctx space-id))
+        mail-host-config (get-in ctx [:config :core :mail-host-config])
+        data {:from (get-in ctx [:config :core :mail-sender])
+              :subject subject
+              :body [{:type "text/plain; charset=utf-8"
+                      :content (str content "\n\n" "- " space-name " -")}]}]
+
+      (try+
+       (doseq [to emails]
+        (log/info "sending message to" to)
+        (-> (if (nil? mail-host-config)
+              (send-message (assoc data :to to))
+              (send-message mail-host-config (assoc data :to to)))
+            log/info))
+       {:status "success"}
+       (catch Object ex
+         (log/error ex)
+         {:status "error"}))))

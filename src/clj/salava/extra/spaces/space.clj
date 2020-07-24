@@ -108,8 +108,6 @@
  ([ctx id]
   (db/get-space-information ctx id))
  ([ctx id user-id]
-
-  (prn (get-space ctx id))
   (assoc (get-space ctx id) :role (select-user-space-role {:user_id user-id :space_id id} (into {:result-set-fn first :row-fn :role} (get-db ctx))))))
 
 (defn- active-space? [ctx id]

@@ -37,10 +37,9 @@ CREATE TABLE IF NOT EXISTS `space_properties`(
 
 --;;
 
-CREATE TABLE IF NOT EXISTS `space_admin_pending`(
+CREATE TABLE IF NOT EXISTS `space_message_issuers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `space_id`  bigint(20) unsigned NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `ctime` bigint(20) unsigned NOT NULL,
+  `issuer_name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

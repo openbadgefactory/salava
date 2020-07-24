@@ -402,7 +402,7 @@
   [:div#space-gallery.form-group
    [:div.panel.panel-default
     [:div.panel-heading.weighted
-     (t :admin/Messagetool)]
+     (t :extra-spaces/MessageTool)]
     [:div.panel-body
      [mt/manage-message-tool (get-in @state [:space :id] 0) state true]]
     [:div.panel-footer
@@ -410,7 +410,6 @@
       {:on-click #(do
                    (.preventDefault %)
                    (reset! (cursor state [:message_setting_updating]) true)
-                   (prn @(cursor state [:message_setting :enabled_issuers]))
                    (ajax/POST
                     (path-for (str "/obpv1/space/message_tool/settings/" (get-in @state [:space :id] 0)))
                     {:params {:settings (dissoc (assoc @(cursor state [:message_setting]) :issuers @(cursor state [:message_setting :enabled_issuers])) :enabled_issuers)}
@@ -544,12 +543,12 @@
            enabled-issuers (cursor state [:message_setting :enabled_issuers])]
        [:div.col-md-12
         [:div.well.well-sm
-         [:p [:b "Select issuers whose badges can be used to send messages"]]
+         ;[:p [:b "Select issuers whose badges can be used to send messages"]]
          [:input.form-control
            {:on-change #(reset! (cursor state [:search]) (.-target.value %))
             :type "text"
             :id "searchissuer"
-            :placeholder (str (t :admin/Filter) "...")
+            :placeholder (str (t :extra-spaces/Filter) "...")
             :style {:max-width "300px"}}]]
         [:div {:style {:max-height "700px" :overflow "auto"}}
          (reduce

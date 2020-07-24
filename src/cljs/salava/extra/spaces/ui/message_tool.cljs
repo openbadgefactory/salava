@@ -30,18 +30,18 @@
        [:input {:type "checkbox"
                 :on-change #(reset! (cursor state [:message_setting :messages_enabled]) (not @(cursor state [:message_setting :messages_enabled])))
                 :checked (pos? @(cursor state [:message_setting :messages_enabled]))}]
-       [:b "Can use the messaging tool to send message to badge earners"]]]]
+       [:b (t :extra-spaces/Canmessagerecipients)]]]]
     (when @(cursor state [:message_setting :messages_enabled])
       [:div.form-group
-       [:span._label (t :admin/Messagesetting)]
-       [:div.add-admins-link
+       [:span._label (t :extra-spaces/Messagetoolrestrictions)]
+       [:div.add-admins-link {:style {:margin "10px auto"}}
         [:a
          {:href "#" :on-click #(mo/open-modal [:space :message_setting] state)}
-         (t :admin/Manage-issuer-list)]]
+         [:span [:i.fa.fa-list-alt.fa-lg] " " (t :extra-spaces/Manageissuerlist)]]]
        (when (seq @(cursor state [:message_setting :enabled_issuers]))
         [:div.well.well-sm {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
          [:div.col-md-12
-          [:p "Messages can be sent to email addresses that have been issued badges by the following issuers "]
+          [:p (t :extra-spaces/Issuerlistinfo)]
           (reduce
            #(conj %1 [:li [:b %2]])
             [:ul]
@@ -153,6 +153,9 @@
     [:div.panel-heading.weighted
      (t :extra-spaces/MessageTool)]
     [:div.panel-body
+      (when @(cursor state [:message_alert])
+        [:div.alert.alert-success
+         (t :extra-spaces/Messagesentsuccess)])
       [:div.row
        [:div.col-md-12
         [:div.col-md-6 {:style {:margin "10px auto"}}
@@ -162,9 +165,9 @@
            :on-click #(mo/open-modal [:space :badges-mt] state {:hidden (fn []
                                                                            (reset! (cursor state [:select-all]) false)
                                                                            (fetch-badge-earners state))})}
-          [:span [:i.fa.fa-certificate.fa-lg] (t :admin/Addbadge)]]
+          [:span [:i.fa.fa-certificate.fa-lg] " " (t :extra-spaces/Addbadge)]]
          (when (seq @(cursor state [:selected-badges]))
-          [:div#admin-report
+          [:div#admin-report {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
 
               (reduce
                 #(conj %1
@@ -181,15 +184,16 @@
                                     [:img.logo {:src (str "/" (:badge_image %2))}]
                                     [:span.name (:badge_name %2)]]])
 
-                [:div.list-group]
+                [:div.list-group {:style {:margin "10px auto"}}]
                 @(cursor state [:selected-badges]))])]
-        (when (seq @(cursor state [:emails]))
+        (when (seq @(cursor state [:selected-badges]))
           [:div.col-md-6 {:style {:margin "10px auto"}}
-           [:span [:b (count @(cursor state [:emails])) " emails found"]]
-           [:div#admin-report
-            (reduce
-             #(conj %1 ^{:key %2}[:li.list-group-item %2]) [:ul.list-group] @(cursor state [:emails]))]])]]
-      (if (seq @(cursor state [:emails]))
+           [:span [:b (count @(cursor state [:emails])) " " (t :extra-spaces/recipientsfound)]]
+           (when (seq @(cursor state [:emails]))
+             [:div#admin-report {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
+              (reduce
+               #(conj %1 ^{:key %2}[:li.list-group-item %2]) [:ul.list-group {:style {:margin "10px auto"}}] @(cursor state [:emails]))])])]]
+      (when (seq @(cursor state [:emails]))
        [:div.well.well-sm;.panel.panel-default
         #_[:div.panel-heading.weighted
            (t :extra-space/Composemessage)]
@@ -219,22 +223,29 @@
                          (reset! (cursor state [:sending_messages]) true)
                          (ajax/POST
                            (path-for (str "/obpv1/space/message_tool/send_message/" space-id))
-                           {:handler (fn [data]
+                           {:params {:ids (mapv :id @(cursor state [:selected-badges]))
+                                     :message @(cursor state [:message])}
+                            :handler (fn [data]
                                        (when (= "success" (:status data))
-                                         (reset! (cursor state [:sending_messages]) true)))}))
+                                         (reset! (cursor state [:sending_messages]) false)
+                                         (reset! (cursor state [:message_alert]) true)))
+
+                             :finally (fn [] (js/setTimeout
+                                               (fn [] (reset! (cursor state [:message_alert]) false))
+                                               3000))}))
 
              :disabled (or (clojure.string/blank? @(cursor state [:message :subject]))
                            (clojure.string/blank? @(cursor state [:message :content])))}
-            [:span (when @(cursor state [:sending_messages]) [:i.fa.fa-cog.fa-spin.fa-lg]) " " (t :extra-spaces/Sendmessages)]]
+            [:span (when @(cursor state [:sending_messages]) [:i.fa.fa-cog.fa-spin.fa-lg]) " " (t :extra-spaces/Sendmessage)]]
            [:button.btn.btn-warning.btn-bulky
             {:aria-label (t :core/Cancel)
              :on-click #(do
                           (.preventDefault %)
                           (reset! (cursor state [:message]) {:content "" :subject ""}))}
-            (t :core/Cancel)]]]]]
+            (t :core/Cancel)]]]]])
+      (when (empty? @(cursor state [:selected-badges]))
        [:div.well.well-sm
         (t :extra-spaces/Selectbadgefirst)])]]])
-
 
 
 (defn init-badges [space-id state]
@@ -257,7 +268,8 @@
                      :select-all false
                      :emails []
                      :message {:content "" :subject ""}
-                     :sending_messages false})]
+                     :sending_messages false
+                     :message_alert false})]
    (init-data space-id state)
    (fn []
     (layout/default site-navi [content space-id state]))))
