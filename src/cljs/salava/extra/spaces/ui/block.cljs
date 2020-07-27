@@ -125,7 +125,7 @@
       (if (clojure.string/starts-with? current-path "/space") "/social" current-path))))
 
 
-(defn space-list []
+(defn ^:export space-list []
  (let [state (atom {:selected  nil :spaces (session/get-in [:user :spaces])})
        user-id (session/get-in [:user :id])
        current-space (session/get-in [:user :current-space])]
@@ -181,7 +181,7 @@
    (fn []
      (layout/default site-navi (manage-spaces state)))))
 
-(defn space_list_dashboard []
+(defn ^:export space_list_dashboard []
   (let [spaces (session/get-in [:user :spaces])
         current-space (session/get-in [:user :current-space])
         state (atom {:spaces []})]
@@ -242,20 +242,21 @@
                     (when (empty? default-space) [:span.default [:i.fa.fa-bookmark] " " (t :extra-spaces/default)])
                     (when (empty? current-space) [:span.current [:i.fa.fa-thumb-tack] " " [:b (t :extra-spaces/currentspace)]])]]]])]]]]]])))))
 
-(defn space_info []
- (when-let [current-space (session/get-in [:user :current-space] nil)]
-   [:div.content-container (when (get-in current-space [:css :p-color] nil) {:style {:border-color (get-in current-space [:css :p-color])}})
-    [:div.navbar.navbar-default
-     [:div.container-fluid
-      [:div.navbar-header.banner-container
-       (when (:banner current-space)
-          {:style {:background-image (str "url(" (session/get :site-url) "/" (:banner current-space) ")")}})
-       [:div.media
-        [:div.media-left;.navbar-brand
-         [:img.logo { :src (str "/" (:logo current-space))}]]
-        [:div.media-body {:style {:vertical-align "middle"}}
-         [:h3.media-heading {:style {:font-weight "600"}} (:name current-space)]
-         (:description current-space)]]]]]]))
+(defn ^:export space_info []
+ (fn []
+  (when-let [current-space (session/get-in [:user :current-space] nil)]
+    [:div.content-container (when (get-in current-space [:css :p-color] nil) {:style {:border-color (get-in current-space [:css :p-color])}})
+     [:div.navbar.navbar-default
+      [:div.container-fluid
+       [:div.navbar-header.banner-container
+        (when (:banner current-space)
+           {:style {:background-image (str "url(" (session/get :site-url) "/" (:banner current-space) ")")}})
+        [:div.media
+         [:div.media-left;.navbar-brand
+          [:img.logo { :src (str "/" (:logo current-space))}]]
+         [:div.media-body {:style {:vertical-align "middle"}}
+          [:h3.media-heading {:style {:font-weight "600"}} (:name current-space)]
+          (:description current-space)]]]]]])))
 
 (defn ^:export spaces_stats_dropdown [state]
  (let [v (atom {:spaces [] :selected 0})]
@@ -299,6 +300,7 @@
         space (cursor state [:params :space-id])
         spaces [(session/get-in [:user :current-space])]
         country (cursor state [:params :country])]
+    (fn []
      [:div.form-group
       [:label {:class "control-label col-sm-2" :for "space-selector"} (str (t :extra-spaces/Space) ":")]
       [:div.col-sm-10
@@ -316,12 +318,13 @@
        (when (pos? @space)
         [:p.help-block.text-muted
          [:i.fa.fa-fw.fa-lg.fa-info-circle]
-         [:b (t :extra-spaces/Badgeselectorinfo)]])]]))
+         [:b (t :extra-spaces/Badgeselectorinfo)]])]])))
 
 (defn ^:export gallery_page_space_select [state fetch-fn]
  (let [space (cursor state [:space])
        spaces [(session/get-in [:user :current-space])]
        country (cursor state [:country-selected])]
+   (fn []
     [:div.form-group
      [:label {:class "control-label col-sm-2" :for "space-selector-pages"} (str (t :extra-spaces/Space) ":")]
      [:div.col-sm-10
@@ -339,12 +342,13 @@
       (when (pos? @space)
        [:p.help-block.text-muted
         [:i.fa.fa-fw.fa-lg.fa-info-circle]
-        [:b (t :extra-spaces/Pageselectorinfo)]])]]))
+        [:b (t :extra-spaces/Pageselectorinfo)]])]])))
 
 (defn ^:export gallery_profiles_space_select [state fetch-fn]
  (let [space (cursor state [:space])
        spaces [(session/get-in [:user :current-space])]
        country (cursor state [:country-selected])]
+   (fn []
     [:div.form-group
      [:label {:class "control-label col-sm-2" :for "space-selector-profiles"} (str (t :extra-spaces/Space) ":")]
      [:div.col-sm-10
@@ -362,4 +366,4 @@
       (when (pos? @space)
        [:p.help-block.text-muted
         [:i.fa.fa-fw.fa-lg.fa-info-circle]
-        [:b (t :extra-spaces/Profileselectorinfo)]])]]))
+        [:b (t :extra-spaces/Profileselectorinfo)]])]])))
