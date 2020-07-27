@@ -5,7 +5,7 @@
             [clojure.set :refer [rename-keys]]
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump string->number]]
-            [salava.core.util :refer [get-db get-db-col get-db-1 md->html plugin-fun get-plugins]]
+            [salava.core.util :as u :refer [get-db get-db-col get-db-1 md->html plugin-fun get-plugins]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.page.main :as p]
             ;[salava.social.db :as so]
@@ -92,13 +92,19 @@
      badges
      (if-not (ifn? f) badges (f ctx gallery-ids badges)))))
 
+(defn- png-convert-url [ctx image]
+  (if (re-find #"\w+\.svg$" image)
+    (str (u/get-full-path ctx) "/obpv1/file/as-png?image=" image)
+    (str (u/get-site-url ctx) "/" image)))
+
 (defn gallery-badges
   "Get badges for gallery grid"
   [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count only-selfie? space-id fetch-private]}]
   (let [offset (string->number page_count)
         gallery-ids (get-gallery-ids ctx tags badge-name issuer-name recipient-name only-selfie? country space-id fetch-private)
         badges (some->> (select-badges ctx country gallery-ids order offset fetch-private) (badge-checker) (remove nil?) (selfie-checker ctx gallery-ids))]
-    {:badges badges
+
+    {:badges (map #(assoc % :png_image_file (png-convert-url ctx (:image_file %))) badges)
      :badge_count (badge-count (if (nil? gallery-ids)
                                  (get (select-gallery-badges-count {:country country :fetch_private fetch-private} (get-db-1 ctx)) :total 0)
                                  (count gallery-ids))
@@ -207,6 +213,7 @@
    (map (fn [content]
           (-> content
               (update :criteria_content md->html)
+              (assoc :png_image_file (png-convert-url ctx (:image_file content)))
               (assoc  :alignment (b/select-alignment-content {:badge_content_id (:badge_content_id content)} (get-db ctx)))
               (dissoc :badge_content_id)))
         (select-multi-language-badge-content-p {:id badge-id} (get-db ctx))))

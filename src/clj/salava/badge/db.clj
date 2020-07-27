@@ -230,35 +230,38 @@
       first :id)))
 
 
-(defn save-user-badge! [ctx user-badge]
-  (let [badge      (save-images ctx (:badge user-badge))
-        gallery-id (save-gallery! ctx badge)]
+(defn save-user-badge!
+  ([ctx user-badge]
+   (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
+     (save-user-badge! ctx user-badge tx)))
 
-    (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
-      (let [now (u/now)
-            badge-id (save-badge! tx badge)
-            user-badge-id (-> user-badge
-                              (dissoc :badge)
-                              (assoc :badge_id badge-id)
-                              (insert-user-badge<! {:connection tx})
-                              :generated_key)]
+  ([ctx user-badge tx]
+   (let [now (u/now)
+         badge      (save-images ctx (:badge user-badge))
+         gallery-id (save-gallery! ctx badge)
+         badge-id (save-badge! tx badge)
+         user-badge-id (-> user-badge
+                           (dissoc :badge)
+                           (assoc :badge_id badge-id)
+                           (insert-user-badge<! {:connection tx})
+                           :generated_key)]
 
-        (when gallery-id
-          (jdbc/execute! tx ["UPDATE gallery SET badge_id = ? WHERE id = ?" badge-id gallery-id])
-          (jdbc/execute! tx ["UPDATE user_badge SET gallery_id = ? WHERE id = ?" gallery-id user-badge-id]))
+     (when gallery-id
+       (jdbc/execute! tx ["UPDATE gallery SET badge_id = ? WHERE id = ?" badge-id gallery-id])
+       (jdbc/execute! tx ["UPDATE user_badge SET gallery_id = ? WHERE id = ?" gallery-id user-badge-id]))
 
-        (when (seq (:evidence user-badge))
-          (doseq [evidence (:evidence user-badge)]
-            (when (map? evidence)
-              (jdbc/insert! tx "user_badge_evidence" (-> evidence
+     (when (seq (:evidence user-badge))
+       (doseq [evidence (:evidence user-badge)]
+         (when (map? evidence)
+           (jdbc/insert! tx "user_badge_evidence" (-> evidence
+                                                      (dissoc :id)
+                                                      (assoc :user_badge_id user-badge-id
+                                                             :ctime now
+                                                             :mtime now))))))
+     (when (seq (:endorsement user-badge))
+       (doseq [endorsement (:endorsement user-badge)]
+         (when (map? endorsement)
+           (jdbc/insert! tx "user_badge_endorsement" (-> endorsement
                                                          (dissoc :id)
-                                                         (assoc :user_badge_id user-badge-id
-                                                                :ctime now
-                                                                :mtime now))))))
-        (when (seq (:endorsement user-badge))
-          (doseq [endorsement (:endorsement user-badge)]
-            (when (map? endorsement)
-              (jdbc/insert! tx "user_badge_endorsement" (-> endorsement
-                                                            (dissoc :id)
-                                                            (assoc :user_badge_id user-badge-id :status "accepted"))))))
-        user-badge-id))))
+                                                         (assoc :user_badge_id user-badge-id :status "accepted"))))))
+     user-badge-id)))

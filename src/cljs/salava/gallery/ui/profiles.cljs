@@ -398,7 +398,7 @@
 (defn init-data [state]
   (let [country (session/get-in [:user :country] "all")
         filter-options (session/get :filter-options nil)
-        common-badges? (if filter-options (:common-badges filter-options) true)
+        common-badges? (if filter-options (:common-badges filter-options) false)
         ajax-message-atom (cursor state [:ajax-message])
         space-id (session/get-in [:user :current-space :id] 0)]
     (reset! ajax-message-atom (str (t :core/Loading) "..."))
@@ -425,8 +425,9 @@
                       :order_by "ctime"
                       :timer nil
                       :ajax-message nil
-                      :common-badges? (if filter-options (:common-badges filter-options) true)
+                      :common-badges? (if filter-options (:common-badges filter-options) false)
                       :space (session/get-in [:user :current-space :id] 0)})]
+
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))

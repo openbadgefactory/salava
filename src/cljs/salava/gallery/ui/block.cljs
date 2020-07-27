@@ -186,8 +186,7 @@
 (defn allprofilesmodal [params]
   (let [country (session/get-in [:user :country] "all")
         filter-options (session/get :filter-options nil)
-
-        common-badges? (if filter-options (:common-badges filter-options) true)
+        common-badges? (if filter-options (:common-badges filter-options) false)
         {:keys [type selected-users-atom context user_badge_id selfie func external-users-atom existing-users-atom space-id space]} params
         data-atom (atom {:users []
                          :selected []
@@ -253,7 +252,7 @@
                                                         [:p (t :badgeIssuer/Issueselfiebadgeinfo)]
                                                         [:hr.line]])
 
-                                                     (when (= "endorsement" context)
+                                                     (when (or (= "endorsement" context) (= context "endorsement_selfie"))
                                                        [:div.col-md-12 {:style {:margin "20px auto" :padding "10px" :background-color "ghostwhite"}}
                                                         [:p (t :badge/Aboutexternalendorsements)]
                                                         [:span {:style {:display "block" :font-weight "600" :font-size "14px" :margin "10px auto"}} [:i.fa.fa-lg.fa-envelope] (t :badge/Externalendorsers)]
@@ -271,7 +270,7 @@
                                                            [input/text-field {:name "email" :placeholder (t :badge/Inputemail) :atom (cursor data-atom [:email]) :aria-label (t :badge/Inputemail)}]
                                                            [:span.input-group-btn
                                                             [:button.btn.btn-primary
-                                                               {:disabled (not (email-valid? @(cursor data-atom [:email])))
+                                                               {:disabled (or (not (email-valid? @(cursor data-atom [:email]))) (some #(= % @(cursor data-atom [:email])) @(cursor data-atom [:user_emails])))
                                                                 :type "button"
                                                                 :style {:margin-top "unset"}
                                                                 :on-click #(when-not (some (fn [e] (= e @(cursor data-atom [:email]))) @external-users-atom)
@@ -361,4 +360,9 @@
                                                                :users_count users_count
                                                                :page_count 1))
                                              :finally (fn []
-                                                        (swap! data-atom assoc :ajax-message nil))}))})))
+                                                        (swap! data-atom assoc :ajax-message nil)
+                                                        (when (or (= "endorsement" context) (= context "endorsement_selfie"))
+                                                          (ajax/GET
+                                                           (path-for "/obpv1/user/email-addresses")
+                                                           {:handler (fn [data]
+                                                                       (swap! data-atom assoc :user_emails (mapv :email data)))})))}))})))

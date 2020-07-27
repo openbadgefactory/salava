@@ -99,6 +99,11 @@
                    :profile_picture    (s/maybe s/Str)
                    :about              (s/maybe s/Str)})
 
+(s/defschema current-user (-> user
+                              (merge user-setting)
+                              (assoc :email s/Str)))
+
+
 (s/defschema user-profile {(s/optional-key :user)       (merge user user-setting)
                            (s/optional-key :profile)    [(s/maybe profile-field)]
                            :visibility (s/enum "public" "internal" "gone")

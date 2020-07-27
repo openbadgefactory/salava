@@ -10,7 +10,6 @@
   [salava.core.ui.helper :refer [path-for]]
   [salava.core.ui.input :refer [editor markdown-editor text-field file-input]]))
 
-
 (defn status-modal [{:keys [message status]}]
   (let [alert-class (if (= status "success") "alert-success" "alert-danger")]
     [:div

@@ -375,6 +375,13 @@ p.text-muted {
   color: #1E1E1E;
 }
 
+.selfie-stamp {
+  line-height: 0px;
+  .logo-image-url {
+    width: 160px;
+  }
+}
+
 /*#my-badges #grid .grid-container .media-content .icons{
 text-align:left;
 .visibility-icon{

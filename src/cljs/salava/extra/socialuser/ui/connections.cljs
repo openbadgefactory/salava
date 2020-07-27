@@ -27,8 +27,8 @@
                                                  (do
                                                    (init-data state)))
                               :error-handler   (fn [{:keys [status status-text]}]
-                                                 (.log js/console (str status " " status-text)
-                                                       (t :social/Unfollow)))})}])
+                                                 (.log js/console (str status " " status-text)))})}
+      (t :social/Unfollow)])
 
 (defn toggle-panel [key atom]
   (if (= key @atom)
@@ -76,8 +76,8 @@
                                        (do
                                          (init-data state)))
                     :error-handler   (fn [{:keys [status status-text]}]
-                                       (.log js/console (str status " " status-text)
-                                             (t :social/Accept)))})}])
+                                       (.log js/console (str status " " status-text)))})}
+     (t :social/Accept)])
 
 (defn decline [owner-id state]
   [:a {:class  "btn btn-warning btn-xs"
@@ -90,8 +90,8 @@
                                        (do
                                          (init-data state)))
                     :error-handler   (fn [{:keys [status status-text]}]
-                                       (.log js/console (str status " " status-text)
-                                             (t :social/Decline)))})}])
+                                       (.log js/console (str status " " status-text)))})}
+    (t :social/Decline)])
 
 (defn pending-user-connections [state users visible-area-atom]
   (let [panel-identity :pending

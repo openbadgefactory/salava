@@ -11,6 +11,7 @@
             [ring.middleware.session :refer [session-response]]
             [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path save-file-from-http-url get-plugins]]))
 
+
 (defqueries "sql/oauth/queries.sql")
 
 (defn oauth-request [method url opts]
@@ -139,12 +140,16 @@
 (defn- challenge-hash [code_verifier]
   (some->> code_verifier (u/digest "sha256") u/bytes->base64-url))
 
+;; Expiry time for OAuth access token in seconds. Low value used for debugging.
+(def token-expires 600)
+
 (defn new-access-token [ctx client_id auth_code code_verifier]
   (when-let [user (select-oauth2-auth-code-user {:client_id client_id :auth_code auth_code :auth_code_challenge (challenge-hash code_verifier)} (u/get-db-1 ctx))]
     (let [rtoken (u/random-token auth_code)
-          expires 7200]
+          expires token-expires]
       (update-oauth2-auth-code! {:client_id client_id :auth_code auth_code :rtoken (hashers/derive rtoken {:alg :bcrypt+sha512})} (get-db ctx))
-      {:access_token (user-session ctx user expires)
+      {:token_id (:token_id user)
+       :access_token (user-session ctx user expires)
        :refresh_token (str (:id user) "-" rtoken)
        :token_type "bearer",
        :expires expires})))
@@ -152,13 +157,18 @@
 (defn refresh-access-token [ctx client_id [user_id refresh_token]]
   (let [users (select-oauth2-refresh-token-user {:client_id client_id :user_id user_id} (u/get-db ctx))]
     (when-let [user (first (filter #(hashers/check refresh_token (:refresh_token %)) users))]
-      (let [rtoken (u/random-token refresh_token)
-            expires 7200]
-        (update-oauth2-refresh-token! {:client_id client_id :refresh_token refresh_token :rtoken (hashers/derive rtoken {:alg :bcrypt+sha512})} (get-db ctx))
+      (let [out-token (u/random-token refresh_token)
+            enc-token  (hashers/derive out-token {:alg :bcrypt+sha512})
+            expires token-expires]
+        (update-oauth2-refresh-token! {:client_id client_id :id (:token_id user) :user_id (:id user) :rtoken enc-token} (get-db ctx))
         {:access_token (user-session ctx user expires)
-         :refresh_token (str (:id user) "-" rtoken)
-         :token_type "bearer",
+         :refresh_token (str (:id user) "-" out-token)
+         :token_type "bearer"
          :expires expires}))))
+
+(defn set-firebase-token [ctx client-id user-id oauth2-id token]
+  (update-oauth2-firebase-token! {:id oauth2-id :client_id client-id :user_id user-id :token token} (get-db ctx))
+  {:success true})
 
 (defn unauthorize-client [ctx client_id user_id]
   (delete-oauth2-token! {:client_id client_id :user_id user_id} (get-db ctx))

@@ -1,4 +1,8 @@
 # Changelog
+## 3.11.1
+- Bug fixes
+- Minor ui improvements
+
 ## 3.11.0
 - External endorsements
 

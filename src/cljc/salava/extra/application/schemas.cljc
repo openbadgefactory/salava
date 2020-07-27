@@ -46,6 +46,7 @@
                                                        :criteria_content_id :ctime :deleted :remote_url :remote_id :remote_issuer_id)
                                     (assoc :followed s/Int
                                            :image_file (s/maybe s/Str)
+                                           (s/optional-key :png_image_file)  s/Str
                                            :description (s/maybe s/Str)
                                            :issuer_content_url  (s/maybe s/Str)
                                            :issuer_content_name (s/maybe s/Str)
@@ -60,6 +61,7 @@
                                                       :application_url_label :criteria_url)
                                               (assoc :followed s/Int
                                                      :image_file s/Str
+                                                     (s/optional-key :png_image_file)  s/Str
                                                      :issuer_content_url s/Str
                                                      :issuer_content_name s/Str
                                                      :issuer_image (s/maybe s/Str)
