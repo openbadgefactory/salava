@@ -1,28 +1,27 @@
-(ns salava.extra.spaces.ui.report
+(ns salava.admin.ui.report
  (:require
-  [reagent.core :refer [atom cursor]]
+  [salava.core.ui.ajax-utils :as ajax]
+  [salava.core.ui.helper :refer [path-for js-navigate-to plugin-fun]]
   [reagent.session :as session]
-  [salava.core.ui.layout :as layout]
-  [salava.core.ui.helper :refer [path-for plugin-fun js-navigate-to]]
+  [reagent.core :refer [atom cursor]]
   [salava.core.i18n :refer [t]]
   [salava.core.ui.modal :as mo]
+  [salava.core.time :refer [iso8601-to-unix-time date-from-unix-time]]
   [reagent-modals.modals :as m]
+  [salava.core.ui.layout :as layout]
   [salava.gallery.ui.badges :as gallery]
   [salava.core.ui.grid :as g]
-  [salava.core.ui.ajax-utils :as ajax]
-  [salava.user.ui.helper :refer [profile-picture]]
-  [salava.core.time :refer [iso8601-to-unix-time date-from-unix-time]]))
-  ;[salava.core.ui.badge-grid :refer [badge-grid-element]]))
+  [salava.user.ui.helper :refer [profile-picture]]))
 
 (defn fetch-report [state]
  (let [{:keys [users badges from to space-id]} @(cursor state [:filters])]
   (ajax/POST
-   (path-for (str "/obpv1/space/report") true)
+   (path-for (str "/obpv1/admin/report") true)
    {:params {:users (mapv :id users)
              :badges (mapv :gallery_id badges)
              :to (if (number? to) to nil)
-             :from (if (number? from) from nil)
-             :space-id space-id}
+             :from (if (number? from) from nil)}
+             ;:space-id space-id}
     :handler (fn [data]
                (reset! (cursor state [:results]) data))})))
 
@@ -32,7 +31,7 @@
         badges (mapv :gallery_id badges)
         to (if (number? to) to nil)
         from (if (number? from) from nil)
-        url (str "/obpv1/space/report/export/" space-id "?users="users "&badges="badges "&to="to "&from="from "&space_id="space-id)]
+        url (str "/obpv1/admin/report/export/" space-id "?users="users "&badges="badges "&to="to "&from="from)]
     (js-navigate-to url)))
 
 (defn query-params [base]
@@ -44,14 +43,13 @@
    :recipient-name (get base :recipient-name "")
    :page_count 0
    :only-selfie? false
-   :space-id (session/get-in [:user :current-space :id] 0)
+   :space-id 0
    :fetch-private true})
-
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
 
-(defn init-badges [params state]
+(defn init-data [params state]
   (reset! (cursor state [:ajax-message]) (str (t :core/Loading) "..."))
 
   (ajax/GET
@@ -73,7 +71,7 @@
                (let [{:keys [badges badge_count]} data]
                   ;(value-helper state tags)
                  (if (empty? badges)
-                   (init-badges (assoc params :country "all") state) ;;Recall init data with "all" countries if initial query returned empty coll
+                   (init-data (assoc params :country "all") state) ;;Recall init data with "all" countries if initial query returned empty coll
                    (do
                      (reset! (cursor state [:params :page_count]) 1)
                      (swap! state assoc
@@ -81,10 +79,6 @@
                             :badge_count badge_count)))))
     :finally (fn []
                (ajax-stop (cursor state [:ajax-message])))}))
-
-(defn init-data [params state]
-  (init-badges params state))
-
 
 (defn- add-or-remove [x coll]
    (if (some #(= x %) @coll)
@@ -120,14 +114,12 @@
                                         :aria-label (str (t :badgeIssuer/Createdandissued) " " (session/get :site-name))}])
         issuer_content_name]]]]]]))
 
-
-
 (defn gallery-grid-form [state]
   (let [show-advanced-search (cursor state [:advanced-search])]
     [:div {:id "grid-filter"
            :class "form-horizontal"}
      [:div
-      #_[gallery/country-selector state]
+      [gallery/country-selector state]
       [:div
        [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
             :href "#"}
@@ -166,6 +158,7 @@
                          (badge-grid-element element-data state))) ;"pickable" gallery/fetch-badges)))
      (gallery/load-more state)]))
 
+
 (defn badges-modal [state]
  (fn []
   [:div#badge-gallery
@@ -194,7 +187,6 @@
      [:button.btn.btn-primary.btn-bulky
       {:aria-label (t :core/Continue) :data-dismiss "modal"}
       (t :core/Continue)]]]]))
-
 
 (defn badge-filter-section [state]
  (let [badge-filters (cursor state [:filters :badges])]
@@ -235,7 +227,7 @@
       {:href "#"
        :on-click #(do
                     (.preventDefault %)
-                    (mo/open-modal [:gallery :profiles] {:space (session/get-in [:user :current-space :id] 0)
+                    (mo/open-modal [:gallery :profiles] {:space 0
                                                          :type "pickable"
                                                          :selected-users-atom user-filters
                                                          :context "report_space"} {:hidden (fn [] (fetch-report state))}))
@@ -437,15 +429,13 @@
       (when (= "badges" @(cursor state [:find]))
        [badge-list state])])])
 
-
-
 (defn handler [site-navi]
   (let [params (query-params {:country (session/get-in [:filter-options :country] "all")})
         state (atom {:filters {:badges []
                                :users []
                                :from nil
                                :to nil
-                               :space-id (session/get-in [:user :current-space :id] 0)}
+                               :space-id 0}
                      :params params
                      :badges []
                      :countries              []

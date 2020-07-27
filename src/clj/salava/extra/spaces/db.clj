@@ -274,8 +274,6 @@
     (make-csv ctx report->csvformat \,)))
 
 
-
-
  ;;------ MESSAGE  TOOL ------------;;
 
 (defn enabled-issuers [ctx space-id]

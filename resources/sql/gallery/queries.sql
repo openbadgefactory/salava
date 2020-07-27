@@ -147,7 +147,7 @@ SELECT COUNT(DISTINCT ub.gallery_id) AS total
 FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
-    AND ub.visibility != 'private' AND ub.gallery_id IS NOT NULL AND (:country = 'all' OR u.country = :country);
+    AND IFNULL(:fetch_private, ub.visibility != 'private') AND ub.gallery_id IS NOT NULL AND (:country = 'all' OR u.country = :country);
 
 --name: select-gallery-badges-order-by-recipients-all
 SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
@@ -180,7 +180,7 @@ FROM gallery g
 INNER JOIN user_badge ub ON g.id = ub.gallery_id
 INNER JOIN user u ON ub.user_id = u.id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
-      AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country)
+      AND IFNULL(:fetch_private, ub.visibility != 'private') AND (:country = 'all' OR u.country = :country)
 GROUP BY ub.gallery_id
 ORDER BY
  CASE WHEN :order='name'  THEN badge_name END,
@@ -200,7 +200,7 @@ FROM gallery g
 INNER JOIN user_badge ub ON g.id = ub.gallery_id
 INNER JOIN user u ON ub.user_id = u.id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
-      AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country) AND g.id IN (:gallery_ids)
+      AND IFNULL(:fetch_private, ub.visibility != 'private') AND (:country = 'all' OR u.country = :country) AND g.id IN (:gallery_ids)
 GROUP BY ub.gallery_id
 ORDER BY
   CASE WHEN :order='name'  THEN badge_name END,
@@ -345,7 +345,7 @@ LIMIT 100000;
 --name: select-gallery-ids-badge
 SELECT DISTINCT ub.gallery_id FROM user_badge ub
 INNER JOIN gallery g ON ub.gallery_id = g.id
-WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+WHERE ub.status = 'accepted' AND IFNULL(:fetch_private, ub.visibility != 'private') AND ub.deleted = 0
     AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
     AND g.badge_name LIKE :badge
 ORDER BY ub.ctime DESC
@@ -354,7 +354,7 @@ LIMIT 100000;
 --name: select-gallery-ids-issuer
 SELECT DISTINCT ub.gallery_id FROM user_badge ub
 INNER JOIN gallery g ON ub.gallery_id = g.id
-WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+WHERE ub.status = 'accepted' AND IFNULL(:fetch_private, ub.visibility != 'private') AND ub.deleted = 0
     AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
     AND g.issuer_name LIKE :issuer
 ORDER BY ub.ctime DESC
@@ -363,7 +363,7 @@ LIMIT 100000;
 --name: select-gallery-ids-recipient
 SELECT DISTINCT ub.gallery_id FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
-WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+WHERE ub.status = 'accepted' AND IFNULL(:fetch_private, ub.visibility != 'private') AND ub.deleted = 0
     AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
     AND CONCAT(u.first_name, ' ', u.last_name) LIKE :recipient
 ORDER BY ub.ctime DESC
@@ -373,7 +373,7 @@ LIMIT 100000;
 SELECT DISTINCT ub.gallery_id FROM user_badge ub
 INNER JOIN badge_badge_content bc ON ub.badge_id = bc.badge_id
 INNER JOIN badge_content_tag t ON bc.badge_content_id = t.badge_content_id
-WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+WHERE ub.status = 'accepted' AND IFNULL(:fetch_private, ub.visibility != 'private') AND ub.deleted = 0
     AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
     AND t.tag IN (:tags)
 ORDER BY ub.ctime DESC
@@ -383,7 +383,7 @@ LIMIT 100000;
 SELECT DISTINCT ub.gallery_id FROM user_badge ub
 INNER JOIN selfie_badge sb ON ub.selfie_id = sb.id
 INNER JOIN user u ON ub.user_id = u.id
-WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+WHERE ub.status = 'accepted' AND IFNULL(:fetch_private, ub.visibility != 'private') AND ub.deleted = 0
     AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
     AND ub.selfie_id IS NOT NULL AND (:country = 'all' OR u.country = :country)
 ORDER BY ub.ctime DESC
@@ -391,7 +391,7 @@ LIMIT 100000;
 
 --name: select-gallery-id
 SELECT ub.gallery_id FROM user_badge ub
-WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+WHERE ub.status = 'accepted' AND  ub.visibility != 'private' AND ub.deleted = 0
     AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
     AND ub.badge_id = :badge_id
 ORDER BY ub.ctime DESC
@@ -401,7 +401,7 @@ LIMIT 1;
 SELECT DISTINCT ub.gallery_id FROM user_badge ub
 INNER JOIN user_space us ON us.user_id = ub.user_id
 INNER JOIN space s ON s.id = us.space_id
-WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+WHERE ub.status = 'accepted' AND IFNULL(:fetch_private, ub.visibility != 'private') AND ub.deleted = 0
     AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
     AND s.id = :space_id
 ORDER BY ub.ctime DESC

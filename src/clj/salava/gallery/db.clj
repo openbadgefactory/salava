@@ -40,37 +40,37 @@
           "name"                (select-gallery-badges-order-by-name-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
           (select-gallery-badges-order-by-ctime-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))))))
 
-(defn- select-badges [ctx country gallery_ids order page_count]
+(defn- select-badges [ctx country gallery_ids order page_count fetch-private]
   (let [limit 20
         offset (* limit page_count)]
     (if (nil? gallery_ids)
-      (select-gallery-badges-all {:country country :limit limit :offset offset :order order} (get-db ctx))
+      (select-gallery-badges-all {:country country :limit limit :offset offset :order order :fetch_private true} (get-db ctx))
       (if (empty? gallery_ids)
         []
-        (select-gallery-badges-filtered {:country country :limit limit :offset offset :order order :gallery_ids gallery_ids} (get-db ctx))))))
+        (select-gallery-badges-filtered {:country country :limit limit :offset offset :order order :gallery_ids gallery_ids :fetch_private true} (get-db ctx))))))
 
 (defn get-gallery-ids
   "Get gallery-ids with search params"
-  [ctx tags badge-name issuer-name recipient-name only-selfie? country space-id]
+  [ctx tags badge-name issuer-name recipient-name only-selfie? country space-id fetch-private]
   (let [filters ;; Build a list of filter sets from query parameters
         (cond-> []
           (not (string/blank? badge-name))
-          (conj (set (select-gallery-ids-badge {:badge (str "%" badge-name "%")} (get-db-col ctx :gallery_id))))
+          (conj (set (select-gallery-ids-badge {:badge (str "%" badge-name "%") :fetch_private fetch-private} (get-db-col ctx :gallery_id))))
 
           (not (string/blank? issuer-name))
-          (conj (set (select-gallery-ids-issuer {:issuer (str "%" issuer-name "%")} (get-db-col ctx :gallery_id))))
+          (conj (set (select-gallery-ids-issuer {:issuer (str "%" issuer-name "%") :fetch_private fetch-private} (get-db-col ctx :gallery_id))))
 
           (not (string/blank? recipient-name))
-          (conj (set (select-gallery-ids-recipient {:recipient (str "%" recipient-name "%")} (get-db-col ctx :gallery_id))))
+          (conj (set (select-gallery-ids-recipient {:recipient (str "%" recipient-name "%") :fetch_private fetch-private} (get-db-col ctx :gallery_id))))
 
           (not (string/blank? tags))
-          (conj (set (select-gallery-ids-tags {:tags (->> (string/split tags #",") (map string/trim))} (get-db-col ctx :gallery_id))))
+          (conj (set (select-gallery-ids-tags {:tags (->> (string/split tags #",") (map string/trim)) :fetch_private fetch-private} (get-db-col ctx :gallery_id))))
 
           (true? only-selfie?)
-          (conj (set (select-gallery-ids-selfie {:country country} (get-db-col ctx :gallery_id))))
+          (conj (set (select-gallery-ids-selfie {:country country :fetch_private fetch-private} (get-db-col ctx :gallery_id))))
 
           (and (number? space-id) (pos? space-id))
-          (conj (set (select-gallery-ids-space {:space_id space-id} (get-db-col ctx :gallery_id)))))]
+          (conj (set (select-gallery-ids-space {:space_id space-id :fetch_private fetch-private} (get-db-col ctx :gallery_id)))))]
 
     ;; Get final filtered gallery_id list
     (when (seq filters)
@@ -94,13 +94,13 @@
 
 (defn gallery-badges
   "Get badges for gallery grid"
-  [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count only-selfie? space-id]}]
+  [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count only-selfie? space-id fetch-private]}]
   (let [offset (string->number page_count)
-        gallery-ids (get-gallery-ids ctx tags badge-name issuer-name recipient-name only-selfie? country space-id)
-        badges (some->> (select-badges ctx country gallery-ids order offset) (badge-checker) (remove nil?) (selfie-checker ctx gallery-ids))]
+        gallery-ids (get-gallery-ids ctx tags badge-name issuer-name recipient-name only-selfie? country space-id fetch-private)
+        badges (some->> (select-badges ctx country gallery-ids order offset fetch-private) (badge-checker) (remove nil?) (selfie-checker ctx gallery-ids))]
     {:badges badges
      :badge_count (badge-count (if (nil? gallery-ids)
-                                 (get (select-gallery-badges-count {:country country} (get-db-1 ctx)) :total 0)
+                                 (get (select-gallery-badges-count {:country country :fetch_private fetch-private} (get-db-1 ctx)) :total 0)
                                  (count gallery-ids))
                                offset)}))
 

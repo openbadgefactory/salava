@@ -37,7 +37,7 @@
                                                                              (s/optional-key :request) (s/maybe s/Str)})
                                      (s/optional-key :gender) (s/maybe (s/enum "Male" "Female" "Notspecified" "notset"))
                                      (s/optional-key :organization) (s/maybe s/Str))))
-                                                           
+
 (s/defschema Countries (s/constrained [s/Str] (fn [c]
                                                 (and
                                                   (some #(= (first c) %) (keys all-countries))
@@ -76,7 +76,8 @@
                          (s/optional-key :recipient-name) (describe constrained-str "Filter by badge earner")
                          :page_count (describe constrained-str "Page offset. 0 for first page, Each page returns 20 badges")
                          (s/optional-key :only-selfie?) (describe s/Bool "show only badges issued in passport")
-                         (s/optional-key :space-id) (describe (s/maybe s/Int) "Show gallery badges within a space with space-id. ")})
+                         (s/optional-key :space-id) (describe (s/maybe s/Int) "Show gallery badges within a space with space-id. ")
+                         (s/optional-key :fetch-private) (s/maybe s/Bool)})
 
 (s/defschema MultilanguageContent {:default_language_code s/Str
                                    :language_code         s/Str
