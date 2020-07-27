@@ -75,6 +75,7 @@
           :style {:max-width "unset"}
           :type "text"
           :id "org"
+          :value @(cursor state [:org])
           :on-change #(do
                         (reset! (cursor state [:org]) (->> (split-lines (.-target.value %)) (mapv (fn [s] (trim s))))))}]
         [:button.btn.btn-primary

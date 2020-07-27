@@ -16,6 +16,9 @@
 (defn stylyze-element [element color]
   (when-let [$ element] (dommy/set-style! $ :background "none" :background-color color)))
 
+(defn stylyze-element-color [element color]
+  (when-let [$ element] (dommy/set-style! $ :color "none" :color color)))
+
 (defn stylyze-links [selector color]
   (doall
    (doseq [a (remove (fn [e] (some #(= e %) (sel :.btn))) selector)]
@@ -32,13 +35,14 @@
    (doall
     [(stylyze-element (sel1 ".welcome-block") p-color)
      (stylyze-element (sel1 ".title-row") p-color)
-     (stylyze-element (sel1 [:#theme-0 :.panel-right]) p-color)
-     (stylyze-element (sel1 [:#theme-0 :.panel-left]) p-color)
-     (stylyze-links (sel :a) p-color)
-     (stylyze-links (sel [:.help :a :p]) p-color)
-     (stylyze-links (sel [:#dashboard :.block :.title]) p-color)
+     #_(stylyze-element (sel1 [:#theme-0 :.panel-right]) p-color)
+     #_(stylyze-element (sel1 [:#theme-0 :.panel-left]) p-color)
+     #_(stylyze-links (sel :a) p-color)
+     #_(stylyze-links (sel [:.help :a :p]) p-color)
+     #_(stylyze-links (sel [:#dashboard :.block :.title]) p-color)
+     #_(stylyze-links (sel [:#dashboard :.block :.icon]) p-color)
      (stylyze-links (sel [:#badge-info :a]) p-color)
-     (stylyze-element-multi (sel [:.button]) p-color)])))
+     #_(stylyze-element-multi (sel [:.button]) p-color)])))
 
 (defn init-spaces [state]
   (ajax/POST
@@ -46,8 +50,8 @@
     {:handler (fn [data]
                 (swap! state assoc :spaces data
                                    :selected (session/get-in [:user :current-space :name] nil))
-                (when-not (empty? (session/get-in [:user :current-space :css] nil))
-                  (stylyze))
+                #_(when-not (empty? (session/get-in [:user :current-space :css] nil))
+                    (stylyze))
                 (when (:error @state)
                   (m/modal! [upload-modal {:status "error" :message "extra-spaces/Invitelinkeerror" }] {})))}))
 

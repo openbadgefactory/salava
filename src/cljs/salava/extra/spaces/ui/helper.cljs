@@ -40,8 +40,6 @@
      (input-valid? (:logo s) (:logo space))
      (input-valid? (:url s) (:url space))
      (url? (:url space))]))
-     ;(input-valid? (:properties s) (:properties space))]))
-     ;(input-valid? (:admins s) (:admins space))]))
 
 (defn error-msg [state]
   [:div
