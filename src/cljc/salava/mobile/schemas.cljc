@@ -84,6 +84,14 @@
                                         :issuer [endorsement-m]
                                         :user   [endorsement-m]})
 
+(s/defschema evidence-m {:evidence [{:id    (s/maybe s/Int)
+                                     :url (s/maybe s/Str)
+                                     :narrative (s/maybe s/Str)
+                                     :name (s/maybe s/Str)
+                                     :description (s/maybe s/Str)
+                                     :ctime (s/maybe s/Int)
+                                     :mtime (s/maybe s/Int)}]})
+
 (s/defschema congratulations-m {:congratulations [{:id    (s/maybe s/Int)
                                                    :first_name      (s/maybe s/Str)
                                                    :last_name       (s/maybe s/Str)

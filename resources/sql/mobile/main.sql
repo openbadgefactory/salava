@@ -124,6 +124,14 @@ INNER JOIN user_badge ub ON e.user_badge_id = ub.id
 WHERE ub.id = :id AND ub.user_id = :user_id AND e.status = 'accepted'
 ORDER BY issued_on;
 
+
+--name: select-user-badge-evidence
+--get evidence for a badge
+SELECT e.id, e.url, e.narrative, e.name, e.description, e.ctime, e.mtime FROM user_badge_evidence e
+INNER JOIN user_badge ub ON e.user_badge_id = ub.id
+WHERE ub.id = :user_badge_id AND ub.user_id = :owner AND ub.deleted = 0;
+
+
 --name: select-user-badge-congratulations
 --get all users who congratulated another user from specific badge
 SELECT u.id, u.first_name, u.last_name, u.profile_picture, bc.ctime FROM user u
