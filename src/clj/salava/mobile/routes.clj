@@ -1,11 +1,13 @@
 (ns salava.mobile.routes
   (:require [clojure.tools.logging :as log]
+            [clojure.pprint :refer [pprint]]
             [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
             [ring.util.response :refer [redirect]]
             [schema.core :as s]
             [salava.mobile.schemas :as schemas] ;cljc
             [salava.mobile.db :as db]
+            [salava.mobile.html :as html]
             [salava.core.access :as access]
             [salava.core.middleware :as mw]
             [salava.core.util :as u]
@@ -17,6 +19,22 @@
   (routes
     (context "/obpv1/mobile" []
              :tags ["mobile"]
+
+             (GET "/oauth2/authorize" req
+                  :no-doc true
+                  :summary "Service selector page"
+                  (let [sites (get-in ctx [:config :mobile :sites] [])
+                        query (:query-string req)
+                        language-set (set (get-in ctx [:config :core :languages]))
+                        lang (-> (get-in req [:query-params "lang"] "en")
+                                 keyword
+                                 language-set
+                                 (or :en))]
+                    (if (= (count sites) 1)
+                      (redirect (str (-> sites first :url) "?" query))
+                      (-> (ok (html/site-picker-page ctx sites query lang))
+                          (content-type "text/html; charset=\"UTF-8\"")))))
+
 
              (GET "/badge" []
                   :return schemas/user-badges-m
