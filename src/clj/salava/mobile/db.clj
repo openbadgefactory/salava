@@ -79,8 +79,14 @@
                             (assoc :issuer_email "")
                             (assoc :issuer_description "")))))})
 
+(defn user-badge-evidence
+  "Get badge evidence"
+  [ctx badge-id user-id]
+  {:evidence (select-user-badge-evidence {:user_badge_id badge-id :owner user-id} (u/get-db ctx))})
+
+
 (defn user-badge-congratulations
-  "Get badge by id, public route"
+  "Get badge congratulations"
   [ctx badge-id user-id]
   {:congratulations (->> (select-user-badge-congratulations
                            {:user_badge_id badge-id :owner user-id} (u/get-db ctx))

@@ -1,0 +1,5 @@
+{:sites [{:name "Open Badge Passport"
+          :url "https://openbadgepassport.com"
+          :country "Global"
+          :description "Open Badge Passport is a free service where you can receive, store and share your Open Badges."}
+        ]}
