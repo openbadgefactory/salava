@@ -97,6 +97,10 @@
 
 
 
+(defn gallery-badge-search [ctx query]
+  ;;TODO ...
+  {:badges []})
+
 
 (defn gallery-badge [ctx gallery_id badge_id]
   (let [badge (select-gallery-badge {:gallery_id gallery_id :badge_id badge_id} (u/get-db-1 ctx))]
