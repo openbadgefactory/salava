@@ -84,6 +84,13 @@
                   :current-user current-user
                   (ok (db/user-badge-congratulations ctx user-badge-id (:id current-user))))
 
+             (GET "/gallery/badge" []
+                  :return schemas/gallery-search-m
+                  :summary "Gallery badge search results"
+                  :query [params schemas/gallery-badge-query-m]
+                  :current-user current-user
+                  :auth-rules access/signed
+                  (ok (db/gallery-badge-search ctx params)))
 
              (GET "/gallery/badge/:gallery-id/:badge-id" []
                   :return schemas/gallery-badge-m
