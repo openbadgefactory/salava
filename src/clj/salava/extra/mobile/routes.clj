@@ -23,7 +23,7 @@
              (GET "/oauth2/authorize" req
                   :no-doc true
                   :summary "Service selector page"
-                  (let [sites (get-in ctx [:config :mobile :sites] [])
+                  (let [sites (get-in ctx [:config :extra/mobile :sites] [])
                         query (:query-string req)
                         language-set (set (get-in ctx [:config :core :languages]))
                         lang (-> (get-in req [:query-params "lang"] "en")
@@ -31,7 +31,7 @@
                                  language-set
                                  (or :en))]
                     (if (= (count sites) 1)
-                      (redirect (str (-> sites first :url) "?" query))
+                      (redirect (str (-> sites first :url) "/app/user/oauth2/authorize?" query))
                       (-> (ok (html/site-picker-page ctx sites query lang))
                           (content-type "text/html; charset=\"UTF-8\"")))))
 

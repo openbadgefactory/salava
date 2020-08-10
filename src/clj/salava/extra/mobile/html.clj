@@ -28,8 +28,8 @@
 (defn site-picker-page
   [ctx sites query lang]
   (->> [:div.container.main-container
-        [:h1 (t :mobile/LoginToService lang)]
-        [:p  (t :mobile/LoginInfo lang)]
+        [:h1 (t :extra-mobile/LoginToService lang)]
+        [:p  (t :extra-mobile/LoginInfo lang)]
         (map (fn [s]
                [:div.list-group
                 [:a.list-group-item {:href (str (:url s) "/app/user/oauth2/authorize?" query)}
