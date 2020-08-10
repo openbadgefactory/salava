@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
             [clojure.pprint :refer [pprint]]
+            [clojure.java.jdbc :as jdbc]
             [clojure.data.json :as json]
             [yesql.core :refer [defqueries]]
             [salava.factory.db :as factory]
@@ -97,9 +98,41 @@
 
 
 
-(defn gallery-badge-search [ctx query]
-  ;;TODO ...
-  {:badges []})
+(defn gallery-badge-search [ctx {:keys [country name order offset]}]
+  (let [conn (:connection (u/get-db ctx))
+
+        country-where (if (= country "all") "'all' = ?" "u.country = ?")
+
+        name-parts (->> (string/split (str name) #"\s+") (remove string/blank?) (map #(str "%" % "%")))
+        name-where (map (constantly " AND (g.badge_name LIKE ? OR g.issuer_name LIKE ?)") name-parts)
+
+        offset (if (re-find #"^[0-9]+$" offset) (str "offset " (* 20 (Long. offset))) "offset 0")
+
+        join "INNER JOIN user_badge ub ON g.id = ub.gallery_id INNER JOIN user u ON ub.user_id = u.id"
+
+        where (str "WHERE " country-where " " (apply str (interpose " " name-where))
+                   " "
+                   "AND ub.deleted = 0 AND ub.visibility != 'private' AND ub.revoked = 0"
+                   " "
+                   "AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())")
+
+        order-by (if (= order "name") "ORDER BY g.badge_name" "ORDER BY ub.id DESC")
+
+        sql-count (str "SELECT COUNT(g.id) as total FROM gallery g " join " " where)
+
+        sql (str "SELECT g.id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file FROM gallery g"
+                 " "
+                 join " " where " " order-by " LIMIT 20 " offset)
+
+        args (into [country] (mapcat #(list % %) name-parts))]
+
+    (println sql)
+    (pprint args)
+
+    {:badges (->> (jdbc/query conn (into [sql] args))
+                 (map #(update % :image_file (partial png-convert-url ctx)))
+                 )
+     :total (-> (jdbc/query conn (into [sql-count] args)) first :total)}))
 
 
 (defn gallery-badge [ctx gallery_id badge_id]
