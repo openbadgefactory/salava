@@ -107,7 +107,10 @@
                   :query [params schemas/gallery-badge-query-m]
                   :current-user current-user
                   :auth-rules access/signed
-                  (ok (db/gallery-badge-search ctx params)))
+                  (ok (if (= (:earnable params) "1")
+                        (db/gallery-earnable-badge-search ctx params)
+                        (db/gallery-badge-search ctx params))))
+
 
              (GET "/gallery/badge/:gallery-id/:badge-id" []
                   :return schemas/gallery-badge-m

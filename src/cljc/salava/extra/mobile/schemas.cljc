@@ -102,16 +102,19 @@
                                                    :ctime (s/maybe s/Int)}]})
 
 
-(s/defschema gallery-badge-query-m {:country (describe s/Str "Filter by country code. Use all to get all badges")
+(s/defschema gallery-badge-query-m {:earnable (describe (s/enum "1" "0") "Get only badges you can earn.")
+                                    :country (describe s/Str "Filter by country code. Use all to get all badges")
                                     (s/optional-key :name)  (describe constrained-str "Filter by badge or issuer name")
                                     (s/optional-key :order) (describe (s/enum "mtime" "name") "Select order, default mtime")
                                     :offset (describe s/Str "Page offset. 0 for first page, Each page returns 20 badges")})
 
 
 (s/defschema gallery-search-m {:total  s/Int
-                               :badges [{:id            (describe (s/maybe s/Int) "internal gallery id")
+                               :badges [{:gallery_id    (describe (s/maybe s/Int) "internal gallery id")
+                                         :advert_id     (describe (s/maybe s/Int) "internal earnable id")
                                          :badge_id      (describe (s/maybe s/Str) "internal badge content id")
-                                         :name          (s/maybe s/Str)
+                                         :badge_name    (s/maybe s/Str)
+                                         :issuer_name   (s/maybe s/Str)
                                          :image_file    (s/maybe s/Str)}]})
 
 (s/defschema gallery-badge-m {:id            (describe (s/maybe s/Int) "internal gallery id")
