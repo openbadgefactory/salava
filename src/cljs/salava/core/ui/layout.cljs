@@ -107,6 +107,16 @@
      [:img {:src (profile-picture (session/get-in [:user :profile_picture]))
             :alt "profile picture"}]]]])
 
+(defn spaces [nav?]
+ (into (if nav? [:li] [:div.navbar-right])
+       (for [f (plugin-fun (session/get :plugins) "block" "space_list")]
+         [f])))
+
+(defn space-info-banner []
+ (into [:div#space-info-banner]
+       (for [f (plugin-fun (session/get :plugins) "block" "space_info")]
+         [f])))
+
 (defn top-navi [site-navi]
   (let [items (top-navi-list (:navi-items site-navi))]
     [:nav {:class "navbar"}
@@ -122,9 +132,11 @@
                                         (.preventDefault %)
                                         (navigate-to "/user/edit"))}
                        (t :user/Myaccount)]]
+        [spaces true]
         [:li.usermenu [:a {:href     "#"
                            :on-click #(logout)}
                        (t :user/Logout)]]]]]]))
+
 
 (defn top-navi-embed []
   [:nav {:class "navbar"}
@@ -201,7 +213,7 @@
         about-page (get-in site-navi [:navi-items matched-route :about])]
     (if matched-route
       [:h1 (get-in site-navi [:navi-items matched-route :breadcrumb]) (when about-page
-                                                                        [:a {:style {:color "inherit"} 
+                                                                        [:a {:style {:color "inherit"}
                                                                              :on-click #(do
                                                                                           (.preventDefault %)
                                                                                           (m/modal! [about-page-modal about-page]))}
@@ -232,13 +244,15 @@
    [:img {:id "print-logo" :src "/img/logo.png" :alt "site logo"}]
    [:div {:class "title-row"}
     [:div {:class "container"}
-     (breadcrumb site-navi)]]
+     (breadcrumb site-navi)]
+    [spaces nil]]
+
    [:div {:class "container main-container"}
-    #_(when (session/get-in [:about-page])
-         [about-page (session/get-in [:about-page])])
     [:div {:class "row flip"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
-     [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]
+     [:div {:class "col-md-10 col-sm-9" :id "content"}
+      [space-info-banner]
+      content]]]
    (footer site-navi)])
 
 (defn default-no-sidebar [site-navi content]
@@ -266,12 +280,11 @@
   [:div {:role "main"}
    [:div {:id "navbar"}
     (top-navi site-navi)]
-   #_[:div {:class "title-row"}
-      [:div {:class "container"}
-       (breadcrumb site-navi)]]
    [:div#dashboard {:class "container-fluid main-container"}
     [:div {:class "row"}
-     [:div {:class "col-md-12" :id "content"} content]]]
+     [:div {:class "col-md-12" :id "content"}]
+     content]]
+
    (footer site-navi)])
 
 (defn embed-page [content]

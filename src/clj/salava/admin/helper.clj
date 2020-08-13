@@ -16,7 +16,12 @@
   (let [admin (select-user-admin {:id user-id} (into {:result-set-fn first :row-fn :role} (get-db ctx)))]
     (= admin "admin")))
 
-(defn make-csv [ctx data]
- (fn [out]
-  (with-open [writer (io/writer out)]
-   (csv/write-csv writer data :separator \:))))
+(defn make-csv
+ ([ctx data]
+  (fn [out]
+   (with-open [writer (io/writer out)]
+    (csv/write-csv writer data :separator \:))))
+ ([ctx data seperator]
+   (fn [out]
+    (with-open [writer (io/writer out)]
+     (csv/write-csv writer data :separator seperator)))))

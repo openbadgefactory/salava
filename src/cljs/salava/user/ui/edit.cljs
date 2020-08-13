@@ -34,6 +34,11 @@
       [connections]
       [:div ""])))
 
+(defn custom-field-setting [fn-name]
+ (into [:div]
+   (for [f (plugin-fun (session/get :plugins) "block" fn-name)]
+       [f])))
+
 (defn content [state]
   (let [language-atom (cursor state [:user :language])
         first-name-atom (cursor state [:user :first_name])
@@ -72,6 +77,9 @@
          (t :user/Country)]
         [:div.col-md-9
          [input/country-selector country-atom]]]
+
+       [custom-field-setting "user_gender_field"]
+       [custom-field-setting "org_field"]
        (if (:email-notifications @state)
          [:div.form-group
           [:span._label {;:for   "input-email-notifications"

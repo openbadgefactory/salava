@@ -171,30 +171,51 @@
                  [:span common_badge_count " " (if (= common_badge_count 1)
                                                  (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]]]])))
 
+(defn select-all-checkbox [state selected-users-atom]
+  (let [select-all (cursor state [:select-all?])]
+    [:div.checkbox {:style {:margin "0 20px"}}
+     [:label
+      [:input {:type "checkbox"
+               :checked @select-all
+               :on-change #(do
+                             (reset! select-all  (not @select-all))
+                             (if @select-all (reset! selected-users-atom @(cursor state [:users])) (reset! selected-users-atom [])))
+               :disabled (pos? @(cursor state [:users_count]))}]
+      [:b (str (t :extra-spaces/Selectall))]]]))
+
 (defn allprofilesmodal [params]
   (let [country (session/get-in [:user :country] "all")
         filter-options (session/get :filter-options nil)
-
         common-badges? (if filter-options (:common-badges filter-options) false)
-        {:keys [type selected-users-atom context user_badge_id selfie func external-users-atom]} params
+        {:keys [type selected-users-atom context user_badge_id selfie func external-users-atom existing-users-atom space-id space]} params
         data-atom (atom {:users []
                          :selected []
                          :ajax-message nil
                          :name ""
                          :order_by "ctime"
+                         :page_count 0
                          :common-badges? common-badges?
                          :country-selected (session/get-in [:filter-options :country] country)
                          :user_badge_id user_badge_id
                          :context context
-                         :url (if (= context "endorsement")
+                         :url (case context
+                                "endorsement" (str "/obpv1/gallery/profiles/" user_badge_id "/" context)
+                                "space_members_modal" (str "/obpv1/gallery/profiles/all/filter/"space-id)
+                                (str "/obpv1/gallery/profiles"))
+                            #_(if (= context "endorsement")
                                (str "/obpv1/gallery/profiles/" user_badge_id "/" context)
                                (str "/obpv1/gallery/profiles"))
                          :sent-requests []
-                         :email ""})]
+                         :email ""
+                         :select-all? false
+                         :space space})]
+
     (create-class {:reagent-render (fn []
                                      [:div
                                       [:div {:id "social-tab"}
-                                       [profiles/profile-gallery-grid-form data-atom true]
+                                       (if (some #(= context %) ["space_members_modal"]) #_(= context  "space_members_modal")
+                                         [profiles/profile-gallery-grid-form+ data-atom]
+                                         [profiles/profile-gallery-grid-form data-atom true])
                                        (if (:ajax-message @data-atom)
                                          [:div.ajax-message
                                           [:i {:class "fa fa-cog fa-spin fa-2x "}]
@@ -205,6 +226,20 @@
                                             (reduce (fn [r user]
                                                       (conj r [profile-grid-element user selected-users-atom type]))
                                                     [:div.col-md-12.profilescontainer
+                                                     (when (= "space_admins" context)
+                                                       [:div.col-md-12 {:style {:font-weight "bold"}}
+                                                        [:hr.line]
+                                                        [:p (t :extra-spaces/AboutAdmins2)]
+                                                        [:hr.line]])
+
+                                                     (when (= "space_members_modal" context)
+                                                       [:div.col-md-12 {:style {:margin "20px auto" :padding "10px" :background-color "ghostwhite"}}
+                                                        [:hr.line]
+                                                        [:ul
+                                                          [:li [:b (t :extra-spaces/Populateinstruction1)]]
+                                                          [:li [:b (t :extra-spaces/Populateinstruction2)]]]
+                                                        [select-all-checkbox data-atom selected-users-atom]
+                                                        [:hr.line]])
                                                      (when (or (= "endorsement_selfie" context)(= "endorsement" context))
                                                        [:div.col-md-12 {:style {:font-weight "bold"}}
                                                         [:hr.line]
@@ -243,15 +278,31 @@
                                                                              (reset! (cursor data-atom [:email]) ""))}
                                                                [:i.fa.fa-lg.fa-user-plus {:style {:color "inherit" :font-size "medium" :vertical-align "baseline"}}] (t :core/Add)]]]]])]
 
-                                                    (if (or (= context "endorsement") (= context "endorsement_selfie"))
-                                                     (->> @(cursor data-atom [:users])
+                                                    (cond
+                                                      (or (= context "endorsement") (= context "endorsement_selfie"))
+                                                      (->> @(cursor data-atom [:users])
                                                            (remove #(= (:id %) (session/get-in [:user :id])))
                                                            (filter #(every? nil? (-> % :endorsement vals))))
-                                                     (if (= "selfie_issue" context)
+                                                      (= "selfie_issue" context)
                                                       (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id]))))
-                                                      @(cursor data-atom [:users]))))]
+                                                      (or (= "space_admins_modal" context) #_(= "space_members_modal" context))
+                                                      (remove (fn [u] (some #(= (:id u) (:id %)) @existing-users-atom)) @(cursor data-atom [:users]))
+                                                      :else
+                                                      @(cursor data-atom [:users]))
+                                                    #_(if (or (= context "endorsement") (= context "endorsement_selfie"))
+                                                       (->> @(cursor data-atom [:users])
+                                                             (remove #(= (:id %) (session/get-in [:user :id])))
+                                                             (filter #(every? nil? (-> % :endorsement vals))))
+                                                       (if (= "selfie_issue" context)
+                                                        (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id]))))
+                                                        (if (and @existing-users-atom (seq @existing-users-atom) (= "space_admins_modal" context))
+                                                            (remove (fn [u]
+                                                                      (some #(= (:id u) (:id %)) @existing-users-atom)) @(cursor data-atom [:users]))
+                                                            @(cursor data-atom [:users])))))]
 
+                                           (profiles/load-more data-atom)
                                            [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
+
                                             (when (or (= context "endorsement") (= context "endorsement_selfie"))
                                              [:button.btn.btn-primary {:on-click #(mo/previous-view)
                                                                        :disabled (and (empty? @selected-users-atom) (empty? @external-users-atom))}
@@ -265,22 +316,49 @@
                                                #_[:span [:i.fa.fa-lg.fa-paper-plane] (t :badgeIssuer/Issuebadge)]]
                                               [:button.btn.btn-danger.btn-bulky
                                                {:on-click #(do (reset! selected-users-atom []) (mo/previous-view))}
+                                               (t :core/Cancel)]])
+                                            (when (some #(= context %) ["report_space" "space_admins"])
+                                            ;(when  (= context "space_admins")
+                                             [:div
+                                              [:button.btn.btn-primary.btn-bulky
+                                               {:on-click #(m/close-modal!)
+                                                :disabled (empty? @selected-users-atom)}
+                                               (t :core/Continue)]
+                                              [:button.btn.btn-danger.btn-bulky
+                                               {:on-click #(do (reset! selected-users-atom []) (m/close-modal!))}
+                                               (t :core/Cancel)]])
+                                            (when  (or (= context "space_admins_modal") (= context "space_members_modal"))
+                                             [:div
+                                              [:button.btn.btn-primary.btn-bulky
+                                               {:on-click #(mo/previous-view)
+                                                :disabled (empty? @selected-users-atom)}
+                                               (t :core/Continue)]
+                                              [:button.btn.btn-danger.btn-bulky
+                                               {:on-click #(do (reset! selected-users-atom []) (mo/previous-view))}
                                                (t :core/Cancel)]])])])]])
 
 
                    :component-will-mount (fn []
                                            (ajax/POST
-                                            (if (= context "endorsement")
-                                              (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
-                                              (path-for (str "/obpv1/gallery/profiles")))
-                                            {:params {:country (or @(cursor data-atom [:country-selected]) (session/get-in [:filter-options :country] country))
-                                                      :name (or @(cursor data-atom [:name]) " ")
-                                                      :common_badges (or @(cursor data-atom [:common-badges?]) common-badges?)
-                                                      :order_by (or @(cursor data-atom [:order_by]) "ctime")}
-                                             :handler (fn [{:keys [users countries]} data]
-                                                        (swap! data-atom assoc :users users
+                                            (path-for (:url @data-atom))
+                                            #_(if (= context "endorsement")
+                                                (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
+                                                (path-for (str "/obpv1/gallery/profiles")))
+                                            {:params (as-> {:country (session/get-in [:filter-options :country] country)
+                                                            :name ""
+                                                            :common_badges common-badges?
+                                                            :order_by "ctime"
+                                                            :email ""
+                                                            :page_count 0} $
+                                                            (if (some #(= context %) ["report_space"])
+                                                              (merge $ {:space-id space})
+                                                              (merge $ {})))
+                                             :handler (fn [{:keys [users countries users_count]} data]
+                                                        (swap! data-atom assoc :users users #_(if (= context "space_members_modal") (remove (fn [u] (some #(= (:id u) (:id %)) @existing-users-atom)) users) users)
                                                                :countries countries
-                                                               :country-selected (or @(cursor data-atom [:country-selected]) (session/get-in [:filter-options :country] country))))
+                                                               :country-selected (session/get-in [:filter-options :country] country)
+                                                               :users_count users_count
+                                                               :page_count 1))
                                              :finally (fn []
                                                         (swap! data-atom assoc :ajax-message nil)
                                                         (when (or (= "endorsement" context) (= context "endorsement_selfie"))

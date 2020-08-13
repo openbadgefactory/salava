@@ -7,6 +7,7 @@
             [schema.core :as s]
             [salava.core.util :refer [get-base-path plugin-fun get-plugins]]
             [salava.admin.db :as a]
+            [salava.admin.report :as report]
             [salava.core.helper :refer [dump]]
             [salava.core.access :as access]
             [salava.admin.schemas :as schemas]
@@ -19,7 +20,8 @@
              (layout/main ctx "/")
              (layout/main ctx "/tickets")
              (layout/main ctx "/statistics")
-             (layout/main ctx "/userlist"))
+             (layout/main ctx "/userlist")
+             (layout/main ctx "/report"))
 
     (context "/obpv1/admin" []
              :tags ["admin"]
@@ -31,6 +33,26 @@
                   :auth-rules access/admin
                   :current-user current-user
                   (ok (a/get-stats ctx (:last-visited current-user))))
+
+             (POST "/report" []
+              :auth-rules access/admin
+              :summary "Generate report based on filters"
+              :body [filters {:users [(s/maybe s/Int)]
+                              :badges [(s/maybe s/Int)]
+                              :to (s/maybe s/Int)
+                              :from (s/maybe s/Int)}]
+              :current-user current-user
+              (ok (report/report! ctx filters (:id current-user))))
+
+             (GET "/report/export/:id" [users badges to from]
+              :summary "Export report to csv format"
+              :auth-rules access/admin
+              :current-user current-user
+              :path-params [id :- s/Int]
+              (-> (io/piped-input-stream (report/export-report ctx users badges to from id current-user))
+                  ok
+                  (header "Content-Disposition" (str "attachment; filename=\"""report.csv\""))
+                  (header "Content-Type" "text/csv")))
 
              (POST "/private_badge/:user_badge_id" []
                    :return (s/enum "success" "error")
@@ -291,7 +313,9 @@
                                          :country  (s/maybe s/Str)
                                          :order_by (s/enum "name" "ctime" "common_badge_count")
                                          :email    (s/maybe s/Str)
-                                         :filter   (s/enum 1 0)}]
+                                         :filter   (s/enum 1 0)
+                                         (s/optional-key :custom-field-filters) (s/maybe {(s/optional-key :gender) (s/maybe (s/enum "Male" "Female" "Notspecified" "notset"))
+                                                                                          (s/optional-key :organization) (s/maybe s/Str)})}]
                    :summary "Get public user profiles"
                    :auth-rules access/admin
                    :current-user current-user
@@ -300,6 +324,9 @@
                          countries (a/profile-countries ctx (:id current-user))
                          accepted-terms-fn (first (plugin-fun (get-plugins ctx) "db" "get-accepted-terms-by-id"))
                          users-with-terms (map #(-> %
-                                                    (assoc :terms (:status (accepted-terms-fn ctx (:id %))))) users)]
-                     (ok {:users     (vec users-with-terms)
+                                                    (assoc :terms (:status (accepted-terms-fn ctx (:id %))))) users)
+                         users-with-custom-field-filters (if (empty? (:custom-field-filters search-params))
+                                                             (vec users-with-terms)
+                                                             (a/apply-custom-filters ctx (:custom-field-filters search-params) (vec users-with-terms)))]
+                     (ok {:users     (vec users-with-custom-field-filters)
                           :countries countries}))))))

@@ -81,6 +81,7 @@
                    :factory-url     (get-in ctx [:config :factory :url])
                    :show-terms?     (get-in ctx [:config :core :show-terms?] false)
                    :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))
+                   :custom-fields   (get-in ctx [:config :extra/customField :fields] nil)
                    }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
@@ -146,7 +147,8 @@
   (let [user (if current-user (-> (u/user-information ctx (:id current-user))
                                   (assoc :terms (:status (u/get-accepted-terms-by-id ctx (:id current-user))))
                                   (assoc  :real-id (:real-id current-user) ;;real-id is for admin login as user
-                                          :last-visited (:last-visited current-user))))] ;;user's previous visit
+                                          :last-visited (:last-visited current-user) ;;user's previous visit
+                                          :current-space (:current-space current-user))))]
     (-> (main-view (assoc ctx :user user :flash-message flash-message) meta-tags)
         (ok)
         (content-type "text/html; charset=\"UTF-8\""))))

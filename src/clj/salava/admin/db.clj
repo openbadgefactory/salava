@@ -87,7 +87,7 @@
     [ctx]
     (let [date (get-date-from-today -1 0 0)]
       (count-registered-users-after-date {:time date} (into {:result-set-fn first :row-fn :count} (get-db ctx)))))
-      
+
 #_(defn badges-count
     "Get count from all badges"
     [ctx]
@@ -170,6 +170,10 @@
   (as-> (first (plugin-fun (get-plugins ctx) "main" "selfie_stats")) $
         (if (ifn? $) ($ ctx last-login) nil)))
 
+(defn space-stats [ctx  last-login]
+  (as-> (first (plugin-fun (get-plugins ctx) "stats" "admin_space_stats")) $
+        (if (ifn? $) ($ ctx last-login) nil)))
+
 (defn issuer-stats [ctx last-login]
  {:Totalissuersno (count-badge-issuers {} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
   :issuerssincelastlogin (count-badge-issuers-after-date {:time last-login} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
@@ -201,6 +205,7 @@
         :userbadges (badge-stats ctx last-login)
         :pages (pages-stats ctx last-login)
         :issuers (issuer-stats ctx last-login)
+        :spaces (space-stats ctx last-login)
         :user-badge-correlation (user-badge-correlation ctx)}
        (merge (selfie-stats ctx last-login)))
    (catch Object _
@@ -529,3 +534,7 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
 (defn update-admin-to-user [ctx user-id]
   (log/info "admin set user-id:" user-id "to admin.")
   (update-admin-to-user! {:id user-id} (get-db ctx)))
+
+(defn apply-custom-filters [ctx filters users]
+ (as-> (first (plugin-fun (get-plugins ctx) "db" "apply-custom-filters-users")) $
+       (when $ ($ ctx filters users))))

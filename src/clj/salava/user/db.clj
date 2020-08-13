@@ -432,15 +432,41 @@
 
 (defn set-session [ctx ok-status user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)
+        invitation (get-in ok-status [:body :invitation] (get ok-status :invitation nil))
         last-visited (last-visited ctx user-id)
-        expires (+ (long (/ (System/currentTimeMillis) 1000)) (get-in ctx [:config :core :session :max-age]))]
-    (-> ok-status
-        (assoc-in [:session :identity] {:id id :role role :private private :activated activated :last-visited last-visited :expires expires}))))
+        expires (+ (long (/ (System/currentTimeMillis) 1000)) (get-in ctx [:config :core :session :max-age]))
+        current-space (as-> (first (plugin-fun (get-plugins ctx) "space" "set-user-space")) $
+                            (when (ifn? $) ($ ctx invitation  user-id)))
+        user-spaces (as-> (first (plugin-fun (get-plugins ctx) "db" "get-user-spaces")) $
+                          (when (ifn? $) ($ ctx user-id)))
+        identity {:id id :role role :private private :activated activated :last-visited last-visited :expires expires #_:spaces #_user-spaces :current-space current-space}
+        ok-status (if (get-in ok-status [:body :custom-fields] nil) (update-in ok-status [:body] dissoc :custom-fields) ok-status)]
+     (as-> ok-status $
+           (assoc-in $ [:session :identity] identity)
+           (if (and (map? (:body $))(contains? (:body $) :invitation)) #_(get-in $ [:body :invitation] nil)
+               (update-in $ [:body] dissoc :invitation)
+               (dissoc $ :invitation)))))
+
+
+(defn activate-invited-user-and-verify-email [ctx user-id invitation new-user?]
+ (when (and new-user? invitation)
+  (update-verify-primary-email-address! {:user_id user-id} (get-db ctx))
+  (update-user-activate! {:id user-id} (get-db ctx))))
+
+(defn save-user-custom-fields [ctx user-id custom-fields]
+  (when-let [f (first (plugin-fun (get-plugins ctx) "db" "update-custom-fields"))]
+    (f ctx user-id custom-fields)))
+
 
 (defn finalize-login [ctx ok-res user-id pending-badge-id new-account]
+ (let [invitation (get-in ok-res [:body :invitation] (get ok-res :invitation nil))
+       custom-fields (get-in ok-res [:body :custom-fields] nil)]
+  (when custom-fields (save-user-custom-fields ctx user-id custom-fields))
   (save-pending-badge-and-email ctx user-id pending-badge-id new-account)
+  #_(activate-invited-user-and-verify-email ctx user-id invitation new-account)
   (send-email-verification-maybe ctx user-id)
-  (set-session ctx ok-res user-id))
+  (set-session ctx ok-res user-id)))
+
 
 ;; --- Email sender --- ;;
 

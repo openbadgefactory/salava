@@ -8,7 +8,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.user.ui.helper :refer [profile-picture profile-link-inline]]
-            [salava.core.ui.helper :refer [path-for current-path navigate-to js-navigate-to input-valid?]]
+            [salava.core.ui.helper :refer [path-for current-path navigate-to js-navigate-to input-valid? plugin-fun]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
@@ -105,6 +105,11 @@
         [:div {:class "issuer-links pull-left"}
          [:a {:target "_blank" :href (path-for (str "/profile/" owner_id))} owner]]])]))
 
+(defn custom-field [field-name user-id]
+ (into [:div]
+   (for [f (plugin-fun (session/get :plugins) field-name "admintool_custom_field")]
+     (when f [f user-id]))))
+
 (defn user-info-block [info]
   [:div
    [:div {:class "row"}
@@ -134,7 +139,9 @@
     [:div.col-xs-6
      (if (:last_login info)
        (date-from-unix-time (* 1000 (:last_login info)) "minutes")
-       "")]]])
+       "")]]
+   [custom-field "gender" (:user_id info)]
+   [custom-field "organization" (:user_id info)]])
 
 (defn page-info-block [owner owner_id]
   [:div {:class "issuer-data clearfix"}
@@ -147,7 +154,7 @@
     (cond
       (= "badge" item_type) (badge-info-block info item_owner item_owner_id)
       (= "badges" item_type) (badge-info-block info "" "")
-      (= "user" item_type) (user-info-block info)
+      (= "user" item_type) (user-info-block (assoc info :user_id item_owner_id))
       (= "page" item_type) (page-info-block item_owner item_owner_id)
       :else "")))
 

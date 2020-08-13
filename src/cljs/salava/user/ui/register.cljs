@@ -45,6 +45,16 @@
                    (js-navigate-to "/user/registration-complete")))
       :finally (fn [] (session/put! :new-user {:first_name first-name :last_name last-name :email email}))})))
 
+(defn validate-custom-fields [state validation-message]
+ (let [enabled-fields (session/get :custom-fields)
+       fields @(cursor state [:custom-fields])
+       validate-fn (first (plugin-fun (session/get :plugins) "block" "field_input_valid"))]
+  (when (seq enabled-fields)
+    (doall
+       (for [field enabled-fields
+             :let [f (get fields (keyword (:name field)))]]
+            ((validate-fn (:name field)  f validation-message)))))))
+
 (defn verify-registration-data
   "Verifies registration form data"
   [state]
@@ -57,7 +67,6 @@
         validation-message (cursor state [:error-message])
         password-atom (cursor state [:password])
         password-verify-atom (cursor state [:password-verify])]
-
     (cond
       (not (input/email-valid? @email-atom)) (reset! validation-message (t :user/Invalidemail))
       (not (input/password-valid? @password-atom)) (reset! validation-message (t :user/Invalidpassword))
@@ -66,7 +75,11 @@
       (not (input/last-name-valid? @last-name-atom)) (reset! validation-message (t :user/LastNameInvalidinput))
       (not (input/country-valid? @country-atom)) (reset! validation-message (t :user/InvalidCountryInput))
       (not (input/language-valid? @language-atom)) (reset! validation-message (t :user/InvalidLanguageInput))
-      :else (send-registration state))))
+      :else (when-not (some false? (remove nil? (validate-custom-fields state validation-message)))(send-registration state)))))
+
+(defn custom-fields [fn-name state]
+  (let [fields (plugin-fun (session/get :plugins) "block" fn-name)]
+    [:div (doall (map (fn [f] ^{:key fn-name}[f state]) fields))]))
 
 (defn registration-form
   "Registration form"
@@ -158,7 +171,9 @@
          (t :user/Country)
          [:span.form-required " *"]]
         [:div {:class (str "form-bar " (if (input/country-valid? @country-atom) "form-bar-success" "form-bar-error"))}
-         [input/country-selector country-atom]]]]]
+         [input/country-selector country-atom]]]
+       (custom-fields "user_gender_field_register" state)
+       (custom-fields "org_field_register" state)]]
 
      [:button {:class "btn btn-primary col-sm-4 col-sm-offset-4 col-xs-8 col-xs-offset-2 management-links"
                :on-click #(do
@@ -236,7 +251,8 @@
                (let [{:keys [languages]} data]
                  (swap! state assoc :languages languages
                         :permission "success"
-                        :email     (session/get-in! [:user :pending :email] ""))))}
+                        :email     (session/get-in! [:user :pending :email] "")
+                        :custom-fields {})))}
    (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi params]
@@ -252,7 +268,8 @@
                      :password ""
                      :password-verify ""
                      :accept-terms nil
-                     :show-terms (session/get :show-terms?)})
+                     :show-terms (session/get :show-terms?)
+                     :custom-fields {}})
         lang (or (:lang params) (session/get-in [:user :language] (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first)))]
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)

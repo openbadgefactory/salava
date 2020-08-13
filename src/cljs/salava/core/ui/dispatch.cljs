@@ -34,6 +34,7 @@
 (session/put! :factory-url (:factory-url ctx))
 (session/put! :show-terms? (:show-terms? ctx))
 (session/put! :filter-options (:filter-options ctx))
+(session/put! :custom-fields (:custom-fields ctx))
 ;;;
 
 
@@ -79,7 +80,7 @@
 (defn main-view []
   (fn []
     (let [{:keys [handler route-params]} @current-route]
-      [ (handler site-navi route-params) ])))
+      [ (handler site-navi route-params)])))
 
 (defonce history (pushy/pushy set-route! (partial b/match-route (:routes site-navi))))
 

@@ -5,7 +5,7 @@
             [reagent-modals.modals :as m]
             [clojure.string :refer [trim]]
             [clojure.string :as s]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for plugin-fun]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -28,7 +28,8 @@
                  :name          (trim (str name))
                  :order_by      order_by
                  :email         email
-                 :filter        filter}
+                 :filter        filter
+                 :custom-field-filters @(cursor state [:custom-field-filters])}
        :handler (fn [data] (swap! state assoc :users (:users data)))
        :finally (fn [] (ajax-stop ajax-message-atom))})))
 
@@ -96,6 +97,11 @@
                               (fetch-users state))}]
        (t :admin/Deleted)]]]))
 
+(defn custom-field-filters [field state]
+  (into [:div]
+    (for [f (plugin-fun (session/get :plugins) field "custom_field_filter")]
+       (when f [f state (fn [] (fetch-users state))])))) ;(:users @state)]))))
+
 
 (defn userlist-form [state]
   [:div {:id "grid-filter"
@@ -104,8 +110,9 @@
     [country-selector state]
     [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
     [text-field :email (t :badge/Email)  (t :admin/Searchbyemail) state]
-    [filter-buttons state]]])
-
+    [filter-buttons state]
+    [custom-field-filters "gender" state]
+    [custom-field-filters "organization" state]]])
 
 
 (defn email-parser [email]
@@ -197,7 +204,8 @@
                      :filter 0
                      :email ""
                      :timer nil
-                     :ajax-message nil})]
+                     :ajax-message nil
+                     :custom-field-filters nil})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))

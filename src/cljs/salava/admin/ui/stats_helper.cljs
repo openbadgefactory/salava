@@ -168,7 +168,7 @@
              (for [l lines]
                [Line {:name (:name l) :dataKey (:key l) :type "monotone" :stroke (:stroke l) :activeDot (:activeDot l) :strokeWidth (:strokeWidth l)}]))]])))
       [:div.flex-container]
-      data)))
+      (remove #(nil? %) data))))
 
 (defn make-pie [{:keys [width data]}]
   (let [PieChart (adapt-react-class js/window.Recharts.PieChart.)

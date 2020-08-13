@@ -40,6 +40,7 @@
                (swap! state merge data))})
   (stream/init-data state))
 
+
 (defn selfie-issue-event [event state]
   (let [{:keys [event_id subject verb image_file message ctime event_id name object first_name last_name profile_picture]}  event]
     [:div {:style {:height "100%"}}
@@ -236,7 +237,7 @@
         message (welcome-block-body user-language)
         arrow-class (cursor state [:arrow-class])]
     [:div#welcome-block {:class ""}
-     [:div.welcome-block.block-content.row
+     [:div.welcome-block.block-content.row (when (session/get-in [:user :current-space]) {:class "welcome-block-ed"})
       (if (blank? message)
         [:div.content
          [:div.row.welcome-message
@@ -585,13 +586,31 @@
        [:p  {:style {:font-size "20px" :color "black"}} (t :social/Iwantto)]
        [quicklinks]]]]]])
 
+(defn space-list []
+  (into [:div]
+    (for [f (plugin-fun (session/get :plugins) "block" "space_list_dashboard")]
+      (when (ifn? f) [f]))))
+
+(defn custom-field-init [state]
+  (as-> (first (plugin-fun (session/get :plugins) "block" "custom_fields_init")) f
+        (when (ifn? f) (f state))))
+
+(defn custom-field-notice [state]
+  (into [:div]
+    (for [f (plugin-fun (session/get :plugins) "block" "custom_fields_alert")]
+      (when (ifn? f) [f state]))))
+
 (defn content [state]
   [:div#dashboard-container
    [m/modal-window]
+
    [:h1 {:style {:display "none"}} "Dashboard"]
    (if (not-activated?)
      (not-activated-banner))
+   [custom-field-notice state]
    [welcome-block state]
+   [:div.row
+    [:div [layout/space-info-banner]]]
    [:div.row.flip
     [notifications-block state]
     [badges-block state]
@@ -599,7 +618,10 @@
    [:div.row.flip
     [connections-block state]
     [explore-block state]
-    [help-block]]])
+    [help-block]]
+   [:div.row.flip
+    [space-list]]])
+
 
 (defn new-user-oauth []
   (let [[service _] (-> (clojure.string/split js/window.location.search #"&"))
@@ -617,7 +639,12 @@
                      :connections {:badges 0}
                      ;:pages_count 0
                      ;:files_count 0
-                     :arrow-class "fa-angle-down"})]
+                     :arrow-class "fa-angle-down"
+                     :custom-fields nil})]
+                     ;:show-custom-field-alert? false})]
     (new-user-oauth)
+    (custom-field-init state)
     (init-dashboard state)
-    (fn [] (layout/dashboard site-navi [content state]))))
+
+    (fn []
+     (layout/dashboard site-navi [content state]))))

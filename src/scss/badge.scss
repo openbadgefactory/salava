@@ -48,7 +48,7 @@ button {
 
       &:hover, &:active, &:focus {
         color: $link-color;
-
+ 
       }
     }
   }
@@ -1153,7 +1153,7 @@ button {
 }
 
 //import new badge
-#my-badges #grid #import-badge, .my-selfie-badges #grid #import-badge {
+#my-badges #grid #import-badge, .my-selfie-badges #grid #import-badge{
   text-align: center;
   position: relative;
 
