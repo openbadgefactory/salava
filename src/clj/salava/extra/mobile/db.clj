@@ -4,6 +4,7 @@
             [clojure.pprint :refer [pprint]]
             [clojure.java.jdbc :as jdbc]
             [clojure.data.json :as json]
+            [buddy.hashers :as hashers]
             [yesql.core :refer [defqueries]]
             [salava.factory.db :as factory]
             [salava.core.util :as u]))
@@ -18,6 +19,26 @@
       (str (u/get-full-path ctx) "/obpv1/file/as-png?image=" image)
       (str (u/get-site-url ctx) "/" image))))
 
+(defonce temp-secret (u/random-token))
+
+(defn temp-session [ctx user-id path]
+  (let [payload (->> {:path (string/replace-first path #"^[^/]*/" "/")
+                     :id user-id
+                     :exp (+ (System/currentTimeMillis) 60000)}
+                    json/write-str (map byte) byte-array u/bytes->base64-url)
+        checksum (u/hmac-sha256-hex payload temp-secret)]
+    (str payload "!!" checksum)))
+
+(defn temp-session-verify [ctx token]
+  (let [[payload checksum] (string/split token #"!!" 2)
+        input (some-> payload u/url-base64->str (json/read-str :key-fn keyword))
+        now (long (/ (System/currentTimeMillis) 1000))
+        expires (+ now 3600)]
+    (when (and input
+               (> (:exp input) (System/currentTimeMillis))
+               (= checksum (u/hmac-sha256-hex payload temp-secret)))
+      {:path (:path input)
+       :session {:id (:id input) :role "user" :private false :activated true :last-visited now :expires expires}})))
 
 
 (defn user-badges-all [ctx user_id]

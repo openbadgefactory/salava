@@ -20,6 +20,23 @@
     (context "/obpv1/mobile" []
              :tags ["mobile"]
 
+             (GET "/oauth2/temp_session" req
+                  :no-doc true
+                  :summary "Create temporary session token for a path"
+                  :query-params [path :- s/Str]
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok {:token (db/temp-session ctx (:id current-user) path)}))
+
+             (GET "/oauth2/temp_session/redirect" req
+                  :no-doc true
+                  :summary "Redirect to a path with session cookie"
+                  :query-params [token :- s/Str]
+                  (if-let [input (db/temp-session-verify ctx token)]
+                    (-> (redirect (str (u/get-base-path ctx) (:path input)))
+                        (assoc-in [:session :identity] (:session input)))
+                    (bad-request {:message "400 Bad Request"})))
+
              (GET "/oauth2/authorize" req
                   :no-doc true
                   :summary "Service selector page"
