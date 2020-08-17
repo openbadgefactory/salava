@@ -25,7 +25,7 @@
                  :current-user current-user
                  :flash-message flash-message
                  (let [redirect-to (get-in req [:cookies "login_redirect" :value])
-                       new-cookie {:value nil :max-age 600 :http-only true :path "/"}]
+                       new-cookie {:value nil :max-age 1200 :http-only true :path "/"}]
                    (if (and redirect-to (string/starts-with? redirect-to "/"))
                      (-> (redirect (str (get-base-path ctx) redirect-to))
                          (assoc-in [:cookies "login_redirect"] new-cookie))

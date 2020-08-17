@@ -75,7 +75,7 @@
                   :summary "End user session"
                   (-> (ok)
                       (assoc-in [:session :identity] nil)
-                      (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})))
+                      (assoc-in [:cookies "login_redirect"] {:value nil :max-age 1200 :http-only true :path "/"})))
 
             (GET "/register" req
                  :no-doc true
