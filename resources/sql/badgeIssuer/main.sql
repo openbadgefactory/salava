@@ -119,7 +119,7 @@ ORDER BY sb.mtime DESC
 LIMIT 1000
 
 --name: select-user-gallery-ids
-SELECT gallery_id, selfie_id FROM user_badge WHERE user_id = :user_id AND status != "declined" AND revoked = 0 AND selfie_id IS NOT NULL
+SELECT gallery_id, selfie_id FROM user_badge WHERE user_id = :user_id AND status != 'declined' AND revoked = 0 AND selfie_id IS NOT NULL
 
 --name: select-issuable-gallery-badges
 SELECT ub.gallery_id, ub.selfie_id FROM user_badge ub
@@ -151,7 +151,7 @@ ORDER BY se.ctime DESC
 LIMIT 1000
 
 --name:check-badge-issued
-SELECT id FROM user_badge WHERE status != "declined" AND revoked = 0 AND selfie_id = :id
+SELECT id FROM user_badge WHERE status != 'declined' AND revoked = 0 AND selfie_id = :id
 
 --name: created-badges-count
 SELECT COUNT(DISTINCT id) AS count FROM selfie_badge WHERE deleted = 0;

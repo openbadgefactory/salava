@@ -15,10 +15,10 @@ SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND deleted = 0
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 0 AND deleted = 0;
 
 --name: public-user-count
-SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND profile_visibility = "public";
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND profile_visibility = 'public';
 
 --name: internal-user-count
-SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND profile_visibility = "internal";
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND profile_visibility = 'internal';
 
 --name: count-logged-users-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login > :time AND deleted = 0;
@@ -235,5 +235,5 @@ SELECT COUNT(*) AS count FROM new_issuer_history WHERE ctime > :time;
 
 --name:select-user-ids-and-badge-count
 SELECT u.id, COUNT(ub.id) AS badge_count FROM user u
-LEFT JOIN user_badge ub ON u.id=ub.user_id WHERE u.activated = 1 AND ub.status != "declined" AND ub.revoked = 0 AND ub.deleted = 0
+LEFT JOIN user_badge ub ON u.id=ub.user_id WHERE u.activated = 1 AND ub.status != 'declined' AND ub.revoked = 0 AND ub.deleted = 0
 GROUP BY u.id;
