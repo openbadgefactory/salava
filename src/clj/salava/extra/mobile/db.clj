@@ -136,30 +136,30 @@
        (str where (apply str (interpose " " name-where)))
        (into args (mapcat #(list % %) name-parts))])))
 
-(defn- gallery-badge-query [country name order offset]
+(defn- gallery-badge-query [country name]
   (let [[join where args] (-> ["INNER JOIN user_badge ub ON g.id = ub.gallery_id"
-                               (str "WHERE ub.deleted = 0 AND ub.visibility != 'private'"
+                               (str "WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.visibility != 'private'"
                                     " AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())")
                                []]
                               (gallery-badge-query-country country)
-                              (gallery-badge-query-name name))
-        order-by (if (= order "name") "ORDER BY g.badge_name" "ORDER BY ub.id DESC")
-        offset (if (re-find #"^[0-9]+$" offset) (str "OFFSET " (* 20 (Long. offset))) "OFFSET 0")]
-    [(str "FROM gallery g " join " " where " " order-by " LIMIT 20 " offset) args]))
+                              (gallery-badge-query-name name))]
+    [(str "FROM gallery g " join " " where) args]))
 
 
 (defn gallery-badge-search [ctx {:keys [country name order offset]}]
-  (let [conn (:connection (u/get-db ctx))
-        [sql args] (gallery-badge-query country name order offset)
-        sql-count (str "SELECT COUNT(g.id) as total "
-                       sql)
-        sql-data  (str "SELECT g.id AS gallery_id, NULL as advert_id,"
-                       " g.badge_id, g.badge_name, g.issuer_name, g.badge_image AS image_file "
-                       sql)]
+  (let [[from-where args] (gallery-badge-query country name)
 
+        order-by (if (= order "name") "ORDER BY g.badge_name" "ORDER BY ub.id DESC")
+        offset (if (re-find #"^[0-9]+$" offset) (str "OFFSET " (* 20 (Long. offset))) "OFFSET 0")
+
+        sql-count (str "SELECT COUNT(DISTINCT g.id) as total " from-where)
+        sql-data  (str "SELECT DISTINCT g.id AS gallery_id, NULL as advert_id,"
+                       " g.badge_id, g.badge_name, g.issuer_name, g.badge_image AS image_file "
+                       from-where " " order-by " LIMIT 20 " offset)
+        conn (:connection (u/get-db ctx))]
     {:badges (->> (jdbc/query conn (into [sql-data] args))
                   (map #(update % :image_file (partial png-convert-url ctx))))
-     :total (-> (jdbc/query conn (into [sql-count] args)) first :total)}))
+     :total (-> (jdbc/query conn (into [sql-count] args)) first (get :total 0))}))
 
 ;;;
 
@@ -179,7 +179,7 @@
        (str where (apply str (interpose " " name-where)))
        (into args (mapcat #(list % % %) name-parts))])))
 
-(defn- gallery-earnable-badge-query [country name order offset]
+(defn- gallery-earnable-badge-query [country name]
   (let [[join where args] (-> [(str "INNER JOIN badge_content bc ON a.badge_content_id = bc.id "
                                     "INNER JOIN issuer_content ic ON a.issuer_content_id = ic.id")
                                (str "WHERE a.deleted = 0"
@@ -187,23 +187,24 @@
                                     " AND (a.not_after  IS NULL OR a.not_after  = 0 OR a.not_after  >= UNIX_TIMESTAMP())")
                                []]
                               (gallery-earnable-badge-query-country country)
-                              (gallery-earnable-badge-query-name name))
-        order-by (if (= order "name") "ORDER BY badge_name" "ORDER BY a.mtime DESC")
-        offset (if (re-find #"^[0-9]+$" offset) (str "OFFSET " (* 20 (Long. offset))) "OFFSET 0")]
-    [(str "FROM badge_advert a " join " " where " " order-by " LIMIT 20 " offset) args]))
+                              (gallery-earnable-badge-query-name name))]
+    [(str "FROM badge_advert a " join " " where) args]))
 
 (defn gallery-earnable-badge-search [ctx {:keys [country name order offset]}]
-  (let [conn (:connection (u/get-db ctx))
-        [sql args] (gallery-earnable-badge-query country name order offset)
-        sql-count (str "SELECT COUNT(a.id) as total "
-                       sql)
-        sql-data  (str "SELECT NULL AS gallery_id, a.id as advert_id,"
+  (let [[from-where args] (gallery-earnable-badge-query country name)
+
+        order-by (if (= order "name") "ORDER BY badge_name" "ORDER BY a.mtime DESC")
+        offset (if (re-find #"^[0-9]+$" offset) (str "OFFSET " (* 20 (Long. offset))) "OFFSET 0")
+
+        sql-count (str "SELECT COUNT(DISTINCT a.id) as total " from-where)
+        sql-data  (str "SELECT DISTINCT a.id as advert_id, NULL AS gallery_id,"
                        " NULL AS badge_id, bc.name AS badge_name, ic.name AS issuer_name, bc.image_file "
-                       sql)]
+                       from-where  " " order-by " LIMIT 20 " offset)
+        conn (:connection (u/get-db ctx))]
 
     {:badges (->> (jdbc/query conn (into [sql-data] args))
                   (map #(update % :image_file (partial png-convert-url ctx))))
-     :total (-> (jdbc/query conn (into [sql-count] args)) first :total)}))
+     :total (-> (jdbc/query conn (into [sql-count] args)) first (get :total 0))}))
 
 ;;;
 
