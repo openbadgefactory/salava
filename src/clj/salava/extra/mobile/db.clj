@@ -138,7 +138,7 @@
 
 (defn- gallery-badge-query [country name]
   (let [[join where args] (-> ["INNER JOIN user_badge ub ON g.id = ub.gallery_id"
-                               (str "WHERE ub.deleted = 0 AND ub.visibility != 'private'"
+                               (str "WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.visibility != 'private'"
                                     " AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())")
                                []]
                               (gallery-badge-query-country country)
@@ -152,13 +152,11 @@
         order-by (if (= order "name") "ORDER BY g.badge_name" "ORDER BY ub.id DESC")
         offset (if (re-find #"^[0-9]+$" offset) (str "OFFSET " (* 20 (Long. offset))) "OFFSET 0")
 
-        sql-count (str "SELECT COUNT(g.id) as total "
-                       from-where)
-        sql-data  (str "SELECT g.id AS gallery_id, NULL as advert_id,"
+        sql-count (str "SELECT COUNT(DISTINCT g.id) as total " from-where)
+        sql-data  (str "SELECT DISTINCT g.id AS gallery_id, NULL as advert_id,"
                        " g.badge_id, g.badge_name, g.issuer_name, g.badge_image AS image_file "
-                       from-where  " " order-by " LIMIT 20 " offset)
-       conn (:connection (u/get-db ctx))]
-
+                       from-where " " order-by " LIMIT 20 " offset)
+        conn (:connection (u/get-db ctx))]
     {:badges (->> (jdbc/query conn (into [sql-data] args))
                   (map #(update % :image_file (partial png-convert-url ctx))))
      :total (-> (jdbc/query conn (into [sql-count] args)) first (get :total 0))}))
@@ -198,11 +196,10 @@
         order-by (if (= order "name") "ORDER BY badge_name" "ORDER BY a.mtime DESC")
         offset (if (re-find #"^[0-9]+$" offset) (str "OFFSET " (* 20 (Long. offset))) "OFFSET 0")
 
-        sql-count (str "SELECT COUNT(a.id) as total "
-                       from-where)
-        sql-data  (str "SELECT NULL AS gallery_id, a.id as advert_id,"
+        sql-count (str "SELECT COUNT(DISTINCT a.id) as total " from-where)
+        sql-data  (str "SELECT DISTINCT a.id as advert_id, NULL AS gallery_id,"
                        " NULL AS badge_id, bc.name AS badge_name, ic.name AS issuer_name, bc.image_file "
-                       from-where " " order-by " LIMIT 20 " offset)
+                       from-where  " " order-by " LIMIT 20 " offset)
         conn (:connection (u/get-db ctx))]
 
     {:badges (->> (jdbc/query conn (into [sql-data] args))

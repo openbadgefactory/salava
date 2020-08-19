@@ -77,12 +77,12 @@ DELETE FROM user_badge_endorsement_ext WHERE id = :id
 
 --name: select-existing-endorsement
 SELECT id FROM user_badge_endorsement_ext ubee
-WHERE issuer_id = :issuer AND user_badge_id = :ubid AND status != "declined"
+WHERE issuer_id = :issuer AND user_badge_id = :ubid AND status != 'declined'
 
 --name: select-existing-endorsement-by-email
 SELECT ubee.id FROM user_badge_endorsement_ext ubee
 JOIN user_ext u ON u.ext_id = ubee.issuer_id
-WHERE u.email = :issuer AND user_badge_id = :ubid AND status != "declined"
+WHERE u.email = :issuer AND user_badge_id = :ubid AND status != 'declined'
 
 --name: delete-user-badge-ext-endorsements!
 DELETE FROM user_badge_endorsement_ext WHERE user_badge_id = :id
