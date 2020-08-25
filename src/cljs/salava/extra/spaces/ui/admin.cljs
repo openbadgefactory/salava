@@ -164,7 +164,7 @@
                         (.preventDefault %)
                         (edit-space state))}
                         ;(schemas/edit-spacestate))}
-          (t :extra-spaces/Edit)]
+          (t :core/Save) #_(t :extra-spaces/Edit)]
          [:button.btn.btn-warning.btn-bulky
           {:type "button"
            :on-click #(do
@@ -192,7 +192,7 @@
       [m/modal-window]
       [manage-status state]
       [sm/manage-visibility state (fn [] (init-data state))]
-      ;(when (= @(cursor state [:space :visibility] ) "private")) 
+      ;(when (= @(cursor state [:space :visibility] ) "private"))
       [invite-link (select-keys (:space @state) [:id :name :alias])]])
    :component-did-mount
    (fn [] (init-data state))}))

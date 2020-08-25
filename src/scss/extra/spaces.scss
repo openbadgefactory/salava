@@ -387,7 +387,8 @@ ul.navbar-nav {
 
   .banner-container {
     background-repeat: no-repeat;
-    background-size: contain;
+    //background-size: contain;
+    background-size: 45%;
     border-bottom-left-radius: unset;
     border-bottom-right-radius: unset;
     //min-height: 100px;
@@ -395,6 +396,11 @@ ul.navbar-nav {
 
     .media {
       padding-top: 10px;
+
+      .space-description {
+        max-width:400px;
+        height: 50px;
+      }
     }
   }
 

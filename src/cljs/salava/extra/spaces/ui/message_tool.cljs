@@ -129,6 +129,7 @@
                           (reset! (cursor state [:selected-badges]) [])
                           (reset! (cursor state [:select-all]) (not @(cursor state [:select-all])))
                           (when @(cursor state [:select-all])
+
                             (reset! (cursor state [:selected-badges])  (filter (fn [b] (element-visible? b state)) badges))))}]
           [:b (t :extra-spaces/Selectall)]]]]
 
@@ -167,25 +168,29 @@
                                                                            (fetch-badge-earners state))})}
           [:span [:i.fa.fa-certificate.fa-lg] " " (t :extra-spaces/Addbadge)]]
          (when (seq @(cursor state [:selected-badges]))
-          [:div#admin-report {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
+          [:div
+           [:div.row
+            [:div.col-md-12 [:a.pull-right {:href "#" :on-click #(reset! (cursor state [:selected-badges]) []) :role "button"} [:b (t :social/clearall)]]]]
+           [:div#admin-report {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
 
-              (reduce
-                #(conj %1
-                  ^{:key (:id %2)}[:a.list-group-item
-                                   [:div.inline
-                                    [:button.close
-                                     {:type "button"
-                                      :aria-label (t :core/Delete)
-                                      :on-click (fn []
-                                                  (reset! (cursor state [:selected-badges]) (remove (fn [b] (= (:id b) (:id %2))) @(cursor state [:selected-badges])))
-                                                  (fetch-badge-earners state))}
-                                     [:span {:aria-hidden "true"
-                                             :dangerouslySetInnerHTML {:__html "&times;"}}]]
-                                    [:img.logo {:src (str "/" (:badge_image %2))}]
-                                    [:span.name (:badge_name %2)]]])
+               (reduce
+                 #(conj %1
+                   ^{:key (:id %2)}[:a.list-group-item
+                                    [:div.inline
+                                     [:button.close
+                                      {:type "button"
+                                       :aria-label (t :core/Delete)
+                                       :on-click (fn []
+                                                   (reset! (cursor state [:selected-badges]) (remove (fn [b] (= (:id b) (:id %2))) @(cursor state [:selected-badges])))
+                                                   (fetch-badge-earners state))}
+                                      [:span {:aria-hidden "true"
+                                              :dangerouslySetInnerHTML {:__html "&times;"}}]]
+                                     [:img.logo {:src (str "/" (:badge_image %2))}]
+                                     [:span.name (:badge_name %2)]]])
 
-                [:div.list-group {:style {:margin "10px auto"}}]
-                @(cursor state [:selected-badges]))])]
+                 [:div.list-group {:style {:margin "10px auto"}}]
+                 @(cursor state [:selected-badges]))]])]
+
         (when (seq @(cursor state [:selected-badges]))
           [:div.col-md-6 {:style {:margin "10px auto"}}
            [:span [:b (count @(cursor state [:emails])) " " (t :extra-spaces/recipientsfound)]]

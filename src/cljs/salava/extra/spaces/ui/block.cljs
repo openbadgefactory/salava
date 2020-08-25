@@ -256,7 +256,7 @@
           [:img.logo { :src (str "/" (:logo current-space))}]]
          [:div.media-body {:style {:vertical-align "middle"}}
           [:h3.media-heading {:style {:font-weight "600"}} (:name current-space)]
-          (:description current-space)]]]]]])))
+          [:div.space-description {:style {:max-width "300px"}}(:description current-space)]]]]]]])))
 
 (defn ^:export spaces_stats_dropdown [state]
  (let [v (atom {:spaces [] :selected 0})]
