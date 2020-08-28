@@ -72,7 +72,8 @@
   [g/grid-search-field (t :core/Search ":") "usersearch" (t :core/Searchbyname) :search state]
   [g/translated-grid-buttons  (t :extra-spaces/Role ":") (unique-values :role @(cursor state [:users]))  "role-selected" "role-all" state "extra-spaces"]
   [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]
-  [custom-field-filters "gender" state]])
+  [custom-field-filters "gender" state]
+  [custom-field-filters "organization" state]])
 
 (defn element-visible? [element state]
   (if (and

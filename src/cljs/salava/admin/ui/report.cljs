@@ -43,7 +43,7 @@
    :recipient-name (get base :recipient-name "")
    :page_count 0
    :only-selfie? false
-   :space-id 0
+   :space-id (get base :selected-space 0)
    :fetch-private true})
 
 (defn ajax-stop [ajax-message-atom]
@@ -227,7 +227,7 @@
       {:href "#"
        :on-click #(do
                     (.preventDefault %)
-                    (mo/open-modal [:gallery :profiles] {:space 0
+                    (mo/open-modal [:gallery :profiles] {:space @(cursor state [:selected-space])
                                                          :type "pickable"
                                                          :selected-users-atom user-filters
                                                          :context "report_space"} {:hidden (fn [] (fetch-report state))}))
@@ -450,7 +450,8 @@
                      :find "users"
                      :to nil
                      :from nil
-                     :preview false})]
+                     :preview false
+                     :selected-space 0})]
 
    (init-data params state)
    (fn []

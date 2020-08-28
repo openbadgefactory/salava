@@ -1,12 +1,13 @@
 (ns salava.extra.customField.ui.organization
   (:require
-   [reagent.core :refer [cursor atom]]
+   [reagent.core :refer [cursor atom create-class]]
    [reagent-modals.modals :as m]
    [salava.extra.customField.ui.helper :as h]
    [salava.core.ui.ajax-utils :as ajax]
    [salava.core.ui.helper :refer [path-for]]
    [salava.core.i18n :refer [t]]
-   [reagent.session :as session]))
+   [reagent.session :as session]
+   [komponentit.autocomplete :refer [autocomplete]]))
 
 (defn init-organizations [state]
   (ajax/POST
@@ -50,7 +51,8 @@
 
             [:div.input-group-btn
              [:button.btn.btn-primary
-              {:style {:word-break "unset" :white-space "normal"}
+              {:disabled (clojure.string/blank? @org-atom)
+               :style {:word-break "unset" :white-space "normal"}
                :type "button"
                :on-click #(do
                             (.preventDefault %)
@@ -68,13 +70,13 @@
 
 
 
-            (reduce
-             (fn [r org]
-               (conj r [:option {:value (:name org)} (:name org)]))
-             [:datalist#select-org]
-             (sort-by :name @organizations))]
+            (conj
+             (reduce
+               (fn [r org]
+                 (conj r [:option {:value (:name org)} (:name org)]))
+               [:datalist#select-org]
+               (conj (sort-by :name @organizations) {:name " "})))]
            [:span.help-block.text-muted (t :extra-customField/Selectorganizationinstruction)]]]])))))
-
 
 (defn organization-field []
  (let [visible (h/field-enabled? "organization")
@@ -101,7 +103,8 @@
 
            [:span.input-group-btn
             [:button.btn.btn-primary.btn-bulky
-             {:style {:margin-top "unset"}
+             {:disabled (clojure.string/blank? @org-atom)
+              :style {:margin-top "unset"}
               :type "button"
               :on-click #(do
                            (.preventDefault %)
@@ -119,7 +122,7 @@
             (fn [r org]
               (conj r [:option {:value (:name org)} (:name org)]))
             [:datalist#organization-list]
-            (sort-by :name @orgs))]
+            (conj (sort-by :name @orgs) {:name " "}))]
           [:span.help-block.text-muted (t :extra-customField/Selectorganizationinstruction)]]])))))
 
 (defn ^:export init_custom_field_value [field-atom]
@@ -141,6 +144,35 @@
            [:div.col-xs-6 (or @org-atom (t :extra-customField/Notset))]])))))
 
 (defn ^:export custom_field_filter [content-state fetch-fn]
+  (let [visible (h/field-enabled? "organization")
+        state (atom {:visible visible :org (session/get :site-name) :orgs []})]
+    (init-organizations state)
+    (fn []
+     (let [visible (cursor state [:visible])
+           org-atom (cursor state [:org])
+           orgs (cursor state [:orgs])
+           custom-filters (cursor content-state [:custom-field-filters])]
+
+       (when @visible
+        [:div.form-group
+         [:span._label.filter-opt {:class "control-label col-sm-2"} (t :extra-customField/Organization)]
+         [:div.col-md-10
+          (reduce
+           (fn [r org]
+             (conj r [:option {:value (:name org) :selected (= (:name org) @org-atom)} (:name org)]))
+           (conj [:select#select-org.form-control
+                   {:on-change (fn [x]
+                                (do
+                                  (reset! org-atom (-> x .-target .-value))
+                                  (if (clojure.string/blank?  @org-atom)
+                                    (reset! custom-filters (dissoc @custom-filters :organization))
+                                    (reset! custom-filters (assoc @custom-filters :organization @org-atom)))
+                                  (fetch-fn)))}
+                   [:option {:value ""} (t :extra-customField/All)]]
+                 [:option {:value "notset"} (t :extra-customField/notset)])
+           @orgs)]])))))
+
+(defn ^:export custom_field_filter_space [content-state list-key fetch-fn]
   (let [visible (h/field-enabled? "organization")
         state (atom {:visible visible :org (session/get :site-name) :orgs []})]
     (init-organizations state)

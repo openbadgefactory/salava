@@ -51,7 +51,7 @@
  (let [badges (map :id @(cursor state [:selected-badges]))]
    (ajax/POST
     (path-for (str "/obpv1/space/message_tool/badge_earners"))
-    {:params {:ids badges}
+    {:params {:ids badges :received_all @(cursor state [:allbadgesreceived])}
      :handler (fn [data]
                 (reset! (cursor state [:emails]) data))})))
 
@@ -144,8 +144,6 @@
         {:data-dismiss "modal" :aria-label (t :core/Continue)}
         (t :core/Continue)]]]])))
 
-
-
 (defn content [space-id state]
   [:div#space
    [m/modal-window]
@@ -189,7 +187,20 @@
                                      [:span.name (:badge_name %2)]]])
 
                  [:div.list-group {:style {:margin "10px auto"}}]
-                 @(cursor state [:selected-badges]))]])]
+                 @(cursor state [:selected-badges]))]
+           (when (pos? (dec (count @(cursor state [:selected-badges]))))
+             [:div.row
+              [:div.col-md-12
+                [:div.checkbox
+                 [:label
+                  [:input {:type "checkbox"
+                           :name "allbadges"
+                           :id "allbadgesinput"
+                           :on-change #(do
+                                         (reset! (cursor state [:allbadgesreceived]) (not @(cursor state [:allbadgesreceived])))
+                                         (fetch-badge-earners state))
+                           :default-checked (true? @(cursor state [:allbadgesreceived]))}]
+                  [:b "All selected badges have been received"]]]]])])]
 
         (when (seq @(cursor state [:selected-badges]))
           [:div.col-md-6 {:style {:margin "10px auto"}}
@@ -198,7 +209,7 @@
              [:div#admin-report {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
               (reduce
                #(conj %1 ^{:key %2}[:li.list-group-item %2]) [:ul.list-group {:style {:margin "10px auto"}}] @(cursor state [:emails]))])])]]
-      (when (seq @(cursor state [:emails]))
+      (when (and (seq @(cursor state [:selected-badges])) (seq @(cursor state [:emails])))
        [:div.col-md-12
         [:div.well.well-sm;.panel.panel-default
          #_[:div.panel-heading.weighted
@@ -276,7 +287,8 @@
                      :emails []
                      :message {:content "" :subject ""}
                      :sending_messages false
-                     :message_alert false})]
+                     :message_alert false
+                     :allbadgesreceived false})]
    (init-data space-id state)
    (fn []
     (layout/default site-navi [content space-id state]))))

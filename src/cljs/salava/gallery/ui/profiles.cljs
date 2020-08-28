@@ -309,12 +309,18 @@
    [:div {:id "grid-filter"
           :class "form-horizontal"}
     [:div
-     (when-not (some #(= (:context @state) %) ["report_space"])
-      (if (empty? (session/get-in [:user :current-space]))
-          [country-selector state]
-          (into [:div]
-           (for [f (plugin-fun (session/get :plugins) "block" "gallery_profiles_space_select")]
-            (when (ifn? f) [f state (fn [] (fetch-users state))])))))
+     (if (= "user" (session/get-in [:user :role] "user"))
+      ;(when-not (some #(= (:context @state) %) ["report_space"])
+       (if (empty? (session/get-in [:user :current-space]))
+           [country-selector state]
+           (into [:div]
+            (for [f (plugin-fun (session/get :plugins) "block" "gallery_profiles_space_select")]
+             (when (ifn? f) [f state (fn [] (fetch-users state))]))))
+       [:div
+        [country-selector state]
+        (into [:div]
+         (for [f (plugin-fun (session/get :plugins) "block" "gallery_profiles_space_select")]
+          (when (ifn? f) [f state (fn [] (fetch-users state))])))])
      [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
      (when-not (some #(= (:context @state) %) ["report_space"]) [common-badges-checkbox state])]
     [order-buttons state]
@@ -331,12 +337,18 @@
      [:div {:id "grid-filter-modal"
             :class "form-horizontal"}
       [:div
-       (when-not (some #(= (:context @state) %) ["report_space"])
+       (if (= "user" (session/get-in [:user :role] "user"))
+        (when-not (some #(= (:context @state) %) ["report_space"])
          (if (empty? (session/get-in [:user :current-space]))
              [country-selector state]
              (into [:div]
               (for [f (plugin-fun (session/get :plugins) "block" "gallery_profiles_space_select")]
                (when (ifn? f) [f state (fn [] (fetch-users state))])))))
+        [:div
+         [country-selector state]
+         (into [:div]
+          (for [f (plugin-fun (session/get :plugins) "block" "gallery_profiles_space_select")]
+           (when (ifn? f) [f state (fn [] (fetch-users state))])))])
        [text-field {:key :name :label (t :gallery/Username) :placeholder (t :gallery/Searchbyusername) :state state :modal? true}]
        (when-not (some #(= (:context @state) %) ["report_space"]) [common-badges-checkbox state])]
       [order-buttons state modal?]

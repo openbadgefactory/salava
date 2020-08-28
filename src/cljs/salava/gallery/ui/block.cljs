@@ -232,6 +232,14 @@
                                                         [:p (t :extra-spaces/AboutAdmins2)]
                                                         [:hr.line]])
 
+                                                     (when (some #(= context %) ["report_space"])
+                                                       [:div.col-md-12 {:style {:margin "20px auto" :padding "10px" :background-color "ghostwhite"}}
+                                                        [:hr.line]
+                                                        [:ul
+                                                          [:li [:b (t :admin/selectallusersinstruction)]]]
+                                                        [select-all-checkbox data-atom selected-users-atom]
+                                                        [:hr.line]])
+
                                                      (when (= "space_members_modal" context)
                                                        [:div.col-md-12 {:style {:margin "20px auto" :padding "10px" :background-color "ghostwhite"}}
                                                         [:hr.line]

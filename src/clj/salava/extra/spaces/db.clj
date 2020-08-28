@@ -289,17 +289,18 @@
     (when (seq issuers)
       (select-message-tool-badges {:issuers issuers} (u/get-db ctx)))))
 
-(defn badge-earners [ctx ids]
-  (let [assertions (when (seq ids) (select-assertions-from-galleryids {:ids ids} (u/get-db-col ctx :assertion_url)))
-        user-emails (when (seq assertions) (vec (select-emails-from-assertions {:assertions assertions :expected_count (count ids)} (u/get-db-col ctx :email))))
-        pending-emails (when (seq assertions) (select-emails-from-pending-assertions {:assertions assertions :expected_count (count ids)} (u/get-db-col ctx :email)))]
-    (->> (into user-emails pending-emails) distinct)))
-
+(defn badge-earners [ctx ids all?]
+  (let [assertions (when (seq ids) (select-assertions-from-galleryids {:ids ids} (u/get-db-col ctx :assertion_url)))]
+    (when (seq assertions)
+     (if all?
+       (select-emails-from-assertions-all {:assertions assertions :expected_count (count ids)} (u/get-db-col ctx :email))
+       (select-emails-from-assertions {:assertions assertions} (u/get-db-col ctx :email))))))
 
 (defn send-message-to-earners [ctx message ids space-id]
   (let [{:keys [subject content]} message
         emails (badge-earners ctx ids)
         space-name (:name (get-space-information ctx space-id))
+        ;badges (select-gallery-badges {:ids ids} (u/get-db-col ctx :badge_name))
         mail-host-config (get-in ctx [:config :core :mail-host-config])
         data {:from (get-in ctx [:config :core :mail-sender])
               :subject subject

@@ -130,20 +130,20 @@
 
 
                              :tooltipLabel (t :admin/monthsago)}]]
-      #_[:div.row
-         [dh/panel-box-chart {:size :lg
-                              :icon "fa-bar-chart"
-                              :type "b-page"
-                              :chart-type :mixed
-                              :chart-data [{:info (sort-by :badge_count < user-badge-correlation)
-                                            :title (t :admin/userBadgeDistribution)
-                                            :elements [{:legendType "none" :name (t :admin/users) :key "user_count" :fill (:warning colors) :stackId "a" :type "bar"}
-                                                       {:legendType "none" :name (t :admin/users) :key "user_count" :type "line" :stroke (:primary colors) :activeDot {:r 8} :strokeWidth 3 :dot false}]
-                                            :dataKeyX "badge_count"
-                                            :dataKeyY "user_count"
-                                            :xlabel (t :admin/noofbadges)
-                                            :ylabel (t :admin/noofusers)}]
-                              :tooltipLabel (t :admin/userbadges)}]]]]))
+      [:div.row
+       [dh/panel-box-chart {:size :lg
+                            :icon "fa-bar-chart"
+                            :type "b-page"
+                            :chart-type :mixed
+                            :chart-data [{:info (sort-by :badge_count < user-badge-correlation)
+                                          :title (t :admin/userBadgeDistribution)
+                                          :elements [{:legendType "none" :name (t :admin/users) :key "user_count" :fill (:warning colors) :stackId "a" :type "bar"}
+                                                     {:legendType "none" :name (t :admin/users) :key "user_count" :type "line" :stroke (:primary colors) :activeDot {:r 8} :strokeWidth 3 :dot false}]
+                                          :dataKeyX "badge_count"
+                                          :dataKeyY "user_count"
+                                          :xlabel (t :admin/noofbadges)
+                                          :ylabel (t :admin/noofusers)}]
+                            :tooltipLabel (t :admin/userbadges)}]]]]))
 
 (defn export-stats [state]
   (let [url (str "/obpv1/space/export_statistics?id=" (session/get-in [:user :current-space :id]))]
