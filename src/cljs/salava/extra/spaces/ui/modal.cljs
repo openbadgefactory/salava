@@ -483,7 +483,7 @@
                               (leave-space (:id @state) state in-space?))}
                 (if (= "accepted"  @(cursor state [:member_info :status]))
                   (t :extra-spaces/Leavespace)
-                  (t :extra-space/Cancelmembershiprequest))]])]]])))
+                  (t :extra-spaces/Cancelmembershiprequest))]])]]])))
 
 
 

@@ -96,10 +96,11 @@
     :admins (space-admins ctx id)
     :message-tool-enabled (or (some-> (select-space-property {:id id :name "message_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)))
 
-(defn update-message-tool-setting [ctx id enabled? issuer-coll]
+(defn update-message-tool-setting [ctx id enabled? issuer-coll all-issuers-enabled?]
  (try+
    (insert-space-property! {:space_id id :name "message_enabled" :value enabled?} (u/get-db ctx))
    (clear-enabled-issuers-list! {:space_id id} (u/get-db ctx))
+   (insert-space-property! {:space_id id :name "all_issuers_enabled" :value all-issuers-enabled?} (u/get-db ctx))
    (when (seq issuer-coll)
      (doseq [issuer issuer-coll]
        (update-message-issuers-list! {:space_id id :issuer issuer} (u/get-db ctx))))
@@ -127,7 +128,7 @@
             ;:let [email (if (number? $) (select-primary-address {:id $} (into {:result-set-fn first :row-fn :email} (u/get-db ctx))))]]
           (create-space-admin! ctx space_id admin))
    (when (:css space) (save-space-property ctx space_id "css" (:css space)))
-   (update-message-tool-setting ctx space_id (get-in space [:messages :messages_enabled] false) (get-in space [:messages :enabled_issuers] []))
+   (update-message-tool-setting ctx space_id (get-in space [:messages :messages_enabled] false) (get-in space [:messages :enabled_issuers] []) (get-in space [:messages :all_issuers_enabled] false))
 
    (log/info "Finished creating space!"))))
 
@@ -282,7 +283,8 @@
 (defn message-tool-settings [ctx space-id]
  {:messages_enabled (or (some-> (select-space-property {:id space-id :name "message_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)
   :issuers    (some->> (select-issuer-list {} (u/get-db ctx))
-                       (mapv #(assoc % :enabled (or (some (fn [i] (= (:issuer_name %) (:issuer_name i))) (enabled-issuers ctx space-id)) false))))})
+                       (mapv #(assoc % :enabled (or (some (fn [i] (= (:issuer_name %) (:issuer_name i))) (enabled-issuers ctx space-id)) false))))
+  :all_issuers_enabled (or (some-> (select-space-property {:id space-id :name "all_issuers_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)})
 
 (defn message-tool-badges [ctx space-id]
   (let [issuers (map :issuer_name (filter :enabled (:issuers (message-tool-settings ctx space-id))))]

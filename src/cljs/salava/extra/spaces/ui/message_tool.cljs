@@ -15,6 +15,7 @@
   (ajax/GET
    (path-for (str "/obpv1/space/message_tool/settings/" space-id))
    {:handler (fn [data]
+               (prn data)
                (reset! (cursor state [:message_setting]) data)
                (reset! (cursor state [:message_setting :enabled_issuers])  (mapv :issuer_name (filterv :enabled (:issuers data)))))}))
 
@@ -34,18 +35,41 @@
     (when @(cursor state [:message_setting :messages_enabled])
       [:div.form-group
        [:span._label (t :extra-spaces/Messagetoolrestrictions)]
-       [:div.add-admins-link {:style {:margin "10px auto"}}
-        [:a
-         {:href "#" :on-click #(mo/open-modal [:space :message_setting] state)}
-         [:span [:i.fa.fa-list-alt.fa-lg] " " (t :extra-spaces/Manageissuerlist)]]]
-       (when (seq @(cursor state [:message_setting :enabled_issuers]))
-        [:div.well.well-sm {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
+       [:div.row
          [:div.col-md-12
-          [:p (t :extra-spaces/Issuerlistinfo)]
-          (reduce
-           #(conj %1 [:li [:b %2]])
-            [:ul]
-            @(cursor state [:message_setting :enabled_issuers]))]])])]))
+          ;[:div.form-group
+           [:div.radio
+            [:label {:for "enable-all-issuers"}
+             [:input {:type      "radio"
+                      :id        "enable-all-issuers"
+                      :name      "issuerSetting"
+                     ; :value @(cursor state [:message_setting :all-issuers-enabled])
+                      :on-change #(reset! (cursor state [:message_setting :all_issuers_enabled]) true)
+                      :default-checked    @(cursor state [:message_setting :all_issuers_enabled])}]
+             [:b (str (t :extra-spaces/Enableallissuers))]]
+            [:div.radio
+             [:label {:for "enable-issuers-list"}
+              [:input {:type      "radio"
+                       :id        "enable-issuers-list"
+                       :name      "issuerSetting"
+                       :on-change #(reset! (cursor state [:message_setting :all_issuers_enabled]) false)
+                       :default-checked   (not @(cursor state [:message_setting :all_issuers_enabled]))}]
+              [:b (str (t :extra-spaces/Enablesomeissuers))]]]]]]
+
+       (when-not @(cursor state [:message_setting :all_issuers_enabled])
+         [:div
+          [:div.add-admins-link {:style {:margin "10px auto"}}
+           [:a
+            {:href "#" :on-click #(mo/open-modal [:space :message_setting] state)}
+            [:span [:i.fa.fa-list-alt.fa-lg] " " (t :extra-spaces/Manageissuerlist)]]]
+          (when (seq @(cursor state [:message_setting :enabled_issuers]))
+           [:div.well.well-sm {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
+            [:div.col-md-12
+             [:p (t :extra-spaces/Issuerlistinfo)]
+             (reduce
+              #(conj %1 [:li [:b %2]])
+               [:ul]
+               @(cursor state [:message_setting :enabled_issuers]))]])])])]))
 
 (defn fetch-badge-earners [state]
  (let [badges (map :id @(cursor state [:selected-badges]))]

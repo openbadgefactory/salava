@@ -130,7 +130,7 @@
                                                                                             name]]
                                       [:td {:style {:vertical-align "middle"}} (when member-admin? [:span.label.label-danger (t :extra-spaces/admin)])]
                                       [:td {:style {:vertical-align "middle"}} (when pending-member? [:span.label.label-info (t :extra-spaces/pendingmembership)])]
-                                      [:td {:style {:text-align "end"}}
+                                      [:td {:style {:text-align "start"}}
                                        [:div.btn-group
                                          [:button.btn-primary.btn.btn-bulky.dropdown-toggle
                                           {:type "button"

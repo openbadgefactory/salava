@@ -186,7 +186,7 @@
                                                                               :id        "receive-notifications"
                                                                               :on-change #(toggle-receive-notifications badge_id notifications-atom)
                                                                               :checked   @notifications-atom}]
-                                                                     [:i.fa.fa-fw.fa-lg.fa-bell {:style {:font-size "2rem"}}] (str (t :social/Getbadgenotifications))]]]]
+                                                                     [:i.fa.fa-fw.fa-lg.fa-bell {:style {:font-size "1.8rem"}}] (str (t :social/Getbadgenotifications))]]]]
 
                                                   [:div.form-group
                                                    [:fieldset {:class "col-md-9 checkbox"}
@@ -196,7 +196,7 @@
                                                                               :id        "receive-email-notifications"
                                                                               :on-change #(toggle-email-notifications id email-notifications-atom)
                                                                               :checked   (pos? @email-notifications-atom)}]
-                                                                     [:i.fa.fa-fw.fa-lg.fa-envelope {:style {:font-size "2rem"}}] (str (t :social/Getemailnotifications))]]]]
+                                                                     [:i.fa.fa-fw.fa-lg.fa-envelope {:style {:font-size "1.8rem"}}] (str (t :social/Getemailnotifications))]]]]
                                                   [:div
                                                    [:div {:class "row"}
                                                     [:label {:class "col-md-12 sub-heading" :for "newtags"}

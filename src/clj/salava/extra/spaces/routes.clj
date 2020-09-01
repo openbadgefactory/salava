@@ -107,7 +107,7 @@
                        (header "Content-Type" "text/csv")))
 
             (GET "/message_tool/settings/:space-id" []
-                  :return {:messages_enabled s/Bool :issuers (s/maybe [{:enabled s/Bool :issuer_name s/Str}])}
+                  :return {:messages_enabled s/Bool :issuers (s/maybe [{:enabled s/Bool :issuer_name s/Str}]) :all_issuers_enabled s/Bool}
                   :auth-rules access/space-admin
                   :summary "Get badge issuers"
                   :path-params [space-id :- s/Int]
@@ -118,10 +118,10 @@
                   :return {:status (s/enum "success" "error")}
                   :auth-rules access/admin
                   :summary "Get badge issuers"
-                  :body-params [settings :- {:messages_enabled s/Bool :issuers [(s/maybe s/Str)]}]
+                  :body-params [settings :- {:messages_enabled s/Bool :issuers [(s/maybe s/Str)] :all_issuers_enabled s/Bool}]
                   :path-params [space-id :- s/Int]
                   :current-user current-user
-                  (ok (db/update-message-tool-setting ctx space-id (:messages_enabled settings) (:issuers settings))))
+                  (ok (db/update-message-tool-setting ctx space-id (:messages_enabled settings) (:issuers settings) (:all_issuers_enabled settings))))
 
             (POST "/message_tool/badges/:space-id" []
                    :auth-rules access/space-admin
