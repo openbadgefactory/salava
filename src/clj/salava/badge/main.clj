@@ -135,7 +135,7 @@
   [ctx user-id]
   (let [badges (map (fn [b] (assoc b :png_image_file (png-convert-url ctx (:image_file b))))
                     (select-user-badges-pending {:user_id user-id} (u/get-db ctx)))
-        tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))] 
+        tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))]
     (map-badges-tags badges tags)))
 
 (defn user-owns-badge?
@@ -381,6 +381,19 @@
   [ctx badge-id show-recipient-name user-id]
   (if (badge-owner? ctx badge-id user-id)
     (update-show-recipient-name! {:id badge-id :show_recipient_name show-recipient-name} (u/get-db ctx))))
+
+(defn toggle-email-notifications [ctx id value user-id]
+ (try+
+  (if-not (badge-owner? ctx id user-id)
+    (throw+ "User does not own this badge")
+    (update-email-notifications! {:id id :value value} (u/get-db ctx)))
+  {:status "success" :value value}
+  (catch Object _
+   (log/error "Error: " _)
+   {:status "error" :message _})))
+
+(defn email-notifications-setting [ctx id user-id]
+  (or (select-email-notifications-setting {:id id} (into {:result-set-fn first :row-fn :email_notifications} (u/get-db ctx))) 0))
 
 (defn congratulate!
   "User congratulates badge receiver"

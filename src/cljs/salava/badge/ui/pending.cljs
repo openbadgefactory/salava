@@ -11,6 +11,7 @@
             [salava.core.ui.popover :refer [info]]
             [reagent-modals.modals :as m]
             [salava.core.ui.modal :refer [accessibility-fix]]
+            [salava.badge.ui.settings :as se]
             #_[salava.metabadge.ui.metabadge :as mb]))
 
 (defn init-data [state]
@@ -135,61 +136,23 @@
        "")]))
 
 (defn visibility-modal [badge state reload-fn]
-  (let [visibility (atom (:visibility badge))]
+  (let [visibility (atom (:visibility badge))
+        email-notifications-atom (cursor state [:email-notifications])]
     (create-class {:reagent-render
                    (fn [] [:div#badge-settings {:style {:padding "10px"}}
-                           #_[:form {:class "form-horizontal"}
-                              [:div ;{:class "col-md-12"}
-                               [:fieldset {:class "form-group visibility"}
-                                [:legend {:class "col-md-9 sub-heading"}
-                                 (t :badge/Badgevisibility) [info {:content (t :badge/Visibilityinfo) :placement "right"}]]
-                                [:div {:class (str "col-md-12 " @visibility) :style {:margin-top "20px"}}
-                                 (if-not (private?)
-                                   [:div [:input {:id              "visibility-public"
-                                                  :name            "visibility"
-                                                  :value           "public"
-                                                  :type            "radio"
-                                                  :on-change     #(do
-                                                                    (.preventDefault %)
-                                                                    (reset! visibility "public"))
-                                                  :tabIndex 0
-                                                  :aria-checked (= "public" (:visibility badge))
-                                                  :role "radio"}]
-                                    [:i {:class "fa fa-globe"}]
-                                    [:label {:for "visibility-public"}
-                                     (t :badge/Public)]])
-                                 [:div [:input {:id              "visibility-internal"
-                                                :name            "visibility"
-                                                :value           "internal"
-                                                :type            "radio"
-                                                :on-change       #(do
-                                                                    (.preventDefault %)
-                                                                    (reset! visibility "internal"))
-                                                :tabIndex 0
-                                                :aria-checked (= "internal" (:visibility badge))
-                                                :role "radio"}]
-                                  [:i {:class "fa fa-group"}]
-                                  [:label {:for "visibility-internal"}
-                                   (t :badge/Shared)]]
-                                 [:div [:input {:id              "visibility-private"
-                                                :name            "visibility"
-                                                :value           "private"
-                                                :type            "radio"
-                                                :on-change       #(do
-                                                                    (.preventDefault %)
-                                                                    (reset! visibility "private"))
-                                                :default-checked (= "private" (:visibility badge)) #_(= "private" (:visibility badge) #_(get-in @state [:badge-settings :visibility]))
-                                                :tabIndex 0
-                                                :aria-checked (= "private" (:visibility badge))
-                                                :role "radio"}]
-                                  [:i {:class "fa fa-lock"}]
-                                  [:label {:for "visibility-private"}
-                                   (t :badge/Private)]]]]]]
-
                            [:div
                             (into [:div]
                               (for [f (plugin-fun (session/get :plugins) "block" "badge_visibility_form")]
                                 [f visibility]))
+                            [:div.row.checkbox
+                             ;[:fieldset {:class "col-md-9 checkbox"}
+                              ;[:legend.col-md-9 ""]
+                              [:div.col-md-12 [:label {:for "receive-email-notifications"}
+                                               [:input {:type      "checkbox"
+                                                        :id        "receive-email-notifications"
+                                                        :on-change #(se/toggle-email-notifications (:id badge) email-notifications-atom)
+                                                        :checked   (pos? @email-notifications-atom)}]
+                                               [:b (str (t :social/Getemailnotifications))]]]]
 
                             #_[:div
                                [:hr.border.dotted-border]]]
@@ -210,10 +173,12 @@
                    :component-will-mount (fn [] (accessibility-fix))})))
 
 (defn badge-pending [badge state reload-fn]
+ (let [email-notifications-atom (cursor state [:email-notifications])]
   [:div.row {:key (:id badge)}
    [:div.col-md-12
     [:div.badge-container-pending.thumbnail
      [pending-badge-content badge]
+
      [:div {:class "row button-row"}
       [:div.col-md-12
        [:button {:class "btn btn-primary"
@@ -227,7 +192,7 @@
                               (update-status (:id badge) "declined" state reload-fn)
                               (.preventDefault %)
                               (swap! state assoc :badge-alert "declined" :badge-name (:name badge)))}
-        (t :badge/Declinebadge)]]]]]])
+        (t :badge/Declinebadge)]]]]]]))
 
 (defn badges-pending [state reload-fn]
   (if (:spinner @state)

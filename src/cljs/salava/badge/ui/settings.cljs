@@ -67,7 +67,7 @@
   (let [show-recipient-name-atom (cursor state [:show_recipient_name])
         _ (cursor state [:badge-settings :show_recipient_name])
         new-value @show-recipient-name-atom] ;(if (pos? @show-recipient-name-atom) 0 1)]
-    (prn new-value)
+    ;(prn new-value)
     (reset! _ new-value)
     (save-settings state (fn [] (reset! show-recipient-name-atom new-value)))))
 
@@ -89,6 +89,21 @@
     (ajax/POST (path-for req-path)
                {:handler (fn [data]
                            (reset! notifications-atom (:connected? data)))})))
+
+(defn init-email-notifications [id state]
+ (let [email-notifications-atom (cursor state [:email-notifications])]
+  (ajax/POST
+    (path-for (str "/obpv1/badge/email_notifications/" id))
+    {:handler (fn [data]
+                (reset! email-notifications-atom data))})))
+
+(defn toggle-email-notifications [id email-notifications-atom]
+  (ajax/POST
+   (path-for (str "/obpv1/badge/toggle_email_notifications/" id "/" (if (pos? @email-notifications-atom) 0 1)))
+   {:handler (fn [data]
+               (when (= "success" (:status data))
+                 (reset! email-notifications-atom (:value data))))}))
+
 
 (defn delete-tab-content [{:keys [name image_file]} state]
   [:div.row.flip
@@ -114,6 +129,7 @@
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         notifications-atom (cursor state [:receive-notifications])
+        email-notifications-atom (cursor state [:email-notifications])
         revoked (pos? revoked)
         badge_id (:badge_id @state)]
     [:div {:id "badge-settings" :class "row flip"}
@@ -170,7 +186,17 @@
                                                                               :id        "receive-notifications"
                                                                               :on-change #(toggle-receive-notifications badge_id notifications-atom)
                                                                               :checked   @notifications-atom}]
-                                                                     (str (t :social/Getbadgenotifications))]]]]
+                                                                     [:i.fa.fa-fw.fa-lg.fa-bell {:style {:font-size "2rem"}}] (str (t :social/Getbadgenotifications))]]]]
+
+                                                  [:div.form-group
+                                                   [:fieldset {:class "col-md-9 checkbox"}
+                                                    [:legend.col-md-9 ""]
+                                                    [:div.col-md-12 [:label {:for "receive-email-notifications"}
+                                                                     [:input {:type      "checkbox"
+                                                                              :id        "receive-email-notifications"
+                                                                              :on-change #(toggle-email-notifications id email-notifications-atom)
+                                                                              :checked   (pos? @email-notifications-atom)}]
+                                                                     [:i.fa.fa-fw.fa-lg.fa-envelope {:style {:font-size "2rem"}}] (str (t :social/Getemailnotifications))]]]]
                                                   [:div
                                                    [:div {:class "row"}
                                                     [:label {:class "col-md-12 sub-heading" :for "newtags"}

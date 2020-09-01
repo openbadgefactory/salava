@@ -169,11 +169,11 @@
          [:input
           {:style {:margin "0 5px"}
            :type "checkbox"
-           :default-checked @(cursor state [:select-all])
+           :default-checked @(cursor state [:select-all-badges])
            :on-change #(do
                          (reset! (cursor state [:filters :badges]) [])
-                         (reset! (cursor state [:select-all]) (not @(cursor state [:select-all])))
-                         (when @(cursor state [:select-all])
+                         (reset! (cursor state [:select-all-badges]) (not @(cursor state [:select-all-badges])))
+                         (when @(cursor state [:select-all-badges])
                            (reset! (cursor state [:filters :badges])  (:badges @state))))}]
          [:b (t :extra-spaces/Selectall)]]]
 
@@ -201,7 +201,14 @@
     [:span [:i.fa.fa-fw.fa-certificate.fa-lg] (t :admin/Addbadge)]]
    (when (seq @badge-filters)
     [:div.row
-     [:div.col-md-12 {:style {:margin "10px auto"}}
+     [:div.col-md-12
+      [:a.pull-right {:href "#" :on-click #(do
+                                             (reset! (cursor state [:select-all-badges]) false)
+                                             (reset! (cursor state [:filters :badges]) []) :role "button"
+                                             (fetch-report state))}
+        [:b (t :social/clearall)]]]
+     ;[:div.col-md-12 [:a.pull-right {:href "#" :on-click #(reset! (cursor state [:filters :badges]) []) :role "button"} [:b (t :social/clearall)]]]
+     [:div#admin-report.col-md-12 {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
       (reduce
         #(conj %1
           ^{:key (:gallery_id %2)}[:a.list-group-item
@@ -231,12 +238,19 @@
                                                          :type "pickable"
                                                          :selected-users-atom user-filters
                                                          :context "report_space"} {:hidden (fn [] (fetch-report state))}))
-       :aria-label "add user"}
+       :aria-label (t :admin/Adduser)}
 
       [:span [:i.fa.fa-fw.fa-user.fa-lg] (t :admin/Adduser)]]
      (when (seq @user-filters)
       [:div.row
-       [:div.col-md-12 {:style {:margin "10px auto"}}
+       [:div.col-md-12
+        [:a.pull-right {:href "#" :on-click #(do
+                                               ;(reset! (cursor state [:select-all]) false)
+                                               (reset! (cursor state [:filters :users]) []) :role "button"
+                                               (fetch-report state))}
+          [:b (t :social/clearall)]]]
+       ;[:div.col-md-12 [:a.pull-right {:href "#" :on-click #(reset! (cursor state [:filters :users]) []) :role "button"} [:b (t :social/clearall)]]]
+       [:div#admin-report.col-md-12 {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
         (reduce
           #(conj %1
             ^{:key (:gallery_id %2)}[:a.list-group-item
@@ -451,7 +465,9 @@
                      :to nil
                      :from nil
                      :preview false
-                     :selected-space 0})]
+                     :selected-space 0
+                     :select-all-badges false
+                     :select-all-users false})]
 
    (init-data params state)
    (fn []

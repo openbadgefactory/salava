@@ -104,7 +104,9 @@
                         :tab-no 2
                         :evidences (:evidences data))
                  (swap! state assoc :tab [st/social-tab (assoc data :congratulations (:congratulations @state) :user_endorsement_count (:user_endorsement_count @state)) state]
-                        :tab-no 3)))}))
+                        :tab-no 3)))})
+
+  (se/init-email-notifications badge-id state))
 
 (defn congratulate [state]
   (ajax/POST

@@ -181,7 +181,7 @@
                              (reset! select-all  (not @select-all))
                              (if @select-all (reset! selected-users-atom @(cursor state [:users])) (reset! selected-users-atom [])))
                :disabled (pos? @(cursor state [:users_count]))}]
-      [:b (str (t :extra-spaces/Selectall))]]]))
+      [:b (str (t :admin/Selectall))]]]))
 
 (defn allprofilesmodal [params]
   (let [country (session/get-in [:user :country] "all")
@@ -207,7 +207,7 @@
                                (str "/obpv1/gallery/profiles"))
                          :sent-requests []
                          :email ""
-                         :select-all? false
+                         :select-all?  false
                          :space space})]
 
     (create-class {:reagent-render (fn []

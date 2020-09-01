@@ -248,6 +248,25 @@
                     :current-user current-user
                     (ok (str (b/toggle-show-all-evidences! ctx badgeid show_evidence (:id current-user)))))
 
+              (POST "/email_notifications/:id" []
+                    :no-doc true
+                    :return (s/enum 0 1)
+                    :path-params [id :- Long]
+                    :summary "get badge email notification setting"
+                    :auth-rules access/authenticated
+                    :current-user current-user
+                    (ok (b/email-notifications-setting ctx id (:id current-user))))
+
+            (POST "/toggle_email_notifications/:id/:value" []
+                  :no-doc true
+                  :return {:status (s/enum "success" "error") (s/optional-key :message) (s/maybe s/Str) (s/optional-key :value) (s/enum 0 1)}
+                  :path-params [id :- Long
+                                value :- s/Int]
+                  :summary "disable or enable email notifications for specific badge"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (b/toggle-email-notifications ctx id value (:id current-user))))
+
             (POST "/congratulate/:user-badge-id" []
                   :return {:status (s/enum "success" "error") :message (s/maybe s/Str)}
                   :path-params [user-badge-id :- Long]
