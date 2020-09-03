@@ -9,13 +9,13 @@
    [reagent.session :as session]
    [salava.core.ui.layout :as layout]
    [salava.core.ui.modal :as mo]
-   [reagent-modals.modals :as m]))
+   [reagent-modals.modals :as m]
+   [salava.user.ui.input :as input]))
 
 (defn init-message-tool-settings [space-id state]
   (ajax/GET
    (path-for (str "/obpv1/space/message_tool/settings/" space-id))
    {:handler (fn [data]
-               (prn data)
                (reset! (cursor state [:message_setting]) data)
                (reset! (cursor state [:message_setting :enabled_issuers])  (mapv :issuer_name (filterv :enabled (:issuers data)))))}))
 
@@ -91,7 +91,7 @@
     [:input.pull-right
      {:id (str "checkbox-"id)
       :type "checkbox"
-      :checked (some #(= (:id %) id) @(cursor state [:selected-badges]))
+      :default-checked (some #(= (:id %) id) @(cursor state [:selected-badges]))
       :on-change #(add-or-remove badge (cursor state [:selected-badges]))}]
     [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id id})
          :title badge_name}
@@ -136,7 +136,7 @@
           :placeholder "Filter by badge name"}]]
        [:div.form-group
         [:select#issuerselect.form-control
-         {:name "select issuer"
+         {:name "selectissuer"
           :style {:max-width "300px"}
           :on-change #(reset! (cursor state [:selected-issuer]) (.-target.value %))
           :default-value ""}
@@ -187,6 +187,8 @@
            :href "#"
            :on-click #(mo/open-modal [:space :badges-mt] state {:hidden (fn []
                                                                            (reset! (cursor state [:select-all]) false)
+                                                                           (reset! (cursor state [:selected-issuer]) "")
+                                                                           (reset! (cursor state [:search]) "")
                                                                            (fetch-badge-earners state))})}
           [:span [:i.fa.fa-certificate.fa-lg] " " (t :extra-spaces/Addbadge)]]
          (when (seq @(cursor state [:selected-badges]))
@@ -224,21 +226,27 @@
                                          (reset! (cursor state [:allbadgesreceived]) (not @(cursor state [:allbadgesreceived])))
                                          (fetch-badge-earners state))
                            :default-checked (true? @(cursor state [:allbadgesreceived]))}]
-                  [:b "All selected badges have been received"]]]]])])]
+                  [:b (t :extra-spaces/Allbadgesreceived)]]]]])])]
 
         (when (seq @(cursor state [:selected-badges]))
           [:div.col-md-6 {:style {:margin "10px auto"}}
            [:span [:b (count @(cursor state [:emails])) " " (t :extra-spaces/recipientsfound)]]
+           [:div.row
+            [:div.col-md-12
+             [:b.text-muted (t :extra-spaces/Recipientlistinfo)]]]
            (when (seq @(cursor state [:emails]))
              [:div#admin-report {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}
               (reduce
                #(conj %1 ^{:key %2}[:li.list-group-item %2]) [:ul.list-group {:style {:margin "10px auto"}}] @(cursor state [:emails]))])])]]
       (when (and (seq @(cursor state [:selected-badges])) (seq @(cursor state [:emails])))
        [:div.col-md-12
+
         [:div.well.well-sm;.panel.panel-default
-         #_[:div.panel-heading.weighted
-            (t :extra-space/Composemessage)]
          [:div.panel-body
+          [:div.form-group
+           [:label {:for "languages"}
+            (t :extra-spaces/Languageselect)]
+           [input/radio-button-selector "language" (session/get :languages []) (cursor state [:message_language])]]
           [:div.form-group
            [:label {:for "subject"} (t :extra-spaces/Subject) [:span.form-required " *"]]
            [:input#subject.form-control
@@ -265,14 +273,18 @@
                           (ajax/POST
                             (path-for (str "/obpv1/space/message_tool/send_message/" space-id))
                             {:params {:ids (mapv :id @(cursor state [:selected-badges]))
-                                      :message @(cursor state [:message])}
+                                      :message @(cursor state [:message])
+                                      :message_language @(cursor state [:message_language])
+                                      :received_all @(cursor state [:allbadgesreceived])}
                              :handler (fn [data]
                                         (when (= "success" (:status data))
                                           (reset! (cursor state [:sending_messages]) false)
                                           (reset! (cursor state [:message_alert]) true)))
 
                               :finally (fn [] (js/setTimeout
-                                                (fn [] (reset! (cursor state [:message_alert]) false))
+                                                (fn []
+                                                  (reset! (cursor state [:message_alert]) false)
+                                                  (reset! (cursor state [:sending_messages]) false))
                                                 3000))}))
 
               :disabled (or (clojure.string/blank? @(cursor state [:message :subject]))
@@ -312,7 +324,8 @@
                      :message {:content "" :subject ""}
                      :sending_messages false
                      :message_alert false
-                     :allbadgesreceived false})]
+                     :allbadgesreceived false
+                     :message_language (session/get-in [:user :language] "en")})]
    (init-data space-id state)
    (fn []
     (layout/default site-navi [content space-id state]))))

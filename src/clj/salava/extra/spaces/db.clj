@@ -274,16 +274,20 @@
         report->csvformat  (cons headers rows)]
     (make-csv ctx report->csvformat \,)))
 
-
  ;;------ MESSAGE  TOOL ------------;;
 
 (defn enabled-issuers [ctx space-id]
   (select-enabled-issuers-list {:space_id space-id} (u/get-db ctx)))
 
+(defn all-issuers-enabled? [ctx space-id]
+  (or (some-> (select-space-property {:id space-id :name "all_issuers_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false))
+
 (defn message-tool-settings [ctx space-id]
  {:messages_enabled (or (some-> (select-space-property {:id space-id :name "message_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)
-  :issuers    (some->> (select-issuer-list {} (u/get-db ctx))
-                       (mapv #(assoc % :enabled (or (some (fn [i] (= (:issuer_name %) (:issuer_name i))) (enabled-issuers ctx space-id)) false))))
+  :issuers    (if (all-issuers-enabled? ctx space-id)
+                (mapv #(assoc % :enabled true) (select-issuer-list {} (u/get-db ctx)))
+                (some->> (select-issuer-list {} (u/get-db ctx))
+                         (mapv #(assoc % :enabled (or (some (fn [i] (= (:issuer_name %) (:issuer_name i))) (enabled-issuers ctx space-id)) false)))))
   :all_issuers_enabled (or (some-> (select-space-property {:id space-id :name "all_issuers_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)})
 
 (defn message-tool-badges [ctx space-id]
@@ -298,17 +302,16 @@
        (select-emails-from-assertions-all {:assertions assertions :expected_count (count ids)} (u/get-db-col ctx :email))
        (select-emails-from-assertions {:assertions assertions} (u/get-db-col ctx :email))))))
 
-(defn send-message-to-earners [ctx message ids space-id]
+(defn send-message-to-earners [ctx message ids space-id message_language user_id all?]
   (let [{:keys [subject content]} message
-        emails (badge-earners ctx ids)
+        emails (badge-earners ctx ids all?)
         space-name (:name (get-space-information ctx space-id))
-        ;badges (select-gallery-badges {:ids ids} (u/get-db-col ctx :badge_name))
+        badge-names (clojure.string/join ", " (select-gallery-badges {:ids ids} (u/get-db-col ctx :badge_name)))
         mail-host-config (get-in ctx [:config :core :mail-host-config])
         data {:from (get-in ctx [:config :core :mail-sender])
               :subject subject
               :body [{:type "text/plain; charset=utf-8"
-                      :content (str content "\n\n" "- " space-name " -")}]}]
-
+                      :content (str  content "\n\n" "- " space-name " - \n\n" (t :extra-spaces/Youarereceiving message_language) ":\n\n " badge-names "\n\n" (t :extra-spaces/Messageoutro message_language) " " (get-in ctx [:config :core :site-name] "Open badge passport") "\n\n")}]}]
       (try+
        (doseq [to emails]
         (log/info "sending message to" to)
@@ -316,6 +319,7 @@
               (send-message (assoc data :to to))
               (send-message mail-host-config (assoc data :to to)))
             log/info))
+       (log-sent-email-notification-to-db! {:space_id space-id :message (json/write-str {:subject subject :content content} ) :user_id user_id} (u/get-db ctx))
        {:status "success"}
        (catch Object ex
          (log/error ex)

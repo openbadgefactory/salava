@@ -210,18 +210,18 @@ SELECT DISTINCT(assertion_url) FROM user_badge WHERE gallery_id IN (:ids)
 --name: select-emails-from-assertions
 SELECT DISTINCT(ub.email), (SELECT COUNT(DISTINCT gallery_id) FROM user_badge WHERE assertion_url IN (:assertions) AND email = ub.email) AS count
 FROM user_badge ub
-WHERE assertion_url IN (:assertions)
+WHERE assertion_url IN (:assertions)  AND status = "accepted" AND email_notifications = 1
 GROUP BY ub.email,count
 
 
 --name: select-emails-from-assertions-all
-SELECT DISTINCT(ub.email), (SELECT COUNT(DISTINCT gallery_id) FROM user_badge WHERE assertion_url IN (:assertions) AND email = ub.email) AS count
+SELECT DISTINCT(ub.email), (SELECT COUNT(DISTINCT gallery_id) FROM user_badge WHERE assertion_url IN (:assertions) AND email = ub.email AND email_notifications = 1) AS count
 FROM user_badge ub
-WHERE assertion_url IN (:assertions)
+WHERE assertion_url IN (:assertions) AND status = "accepted" AND email_notifications = 1
 GROUP BY ub.email,count
 HAVING count = :expected_count
 
---name: select-emails-from-pending-assertions
+--name: select-emails-from-pending-assertions-REMOVE
 SELECT DISTINCT(pfb.email), (SELECT COUNT(DISTINCT assertion_url) FROM pending_factory_badge WHERE assertion_url IN (:assertions) AND email = pfb.email) AS count
 FROM pending_factory_badge pfb
 WHERE assertion_url IN (:assertions)
@@ -230,3 +230,6 @@ HAVING count = :expected_count
 
 --name: select-gallery-badges
 SELECT id, badge_name FROM gallery WHERE id IN (:ids)
+
+--name: log-sent-email-notification-to-db!
+INSERT INTO notifications (space_id, message, ctime, sent_by) VALUES (:space_id, :message, UNIX_TIMESTAMP(), :user_id)

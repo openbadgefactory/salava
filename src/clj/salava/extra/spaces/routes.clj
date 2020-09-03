@@ -14,6 +14,7 @@
             [salava.extra.spaces.util :as util]
             [salava.core.access :as access]
             [salava.extra.spaces.schemas :as schemas] ;cljc
+            [salava.user.schemas :as user_schemas]
             [clojure.string :refer [split]]
             [salava.extra.spaces.stats :as stats]))
 
@@ -59,6 +60,7 @@
                        (redirect (str (u/get-base-path ctx) (str "/space/error"))))))))
    (context "/obpv1/space" []
              :tags ["space"]
+             :no-doc true
 
             (GET  "/export_statistics" [id]
                   :summary "Export admin stats to csv format"
@@ -144,12 +146,15 @@
                   :summary "Send message"
                   :path-params [space-id :- s/Int]
                   :body-params [ids :- [s/Int]
-                                message :- {:content s/Str :subject s/Str}]
+                                message :- {:content s/Str :subject s/Str}
+                                message_language :- (:language user_schemas/User)
+                                received_all :- s/Bool]
                   :current-user current-user
-                  (ok (db/send-message-to-earners ctx message ids space-id))))
+                  (ok (db/send-message-to-earners ctx message ids space-id message_language (:id current-user) received_all))))
 
    (context "/obpv1/spaces" []
             :tags ["spaces"]
+            :no-doc true
 
             (GET "/" []
                   :auth-rules access/admin
@@ -241,7 +246,7 @@
                     (ok (space/accept! ctx id user_id)))
 
             (POST "/user" []
-                   :auth-rules access/signed
+                   ;:auth-rules access/signed
                    :summary "Get all spaces user belongs to"
                    :current-user current-user
                    (ok (db/get-user-spaces ctx (:id current-user))))
