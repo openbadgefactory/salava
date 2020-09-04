@@ -1,10 +1,13 @@
 (ns salava.admin.ui.stats-helper
   (:require
    [cljsjs.recharts]
-   [clojure.string :refer [blank? lower-case]]
+   [clojure.string :refer [blank? lower-case split join]]
    [salava.core.i18n :refer [t]]
    [reagent.core :refer [atom cursor adapt-react-class create-class]]
-   [reagent.session :as session]))
+   [reagent.session :as session]
+   [salava.core.time :refer [date-from-unix-time iso8601-to-unix-time unix-time]]
+   [salava.core.ui.helper :refer [path-for]]
+   [salava.core.ui.ajax-utils :as ajax]))
 
 (defn %percentage [v t]
   (str (Math/round (double (* (/ v t) 100))) "%"))
@@ -17,7 +20,11 @@
   :warning "#f0ad4e"
   :danger "#d9534f"
   :yellow "#FFC658"
-  :purple "#8884D8"})
+  :purple "#8884D8"
+  :facebook "#3b5998"
+  :twitter "#00aced"
+  :linkedin "#007bb6"
+  :pinterest "#cb2027"})
 
 (def settings
  {:default-width 250
@@ -201,6 +208,76 @@
         [:div.flex-container]
         data)))
 
+(defn init-social-media-stats [sm-atom ts]
+ (let [url (if ts (str "/obpv1/stats/social_media/" ts) "/obpv1/stats/social_media")]
+  (ajax/GET
+   (path-for url)
+   {:handler (fn [data]
+               (reset! sm-atom data))})))
+
+(defn- process-time [time]
+ (if (string? time)
+   time
+   (let [t  (as-> (date-from-unix-time (* time 1000)) $
+                  (split $ ".")
+                  (reverse $))]
+       (->> t (map #(if (= 1 (count %)) (str "0"%) %)) (join "-")))))
+
+(defn make-pie-social [{:keys [width data]}]
+  (let [PieChart (adapt-react-class js/window.Recharts.PieChart.)
+        Pie (adapt-react-class js/window.Recharts.Pie.)
+        ToolTip (adapt-react-class js/window.Recharts.Tooltip.)
+        Cell (adapt-react-class js/window.Recharts.Cell.)
+        Legend (adapt-react-class js/window.Recharts.Legend.)
+        Label (adapt-react-class js/window.Recharts.Label.)
+        Text (adapt-react-class js/window.Recharts.Text.)
+        ResponsiveContainer (adapt-react-class js/window.Recharts.ResponsiveContainer.)
+        {:keys [default-width default-height aspect pie-settings]} settings
+        time-atom (atom (:ctime (first data)))]
+        ;data-atom (atom data)]
+      (conj
+        (reduce
+          (fn [r d]
+           (let [{:keys [slices title]} d]
+             (conj r
+               [:div
+                (when-not (blank? title)[:div.row [:span [:b title]]])
+                [ResponsiveContainer
+                 {:width (or width default-width) :aspect aspect}
+                 [PieChart
+                  ;{:margin {:top 30 :left 20}}
+                  (reduce (fn [r c] (conj r [Cell {:fill (:fill c)}]))
+                   [Pie (assoc pie-settings :data slices)]
+                   slices)
+                  [ToolTip {:formatter (fn [name value props]
+                                         (let [{:keys [percentage]} (-> (js->clj props :keywordize-keys true) :payload :payload)]
+                                           (str name "; " percentage)))}]
+                  [Legend {:icon-size 8}]]]])))
+                ;(when-not (blank? title)[:div.row [:span [:b title]]])])))
+          [:div.flex-container]
+          data)
+        [:div
+         [ResponsiveContainer
+          {:width (or width default-width) :aspect aspect}
+          (reduce
+           (fn [r d]
+             (let [icon (case (:name d)
+                          "Facebook" "fa-facebook-square"
+                          "Twitter" "fa-twitter-square"
+                          "Pinterest" "fa-pinterest-square"
+                          "Linkedin" "fa-linkedin-square")]
+               (conj r
+                [:div {:style {:margin "5px"}}
+                 [:p
+                  [:i.fa {:class icon :style {:font-size "30px" :color (:fill d)}}]
+                  [:span {:style {:margin "0 10px" :font-size "14px" :font-weight "600"} } (:percentage d) "  (" (str (:value d) ") ")]]])))
+           [:div {:style {:width (str width "px") :height "100%" :padding "10px" :text-align "start"}}
+            [:p
+             [:span {:style {:font-size "14px" :font-weight "600"}} (t :admin/Totalbadgessharedtosocialmedia) ": " (:total (first data))]]]
+           (:slices (first data)))]])))
+
+
+
 (defn panel-box [data]
  (when data
   (let [
@@ -225,7 +302,7 @@
 
 (defn panel-box-chart [data]
  (when data
-  (let [{:keys [type heading icon chart-type chart-data size split? tooltipLabel]} data
+  (let [{:keys [type heading icon chart-type chart-data size split? tooltipLabel data-atom]} data
         size-class (case size
                      :lg "col-md-12 col-sm-12 col-xs-12"
                      :md "col-md-6 col-sm-6 col-xs-12"
@@ -244,3 +321,44 @@
          :bar (make-bar {:width "100%" :data chart-data})
          :mixed (composed-chart {:width "100%" :data chart-data :tooltipLabel tooltipLabel})
          [:div])]]])))
+
+
+(defn social-media-box [state]
+ (let [data-atom (atom {})]
+  (init-social-media-stats data-atom nil)
+  (prn @(cursor state [:space-id]))
+  (fn []
+   (let [{:keys [id value ctime]} @data-atom
+         {:keys [facebook linkedin pinterest twitter]} value
+         time-atom (cursor data-atom [:ctime])]
+    (when (and (= "admin" (session/get-in [:user :role] "user")) (not (pos? @(cursor state [:space-id]))))
+
+     [:div.row
+      [:div.col-md-12.col-sm-12.col-xs-12
+       [:div.panel-box.panel-chart
+        [:div.panel-chart-content
+         [:div.panel-icon-wrapper.rounded {:class "b-user"}
+           [:div.icon-bg.bg
+            [:i.fa.panel-icon.text {:class "fa-share-square"}]]]
+         [:div.panel-subheading.pad (t :admin/Socialmedia)]]
+        [:div.panel-chart-wrapper.panel-chart-wrapper-relative
+          [:div.row
+           [:div.col-md-6
+            [:div.form-group
+              [:label {:for "date"} (t :admin/Showstatssince) ": "]
+              [:input.form-control
+               {:style {:max-width "unset"}
+                :type "date"
+                :id "date"
+                :max (process-time (unix-time))
+                :value (process-time @time-atom)
+                :on-change #(do
+                              (reset! time-atom (.-target.value %))
+                              (init-social-media-stats data-atom (iso8601-to-unix-time @time-atom)))}]]]]
+
+          (make-pie-social {:width 300 :data [{:ctime ctime
+                                               :total (+ facebook linkedin pinterest twitter)
+                                               :slices [{:name "Facebook" :value facebook :fill (:facebook colors) :percentage (%percentage facebook (+ facebook linkedin pinterest twitter))}
+                                                        {:name "Twitter" :value twitter :fill (:twitter colors) :percentage (%percentage twitter (+ facebook linkedin pinterest twitter))}
+                                                        {:name "Pinterest" :value pinterest :fill (:pinterest colors) :percentage (%percentage pinterest (+ facebook linkedin pinterest twitter))}
+                                                        {:name "Linkedin" :value linkedin :fill (:linkedin colors) :percentage (%percentage linkedin (+ facebook linkedin pinterest twitter))}]}]})]]]])))))

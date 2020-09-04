@@ -212,7 +212,8 @@
     (if already-member?
      (switch! ctx ok-status current-user space-id)
      (do
-      (join! ctx space-id user-id)
+      (join-via-invitation! ctx space-id user-id)
+      ;(join! ctx space-id user-id)
       (switch! ctx ok-status current-user space-id)))))
 
 (defn set-user-space [ctx invitation user-id]

@@ -10,7 +10,8 @@
   [dommy.core :as dommy :refer-macros [sel sel1]]
   [salava.extra.spaces.ui.helper :refer [space-card upload-modal]]
   [cemerick.url :as url]
-  [clojure.walk :refer [keywordize-keys]]))
+  [clojure.walk :refer [keywordize-keys]]
+  [salava.core.ui.modal :as mo]))
 
 
 (defn stylyze-element [element color]
@@ -84,38 +85,39 @@
 (defn manage-spaces [state]
   (let [spaces (sort-by :name @(cursor state [:spaces]))
         current-space (session/get-in [:user :current-space])]
-   (if (seq spaces)
-     [:div#badge-stats
-      [m/modal-window]
-      [:h1.uppercase-header (t :extra-spaces/Organizations)]
-      [:p (t :extra-spaces/Spaceconnectioninfo)]
-      [:div.expandable-block {:class "panel issuer-panel panel-default"}
-       [:div.panel-heading
-        [:h2 (str (t :extra-spaces/Organizations) " (" (count spaces) ")")]]
-       [:div.panel-body
-        [:table {:class "table"}
-         [:thead
-          [:tr
-           [:th {:style {:display "none"}}  "Logo"]
-           [:th {:style {:display "none"}} (t :badge/Name)]
-           [:th {:style {:display "none"}} "role"]
-           [:th {:style {:display "none"}} "Action"]]]
-         (into [:tbody]
-               (for [space spaces
-                     :let [{:keys [space_id name logo role default_space status]} space
-                           current-space? (= (:id current-space) space_id)]]
-                 [:tr
-                  [:td.name [:a {:href "#"
-                                 :on-click #(do
-                                              ;(mo/open-modal [:badge :issuer] id {:hide (fn [] (init-data state))})
-                                              (.preventDefault %))}
-                                (if logo [:img.badge-icon {:src (str "/" logo) :alt (str name " icon")}]
-                                         [:span [:i.fa.fa-building.fa-3x {:style {:margin-right "10px"}}]]) name]]
-                  [:td (if (= status "pending") [:span.label.label-info (t :extra-spaces/pendingmembership)] [:span.label {:class (if (= role "admin") "label-danger" "label-success")} (translate-text (str "extra-spaces/" role))])]
-                  (when-not (= status "pending") [:td {:style {:min-width "150px"}} "" (default-btn space state)])
-                  [:td.action "" (leave-organization space_id state current-space?)]]))]]]]
+   [:div
+    [m/modal-window]
+    (if (seq spaces)
+      [:div#badge-stats
+       [:h1.uppercase-header (t :extra-spaces/Spaces)]
+       [:p (t :extra-spaces/Spaceconnectioninfo)]
+       [:div.expandable-block {:class "panel issuer-panel panel-default"}
+        [:div.panel-heading
+         [:h2 (str (t :extra-spaces/Spaces) " (" (count spaces) ")")]]
+        [:div.panel-body.table-responsive
+         [:table {:class "table"}
+          [:thead
+           [:tr
+            [:th {:style {:display "none"}}  "Logo"]
+            [:th {:style {:display "none"}} (t :badge/Name)]
+            [:th {:style {:display "none"}} "role"]
+            [:th {:style {:display "none"}} "Action"]]]
+          (into [:tbody]
+                (for [space spaces
+                      :let [{:keys [space_id name logo role default_space status]} space
+                            current-space? (= (:id current-space) space_id)]]
+                  [:tr
+                   [:td {:style {:text-align "left" :width "40%"}} [:a {:href "#"
+                                                                        :on-click #(do
+                                                                                     (mo/open-modal [:space :info] {:id space_id} {:hide (fn [] (init-spaces state))})
+                                                                                     (.preventDefault %))}
+                                                                       (if logo [:img.badge-icon {:src (str "/" logo) :alt (str name " icon")}]
+                                                                                [:span [:i.fa.fa-building.fa-3x {:style {:margin-right "10px"}}]]) name]]
+                   [:td (if (= status "pending") [:span.label.label-info (t :extra-spaces/pendingmembership)] [:span.label {:class (if (= role "admin") "label-danger" "label-success")} (translate-text (str "extra-spaces/" role))])]
+                   (if-not (= status "pending") [:td {:style {:min-width "150px"}} "" (default-btn space state)] [:td {:style {:min-width "150px"}} " "])
+                   [:td.action "" (leave-organization space_id state current-space?)]]))]]]]
 
-    [:div.well.well-sm (t :extra-spaces/Notjoinedanyorg)])))
+     [:div.well.well-sm (t :extra-spaces/Notjoinedanyorg)])]))
 
 (defn next-url [space]
   (let [current-path (current-route-path)
@@ -289,7 +291,12 @@
                             (ajax/GET
                              (path-for "/obpv1/admin/stats")
                              {:handler (fn [data]
-                                         (reset! state (assoc data :visible "graphic")))}))))}
+                                         (reset! state (assoc data :visible "graphic"))
+                                         (ajax/GET
+                                          (path-for "/obpv1/stats/social_media")
+                                          {:handler (fn [data]
+                                                      (reset! (cursor state [:social_media_stats]) data))}))}))))}
+
 
            [:option {:value 0} (session/get :site-name)]]
 

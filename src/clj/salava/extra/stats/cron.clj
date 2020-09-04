@@ -5,7 +5,8 @@
             [clojure.string :as string]
             [salava.core.util :as u]
             [salava.core.http :as http]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [salava.extra.stats.db :as db]))
 
 (defn- push-stats [ctx badge-hits]
   (when (get-in ctx [:config :factory])
@@ -14,7 +15,8 @@
                                    :ts (System/currentTimeMillis)})
           checksum (u/hmac-sha256-hex payload (get-in ctx [:config :factory :secret]))
           url (str (get-in ctx [:config :factory :url]) "/c/badge/passport_stats?c=" checksum)]
-      (http/http-post url {:body payload :throw-exceptions false}))))
+      (http/http-post url {:body payload :throw-exceptions false})
+      payload)))
 
 (defn- id->assertion-url [ctx badge-hits]
   (let [db-conn (:connection (u/get-db ctx))
@@ -39,8 +41,9 @@
 (defn every-hour [ctx]
   (let [conf (get-in ctx [:config :extra/stats])]
     (when (= (get-in ctx [:-cron :hour]) (get conf :run-at 1))
-      (log/info "stats/hit-count: started working")
-      (->> (hit-count (:source-file conf) (:services conf))
-           (id->assertion-url ctx)
-           (push-stats ctx))
-      (log/info "stats/hit-count: done"))))
+     (log/info "stats/hit-count: started working")
+     (->> (hit-count (:source-file conf) (:services conf))
+          (id->assertion-url ctx)
+          (push-stats ctx)
+          (db/log-to-db ctx))
+     (log/info "stats/hit-count: done"))))

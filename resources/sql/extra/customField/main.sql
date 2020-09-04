@@ -16,3 +16,9 @@ INSERT INTO custom_org_list (name, ctime) VALUES (:name, UNIX_TIMESTAMP());
 
 --name: delete-custom-field-org!
 DELETE FROM custom_org_list WHERE id = :id
+
+--name: select-org-name-by-id
+SELECT name from custom_org_list WHERE id = :id
+
+--name: delete-user-organization-property!
+DELETE FROM user_properties WHERE name = "organization" AND value = :value

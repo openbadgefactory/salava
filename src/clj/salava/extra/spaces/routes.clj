@@ -17,6 +17,7 @@
             [salava.user.schemas :as user_schemas]
             [clojure.string :refer [split]]
             [salava.extra.spaces.stats :as stats]))
+            ;[salava.extra.stats.cron :as tstats]))
 
 (defn route-def [ctx]
   (routes
@@ -160,6 +161,7 @@
                   :auth-rules access/admin
                   :summary "Get all spaces"
                   :current-user current-user
+                  ;(tstats/every-hour ctx)
                   (ok (db/all-spaces ctx)))
 
             (GET "/:id" []

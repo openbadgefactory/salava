@@ -38,7 +38,11 @@
   :warning "#f0ad4e"
   :danger "#d9534f"
   :yellow "#FFC658"
-  :purple "#8884D8"})
+  :purple "#8884D8"
+  :facebook "#3b5998"
+  :twitter "#00aced"
+  :linkedin "#007bb6"
+  :pinterest "#cb2027"})
 
 (defn text-content [state]
  (reduce-kv
@@ -59,8 +63,16 @@
   (-> @state (dissoc :user-badge-correlation :visible :space-id))))
 
 
+(defn init-social-media-stats [state]
+  (ajax/GET
+   (path-for "/obpv1/stats/social_media")
+   {:handler (fn [data]
+              ; (prn data)
+               (reset! (cursor state [:social_media_stats]) data))}))
+
+
 (defn graphic-content [state]
-  (let [{:keys [issuers users userbadges pages created issued user-badge-correlation spaces]} @state
+  (let [{:keys [issuers users userbadges pages created issued user-badge-correlation spaces social_media_stats]} @state
         {:keys [factorybadges Totalbadgesno pendingbadgescount acceptedbadgescount declinedbadgescount privatebadgescount publicbadgescount internalbadgescount badgessincelastlogin
                 badgessincelastmonth badgessince3month badgessince6month badgessince1year]} userbadges
         {:keys [notactivatedusers internalusers publicusers Totalusersno userssincelastlogin userssincelastmonth
@@ -69,7 +81,9 @@
         {:keys [issuerssince1year issuerssince6month issuerssince3month issuerssincelastmonth issuerssincelastlogin Totalissuersno]} issuers
         {:keys [Totalissuedno issuedsincelastmonth issuedsincelastlogin]} issued
         {:keys [Totalcreatedno createdsincelastmonth createdsincelastlogin]} created
-        {:keys [Totalspacesno spacessincelastmonth spacessincelastlogin spacessince3month spacessince6month spacessince1year]} spaces]
+        {:keys [Totalspacesno spacessincelastmonth spacessincelastlogin spacessince3month spacessince6month spacessince1year]} spaces
+        {:keys [facebook linkedin pinterest twitter] } (:value social_media_stats)
+        sm-share-total (+ facebook linkedin pinterest twitter)]
     [:div {:class "admin-stats"}
      [:div#panel-boxes
       [:div.row
@@ -107,6 +121,7 @@
                                           :slices [{:name (t :page/Public) :value publicpagescount :fill (:default colors) :percentage (dh/%percentage publicpagescount Totalpagesno)}
                                                    {:name (t :page/Private) :value privatepagescount :fill (:purple colors) :percentage (dh/%percentage privatepagescount Totalpagesno)}
                                                    {:name (t :core/Internal) :value internalpagescount :fill (:yellow colors) :percentage (dh/%percentage internalpagescount Totalpagesno)}]}]}]]
+      [dh/social-media-box state]
       [:div.row
        [dh/panel-box-chart {:size :lg
                             :icon "fa-line-chart"
@@ -210,7 +225,13 @@
   (ajax/GET
    (path-for "/obpv1/admin/stats")
    {:handler (fn [data]
-               (reset! state (assoc data :visible "graphic")))}))
+               (reset! state (assoc data :visible "graphic")))})
+  (init-social-media-stats state)
+  #_(ajax/GET
+     (path-for "/obpv1/stats/social_media")
+     {:handler (fn [data]
+                ; (prn data)
+                 (reset! (cursor state [:social_media_stats]) data))}))
 
 (defn handler [site-navi]
   (let [state (atom {:register-users nil
@@ -219,7 +240,8 @@
                      :all-badges nil
                      :last-month-added-badges nil
                      :pages nil
-                     :visible "graphic"})]
+                     :visible "graphic"
+                     :social_media_stats {}})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
