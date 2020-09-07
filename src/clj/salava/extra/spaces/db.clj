@@ -311,7 +311,7 @@
         data {:from (get-in ctx [:config :core :mail-sender])
               :subject subject
               :body [{:type "text/plain; charset=utf-8"
-                      :content (str  content "\n\n" "- " space-name " - \n\n" (t :extra-spaces/Youarereceiving message_language) ":\n\n " badge-names "\n\n" (t :extra-spaces/Messageoutro message_language) " " (get-in ctx [:config :core :site-name] "Open badge passport") "\n\n")}]}]
+                      :content (str  (t :extra-spaces/Messageintro message_language) " " (get-in ctx [:config :core :site-name] "Open badge passport") "\n\n"  content "\n\n" "- " space-name " - \n\n" (t :extra-spaces/Youarereceiving message_language) ":\n\n " badge-names "\n\n")}]}]
       (try+
        (doseq [to emails]
         (log/info "sending message to" to)

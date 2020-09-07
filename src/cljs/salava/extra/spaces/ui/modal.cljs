@@ -485,9 +485,6 @@
                   (t :extra-spaces/Leavespace)
                   (t :extra-spaces/Cancelmembershiprequest))]])]]])))
 
-
-
-
 (defn space-content [state]
   [:div#space
    (membership-btn state)

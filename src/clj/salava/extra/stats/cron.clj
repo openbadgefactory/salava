@@ -40,10 +40,10 @@
 
 (defn every-hour [ctx]
   (let [conf (get-in ctx [:config :extra/stats])]
-    (when (= (get-in ctx [:-cron :hour]) (get conf :run-at 1))
+    ;(when (= (get-in ctx [:-cron :hour]) (get conf :run-at 1))
      (log/info "stats/hit-count: started working")
      (->> (hit-count (:source-file conf) (:services conf))
           (id->assertion-url ctx)
           (push-stats ctx)
           (db/log-to-db ctx))
-     (log/info "stats/hit-count: done"))))
+     (log/info "stats/hit-count: done")))

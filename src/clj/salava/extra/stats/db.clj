@@ -8,6 +8,7 @@
             [clojure.data.json :as json]
             [yesql.core :refer [defqueries]]))
 
+
 (defqueries "sql/extra/stats/main.sql")
 
 (def data
@@ -30,18 +31,94 @@
    , "148767" {:facebook 1}, "96234" {:facebook 3}, "233186" {:facebook 1}, "226372" {:facebook 1}, "257563" {:facebook 4}, "257573" {:facebook 3}, "207431" {:facebook 1}, "87687" {:twitter 1}, "111095" {:facebook 2}, "238767" {:facebook 1},})
 
 
+(def data2
+  {"10" {:linkedin 1 :facebook 4}
+   "30" {:pinterest 1 :facebook 4}
+   "60" {:twitter 1 :facebook 4 :linkedin 3}
+   "80" {:linkedin 4}
+   "75" {:twitter 1}
+   "78" {:facebook 4}
+   "100" {:twitter 1 :facebook 4 :linkedin 3 :pinterest 1}
+   "101" {:twitter 1 :facebook 4 :pinterest 3}
+   "69" {:twitter 1 :linkedin 4 :pinterest 5}
+   "67" {:twitter 1 :facebook 4}})
+
+
+
+#_(defn log-to-db [ctx payload]
+    (let [{:keys [social_hits ts]} (assoc (json/read-str payload :key-fn keyword) :social_hits data)
+          stats (json/write-str (frequencies (reduce (fn [r m]
+                                                      (concat r
+                                                        (keys m))) [] (vals social_hits))))]
+      (insert-social-media-stats! {:value stats :name "social_media_share"} (u/get-db ctx))))
+
+
 (defn log-to-db [ctx payload]
-  (let [{:keys [social_hits ts]} (assoc (json/read-str payload :key-fn keyword) :social_hits data)
-        stats (json/write-str (frequencies (reduce (fn [r m]
-                                                    (concat r
-                                                      (keys m))) [] (vals social_hits))))]
-    (insert-social-media-stats! {:value stats :name "social_media_share"} (u/get-db ctx))))
+ (let [{:keys [social_hits ts]} (assoc (json/read-str payload :key-fn keyword) :social_hits data2)
+       spaces (select-all-spaces {} (u/get-db-col ctx :id))
+       spaceid->badges (when (and (seq spaces) (seq (keys data2)))
+                        (reduce
+                         (fn [r s]
+                           (assoc r s (select-space-badges {:id s :ids (keys data2)} (u/get-db-col ctx :id))))
+                         {} spaces))
+
+       spaceid->stats (reduce-kv
+                        (fn [r k v]
+                         (assoc r k (select-keys data2 (vec (map str v)))))
+                        {}
+                        spaceid->badges)
+       general-stats (frequencies (reduce (fn [r m]
+                                           (concat r
+                                             (keys m)))
+                                    []
+                                    (vals social_hits)))
+       stats (if (empty? spaceid->badges)
+               ;(json/write-str
+                 {0 general-stats}
+               ;(json/write-str
+
+                (merge
+                 (reduce-kv
+                  (fn [r k v]
+                    (assoc r k (frequencies (reduce (fn [c m]
+                                                      (concat c
+                                                        (keys m)))
+                                                    []
+                                                    (vals v)))))
+                  {}
+                  spaceid->stats)
+                 {0 general-stats}))]
+     ;(prn spaceid->stats)
+     (clojure.pprint/pprint stats)
+     (insert-social-media-stats! {:value (json/write-str stats) :name "social_media_share"} (u/get-db ctx))))
+
+
+#_(defn social-media-stats-latest [ctx]
+   (let [stats (latest-social-media-stats {} (u/get-db-1 ctx))
+         value (json/read-str (:value stats) :key-fn keyword)]
+    (assoc stats :value value)))
 
 (defn social-media-stats-latest [ctx]
  (let [stats (latest-social-media-stats {} (u/get-db-1 ctx))
-       value (json/read-str (:value stats) :key-fn keyword)]
+       value (get (json/read-str (:value stats) :key-fn keyword) :0 {})]
   (assoc stats :value value)))
 
 (defn social-media-stats-ts [ctx ts]
-  (let [stats (map #(assoc % :value (json/read-str (:value %) :key-fn keyword)) (timestamp-social-media-stats {:time ts} (u/get-db ctx)))]
+  (let [stats (map #(assoc % :value (get (json/read-str (:value %) :key-fn keyword) :0 {})) (timestamp-social-media-stats {:time ts} (u/get-db ctx)))]
    (hash-map :value (apply (partial merge-with +) (map :value stats)) :ctime ts)))
+
+#_(defn social-media-stats-ts [ctx ts]
+    (let [stats (map #(assoc % :value (json/read-str (:value %) :key-fn keyword)) (timestamp-social-media-stats {:time ts} (u/get-db ctx)))]
+     (hash-map :value (apply (partial merge-with +) (map :value stats)) :ctime ts)))
+
+(defn space-social-media-stats [ctx space-id ts]
+  (prn "iwsasasacala")
+  (let [stats (map #(assoc % :value (get (json/read-str (:value %) :key-fn keyword) (keyword (str space-id)) {})) (timestamp-social-media-stats {:time ts} (u/get-db ctx)))]
+    (prn ts (keyword (str space-id)))
+    (prn stats)
+    ;(prn (apply (partial merge-with +) (map :value stats)))
+    ;(prn (timestamp-social-media-stats {:time ts} (u/get-db ctx)))
+    ;(prn (keyword space-id))
+    ;(prn (timestamp-social-media-stats {:time ts} (u/get-db ctx))
+    ;(prn stats "fffdf")
+    (hash-map :value (apply (partial merge-with +) (map :value stats)) :ctime ts)))

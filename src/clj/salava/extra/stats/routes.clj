@@ -19,8 +19,17 @@
                  (ok (stats/social-media-stats-latest ctx)))
 
             (GET "/social_media/:timestamp" []
-                 :summary "Get latest social media stats since timestamp"
+                 :summary "Get social media stats since timestamp"
                  :path-params [timestamp :- s/Int]
                  :auth-rules access/admin
                  :current-user current-user
-                 (ok (stats/social-media-stats-ts ctx timestamp))))))
+                 (ok (stats/social-media-stats-ts ctx timestamp)))
+
+            (GET "/social_media/:timestamp/:space_id" []
+                 :summary "Get space's social media stats since timestamp"
+                 :path-params [space_id :- s/Int
+                               timestamp :- s/Int]
+                 :auth-rules access/admin
+                 :current-user current-user
+                 (prn "called" space_id)
+                 (ok (stats/space-social-media-stats ctx space_id timestamp))))))

@@ -147,12 +147,12 @@
                             [:div.row.checkbox
                              ;[:fieldset {:class "col-md-9 checkbox"}
                               ;[:legend.col-md-9 ""]
-                              [:div.col-md-12 [:label {:for "receive-email-notifications"}
-                                               [:input {:type      "checkbox"
-                                                        :id        "receive-email-notifications"
-                                                        :on-change #(se/toggle-email-notifications (:id badge) email-notifications-atom)
-                                                        :checked   (pos? @email-notifications-atom)}]
-                                               [:b (str (t :social/Getemailnotifications))]]]]
+                              [:div.col-md-12.text-center [:label {:for "receive-email-notifications"}
+                                                           [:input {:type      "checkbox"
+                                                                    :id        "receive-email-notifications"
+                                                                    :on-change #(se/toggle-email-notifications (:id badge) email-notifications-atom)
+                                                                    :checked   (pos? @email-notifications-atom)}]
+                                                           [:b (str (t :social/Iwanttogetemailnotifications))]]]]
 
                             #_[:div
                                [:hr.border.dotted-border]]]

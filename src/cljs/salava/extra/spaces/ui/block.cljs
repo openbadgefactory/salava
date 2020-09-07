@@ -11,7 +11,8 @@
   [salava.extra.spaces.ui.helper :refer [space-card upload-modal]]
   [cemerick.url :as url]
   [clojure.walk :refer [keywordize-keys]]
-  [salava.core.ui.modal :as mo]))
+  [salava.core.ui.modal :as mo]
+  [salava.core.time :refer [unix-time iso8601-to-unix-time]]))
 
 
 (defn stylyze-element [element color]
@@ -287,7 +288,11 @@
                             (ajax/POST
                              (path-for (str "/obpv1/space/stats/" @(cursor v [:selected])))
                              {:handler (fn [data]
-                                         (reset! state (assoc data :visible "graphic" :space-id @(cursor v [:selected]))))})
+                                         (reset! state (assoc data :visible "graphic" :space-id @(cursor v [:selected])))
+                                         (ajax/GET
+                                          (path-for (str "/obpv1/stats/social_media/" (unix-time)"/" @(cursor v [:selected])))
+                                          {:handler (fn [data]
+                                                      (reset! (cursor state [:social_media_stats]) data))}))})
                             (ajax/GET
                              (path-for "/obpv1/admin/stats")
                              {:handler (fn [data]

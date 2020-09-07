@@ -63,12 +63,12 @@
   (-> @state (dissoc :user-badge-correlation :visible :space-id))))
 
 
-(defn init-social-media-stats [state]
-  (ajax/GET
-   (path-for "/obpv1/stats/social_media")
-   {:handler (fn [data]
-              ; (prn data)
-               (reset! (cursor state [:social_media_stats]) data))}))
+#_(defn init-social-media-stats [state]
+      (ajax/GET
+       (path-for "/obpv1/stats/social_media")
+       {:handler (fn [data]
+                  ; (prn data)
+                   (reset! (cursor state [:social_media_stats]) data))}))
 
 
 (defn graphic-content [state]
@@ -225,13 +225,9 @@
   (ajax/GET
    (path-for "/obpv1/admin/stats")
    {:handler (fn [data]
-               (reset! state (assoc data :visible "graphic")))})
-  (init-social-media-stats state)
-  #_(ajax/GET
-     (path-for "/obpv1/stats/social_media")
-     {:handler (fn [data]
-                ; (prn data)
-                 (reset! (cursor state [:social_media_stats]) data))}))
+               (reset! state (assoc data :visible "graphic")))}))
+  ;(init-social-media-stats state))
+
 
 (defn handler [site-navi]
   (let [state (atom {:register-users nil
