@@ -59,9 +59,11 @@
     (json/write-str payload) "\r\n"))
 
 (defn- png-convert-url [ctx image]
-  (if (and image (re-find #"\w+\.svg$" image))
-    (str (u/get-full-path ctx) "/obpv1/file/as-png?image=" image)
-    (str (u/get-site-url ctx) "/" image)))
+  (if image
+    (if (re-find #"\w+\.svg$" image)
+      (str (u/get-full-path ctx) "/obpv1/file/as-png?image=" image)
+      (str (u/get-site-url ctx) "/" image))
+    "https://openbadgepassport.com/theme/img/logo.png"))
 
 (defn- notification-content [ctx input]
   (let [badge  (some-> input vals first first http/json-get :badge http/json-get)
@@ -70,10 +72,10 @@
     (fn [lang]
       (if (and badge issuer image)
         {:title (t :badge/yougotnewbadge lang)
-         :image "https://openbadgepassport.com/theme/img/logo.png" ;TODO switch to real badge image (png-convert-url ctx image)
+         :image (png-convert-url ctx image)
          :body (str (:name badge) " " (t :badge/fromissuer lang) " " (:name issuer))}
 
-        {:title "You got a new Open Badge!"
+        {:title "You got a new open badge!"
          :body "Click here to see it."}))))
 
 (defn new-badge-notification [ctx input]
@@ -86,9 +88,15 @@
       (doseq [chunk (partition-all 100 emails)]
         (let [body (->> (select-firebase-tokens-by-emails {:emails chunk} (u/get-db ctx))
                         (map (fn [user]
-                               (http-batch-message auth url {:message
-                                                             {:token (:firebase_token user)
-                                                              :notification (content (:language user))}})))
+                               (http-batch-message
+                                 auth url
+                                 {:message
+                                  {:token (:firebase_token user)
+                                   :notification (content (:language user))
+                                   :android {:notification (merge {:default_sound true
+                                                                   :default_vibrate_timings true
+                                                                   :default_light_settings true}
+                                                                  (content (:language user)))}}})))
                         (apply str))]
 
           (http/http-post

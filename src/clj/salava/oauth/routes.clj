@@ -6,7 +6,7 @@
             [ring.util.response :refer [redirect]]
             [salava.core.layout :as layout]
             [schema.core :as s]
-            [salava.core.util :refer [get-base-path get-plugins]]
+            [salava.core.util :refer [get-base-path get-full-path get-plugins]]
             [salava.oauth.db :as d]
             [salava.oauth.facebook :as f]
             [salava.oauth.google :as g]
@@ -54,7 +54,9 @@
                    :current-user current-user
                   (if-let [client (get-in ctx [:config :oauth :client client_id])]
                      (-> (redirect (str (:redirect_uri client)
-                                        "?code=" (d/authorization-code ctx client_id (:id current-user) code_challenge) "&state=" state))
+                                        "?code=" (d/authorization-code ctx client_id (:id current-user) code_challenge)
+                                        "&host=" (get-full-path ctx)
+                                        "&state=" state))
                          (assoc-in [:session :identity] nil))
                      (bad-request {:message "400 Bad Request"})))
 

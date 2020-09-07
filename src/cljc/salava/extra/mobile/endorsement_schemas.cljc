@@ -1,4 +1,4 @@
-(ns salava.mobile.endorsement-schemas
+(ns salava.extra.mobile.endorsement-schemas
   #? (:clj (:require [schema.core :as s]
                      [schema.coerce :as c]
                      [compojure.api.sweet :refer [describe]])

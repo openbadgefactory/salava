@@ -1,9 +1,12 @@
 (ns salava.social.routes
   (:require [compojure.api.sweet :refer :all]
+            [clojure.string :as string]
             [ring.util.http-response :refer :all]
+            [ring.util.response :refer [redirect]]
             [salava.core.layout :as layout]
             [schema.core :as s]
             [salava.core.access :as access]
+            [salava.core.util :refer [get-base-path]]
             [salava.social.db :as so]
             [salava.user.db :as u]
             [salava.factory.db :as f]
@@ -14,7 +17,20 @@
 (defn route-def [ctx]
   (routes
    (context "/social" []
-            (layout/main ctx "/")
+
+            (GET "/" req
+                 :no-doc true
+                 :summary ""
+                 :auth-rules access/signed
+                 :current-user current-user
+                 :flash-message flash-message
+                 (let [redirect-to (get-in req [:cookies "login_redirect" :value])
+                       new-cookie {:value nil :max-age 600 :http-only true :path "/"}]
+                   (if (and redirect-to (string/starts-with? redirect-to "/"))
+                     (-> (redirect (str (get-base-path ctx) redirect-to))
+                         (assoc-in [:cookies "login_redirect"] new-cookie))
+                     (layout/main-response ctx current-user flash-message nil))))
+
             (layout/main ctx "/connections")
             (layout/main ctx "/stream")
             (layout/main ctx "/stats"))

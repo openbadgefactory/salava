@@ -1,7 +1,7 @@
 --name: request-endorsement<!
 --send endorsement request
 INSERT INTO user_badge_endorsement_request (user_badge_id, status, content, issuer_name, issuer_id, issuer_url, ctime,mtime)
-VALUES (:id, "pending", :content, :issuer_name, :issuer_id, :issuer_url, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+VALUES (:id, 'pending', :content, :issuer_name, :issuer_id, :issuer_url, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
 --name: insert-endorsement-request-event<!
 INSERT INTO social_event (subject, verb, object, type, ctime, mtime) VALUES (:subject, 'request_endorsement', :object, 'badge', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())

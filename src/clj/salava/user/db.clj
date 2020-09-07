@@ -443,7 +443,6 @@
         ok-status (if (get-in ok-status [:body :custom-fields] nil) (update-in ok-status [:body] dissoc :custom-fields) ok-status)]
      (as-> ok-status $
            (assoc-in $ [:session :identity] identity)
-           (assoc-in $ [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})
            (if (and (map? (:body $))(contains? (:body $) :invitation)) #_(get-in $ [:body :invitation] nil)
                (update-in $ [:body] dissoc :invitation)
                (dissoc $ :invitation)))))

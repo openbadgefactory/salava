@@ -23,9 +23,9 @@ GROUP BY ub.id, ub.visibility, ub.status, ub.issued_on
 ORDER BY ub.issued_on DESC
 
 --name: select-users-for-report
-SELECT u.id, u.profile_picture, u.profile_visibility, u.ctime, CONCAT(u.first_name, " ", u.last_name) AS name, u.activated,
+SELECT u.id, u.profile_picture, u.profile_visibility, u.ctime, CONCAT(u.first_name, ' ', u.last_name) AS name, u.activated,
 CAST(COUNT(DISTINCT ub.id) AS UNSIGNED) AS badgecount,
-(SELECT COUNT(DISTINCT id) FROM user_badge WHERE user_id = u.id AND deleted = 0 AND revoked = 0 AND visibility != "private" AND (expires_on IS NULL OR expires_on > unix_timestamp())) AS sharedbadges
+(SELECT COUNT(DISTINCT id) FROM user_badge WHERE user_id = u.id AND deleted = 0 AND revoked = 0 AND visibility != 'private' AND (expires_on IS NULL OR expires_on > unix_timestamp())) AS sharedbadges
 FROM user u
 LEFT JOIN user_badge ub ON ub.user_id = u.id
 WHERE u.id IN (:ids)
