@@ -130,21 +130,28 @@
                                                                                             name]]
                                       [:td {:style {:vertical-align "middle"}} (when member-admin? [:span.label.label-danger (t :extra-spaces/admin)])]
                                       [:td {:style {:vertical-align "middle"}} (when pending-member? [:span.label.label-info (t :extra-spaces/pendingmembership)])]
-                                      [:td {:style {:text-align "end"}}
-                                       [:div.btn-group
-                                         [:button.btn-primary.btn.btn-bulky.dropdown-toggle
-                                          {:type "button"
-                                           :data-toggle "dropdown"
-                                           :aria-haspopup true
-                                           :aria-expanded false
-                                           :disabled (and (= 1 (count users)) (= id (session/get-in [:user :id])))}
-                                          (t :extra-spaces/Manage) " " [:span.caret]]
-                                        ^{:key id} (as-> [:ul.dropdown-menu] $
-                                                         (if pending-member? (conj $ [:li [:a {:href "#" :on-click #(accept-member! id state)} (t :extra-spaces/Acceptrequest)]]) (conj $ nil))
-                                                         (if pending-member? (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Declinerequest)]]) (conj $ nil))
-                                                         (if (and member? (not= 1 (count users))) (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Removemember)]]) (conj $ nil))
-                                                         (if (and member? member-admin?) (conj $ [:li [:a {:href "#" :on-click #(downgrade-member! id state)} (t :extra-spaces/Downgradetomember)]]) (conj $ nil))
-                                                         (if (and member? (not member-admin?)) (conj $ [:li [:a {:href "#" :on-click #(upgrade-member! id state)} (t :extra-spaces/Upgradetoadmin)]]) (conj $ nil)))]]])))]]
+                                      [:td {:style {:text-align "start"}}
+                                       (as-> [:div.manage-members] $
+                                             (if (and member? (not= 1 (count users))) (conj $ [:button.btn.btn-danger {:on-click #(remove-member! id state) :role "button" :aria-label (t :extra-spaces/Removemember)} [:i.fa.fa-user-times.fa-fw {:title (t :extra-spaces/Removemember)}] ]) (conj $ nil))
+                                             (if (and member? (not member-admin?)) (conj $ [:button.btn.btn-primary {:on-click #(upgrade-member! id state) :role "button" :aria-label (t :extra-spaces/Upgradetoadmin)} [:i.fa.fa-level-up.fa-fw {:title (t :extra-spaces/Upgradetoadmin)}] ]) (conj $ nil))
+                                             (if (and member? member-admin?) (conj $ [:button.btn.btn-warning {:on-click #(downgrade-member! id state) :role "button" :aria-label (t :extra-spaces/Downgradetomember)} [:i.fa.fa-level-down.fa-fw {:title (t :extra-spaces/Downgradetomember)}] ]) (conj $ nil))
+                                             (if pending-member? (conj $ [:button.btn.btn-primary {:on-click #(accept-member! id state) :role "button" :aria-label (t :extra-spaces/Acceptrequest)} [:i.fa.fa-user-plus.fa-fw {:title (t :extra-spaces/Acceptrequest)}] ]) (conj $ nil))
+                                             (if pending-member? (conj $ [:button.btn.btn-warning {:on-click #(remove-member! id state) :role "button" :aria-label (t :extra-spaces/Declinerequest)} [:i.fa.fa-ban.fa-fw {:title (t :extra-spaces/Declinerequest)}]]) (conj $ nil)))
+
+                                       #_[:div.btn-group
+                                           [:button.btn-primary.btn.btn-bulky.dropdown-toggle
+                                            {:type "button"
+                                             :data-toggle "dropdown"
+                                             :aria-haspopup true
+                                             :aria-expanded false
+                                             :disabled (and (= 1 (count users)) (= id (session/get-in [:user :id])))}
+                                            (t :extra-spaces/Manage) " " [:span.caret]]
+                                          ^{:key id} (as-> [:ul.dropdown-menu] $
+                                                           (if pending-member? (conj $ [:li [:a {:href "#" :on-click #(accept-member! id state)} (t :extra-spaces/Acceptrequest)]]) (conj $ nil))
+                                                           (if pending-member? (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Declinerequest)]]) (conj $ nil))
+                                                           (if (and member? (not= 1 (count users))) (conj $ [:li [:a {:href "#" :on-click #(remove-member! id state)} (t :extra-spaces/Removemember)]]) (conj $ nil))
+                                                           (if (and member? member-admin?) (conj $ [:li [:a {:href "#" :on-click #(downgrade-member! id state)} (t :extra-spaces/Downgradetomember)]]) (conj $ nil))
+                                                           (if (and member? (not member-admin?)) (conj $ [:li [:a {:href "#" :on-click #(upgrade-member! id state)} (t :extra-spaces/Upgradetoadmin)]]) (conj $ nil)))]]])))]]
      (when (= "admin" (session/get-in [:user :role] "user"))
       [:div.panel-footer
          [:a {:href "#"

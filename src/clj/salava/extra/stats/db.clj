@@ -97,7 +97,7 @@
 
 (defn social-media-stats-latest [ctx]
  (let [stats (latest-social-media-stats {} (u/get-db-1 ctx))
-       value (get (json/read-str (:value stats) :key-fn keyword) :0 {})]
+       value (if-not (empty? stats) (get (json/read-str (:value stats) :key-fn keyword) :0 {}) {})]
   (assoc stats :value value)))
 
 (defn social-media-stats-ts [ctx ts]

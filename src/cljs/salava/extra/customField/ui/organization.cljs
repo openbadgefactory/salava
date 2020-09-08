@@ -141,7 +141,7 @@
         (when @visible
           [:div.row
            [:span._label.col-xs-4 (t :extra-customField/Organization) ": "]
-           [:div.col-xs-6 (or @org-atom (t :extra-customField/Notset))]])))))
+           [:div.col-xs-6 (or @org-atom (t :extra-customField/notset))]])))))
 
 (defn ^:export custom_field_filter [content-state fetch-fn]
   (let [visible (h/field-enabled? "organization")

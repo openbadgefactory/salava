@@ -215,7 +215,8 @@
               (issuer-image image)
               " "
               name])]
-          [:div.col-xs-12.footer
+              
+          [:div.col-xs-12.block-footer
            [:div.pull-left [:a {:href "#" :on-click #(do
                                                        (.preventDefault %)
                                                        (mo/open-modal [:badge :issuer] id {:hide (fn [] (when (session/get :user) (init-issuer-connection id state)))}))} (t :admin/Showmore)]]

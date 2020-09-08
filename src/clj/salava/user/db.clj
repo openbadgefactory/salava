@@ -440,12 +440,13 @@
         user-spaces (as-> (first (plugin-fun (get-plugins ctx) "db" "get-user-spaces")) $
                           (when (ifn? $) ($ ctx user-id)))
         identity {:id id :role role :private private :activated activated :last-visited last-visited :expires expires #_:spaces #_user-spaces :current-space current-space}
-        ok-status (if (get-in ok-status [:body :custom-fields] nil) (update-in ok-status [:body] dissoc :custom-fields) ok-status)]
+        ok-status (if (or (and (map? (:body ok-status)) (contains? (:body ok-status) :custom-fields)) (get-in ok-status [:body :custom-fields] nil)) (update-in ok-status [:body] dissoc :custom-fields) ok-status)]
      (as-> ok-status $
            (assoc-in $ [:session :identity] identity)
-           (if (and (map? (:body $))(contains? (:body $) :invitation)) #_(get-in $ [:body :invitation] nil)
+           (if (and (map? (:body $))(contains? (:body $) :invitation))
                (update-in $ [:body] dissoc :invitation)
                (dissoc $ :invitation)))))
+
 
 
 (defn activate-invited-user-and-verify-email [ctx user-id invitation new-user?]

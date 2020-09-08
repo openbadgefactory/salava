@@ -96,7 +96,7 @@
         (when @visible
           [:div.row
            [:span._label.col-xs-4 (t :extra-customField/Gender) ": "]
-           [:div.col-xs-6 (or @gender-atom (t :extra-customField/Notset))]])))))
+           [:div.col-xs-6 (or @gender-atom (t :extra-customField/notset))]])))))
 
 (defn ^:export init_custom_field_value [field-atom]
   (ajax/POST
