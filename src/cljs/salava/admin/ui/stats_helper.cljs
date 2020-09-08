@@ -3,7 +3,7 @@
    [cljsjs.recharts]
    [clojure.string :refer [blank? lower-case split join]]
    [salava.core.i18n :refer [t]]
-   [reagent.core :refer [atom cursor adapt-react-class create-class argv]]
+   [reagent.core :refer [atom cursor adapt-react-class create-class]]
    [reagent.session :as session]
    [salava.core.time :refer [date-from-unix-time iso8601-to-unix-time unix-time]]
    [salava.core.ui.helper :refer [path-for]]
@@ -278,7 +278,6 @@
            (:slices (first data)))]])))
 
 
-
 (defn panel-box [data]
  (when data
   (let [
@@ -325,7 +324,7 @@
 
 
 #_(defn social-media-box [state]
-     (prn (:social_media_stats @state))
+     ;(prn (:social_media_stats @state))
      (let [data-atom (atom {})]
       (init-social-media-stats data-atom nil state)
       (fn []
@@ -333,46 +332,6 @@
              {:keys [facebook linkedin pinterest twitter]} value
              time-atom (cursor data-atom [:ctime])]
         (when-not (empty? @(cursor data-atom [:value]))
-
-         [:div.row
-          [:div.col-md-12.col-sm-12.col-xs-12
-           [:div.panel-box.panel-chart
-            [:div.panel-chart-content
-             [:div.panel-icon-wrapper.rounded {:class "b-user"}
-               [:div.icon-bg.bg
-                [:i.fa.panel-icon.text {:class "fa-share-square"}]]]
-             [:div.panel-subheading.pad (t :admin/Socialmedia)]]
-            [:div.panel-chart-wrapper.panel-chart-wrapper-relative
-              [:div.row
-               [:div.col-md-6
-                [:div.form-group
-                  [:label {:for "date"} (t :admin/Showstatssince) ": "]
-                  [:input.form-control
-                   {:style {:max-width "unset"}
-                    :type "date"
-                    :id "date"
-                    :max (process-time (unix-time))
-                    :value (process-time @time-atom)
-                    :on-change #(do
-                                  (reset! time-atom (.-target.value %))
-                                  (init-social-media-stats data-atom (iso8601-to-unix-time @time-atom) state))}]]]]
-
-              (make-pie-social {:width 300 :data [{:ctime ctime
-                                                   :total (+ facebook linkedin pinterest twitter)
-                                                   :slices [{:name "Facebook" :value facebook :fill (:facebook colors) :percentage (%percentage facebook (+ facebook linkedin pinterest twitter))}
-                                                            {:name "Twitter" :value twitter :fill (:twitter colors) :percentage (%percentage twitter (+ facebook linkedin pinterest twitter))}
-                                                            {:name "Pinterest" :value pinterest :fill (:pinterest colors) :percentage (%percentage pinterest (+ facebook linkedin pinterest twitter))}
-                                                            {:name "Linkedin" :value linkedin :fill (:linkedin colors) :percentage (%percentage linkedin (+ facebook linkedin pinterest twitter))}]}]})]]]])))))
-
-(defn social-media-box [state]
-  (let [data-atom (atom {:value {} :ctime nil})]
-   (create-class
-    {:reagent-render
-     (fn [state]
-       (let [{:keys [id value ctime]} @data-atom
-             {:keys [facebook linkedin pinterest twitter]} value
-             time-atom (cursor data-atom [:ctime])]
-        (if-not (empty? @(cursor data-atom [:value]))
          ^{:key @(cursor state [:space-id])}
          [:div.row
           [:div.col-md-12.col-sm-12.col-xs-12
@@ -395,29 +354,77 @@
                     :value (process-time @time-atom)
                     :on-change #(do
                                   (reset! time-atom (.-target.value %))
-                                  (init-social-media-stats data-atom (iso8601-to-unix-time @time-atom) state))}]]]]
+                                  #_(init-social-media-stats data-atom (iso8601-to-unix-time @time-atom) state))}]]]]
 
               (make-pie-social {:width 300 :data [{:ctime ctime
                                                    :total (+ facebook linkedin pinterest twitter)
                                                    :slices [{:name "Facebook" :value facebook :fill (:facebook colors) :percentage (%percentage facebook (+ facebook linkedin pinterest twitter))}
                                                             {:name "Twitter" :value twitter :fill (:twitter colors) :percentage (%percentage twitter (+ facebook linkedin pinterest twitter))}
                                                             {:name "Pinterest" :value pinterest :fill (:pinterest colors) :percentage (%percentage pinterest (+ facebook linkedin pinterest twitter))}
-                                                            {:name "Linkedin" :value linkedin :fill (:linkedin colors) :percentage (%percentage linkedin (+ facebook linkedin pinterest twitter))}]}]})]]]]
-         [:div])))
+                                                            {:name "Linkedin" :value linkedin :fill (:linkedin colors) :percentage (%percentage linkedin (+ facebook linkedin pinterest twitter))}]}]})]]]])))))
+
+(defn social-media-box [state]
+  (let [data-atom (atom {:value {} :ctime nil})
+        {:keys [id value ctime]} @data-atom
+        {:keys [facebook linkedin pinterest twitter]} value
+        id-atom @(cursor state [:space-id])
+        time-atom (cursor data-atom [:ctime])]
+   (create-class
+    {:reagent-render
+     (fn []
+       (let [value @(cursor data-atom [:value])
+             linkedin @(cursor data-atom [:value :linkedin])
+             facebook @(cursor data-atom [:value :facebook])
+             pinterest @(cursor data-atom [:value :pinterest])
+             twitter @(cursor data-atom [:value :twitter])
+             time-atom (cursor data-atom [:ctime])]
+        (if-not (empty? value)
+         ^{:key @(cursor state [:space-id])}
+         [:div.row
+          [:div.col-md-12.col-sm-12.col-xs-12
+           [:div.panel-box.panel-chart
+            [:div.panel-chart-content
+             [:div.panel-icon-wrapper.rounded {:class "b-user"}
+               [:div.icon-bg.bg
+                [:i.fa.panel-icon.text {:class "fa-share-square"}]]]
+             [:div.panel-subheading.pad (t :admin/Socialmedia)]]
+            [:div.panel-chart-wrapper.panel-chart-wrapper-relative
+              [:div.row
+               [:div.col-md-6
+                [:div.form-group
+                  [:label {:for "date"} (t :admin/Showstatssince) ": "]
+                  [:input.form-control
+                   {:style {:max-width "unset"}
+                    :type "date"
+                    :id "date"
+                    :max (process-time (unix-time))
+                    :value (process-time @time-atom)
+                    :on-change #(do
+                                  (reset! time-atom (.-target.value %))
+                                  #_(init-social-media-stats data-atom (iso8601-to-unix-time @time-atom) state))}]]]]
+
+              (make-pie-social {:width 300 :data [{:ctime @time-atom
+                                                   :total (+ facebook linkedin pinterest twitter)
+                                                   :slices [{:name "Facebook" :value facebook :fill (:facebook colors) :percentage (%percentage facebook (+ facebook linkedin pinterest twitter))}
+                                                            {:name "Twitter" :value twitter :fill (:twitter colors) :percentage (%percentage twitter (+ facebook linkedin pinterest twitter))}
+                                                            {:name "Pinterest" :value pinterest :fill (:pinterest colors) :percentage (%percentage pinterest (+ facebook linkedin pinterest twitter))}
+                                                            {:name "Linkedin" :value linkedin :fill (:linkedin colors) :percentage (%percentage linkedin (+ facebook linkedin pinterest twitter))}]}]})]]]])))
+         ;[:div]))
      :component-did-mount
      (fn [] (init-social-media-stats data-atom nil state))
-     :component-will-update
-     (fn [this prev]
-       (let [t (atom {})
-             space-id @(cursor state [:space-id])
-             ts @(cursor data-atom [:ctime])
-             url (if ts (str "/obpv1/stats/social_media/" ts "/" space-id) "/obpv1/stats/social_media")]
-        (prn  "eqweakdadjnadajkdka")
-        (ajax/GET
-         (path-for url true)
-         {:handler (fn [data]
-                     (prn data "sdadsadsadad")
-                     (reset! t data))})))})))
-                     ;(swap! #_data-atom merge data))})))})))
-          ;:finally (fn [] (reset! data-atom @))})))})))
-       ;(when-not (= prev new-argv) (init-social-media-stats data-atom (unix-time) state))))})))
+
+     :component-did-update
+     (fn []
+      (js/window.setTimeout
+       #(let [space-id @(cursor state [:space-id])
+              ts (if (string? @(cursor data-atom [:ctime])) (iso8601-to-unix-time @(cursor data-atom [:ctime])) @(cursor data-atom [:ctime]))
+              url (if ts (str "/obpv1/stats/social_media/" ts "/" space-id) "/obpv1/stats/social_media")
+              t (atom value)]
+           ;(when-not (= @t @(cursor data-atom [:value]))
+             (js/setTimeout
+              (fn []
+                (ajax/GET
+                 (path-for url true)
+                 {:handler (fn [data]
+                              (reset! data-atom data))}))))
+       500))})))
