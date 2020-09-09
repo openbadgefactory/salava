@@ -280,15 +280,15 @@
   (select-enabled-issuers-list {:space_id space-id} (u/get-db ctx)))
 
 (defn all-issuers-enabled? [ctx space-id]
-  (or (some-> (select-space-property {:id space-id :name "all_issuers_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false))
+  (or (some-> (select-space-property {:id space-id :name "all_issuers_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number)) 0))
 
 (defn message-tool-settings [ctx space-id]
  {:messages_enabled (or (some-> (select-space-property {:id space-id :name "message_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)
-  :issuers    (if (all-issuers-enabled? ctx space-id)
+  :issuers    (if (pos? (all-issuers-enabled? ctx space-id))
                 (mapv #(assoc % :enabled true) (select-issuer-list {} (u/get-db ctx)))
                 (some->> (select-issuer-list {} (u/get-db ctx))
                          (mapv #(assoc % :enabled (or (some (fn [i] (= (:issuer_name %) (:issuer_name i))) (enabled-issuers ctx space-id)) false)))))
-  :all_issuers_enabled (or (some-> (select-space-property {:id space-id :name "all_issuers_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)})
+  :all_issuers_enabled (all-issuers-enabled? ctx space-id)}) ;(or (some-> (select-space-property {:id space-id :name "all_issuers_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)})
 
 (defn message-tool-badges [ctx space-id]
   (let [issuers (map :issuer_name (filter :enabled (:issuers (message-tool-settings ctx space-id))))]

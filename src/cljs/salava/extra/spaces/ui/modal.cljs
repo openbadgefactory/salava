@@ -412,7 +412,7 @@
                    (reset! (cursor state [:message_setting_updating]) true)
                    (ajax/POST
                     (path-for (str "/obpv1/space/message_tool/settings/" (get-in @state [:space :id] 0)))
-                    {:params {:settings (dissoc (assoc @(cursor state [:message_setting]) :issuers @(cursor state [:message_setting :enabled_issuers])) :enabled_issuers)}
+                    {:params {:settings (dissoc (assoc @(cursor state [:message_setting]) :issuers @(cursor state [:message_setting :enabled_issuers]) :all_issuers_enabled (pos? @(cursor state [:message_setting :all_issuers_enabled]))) :enabled_issuers)}
                      :handler (fn [data]
                                 (when (= "success" (:status data))
                                   (mt/init-message-tool-settings (get-in @state [:space :id] 0) state)
@@ -530,14 +530,14 @@
 (defn message-setting-modal [state]
   (let [issuers @(cursor state [:message_setting :issuers])
         selected (cursor state [:message_setting :selected])
-        enabled-issuers (cursor state [:message_setting :enabled_issuers])
+        ;enabled-issuers (cursor state [:message_setting :enabled_issuers])
         id (or @(cursor state [:space :id]) 0)]
 
     (fn []
      (let [issuers @(cursor state [:message_setting :issuers])
            issuers (->> issuers (remove #(clojure.string/blank? (:issuer_name %)))
-                                (filter #(re-find (re-pattern (str "(?i)" @(cursor state [:search]))) (:issuer_name %))))
-           enabled-issuers (cursor state [:message_setting :enabled_issuers])]
+                                (filter #(re-find (re-pattern (str "(?i)" @(cursor state [:search]))) (:issuer_name %))))]
+           ;enabled-issuers (cursor state [:message_setting :enabled_issuers])]
        [:div.col-md-12
         [:div.well.well-sm
          ;[:p [:b "Select issuers whose badges can be used to send messages"]]
@@ -548,18 +548,23 @@
             :placeholder (str (t :extra-spaces/Filter) "...")
             :style {:max-width "300px"}}]]
         [:div {:style {:max-height "700px" :overflow "auto"}}
+         [:div.row
+          [:div.col-md-12.pull-right
+           [:a {:href "#" :on-click #(reset! (cursor state [:message_setting :enabled_issuers]) [])} (t :badge/Clearall)]]]
+
          (reduce
           (fn [r i]
             (conj r
+              ^{:key (:issuer_name i)}
               [:li.list-group-item
                [:input
                 {:style {:margin "0 5px"}
                  :type "checkbox"
-                 :name (str "input-"(:issuer_name i))
-                 :default-value (:issuer_name i)
+                 :name (str "inputname-"(:issuer_name i))
+                 :value (:issuer_name i)
                  :id (str "input-"(:issuer_name i))
-                 :on-change #(add-or-remove (:issuer_name i) enabled-issuers)
-                 :default-checked (some #(= (:issuer_name i)  %)  @enabled-issuers)}]
+                 :on-change #(add-or-remove (:issuer_name i) (cursor state [:message_setting :enabled_issuers]))
+                 :checked (true? (some #(= (:issuer_name i)  %)  @(cursor state [:message_setting :enabled_issuers])))}]
                (:issuer_name i)]))
           [:ul.list-group]
           issuers)]

@@ -45,22 +45,23 @@
                       :name      "issuerSetting"
                      ; :value @(cursor state [:message_setting :all-issuers-enabled])
                       :on-change #(reset! (cursor state [:message_setting :all_issuers_enabled]) true)
-                      :default-checked    @(cursor state [:message_setting :all_issuers_enabled])}]
+                      :default-checked   (or (pos? @(cursor state [:message_setting :all_issuers_enabled])) @(cursor state [:message_setting :all_issuers_enabled]))}]
              [:b (str (t :extra-spaces/Enableallissuers))]]
             [:div.radio
              [:label {:for "enable-issuers-list"}
               [:input {:type      "radio"
                        :id        "enable-issuers-list"
                        :name      "issuerSetting"
-                       :on-change #(reset! (cursor state [:message_setting :all_issuers_enabled]) false)
-                       :default-checked   (not @(cursor state [:message_setting :all_issuers_enabled]))}]
+                       :on-change #(do (reset! (cursor state [:message_setting :all_issuers_enabled]) false))
+                                       ;(init-message-tool-settings @(cursor state [:space :id]) state))
+                       :default-checked   (or (zero? @(cursor state [:message_setting :all_issuers_enabled])) (not @(cursor state [:message_setting :all_issuers_enabled])))}]
               [:b (str (t :extra-spaces/Enablesomeissuers))]]]]]]
 
-       (when-not @(cursor state [:message_setting :all_issuers_enabled])
+       (when (or  (zero? @(cursor state [:message_setting :all_issuers_enabled])) (not @(cursor state [:message_setting :all_issuers_enabled])))
          [:div
           [:div.add-admins-link {:style {:margin "10px auto"}}
            [:a
-            {:href "#" :on-click #(mo/open-modal [:space :message_setting] state)}
+            {:href "#" :on-click #(mo/open-modal [:space :message_setting] state #_{:shown (fn [] (init-message-tool-settings @(cursor state [:space :id]) state))})}
             [:span [:i.fa.fa-list-alt.fa-lg] " " (t :extra-spaces/Manageissuerlist)]]]
           (when (seq @(cursor state [:message_setting :enabled_issuers]))
            [:div.well.well-sm {:style {:max-height "500px" :overflow "auto" :margin "10px auto"}}

@@ -67,7 +67,6 @@
   (let [show-recipient-name-atom (cursor state [:show_recipient_name])
         _ (cursor state [:badge-settings :show_recipient_name])
         new-value @show-recipient-name-atom] ;(if (pos? @show-recipient-name-atom) 0 1)]
-    ;(prn new-value)
     (reset! _ new-value)
     (save-settings state (fn [] (reset! show-recipient-name-atom new-value)))))
 
@@ -250,7 +249,7 @@
      [:div
       [:p
        [:i.fa.fa-file-pdf-o.fa-2x] " "
-       [:a {:href "#" :on-click #(export-to-pdf user-badge-id)} (-> @state :badge first first)]]])
+       [:a {:href "#" :on-click #(export-to-pdf user-badge-id)} (if (clojure.string/blank? (-> @state :badge first first)) (str "(" (-> @state :badge first second) ")") (-> @state :badge first first))]]])
    [:div (t :badge/Pdfdownload)]])
 
 (defn init-cert [user-badge-id state]

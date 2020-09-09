@@ -133,12 +133,13 @@
               [YAxis (as-> {:interval "preserveStart" :scale "log" :domain ["auto" "auto"] } $
                            (when dataKeyY (merge $ {:dataKey dataKeyY})))
                (when ylabel [Label {:value ylabel  :position "outside" :angle -90 :dx -20}])]
-              [ToolTip (as-> {:label :badge_count} $
-                             (when tooltipLabel (merge $ {:labelFormatter (fn [name] (str  name " " tooltipLabel))})))]]
+              [ToolTip (as-> {:label :badge_count :separator " "} $
+                             (when tooltipLabel (merge $  {:labelFormatter (fn [name]  (if-not (clojure.string/blank? name) (str  name " " tooltipLabel) nil))
+                                                           :formatter (fn [value name props]  (if-not (clojure.string/blank? name) (str ": " value) nil))})))]]
 
              (for [e elements]
                (case (:type e)
-                 "bar" [Bar {:unit (:unit e) :legendType (:legendType e) :name (:name e) :dataKey (:key e) :fill (:fill e) :stackId (:stackId e)}]
+                 "bar" [Bar {:unit (:unit e) :legendType (:legendType e) :name " " #_(:name e) :dataKey (:key e) :fill (:fill e) :stackId (:stackId e)}]
                  "line" [Line {:name (:name e)  :dot (:dot e) :dataKey (:key e) :type "monotone" :stroke (:stroke e) :activeDot (:activeDot e) :strokeWidth (:strokeWidth e)}]
                  nil)))]])))
       [:div.flex-container]
@@ -321,47 +322,6 @@
          :bar (make-bar {:width "100%" :data chart-data})
          :mixed (composed-chart {:width "100%" :data chart-data :tooltipLabel tooltipLabel})
          [:div])]]])))
-
-
-#_(defn social-media-box [state]
-     ;(prn (:social_media_stats @state))
-     (let [data-atom (atom {})]
-      (init-social-media-stats data-atom nil state)
-      (fn []
-       (let [{:keys [id value ctime]} @data-atom
-             {:keys [facebook linkedin pinterest twitter]} value
-             time-atom (cursor data-atom [:ctime])]
-        (when-not (empty? @(cursor data-atom [:value]))
-         ^{:key @(cursor state [:space-id])}
-         [:div.row
-          [:div.col-md-12.col-sm-12.col-xs-12
-           [:div.panel-box.panel-chart
-            [:div.panel-chart-content
-             [:div.panel-icon-wrapper.rounded {:class "b-user"}
-               [:div.icon-bg.bg
-                [:i.fa.panel-icon.text {:class "fa-share-square"}]]]
-             [:div.panel-subheading.pad (t :admin/Socialmedia)]]
-            [:div.panel-chart-wrapper.panel-chart-wrapper-relative
-              [:div.row
-               [:div.col-md-6
-                [:div.form-group
-                  [:label {:for "date"} (t :admin/Showstatssince) ": "]
-                  [:input.form-control
-                   {:style {:max-width "unset"}
-                    :type "date"
-                    :id "date"
-                    :max (process-time (unix-time))
-                    :value (process-time @time-atom)
-                    :on-change #(do
-                                  (reset! time-atom (.-target.value %))
-                                  #_(init-social-media-stats data-atom (iso8601-to-unix-time @time-atom) state))}]]]]
-
-              (make-pie-social {:width 300 :data [{:ctime ctime
-                                                   :total (+ facebook linkedin pinterest twitter)
-                                                   :slices [{:name "Facebook" :value facebook :fill (:facebook colors) :percentage (%percentage facebook (+ facebook linkedin pinterest twitter))}
-                                                            {:name "Twitter" :value twitter :fill (:twitter colors) :percentage (%percentage twitter (+ facebook linkedin pinterest twitter))}
-                                                            {:name "Pinterest" :value pinterest :fill (:pinterest colors) :percentage (%percentage pinterest (+ facebook linkedin pinterest twitter))}
-                                                            {:name "Linkedin" :value linkedin :fill (:linkedin colors) :percentage (%percentage linkedin (+ facebook linkedin pinterest twitter))}]}]})]]]])))))
 
 (defn social-media-box [state]
   (let [data-atom (atom {:value {} :ctime nil})

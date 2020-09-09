@@ -180,8 +180,8 @@
                             :chart-type :mixed
                             :chart-data [{:info (sort-by :badge_count < user-badge-correlation)
                                           :title (t :admin/userBadgeDistribution)
-                                          :elements [{:legendType "none" :name (t :admin/users) :key "user_count" :fill (:warning colors) :stackId "a" :type "bar"}
-                                                     {:legendType "none" :name (t :admin/users) :key "user_count" :type "line" :stroke (:primary colors) :activeDot {:r 8} :strokeWidth 3 :dot false}]
+                                          :elements [{:legendType "none" :name (clojure.string/lower-case (t :admin/users)) :key "user_count" :fill (:warning colors) :stackId "a" :type "bar"}
+                                                     {:legendType "none" :name (clojure.string/lower-case (t :admin/users)) :key "user_count" :type "line" :stroke (:primary colors) :activeDot {:r 8} :strokeWidth 3 :dot false}]
                                           :dataKeyX "badge_count"
                                           :dataKeyY "user_count"
                                           :xlabel (t :admin/noofbadges)
@@ -222,12 +222,17 @@
            [graphic-content state])]]]]]))
 
 (defn init-data [state]
-  (ajax/GET
-   (path-for "/obpv1/admin/stats")
-   {:handler (fn [data]
-               (reset! state (assoc data :visible "graphic")))}))
-  ;(init-social-media-stats state))
+ (let [id (session/get-in [:user :current-space :id] 0)]
+   (if (pos? id)
+     (ajax/POST
+      (path-for (str "/obpv1/space/stats/" id))
+      {:handler (fn [data]
+                  (reset! state (assoc data :visible "graphic" :space-id id)))})
 
+    (ajax/GET
+     (path-for "/obpv1/admin/stats")
+     {:handler (fn [data]
+                 (reset! state (assoc data :visible "graphic")))}))))
 
 (defn handler [site-navi]
   (let [state (atom {:register-users nil

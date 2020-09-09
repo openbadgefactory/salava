@@ -31,5 +31,4 @@
                                timestamp :- s/Int]
                  :auth-rules access/admin
                  :current-user current-user
-                 (prn "called" space_id)
                  (ok (stats/space-social-media-stats ctx space_id timestamp))))))

@@ -110,7 +110,7 @@
                        (header "Content-Type" "text/csv")))
 
             (GET "/message_tool/settings/:space-id" []
-                  :return {:messages_enabled s/Bool :issuers (s/maybe [{:enabled s/Bool :issuer_name s/Str}]) :all_issuers_enabled s/Bool}
+                  :return {:messages_enabled s/Bool :issuers (s/maybe [{:enabled s/Bool :issuer_name s/Str}]) :all_issuers_enabled s/Int}
                   :auth-rules access/space-admin
                   :summary "Get badge issuers"
                   :path-params [space-id :- s/Int]

@@ -281,26 +281,21 @@
              {:value (:id space)}
              (:name space)]))
          [:select#space-select.form-control
-           {:on-change (fn [x]
+           {:default-value @(cursor state [:space-id])
+            :on-change (fn [x]
                          (do
                           (reset! (cursor v [:selected]) (-> x .-target .-value))
                           (if (pos? @(cursor v [:selected]))
                             (ajax/POST
                              (path-for (str "/obpv1/space/stats/" @(cursor v [:selected])))
                              {:handler (fn [data]
-                                         (reset! state (assoc data :visible "graphic" :space-id @(cursor v [:selected])))
-                                         #_(ajax/GET
-                                            (path-for (str "/obpv1/stats/social_media/" (unix-time)"/" @(cursor v [:selected])))
-                                            {:handler (fn [data]
-                                                        (reset! (cursor state [:social_media_stats]) data))}))})
+                                         (reset! state (assoc data :visible "graphic" :space-id @(cursor v [:selected]))))})
+
                             (ajax/GET
                              (path-for "/obpv1/admin/stats")
                              {:handler (fn [data]
-                                         (reset! state (assoc data :visible "graphic"))
-                                         #_(ajax/GET
-                                            (path-for "/obpv1/stats/social_media")
-                                            {:handler (fn [data]
-                                                        (reset! (cursor state [:social_media_stats]) data))}))}))))}
+                                         (reset! state (assoc data :visible "graphic")))}))))}
+
 
 
            [:option {:value 0} (session/get :site-name)]]
