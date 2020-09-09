@@ -38,7 +38,7 @@
                   :flash-message flash-message
                   (let [client (get-in ctx [:config :oauth :client client_id])
                         redirect-to (str  "/user/oauth2/authorize?" (:query-string req))
-                        login-redirect {:value (if (:id current-user) nil redirect-to) :max-age 600 :http-only true :path "/"}]
+                        login-redirect {:value (if (:id current-user) nil redirect-to) :max-age 1200 :http-only true :path "/"}]
                     (if (and (= response_type "code") (= (:redirect_uri client) redirect_uri) (= code_challenge_method "S256"))
                       (-> (layout/main-response ctx current-user flash-message nil)
                           (assoc-in [:cookies "login_redirect"] login-redirect))
