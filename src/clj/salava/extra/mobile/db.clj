@@ -221,3 +221,9 @@
             (update :issuer_image_file #(png-convert-url ctx %))
             (update :creator_image_file #(png-convert-url ctx %))
             )))
+
+
+(defn get-badge-advert [ctx id user_id]
+  (some-> (select-gallery-badge-advert {:id id :user_id user_id} (u/get-db-1 ctx))
+          (update :image_file   #(png-convert-url ctx %))
+          (update :issuer_image #(png-convert-url ctx %))))

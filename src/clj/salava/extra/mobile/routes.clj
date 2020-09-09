@@ -121,6 +121,12 @@
                   :current-user current-user
                   (ok (db/gallery-badge ctx gallery-id badge-id)))
 
-
+             (GET "/gallery/advert/:id" []
+                :return schemas/gallery-badge-advert-m
+                :summary "Get badge advert for a gallery badge"
+                :current-user current-user
+                :path-params [id :- s/Int]
+                :auth-rules access/signed
+                (ok (db/get-badge-advert ctx id (:id current-user))))
 
              )))
