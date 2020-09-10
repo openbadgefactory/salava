@@ -45,8 +45,8 @@
         users-with-badges (reduce
                             (fn [r user]
                               (conj r
-                               (assoc user :badges (some->> (badge-ids ctx (assoc filters :users [(:id user)]))
-                                                            (get-badges ctx)))))
+                               (assoc user :badges (filter #(= (:user_id %) (:id user)) (some->> (badge-ids ctx (assoc filters :users [(:id user)]))
+                                                                                                 (get-badges ctx))))))
                             []
                             users)]
     {:users users-with-badges}))

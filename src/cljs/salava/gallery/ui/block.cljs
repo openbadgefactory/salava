@@ -226,11 +226,11 @@
                                             (reduce (fn [r user]
                                                       (conj r [profile-grid-element user selected-users-atom type]))
                                                     [:div.col-md-12.profilescontainer
-                                                     (when (= "space_admins" context)
-                                                       [:div.col-md-12 {:style {:font-weight "bold"}}
-                                                        [:hr.line]
-                                                        [:p (t :extra-spaces/AboutAdmins2)]
-                                                        [:hr.line]])
+                                                     #_(when (= "space_admins" context)
+                                                         [:div.col-md-12 {:style {:font-weight "bold"}}
+                                                          [:hr.line]
+                                                          [:p (t :extra-spaces/AboutAdmins2)]
+                                                          [:hr.line]])
 
                                                      (when (some #(= context %) ["report_space"])
                                                        [:div.col-md-12 {:style {:margin "20px auto" :padding "10px" :background-color "ghostwhite"}}

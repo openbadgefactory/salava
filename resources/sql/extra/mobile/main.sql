@@ -153,7 +153,6 @@ INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
 INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
 INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
 INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
-LEFT JOIN badge_tag bt ON ub.id = bt.user_badge_id
 LEFT JOIN badge_creator_content bcc ON b.id = bcc.badge_id
 LEFT JOIN creator_content cc ON bcc.creator_content_id = cc.id
 WHERE g.id = :gallery_id AND g.badge_id = :badge_id
