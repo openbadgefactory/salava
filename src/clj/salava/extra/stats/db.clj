@@ -54,17 +54,17 @@
 
 
 (defn log-to-db [ctx payload]
- (let [{:keys [social_hits ts]} (json/read-str payload :key-fn keyword)
+ (let [{:keys [social_hits ts]} (if payload (json/read-str payload :key-fn keyword) {})
        spaces (select-all-spaces {} (u/get-db-col ctx :id))
-       spaceid->badges (when (and (seq spaces) (seq (keys payload)))
+       spaceid->badges (when (and (seq spaces) (seq (keys social_hits)))
                         (reduce
                          (fn [r s]
-                           (assoc r s (select-space-badges {:id s :ids (keys data2)} (u/get-db-col ctx :id))))
+                           (assoc r s (select-space-badges {:id s :ids (keys social_hits)} (u/get-db-col ctx :id))))
                          {} spaces))
 
        spaceid->stats (reduce-kv
                         (fn [r k v]
-                         (assoc r k (select-keys payload (vec (map str v)))))
+                         (assoc r k (select-keys social_hits (vec (map str v)))))
                         {}
                         spaceid->badges)
        general-stats (frequencies (reduce (fn [r m]
@@ -109,5 +109,6 @@
      (hash-map :value (apply (partial merge-with +) (map :value stats)) :ctime ts)))
 
 (defn space-social-media-stats [ctx space-id ts]
-  (let [stats (map #(assoc % :value (get (json/read-str (:value %) :key-fn keyword) (keyword (str space-id)) {})) (timestamp-social-media-stats {:time ts} (u/get-db ctx)))]
+  (let [data (if ts (timestamp-social-media-stats {:time ts} (u/get-db ctx)) (timestamp-social-media-stats-latest {} (u/get-db ctx)))
+        stats (map #(assoc % :value (get (json/read-str (:value %) :key-fn keyword) (keyword (str space-id)) {})) data #_(timestamp-social-media-stats {:time ts} (u/get-db ctx)))]
     (hash-map :value (apply (partial merge-with +) (map :value stats)) :ctime ts)))

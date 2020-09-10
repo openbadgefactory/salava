@@ -216,7 +216,7 @@
 (defn export-admin-statistics [ctx user]
   (let [{:keys [id last-visited]} user
         ul (select-user-language {:id id} (into {:result-set-fn first :row-fn :language} (get-db ctx)))
-        data (-> (get-stats ctx last-visited) (dissoc :user-badge-correlation))
+        data (into {} (filter second (-> (get-stats ctx last-visited) (dissoc :user-badge-correlation))))
         data->csvformat (reduce-kv
                           (fn [r k v]
                            (do

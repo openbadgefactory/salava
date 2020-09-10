@@ -5,7 +5,8 @@
              [salava.admin.ui.tickets :as t]
              [salava.admin.ui.userlist :as u]
              [salava.admin.ui.statistics :as s]
-             [salava.admin.ui.report :as report]))
+             [salava.admin.ui.report :as report]
+             [salava.admin.ui.modal :as modal]))
 
 (defn placeholder [content]
   (fn [site-navi params]

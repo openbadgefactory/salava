@@ -98,7 +98,9 @@
    [:input.pull-right
     {:id (str "checkbox-"gallery_id)
      :type "checkbox"
-     :checked (some #(= gallery_id (:gallery_id %))  @badge-filters)
+     :name (str "input-checkbox-"gallery_id)
+     ;:value (some #(= gallery_id (:gallery_id %))  @badge-filters)
+     :checked (if (some #(= gallery_id (:gallery_id %))  @badge-filters) true false)
      :on-change #(add-or-remove badge badge-filters)}]
    [:a {:href "#"
         :on-click #(do

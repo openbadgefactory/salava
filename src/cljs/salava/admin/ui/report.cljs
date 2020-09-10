@@ -195,7 +195,7 @@
     {:href "#"
      :on-click #(do
                   (.preventDefault %)
-                  (mo/open-modal [:space :badges] state {:hidden (fn [] (fetch-report state))}))
+                  (mo/open-modal [:report :badges] state {:hidden (fn [] (fetch-report state))}))
      :aria-label "add badge"}
 
     [:span [:i.fa.fa-fw.fa-certificate.fa-lg] (t :admin/Addbadge)]]

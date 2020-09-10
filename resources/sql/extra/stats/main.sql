@@ -13,6 +13,13 @@ WHERE name = "social_media_share" AND ctime >= :time
 ORDER BY id DESC
 LIMIT 500
 
+--name: timestamp-social-media-stats-latest
+SELECT id, value, ctime FROM system_properties
+WHERE name = "social_media_share"
+ORDER BY id DESC
+LIMIT 1
+
+
 --name: select-all-spaces
 SELECT id FROM space ORDER BY id ASC
 

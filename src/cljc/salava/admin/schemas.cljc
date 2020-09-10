@@ -66,12 +66,12 @@
                      (s/optional-key :created) {:Totalcreatedno (s/maybe s/Int)
                                                 :createdsincelastlogin (s/maybe s/Int)
                                                 :createdsincelastmonth (s/maybe s/Int)}
-                     (s/optional-key :spaces) {:spacessincelastlogin (s/maybe s/Int)
-                                               :spacessincelastmonth (s/maybe s/Int)
-                                               :spacessince3month (s/maybe s/Int)
-                                               :spacessince6month (s/maybe s/Int)
-                                               :spacessince1year (s/maybe s/Int)
-                                               :Totalspacesno (s/maybe s/Int)}})
+                     (s/optional-key :spaces) (s/maybe {:spacessincelastlogin (s/maybe s/Int)
+                                                        :spacessincelastmonth (s/maybe s/Int)
+                                                        :spacessince3month (s/maybe s/Int)
+                                                        :spacessince6month (s/maybe s/Int)
+                                                        :spacessince1year (s/maybe s/Int)
+                                                        :Totalspacesno (s/maybe s/Int)})})
 
 (s/defschema User-name-and-email {:name s/Str
                                   :email s/Str})

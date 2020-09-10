@@ -88,6 +88,7 @@
                                           :slices [{:name (t :page/Public) :value publicpagescount :fill (:default colors) :percentage (dh/%percentage publicpagescount Totalpagesno)}
                                                    {:name (t :page/Private) :value privatepagescount :fill (:purple colors) :percentage (dh/%percentage privatepagescount Totalpagesno)}
                                                    {:name (t :core/Internal) :value internalpagescount :fill (:yellow colors) :percentage (dh/%percentage internalpagescount Totalpagesno)}]}]}]]
+      [dh/social-media-box state]
       [:div.row
        [dh/panel-box-chart {:size :lg
                             :icon "fa-line-chart"
