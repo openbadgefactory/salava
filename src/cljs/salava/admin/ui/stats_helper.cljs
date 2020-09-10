@@ -338,6 +338,7 @@
              pinterest @(cursor data-atom [:value :pinterest])
              twitter @(cursor data-atom [:value :twitter])
              time-atom (cursor data-atom [:ctime])]
+        (when-not (empty? value)
          ^{:key @(cursor state [:space-id])}
          [:div.row
           [:div.col-md-12.col-sm-12.col-xs-12
@@ -366,7 +367,7 @@
                                                    :slices [{:name "Facebook" :value facebook :fill (:facebook colors) :percentage (%percentage facebook (+ facebook linkedin pinterest twitter))}
                                                             {:name "Twitter" :value twitter :fill (:twitter colors) :percentage (%percentage twitter (+ facebook linkedin pinterest twitter))}
                                                             {:name "Pinterest" :value pinterest :fill (:pinterest colors) :percentage (%percentage pinterest (+ facebook linkedin pinterest twitter))}
-                                                            {:name "Linkedin" :value linkedin :fill (:linkedin colors) :percentage (%percentage linkedin (+ facebook linkedin pinterest twitter))}]}]})]]]]))
+                                                            {:name "Linkedin" :value linkedin :fill (:linkedin colors) :percentage (%percentage linkedin (+ facebook linkedin pinterest twitter))}]}]})]]]])))
      :component-did-mount
      (fn [] (init-social-media-stats data-atom nil state))
 

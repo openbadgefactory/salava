@@ -138,3 +138,23 @@
                               :default_language_code (s/maybe s/Str)
                               :content [badge-content-m]})
 
+(s/defschema gallery-badge-advert-m {:id                    s/Int
+                                     :info                  s/Str
+                                     :application_url       s/Str
+                                     :application_url_label (s/maybe s/Str)
+                                     :issuer_content_id     s/Str
+                                     :criteria_url          s/Str
+                                     :kind                  (s/enum "application" "advert")
+                                     :country               s/Str
+                                     :not_before            s/Int
+                                     :not_after             s/Int
+                                     :mtime                 s/Int
+                                     :followed              s/Int
+                                     :image_file            (s/maybe s/Str)
+                                     :description           (s/maybe s/Str)
+                                     :issuer_content_url    (s/maybe s/Str)
+                                     :issuer_content_name   (s/maybe s/Str)
+                                     :name s/Str
+                                     (s/optional-key :tags) (s/maybe s/Str)
+                                     (s/optional-key :issuer_contact) (s/maybe s/Str)
+                                     (s/optional-key :issuer_image) (s/maybe s/Str)})
