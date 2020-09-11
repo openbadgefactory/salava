@@ -81,7 +81,8 @@
                             :badges badges
                             :badge_count badge_count)))))
     :finally (fn []
-               (ajax-stop (cursor state [:ajax-message])))}))
+               (ajax-stop (cursor state [:ajax-message]))
+               (fetch-report state))}))
 
 (defn- add-or-remove [x coll]
    (if (some #(= x %) @coll)
@@ -304,6 +305,11 @@
           [:thead
            [:tr
             [:th (t :admin/user)]
+            (when (some #(= % "gender") (map :name (session/get :custom-fields nil)))
+             [:th (t :admin/gender)])
+            (when (some #(= % "organization") (map :name (session/get :custom-fields nil)))
+             [:th (t :admin/organization)])
+            [:th (t :admin/emailaddresses)]
             [:th (t :admin/noofbadges)]
             [:th (t :admin/sharedbadges)]
             [:th (str (t :admin/completionPercentage) " (%)")]
@@ -311,13 +317,18 @@
 
          (reduce
           (fn [r u]
-           (let [{:keys [badgecount sharedbadges profile_visibility name activated profile_picture ctime completionPercentage]} u]
+           (let [{:keys [badgecount sharedbadges profile_visibility name activated profile_picture ctime completionPercentage emailaddresses gender organization]} u]
             (conj r
              [:tr.table-item
               [:td
                [:div.inline-flex
                 [:img.logo {:src (profile-picture profile_picture) :alt name}]
                 [:span.name name]]]
+              (when (some #(= % "gender") (map :name (session/get :custom-fields nil)))
+                [:td gender])
+              (when (some #(= % "organization") (map :name (session/get :custom-fields nil)))
+               [:td organization])
+              [:td  (reduce #(conj %1 [:li {:style {:list-style "none"}} %2] ) [:div] (clojure.string/split emailaddresses #","))]
               [:td  (str badgecount " " (if (> badgecount 1) (t :badge/Badges) (t :badge/Badge)))]
               [:td  (str sharedbadges " " (if (> sharedbadges 1) (t :badge/Badges) (t :badge/Badge)))]
               [:td
@@ -336,16 +347,16 @@
           @results)]]])))
 
 (defn badge-list [state]
-  (let [results (cursor state [:results :users])
+  (let [results (remove #(zero? (count (:badges %))) @(cursor state [:results :users]))
         user-filter (cursor state [:filters :users])]
-     ;(if (seq @user-filter)
+     (when (seq results)
       [:div {:style {:max-height "500px" :overflow "auto"}}
        [:div.panel.panel-default
         [:div.panel-heading
           [:div.row
            [:div.col-md-12
              [:div.col-md-6.panel-title
-              (str (t :admin/Results) " (" (count @results) ")")]
+              (str (t :admin/Results) " (" (count results) ")")]
              [:div.col-md-6
                [:a.pull-right {:href "#"
                                :role "button"
@@ -405,8 +416,8 @@
               [:div.row
                [:div.col-md-12.text-center (str "0 " (t :badge/Badges))]])])))
          [:div.panel-body]
-         @results)]]
-      #_[:p (t :admin/Selectuserfilter)]))
+         results)]]
+      #_[:p (t :admin/Selectuserfilter)])))
 
 (defn clear-selected-dates [state]
   (reset! (cursor state [:to]) nil)
@@ -487,7 +498,9 @@
     (if @(cursor state [:fetching])
       [:div
         [:span [:i.fa.fa-lg.fa-cog.fa-spin] (str " " (t :core/Loading) " ...")]]
-      [:p [:b (str (count @(cursor state [:results :users])) " " (t :admin/rowsfound))]])]
+      [:p (if (= "badges" @(cursor state [:find]))
+              [:b (str (count (remove #(zero? (count (:badges %))) @(cursor state [:results :users]))) " " (t :admin/rowsfound))]
+              [:b (str (count @(cursor state [:results :users])) " " (t :admin/rowsfound))])])]
 
    (if @(cursor state [:preview])
      [:div

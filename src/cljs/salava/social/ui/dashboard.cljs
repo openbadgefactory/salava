@@ -32,13 +32,21 @@
                (swap! state assoc :gallery data))}))
 
 (defn init-dashboard [state]
+  (reset! (cursor state [:initializing]) true)
+  (ajax/POST
+    (path-for (str "/obpv1/spaces/user") true)
+    {:handler (fn [data]
+                (swap! state assoc :spaces data))
+     :finally (fn [] (reset! (cursor state [:initializing]) false))})
   (pb/init-data state)
+
   (init-gallery-stats state)
   (ajax/GET
    (path-for (str "/obpv1/user/dashboard"))
    {:handler (fn [data]
                (swap! state merge data))})
   (stream/init-data state))
+
 
 
 (defn selfie-issue-event [event state]
@@ -611,16 +619,20 @@
    [welcome-block state]
    [:div.row
     [:div [layout/space-info-banner]]]
-   [:div.row.flip
-    [notifications-block state]
-    [badges-block state]
-    [profile-block state]]
-   [:div.row.flip
-    [connections-block state]
-    [explore-block state]
-    [help-block]]
-   [:div.row.flip
-    [space-list]]])
+   (if @(cursor state [:initializing])
+     [:div
+      [:span [:i.fa.fa-cog.fa-spin.fa.lg] "Preparing you dashboard"]]
+     [:div
+      [:div.row.flip
+       [notifications-block state]
+       [badges-block state]
+       [profile-block state]]
+      [:div.row.flip
+       (if (seq @(cursor state [:spaces])) [space-list] [connections-block state])
+       [explore-block state]
+       [help-block]]
+      [:div.row.flip
+       (if (seq @(cursor state [:spaces])) [connections-block state] [:div])]])])
 
 
 (defn new-user-oauth []
@@ -640,7 +652,8 @@
                      ;:pages_count 0
                      ;:files_count 0
                      :arrow-class "fa-angle-down"
-                     :custom-fields nil})]
+                     :custom-fields nil
+                     :initializing false})]
                      ;:show-custom-field-alert? false})]
     (new-user-oauth)
     (custom-field-init state)

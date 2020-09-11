@@ -171,7 +171,7 @@
                  [:span common_badge_count " " (if (= common_badge_count 1)
                                                  (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]]]])))
 
-(defn select-all-checkbox [state selected-users-atom]
+(defn select-all-checkbox [state selected-users-atom select-all-text]
   (let [select-all (cursor state [:select-all?])]
     [:div.checkbox {:style {:margin "0 20px"}}
      [:label
@@ -181,7 +181,7 @@
                              (reset! select-all  (not @select-all))
                              (if @select-all (reset! selected-users-atom @(cursor state [:users])) (reset! selected-users-atom [])))
                :disabled (pos? @(cursor state [:users_count]))}]
-      [:b (str (t :admin/Selectall))]]]))
+      [:b (str (if-not (clojure.string/blank? select-all-text) select-all-text (t :admin/Selectall)))]]]))
 
 (defn allprofilesmodal [params]
   (let [country (session/get-in [:user :country] "all")
@@ -235,9 +235,9 @@
                                                      (when (some #(= context %) ["report_space"])
                                                        [:div.col-md-12 {:style {:margin "20px auto" :padding "10px" :background-color "ghostwhite"}}
                                                         [:hr.line]
-                                                        [:ul
-                                                          [:li [:b (t :admin/selectallusersinstruction)]]]
-                                                        [select-all-checkbox data-atom selected-users-atom]
+                                                        #_[:ul
+                                                            [:li [:b (t :admin/selectallusersinstruction)]]]
+                                                        [select-all-checkbox data-atom selected-users-atom (t :admin/Selectallvisibleusers)]
                                                         [:hr.line]])
 
                                                      (when (= "space_members_modal" context)
@@ -246,7 +246,7 @@
                                                         [:ul
                                                           [:li [:b (t :extra-spaces/Populateinstruction1)]]
                                                           [:li [:b (t :extra-spaces/Populateinstruction2)]]]
-                                                        [select-all-checkbox data-atom selected-users-atom]
+                                                        [select-all-checkbox data-atom selected-users-atom nil]
                                                         [:hr.line]])
                                                      (when (or (= "endorsement_selfie" context)(= "endorsement" context))
                                                        [:div.col-md-12 {:style {:font-weight "bold"}}

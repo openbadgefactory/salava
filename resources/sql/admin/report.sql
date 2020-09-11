@@ -23,10 +23,18 @@ GROUP BY ub.user_id, ub.id, ub.visibility, ub.status, ub.issued_on
 ORDER BY ub.issued_on DESC
 
 --name: select-users-for-report
-SELECT u.id, u.profile_picture, u.profile_visibility, u.ctime, CONCAT(u.first_name, ' ', u.last_name) AS name, u.activated,
+SELECT u.id, u.profile_picture, u.profile_visibility, u.ctime, CONCAT(u.first_name, ' ', u.last_name) AS name, u.activated,  GROUP_CONCAT(DISTINCT ue.email) AS emailaddresses,
 CAST(COUNT(DISTINCT ub.id) AS UNSIGNED) AS badgecount,
 (SELECT COUNT(DISTINCT id) FROM user_badge WHERE user_id = u.id AND deleted = 0 AND revoked = 0 AND visibility != 'private' AND (expires_on IS NULL OR expires_on > unix_timestamp())) AS sharedbadges
 FROM user u
 LEFT JOIN user_badge ub ON ub.user_id = u.id
+LEFT JOIN user_email ue ON ue.user_id = u.id
 WHERE u.id IN (:ids)
 GROUP BY u.id
+
+--name: all-gallery-badges
+SELECT id FROM gallery
+
+--name: select-all-users-for-report
+SELECT id FROM user WHERE deleted = 0
+LIMIT 150000

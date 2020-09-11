@@ -6,7 +6,8 @@
    [salava.core.i18n :refer [t]]
    [salava.core.time :refer [date-from-unix-time]]
    [yesql.core :refer [defqueries]]
-   [salava.core.util :as u]))
+   [salava.core.util :as u]
+   [salava.extra.customField.db :refer [custom-field-value]]))
 
 (defqueries "sql/admin/report.sql")
 
@@ -37,9 +38,17 @@
   (when (seq badge-ids)
    (select-user-badges-report {:ids badge-ids} (u/get-db ctx))))
 
+(defn- process-filters [ctx filters]
+  (let [{:keys [users badges]} filters
+        badges+ (if (seq badges) badges (all-gallery-badges {} (u/get-db-col ctx :id)))
+        users+  (if (seq users) users (select-all-users-for-report {} (u/get-db-col ctx :id)))]
+    (assoc filters :badges badges :users users+)))
+
 (defn report!
   [ctx filters admin-id]
-  (let [user-ids (user-ids ctx filters)
+  (let [enabled-custom-fields (mapv :name (get-in ctx [:config :extra/customField :fields] nil))
+        filters (process-filters ctx filters)
+        user-ids (user-ids ctx filters)
         users (when (seq user-ids) (some->> (select-users-for-report {:ids user-ids} (u/get-db ctx))
                                             (mapv #(assoc % :completionPercentage (:completion_percentage (profile-metrics ctx (:id %)))))))
         users-with-badges (reduce
@@ -48,8 +57,14 @@
                                (assoc user :badges (filter #(= (:user_id %) (:id user)) (some->> (badge-ids ctx (assoc filters :users [(:id user)]))
                                                                                                  (get-badges ctx))))))
                             []
-                            users)]
-    {:users users-with-badges}))
+                            users)
+        users-with-customfields (when (seq enabled-custom-fields)(some->> users-with-badges (mapv #(merge % (reduce
+                                                                                                             (fn [r field]
+                                                                                                               (assoc r (keyword field) (or (custom-field-value ctx field (:id %)) (t :admin/notset))))
+                                                                                                             {}
+                                                                                                             enabled-custom-fields)))))]
+    (prn enabled-custom-fields)
+    (if (empty? enabled-custom-fields) {:users users-with-badges} {:users users-with-customfields})))
 
 (defn export-report [ctx users badges to from id current-user]
   (let [filters {:users (clojure.edn/read-string users)
@@ -58,9 +73,11 @@
                  :from (clojure.edn/read-string from)}
         ul (db/select-user-language {:id (:id current-user)} (into {:result-set-fn first :row-fn :language} (u/get-db ctx)))
         report (report! ctx filters (:id current-user))
-        columns [:id :name :activated :completionPercentage :badgecount :sharedbadges :joined]
+        enabled-custom-fields (mapv :name (get-in ctx [:config :extra/customField :fields] nil))
+        columns (if (seq enabled-custom-fields) (concat [:id :name] (mapv #(keyword %) enabled-custom-fields) [:activated :completionPercentage :badgecount :sharedbadges :joined :emailaddresses]) [:id :name :activated :completionPercentage :badgecount :sharedbadges :joined :emailaddresses])
         headers (map #(t (keyword (str "admin/" (name %))) ul) columns)
         result_users (->> (:users report) (mapv #(assoc % :joined (date-from-unix-time (long (* 1000 (:ctime %)))))))
         rows (mapv #(mapv % columns) result_users)
         report->csvformat  (cons headers rows)]
+    (clojure.pprint/pprint (select-keys (:users report)[ :gender :organization]))
     (make-csv ctx report->csvformat \,)))

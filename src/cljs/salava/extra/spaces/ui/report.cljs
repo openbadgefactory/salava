@@ -16,6 +16,7 @@
 
 (defn fetch-report [state]
  (let [{:keys [users badges from to space-id]} @(cursor state [:filters])]
+  (reset! (cursor state [:fetching]) true)
   (ajax/POST
    (path-for (str "/obpv1/space/report") true)
    {:params {:users (mapv :id users)
@@ -24,7 +25,9 @@
              :from (if (number? from) from nil)
              :space-id space-id}
     :handler (fn [data]
-               (reset! (cursor state [:results]) data))})))
+               (reset! (cursor state [:results]) data))
+
+    :finally (fn [] (reset! (cursor state [:fetching]) false))})))
 
 (defn export-report [state]
   (let [{:keys [users badges to from space-id]} @(cursor state [:filters])
@@ -80,7 +83,8 @@
                             :badges badges
                             :badge_count badge_count)))))
     :finally (fn []
-               (ajax-stop (cursor state [:ajax-message])))}))
+               (ajax-stop (cursor state [:ajax-message]))
+               (fetch-report state))}))
 
 (defn init-data [params state]
   (init-badges params state))
@@ -173,8 +177,8 @@
   [:div#badge-gallery
    [:div.col-md-12
     [gallery-grid-form state]
-    [:div {:style {:background-color "ghostwhite" :margin "10px auto" :padding "10px"}}
-       [:p [:b (t :admin/selectallbadgesinstruction)]]
+    [:div {:style {:background-color "ghostwhite" :margin "10px auto" :padding "8px"}}
+       ;[:p [:b (t :admin/selectallbadgesinstruction)]]
        [:label
          [:input
           {:style {:margin "0 5px"}
@@ -184,9 +188,9 @@
                          (reset! (cursor state [:filters :badges]) [])
                          (reset! (cursor state [:select-all-badges]) (not @(cursor state [:select-all-badges])))
                          (when @(cursor state [:select-all-badges])
-                           (reset! (cursor state [:filters :badges])  (:badges @state))))
-           :disabled (pos? @(cursor state [:badge_count]))}]
-         [:b (t :extra-spaces/Selectall)]]]
+                           (reset! (cursor state [:filters :badges])  (:badges @state))))}]
+           ;:disabled (pos? @(cursor state [:badge_count]))}]
+         [:b (t :admin/Selectallvisiblebadges)]]]
 
     (if (:ajax-message @state)
       [:div.ajax-message
@@ -283,8 +287,16 @@
     (when (seq @results)
       [:div.panel.panel-default
        [:div.panel-heading
-        [:div.panel-title
-          (str (t :admin/Results) " (" (count @results) ")")]]
+         [:div.row
+          [:div.col-md-12
+            [:div.col-md-6.panel-title
+             (str (t :admin/Results) " (" (count @results) ")")]
+            [:div.col-md-6
+              [:a.pull-right {:href "#"
+                              :role "button"
+                              :on-click #(reset! (cursor state [:find]) "badges")
+                              :class (if (= "badges" @(cursor state [:find])) "btn-primary")}
+                 [:span [:i.fa-certificate.fa.fa-lg.fa-fw] (t :admin/Findbadges)]]]]]]
        [:div.table-responsive {:style {:max-height "500px" :overflow "auto"}}
         [:table.table
           [:thead
@@ -322,14 +334,22 @@
           @results)]]])))
 
 (defn badge-list [state]
-  (let [results (cursor state [:results :users])
+  (let [results (remove #(zero? (count (:badges %))) @(cursor state [:results :users])) #_(cursor state [:results :users])
         user-filter (cursor state [:filters :users])]
-     (if (seq @user-filter)
+     (if (seq results)
       [:div {:style {:max-height "500px" :overflow "auto"}}
        [:div.panel.panel-default
         [:div.panel-heading
-          [:div.panel-title
-           (str (t :admin/Results) " (" (count @results) ")")]]
+          [:div.row
+           [:div.col-md-12
+             [:div.col-md-6.panel-title
+              (str (t :admin/Results) " (" (count results) ")")]
+             [:div.col-md-6
+               [:a.pull-right {:href "#"
+                               :role "button"
+                               :on-click #(reset! (cursor state [:find]) "users")
+                               :class (if (= "users" @(cursor state [:find])) "btn-primary")}
+                  [:span [:i.fa.fa-users.fa-fw.fa-lg] (t :admin/Showuserlist)]]]]]]
         (reduce
          (fn [r user]
           (let [{:keys [name profile_picture badge_count badges]} user]
@@ -365,8 +385,8 @@
                 [:tbody]
                 badges)]]])))
          [:div.panel-body]
-         @results)]]
-      [:p (t :admin/Selectuserfilter)])))
+         results)]])))
+      ;[:p (t :admin/Selectuserfilter)])))
 
 (defn clear-selected-dates [state]
   (reset! (cursor state [:to]) nil)
@@ -382,20 +402,20 @@
      [:div.row
       [:div.col-md-6
        [:div.panel-title.weighted (t :admin/Reportbuilder)]]
-      [:div.col-md-6
-       [:ul.nav.nav-pills.pull-right
-        [:li
-         [:a.btn.btn-default.navbar-btn {:href "#"
-                                         :role "button"
-                                         :on-click #(reset! (cursor state [:find]) "users")
-                                         :class (if (= "users" @(cursor state [:find])) "btn-primary")}
-            (t :admin/Findusers)]]
-        [:li
-         [:a.btn.btn-default.navbar-btn {:href "#"
-                                         :role "button"
-                                         :on-click #(reset! (cursor state [:find]) "badges")
-                                         :class (if (= "badges" @(cursor state [:find])) "btn-primary")}
-            (t :admin/Findbadges)]]]]]]
+      #_[:div.col-md-6
+         [:ul.nav.nav-pills.pull-right
+          [:li
+           [:a.btn.btn-default.navbar-btn {:href "#"
+                                           :role "button"
+                                           :on-click #(reset! (cursor state [:find]) "users")
+                                           :class (if (= "users" @(cursor state [:find])) "btn-primary")}
+              (t :admin/Findusers)]]
+          [:li
+           [:a.btn.btn-default.navbar-btn {:href "#"
+                                           :role "button"
+                                           :on-click #(reset! (cursor state [:find]) "badges")
+                                           :class (if (= "badges" @(cursor state [:find])) "btn-primary")}
+              (t :admin/Findbadges)]]]]]]
 
 
     [:div.panel-body
@@ -444,7 +464,13 @@
       (t :admin/DownloadCSV)]]]
 
    [:div
-    [:p [:b (str (count @(cursor state [:results :users])) " " (t :admin/rowsfound))]]]
+    (if @(cursor state [:fetching])
+      [:div
+        [:span [:i.fa.fa-lg.fa-cog.fa-spin] (str " " (t :core/Loading) " ...")]]
+      [:p (if (= "badges" @(cursor state [:find]))
+            [:b (str (count (remove #(zero? (count (:badges %))) @(cursor state [:results :users]))) " " (t :admin/rowsfound))]
+            [:b (str (count @(cursor state [:results :users])) " " (t :admin/rowsfound))])])
+    #_[:p [:b (str (count @(cursor state [:results :users])) " " (t :admin/rowsfound))]]]
 
    (if @(cursor state [:preview])
      [:div

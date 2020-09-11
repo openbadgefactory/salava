@@ -245,9 +245,16 @@
   (when (seq badge-ids)
    (select-user-badges-report {:ids badge-ids} (u/get-db ctx))))
 
+(defn- process-filters [ctx filters]
+  (let [{:keys [users badges space-id]} filters
+        ;badges+ (if (seq badges) badges (all-gallery-badges {} (u/get-db-col ctx :id)))
+        users+  (if (seq users) users (select-user-ids-space-report {:space_id space-id} (u/get-db-col ctx :user_id)))]
+    (assoc filters :badges badges :users users+)))
+
 (defn report!
   [ctx filters admin-id]
-  (let [user-ids (user-ids ctx filters)
+  (let [filters (process-filters ctx filters)
+        user-ids (user-ids ctx filters)
         users (when (seq user-ids) (some->> (select-users-for-report {:ids user-ids} (u/get-db ctx))
                                             (mapv #(assoc % :completionPercentage (:completion_percentage (profile-metrics ctx (:id %)))))))
         users-with-badges (reduce

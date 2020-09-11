@@ -68,14 +68,12 @@
               [:span {:style {:display "inline-block" :margin "0 2px"}}  " OK"]]]
 
 
-
-
             (conj
              (reduce
                (fn [r org]
                  (conj r [:option {:value (:name org)} (:name org)]))
                [:datalist#select-org]
-               (conj (sort-by :name @organizations) {:name " "})))]
+               (conj (conj (sort-by :name @organizations) {:name "not specified"}) {:name " "})))]
            [:span.help-block.text-muted (t :extra-customField/Selectorganizationinstruction)]]]])))))
 
 (defn organization-field []
@@ -122,7 +120,7 @@
             (fn [r org]
               (conj r [:option {:value (:name org)} (:name org)]))
             [:datalist#organization-list]
-            (conj (sort-by :name @orgs) {:name " "}))]
+            (conj (conj (sort-by :name @orgs) {:name "not specified"}) {:name " "}))]
           [:span.help-block.text-muted (t :extra-customField/Selectorganizationinstruction)]]])))))
 
 (defn ^:export init_custom_field_value [field-atom]

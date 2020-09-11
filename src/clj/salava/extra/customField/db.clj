@@ -58,7 +58,6 @@
 
 (defn delete-organization! [ctx id]
  (let [org_name  (:name (select-org-name-by-id {:id id} (get-db-1 ctx)))]
-   (prn org_name)
    (try+
      (delete-custom-field-org! {:id id} (get-db ctx))
      (delete-user-organization-property! {:value org_name} (get-db ctx))
