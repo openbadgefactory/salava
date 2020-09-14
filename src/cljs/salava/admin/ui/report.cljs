@@ -13,18 +13,41 @@
   [salava.core.ui.grid :as g]
   [salava.user.ui.helper :refer [profile-picture]]))
 
+(defn fetch-more [state]
+  (let [{:keys [users badges from to space-id]} @(cursor state [:filters])
+        page-count-atom (cursor state [:filters :page_count])]
+   (ajax/POST
+    (path-for (str "/obpv1/admin/report") true)
+    {:params {:users (mapv :id users)
+              :badges (mapv :gallery_id badges)
+              :to (if (number? to) to nil)
+              :from (if (number? from) from nil)
+              :page_count @page-count-atom}
+              ;:space-id space-id}
+     :handler (fn [data]
+                (swap! state assoc-in [:results :users] (into @(cursor state [:results :users]) (:users data)))
+                (swap! page-count-atom inc)
+                (swap! state assoc-in [:results :user_count] (:user_count data)))
+     :finally (fn [] (reset! (cursor state [:fetching-more]) false))})))
+
 (defn fetch-report [state]
- (let [{:keys [users badges from to space-id]} @(cursor state [:filters])]
+ (let [{:keys [users badges from to space-id]} @(cursor state [:filters])
+       page-count-atom (cursor state [:filters :page_count])]
+  (reset! page-count-atom 0)
   (reset! (cursor state [:fetching]) true)
   (ajax/POST
    (path-for (str "/obpv1/admin/report") true)
    {:params {:users (mapv :id users)
              :badges (mapv :gallery_id badges)
              :to (if (number? to) to nil)
-             :from (if (number? from) from nil)}
+             :from (if (number? from) from nil)
+             :page_count 0}
              ;:space-id space-id}
     :handler (fn [data]
-               (reset! (cursor state [:results]) data))
+               (reset! (cursor state [:results]) data)
+               (swap! page-count-atom inc)
+               (swap! state assoc-in [:results :user_count] (:user_count data)))
+               ;(prn @page-count-atom))
 
     :finally (fn [] (reset! (cursor state [:fetching]) false))})))
 
@@ -142,17 +165,19 @@
        (when (ifn? f) [f state (fn [] (gallery/fetch-badges state))])))]))
 
 (defn load-more [state]
-  (if (pos? (:badge_count @state))
-    [:div {:class "media message-item"}
-     [:div {:class "media-body"}
-      [:span [:a {:href     "#"
-                  :id    "loadmore"
-                  :on-click #(do
-                               (gallery/get-more-badges state)
-                               ;(init-data state)
-                               (.preventDefault %))}
+  (if (pos? @(cursor state [:results :user_count]))
+     [:div {:style {:margin "10px 0"}}
+      (if @(cursor state [:fetching-more])
+        [:span [:i.fa.fa-cog.fa-spin.fa-lg.fa-fw] (str (t :core/Loading) "...")]
+        [:span [:a {:href     "#"
+                    :id    "loadmore"
+                    :on-click #(do
+                                 (reset! (cursor state [:fetching-more]) true)
+                                 (fetch-more state)
+                                 ;(init-data state)
+                                 (.preventDefault %))}
 
-              (str (t :social/Loadmore) " (" (:badge_count @state) " " (t :gallery/Badgesleft) ")")]]]]))
+                 (str (t :social/Loadmore) " (" @(cursor state [:results :user_count])) " " (t :admin/rowsleft) ")"]])]))
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)]
@@ -278,9 +303,9 @@
       [:div.panel.panel-default
        [:div.panel-heading
         [:div.row
-         [:div.col-md-12
+         [:div
            [:div.col-md-6.panel-title
-            (str (t :admin/Results) " (" (count @results) ")")]
+            (str (t :admin/Results) " (" (count @results) "/" @(cursor state [:results :total]) ")")]
            [:div.col-md-6
              [:a.pull-right {:href "#"
                              :role "button"
@@ -329,22 +354,24 @@
               (when (some #(= % "organization") (map :name (session/get :custom-fields nil)))
                [:td organization])
               [:td  (reduce #(conj %1 [:li {:style {:list-style "none"}} %2] ) [:div] (clojure.string/split emailaddresses #","))]
-              [:td  (str badgecount " " (if (> badgecount 1) (t :badge/Badges) (t :badge/Badge)))]
-              [:td  (str sharedbadges " " (if (> sharedbadges 1) (t :badge/Badges) (t :badge/Badge)))]
+              [:td  (str badgecount)] ;" " (if (> badgecount 1) (t :badge/Badges) (t :badge/Badge)))]
+              [:td  (str sharedbadges)] ;" " (if (> sharedbadges 1) (t :badge/Badges) (t :badge/Badge)))]
               [:td
-               [:div.progress
-                [:div.progress-bar.progress-bar-success
-                 {:role "progressbar"
-                  :aria-valuenow (str completionPercentage)
-                  :aria-valuemin "0"
-                  :aria-valuemax "100"
-                  :style {:width (str completionPercentage "%")}}
-                 [:span (str completionPercentage "% ")]]]]
+               (str completionPercentage "%")
+               #_[:div.progress
+                  [:div.progress-bar.progress-bar-success
+                   {:role "progressbar"
+                    :aria-valuenow (str completionPercentage)
+                    :aria-valuemin "0"
+                    :aria-valuemax "100"
+                    :style {:width (str completionPercentage "%")}}
+                   [:span (str completionPercentage "% ")]]]]
               [:td (date-from-unix-time (* 1000 ctime))]])))
 
           [:tbody]
 
           @results)]]])))
+
 
 (defn badge-list [state]
   (let [results (remove #(zero? (count (:badges %))) @(cursor state [:results :users]))
@@ -354,7 +381,7 @@
        [:div.panel.panel-default
         [:div.panel-heading
           [:div.row
-           [:div.col-md-12
+           [:div
              [:div.col-md-6.panel-title
               (str (t :admin/Results) " (" (count results) ")")]
              [:div.col-md-6
@@ -494,20 +521,22 @@
        :disabled (empty? @(cursor state [:results :users]))}
       (t :admin/DownloadCSV)]]]
 
-   [:div
+   [:div {:style {:margin "10px auto"}}
     (if @(cursor state [:fetching])
       [:div
         [:span [:i.fa.fa-lg.fa-cog.fa-spin] (str " " (t :core/Loading) " ...")]]
-      [:p (if (= "badges" @(cursor state [:find]))
-              [:b (str (count (remove #(zero? (count (:badges %))) @(cursor state [:results :users]))) " " (t :admin/rowsfound))]
-              [:b (str (count @(cursor state [:results :users])) " " (t :admin/rowsfound))])])]
+      [:div #_(if (= "badges" @(cursor state [:find]))
+                  [:b (str (count (remove #(zero? (count (:badges %))) @(cursor state [:results :users]))) " " (t :admin/rowsfound))]
+                  [:b (str @(cursor state [:results :total])) " " (t :admin/rowsfound)])
+        [:b (str @(cursor state [:results :total])) " " (t :admin/rowsfound)]])]
 
    (if @(cursor state [:preview])
      [:div
       (when (= "users" @(cursor state [:find]))
        [user-list state])
       (when (= "badges" @(cursor state [:find]))
-       [badge-list state])])])
+       [badge-list state])
+      (when (= "users" @(cursor state [:find])) (load-more state))])])
 
 (defn handler [site-navi]
   (let [params (query-params {:country (session/get-in [:filter-options :country] "all")})
@@ -515,7 +544,8 @@
                                :users []
                                :from nil
                                :to nil
-                               :space-id 0}
+                               :space-id 0
+                               :page_count 0}
                      :params params
                      :badges []
                      :countries              []
@@ -526,7 +556,7 @@
                      :ajax-message           nil
                      :only-selfie? false
                      :badge_count            0
-                     :results []
+                     :results {}
                      :find "users"
                      :to nil
                      :from nil
@@ -534,7 +564,8 @@
                      :selected-space 0
                      :select-all-badges false
                      :select-all-users false
-                     :fetching false})]
+                     :fetching false
+                     :fetching-more false})]
 
    (init-data params state)
    (fn []

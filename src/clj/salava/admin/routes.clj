@@ -40,7 +40,8 @@
               :body [filters {:users [(s/maybe s/Int)]
                               :badges [(s/maybe s/Int)]
                               :to (s/maybe s/Int)
-                              :from (s/maybe s/Int)}]
+                              :from (s/maybe s/Int)
+                              :page_count s/Int}]
               :current-user current-user
               (ok (report/report! ctx filters (:id current-user))))
 

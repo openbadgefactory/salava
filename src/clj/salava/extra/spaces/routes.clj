@@ -95,7 +95,8 @@
                                    :badges [(s/maybe s/Int)]
                                    :to (s/maybe s/Int)
                                    :from (s/maybe s/Int)
-                                   :space-id s/Int}]
+                                   :space-id s/Int
+                                   :page_count s/Int}]
                    :current-user current-user
                    (ok (db/report! ctx filters (:id current-user))))
 

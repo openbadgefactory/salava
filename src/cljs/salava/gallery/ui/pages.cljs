@@ -31,7 +31,7 @@
     (reset! (cursor state [:ajax-message]) (str (t :core/Loading) "..."))
     (ajax/POST
       (path-for (str "/obpv1/gallery/pages/" user-id) true)
-      {:params {:country  (session/get-in [:filter-options :country] "")
+      {:params {:country  (session/get-in [:filter-options :country] (session/get-in [:user :country]))
                 :owner ""
                 :space-id @space-atom}
        :handler (fn [data]
@@ -48,7 +48,7 @@
      (reset! space-atom (session/get-in [:user :current-space :id] 0))
      (ajax/POST
        (path-for (str "/obpv1/gallery/pages/" user-id) true)
-       {:params {:country  (session/get-in [:filter-options :country] "")
+       {:params {:country  (session/get-in [:filter-options :country] (session/get-in [:user :country] "all"))
                  :owner ""
                  :space-id (session/get-in [:user :current-space :id] 0)}
         :handler (fn [data]

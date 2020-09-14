@@ -1,11 +1,23 @@
 --name: select-users-for-report
-SELECT u.id, u.profile_picture, u.profile_visibility, u.ctime, CONCAT(u.first_name, ' ', u.last_name) AS name, u.activated,
+SELECT u.id, u.profile_picture, u.profile_visibility, u.ctime, CONCAT(u.first_name, ' ', u.last_name) AS name, u.activated, GROUP_CONCAT(DISTINCT ue.email) AS emailaddresses,
 CAST(COUNT(DISTINCT ub.id) AS UNSIGNED) AS badgecount,
 (SELECT COUNT(DISTINCT id) FROM user_badge WHERE user_id = u.id AND deleted = 0 AND revoked = 0 AND visibility != 'private' AND (expires_on IS NULL OR expires_on > unix_timestamp())) AS sharedbadges
 FROM user u
 LEFT JOIN user_badge ub ON ub.user_id = u.id
+LEFT JOIN user_email ue ON ue.user_id = u.id
 WHERE u.id IN (:ids)
 GROUP BY u.id
+
+--name: select-users-for-report-limit
+SELECT u.id, u.profile_picture, u.profile_visibility, u.ctime, CONCAT(u.first_name, ' ', u.last_name) AS name, u.activated,  GROUP_CONCAT(DISTINCT ue.email) AS emailaddresses,
+CAST(COUNT(DISTINCT ub.id) AS UNSIGNED) AS badgecount,
+(SELECT COUNT(DISTINCT id) FROM user_badge WHERE user_id = u.id AND deleted = 0 AND revoked = 0 AND visibility != 'private' AND (expires_on IS NULL OR expires_on > unix_timestamp())) AS sharedbadges
+FROM user u
+LEFT JOIN user_badge ub ON ub.user_id = u.id
+LEFT JOIN user_email ue ON ue.user_id = u.id
+WHERE u.id IN (:ids)
+GROUP BY u.id
+LIMIT :limit OFFSET :offset
 
 --name: select-user-ids-badge
 SELECT DISTINCT ub.user_id, (SELECT COUNT(DISTINCT gallery_id) FROM user_badge WHERE gallery_id IN (:badge_ids) AND user_id = ub.user_id) AS count FROM user_badge ub
