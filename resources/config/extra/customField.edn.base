@@ -1,3 +1,4 @@
-{:fields [{:name :gender
-           :compulsory? false}
-          {:name :organization}]}
+{:fields [{:name "gender"
+           :compulsory? true}
+          {:name "organization"
+           :compulsory? true}]}

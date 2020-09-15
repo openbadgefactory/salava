@@ -37,6 +37,8 @@
        page-count-atom (cursor state [:filters :page_count])]
   (reset! page-count-atom 0)
   (reset! (cursor state [:fetching]) true)
+  (reset! (cursor state [:preview]) false)
+  (reset! (cursor state [:results]) {})
   (ajax/POST
    (path-for (str "/obpv1/space/report") true)
    {:params {:users (mapv :id users)
@@ -339,7 +341,7 @@
 
          (reduce
           (fn [r u]
-           (let [{:keys [badgecount sharedbadges profile_visibility name activated profile_picture ctime completionPercentage gender organization]} u]
+           (let [{:keys [badgecount sharedbadges profile_visibility name activated profile_picture ctime completionPercentage gender organization emailaddresses]} u]
             (conj r
              [:tr.table-item
               [:td
@@ -423,7 +425,6 @@
                 badges)]]])))
          [:div.panel-body]
          results)]])))
-      ;[:p (t :admin/Selectuserfilter)])))
 
 (defn clear-selected-dates [state]
   (reset! (cursor state [:to]) nil)
@@ -438,23 +439,7 @@
     [:div.panel-heading
      [:div.row
       [:div.col-md-6
-       [:div.panel-title.weighted (t :admin/Reportbuilder)]]
-      #_[:div.col-md-6
-         [:ul.nav.nav-pills.pull-right
-          [:li
-           [:a.btn.btn-default.navbar-btn {:href "#"
-                                           :role "button"
-                                           :on-click #(reset! (cursor state [:find]) "users")
-                                           :class (if (= "users" @(cursor state [:find])) "btn-primary")}
-              (t :admin/Findusers)]]
-          [:li
-           [:a.btn.btn-default.navbar-btn {:href "#"
-                                           :role "button"
-                                           :on-click #(reset! (cursor state [:find]) "badges")
-                                           :class (if (= "badges" @(cursor state [:find])) "btn-primary")}
-              (t :admin/Findbadges)]]]]]]
-
-
+       [:div.panel-title.weighted (t :admin/Reportbuilder)]]]]
     [:div.panel-body
      [:div.row
       [badge-filter-section state]
@@ -515,7 +500,8 @@
        [user-list state])
       (when (= "badges" @(cursor state [:find]))
        [badge-list state])
-      (when (= "users" @(cursor state [:find])) (load-more state))])])
+      (load-more state)])])
+      ;(when (= "users" @(cursor state [:find])) (load-more state))])])
 
 
 (defn handler [site-navi]
@@ -535,7 +521,7 @@
                      :ajax-message           nil
                      :only-selfie? false
                      :badge_count            0
-                     :results []
+                     :results {:total 0}
                      :find "users"
                      :to nil
                      :from nil

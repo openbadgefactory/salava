@@ -718,6 +718,22 @@ html[dir="rtl"] .wizard {
     padding: inherit !important;
   }
 }
+
+body.anon {
+  .navbar-nav, .navbar-toggle {
+    display: none;
+  }
+
+  .logo-image-icon-url {
+    width: 326px;
+    height: 48px;
+    background-image: url("/img/extra/passport/logo.png");
+    @media(max-width:320px){
+      width : 250px;
+      height: 35px;
+    }
+  }
+}
 /*
 a#login-button {
 height: 36px;

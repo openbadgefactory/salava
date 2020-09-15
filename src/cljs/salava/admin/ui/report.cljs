@@ -35,6 +35,8 @@
        page-count-atom (cursor state [:filters :page_count])]
   (reset! page-count-atom 0)
   (reset! (cursor state [:fetching]) true)
+  (reset! (cursor state [:preview]) false)
+  (reset! (cursor state [:results]) {})
   (ajax/POST
    (path-for (str "/obpv1/admin/report") true)
    {:params {:users (mapv :id users)
@@ -311,20 +313,7 @@
                              :role "button"
                              :on-click #(reset! (cursor state [:find]) "badges")
                              :class (if (= "badges" @(cursor state [:find])) "btn-primary")}
-                [:span [:i.fa-certificate.fa.fa-lg.fa-fw] (t :admin/Findbadges)]]
-            #_[:ul.nav.nav-pills.pull-right
-               #_[:li
-                  [:a.btn.btn-default.navbar-btn {:href "#"
-                                                  :role "button"
-                                                  :on-click #(reset! (cursor state [:find]) "users")
-                                                  :class (if (= "users" @(cursor state [:find])) "btn-primary")}
-                     (t :admin/Findusers)]]
-               [:li
-                [:a.btn.btn-default.navbar-btn {:href "#"
-                                                :role "button"
-                                                :on-click #(reset! (cursor state [:find]) "badges")
-                                                :class (if (= "badges" @(cursor state [:find])) "btn-primary")}
-                   (t :admin/Findbadges)]]]]]]]
+                [:span [:i.fa-certificate.fa.fa-lg.fa-fw] (t :admin/Findbadges)]]]]]]
        [:div.table-responsive {:style {:max-height "500px" :overflow "auto"}}
         [:table.table
           [:thead
@@ -389,22 +378,7 @@
                                :role "button"
                                :on-click #(reset! (cursor state [:find]) "users")
                                :class (if (= "users" @(cursor state [:find])) "btn-primary")}
-                  [:span [:i.fa.fa-users.fa-fw.fa-lg] (t :admin/Showuserlist)]]
-              #_[:ul.nav.nav-pills.pull-right
-                 [:li
-                  [:a.btn.btn-default.navbar-btn {:href "#"
-                                                  :role "button"
-                                                  :on-click #(reset! (cursor state [:find]) "users")
-                                                  :class (if (= "users" @(cursor state [:find])) "btn-primary")}
-                     (t :admin/Findusers)]]
-                 #_[:li
-                    [:a.btn.btn-default.navbar-btn {:href "#"
-                                                    :role "button"
-                                                    :on-click #(reset! (cursor state [:find]) "badges")
-                                                    :class (if (= "badges" @(cursor state [:find])) "btn-primary")}
-                       (t :admin/Findbadges)]]]]]]
-          #_[:div.panel-title
-             (str (t :admin/Results) " (" (count @results) ")")]]
+                  [:span [:i.fa.fa-users.fa-fw.fa-lg] (t :admin/Showuserlist)]]]]]]
         (reduce
          (fn [r user]
           (let [{:keys [name profile_picture badge_count badges]} user]
@@ -443,8 +417,7 @@
               [:div.row
                [:div.col-md-12.text-center (str "0 " (t :badge/Badges))]])])))
          [:div.panel-body]
-         results)]]
-      #_[:p (t :admin/Selectuserfilter)])))
+         results)]])))
 
 (defn clear-selected-dates [state]
   (reset! (cursor state [:to]) nil)
@@ -459,23 +432,7 @@
     [:div.panel-heading
      [:div.row
       [:div.col-md-6
-       [:div.panel-title.weighted (t :admin/Reportbuilder)]]
-      #_[:div.col-md-6
-         [:ul.nav.nav-pills.pull-right
-          [:li
-           [:a.btn.btn-default.navbar-btn {:href "#"
-                                           :role "button"
-                                           :on-click #(reset! (cursor state [:find]) "users")
-                                           :class (if (= "users" @(cursor state [:find])) "btn-primary")}
-              (t :admin/Findusers)]]
-          [:li
-           [:a.btn.btn-default.navbar-btn {:href "#"
-                                           :role "button"
-                                           :on-click #(reset! (cursor state [:find]) "badges")
-                                           :class (if (= "badges" @(cursor state [:find])) "btn-primary")}
-              (t :admin/Findbadges)]]]]]]
-
-
+       [:div.panel-title.weighted (t :admin/Reportbuilder)]]]]
     [:div.panel-body
      [:div.row
       [badge-filter-section state]
@@ -536,7 +493,8 @@
        [user-list state])
       (when (= "badges" @(cursor state [:find]))
        [badge-list state])
-      (when (= "users" @(cursor state [:find])) (load-more state))])])
+      (load-more state)])])
+      ;(when (= "users" @(cursor state [:find])) (load-more state))])])
 
 (defn handler [site-navi]
   (let [params (query-params {:country (session/get-in [:filter-options :country] "all")})
@@ -556,7 +514,7 @@
                      :ajax-message           nil
                      :only-selfie? false
                      :badge_count            0
-                     :results {}
+                     :results {:total 0}
                      :find "users"
                      :to nil
                      :from nil
