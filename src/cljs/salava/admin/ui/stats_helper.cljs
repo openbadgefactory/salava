@@ -210,10 +210,9 @@
         data)))
 
 (defn init-social-media-stats [sm-atom ts state]
- (let [space-id @(cursor state [:space-id])
-       url (if (pos? space-id) (str "/obpv1/stats/social_media/" ts "/" space-id) "/obpv1/stats/social_media")]
+ (let [space-id (or @(cursor state [:space-id]) 0)]
   (ajax/GET
-   (path-for url true)
+   (path-for (str "/obpv1/stats/social_media/" space-id) true)
    {:handler (fn [data]
                (reset! sm-atom data))})))
 
@@ -333,12 +332,12 @@
     {:reagent-render
      (fn []
        (let [value @(cursor data-atom [:value])
-             linkedin @(cursor data-atom [:value :linkedin])
-             facebook @(cursor data-atom [:value :facebook])
-             pinterest @(cursor data-atom [:value :pinterest])
-             twitter @(cursor data-atom [:value :twitter])
+             linkedin (or @(cursor data-atom [:value :linkedin]) 0)
+             facebook (or @(cursor data-atom [:value :facebook]) 0)
+             pinterest (or @(cursor data-atom [:value :pinterest]) 0)
+             twitter (or @(cursor data-atom [:value :twitter]) 0)
              time-atom (cursor data-atom [:ctime])]
-        (when-not (empty? value)
+        ;(when-not (empty? value)
          ^{:key @(cursor state [:space-id])}
          [:div.row
           [:div.col-md-12.col-sm-12.col-xs-12
@@ -367,16 +366,19 @@
                                                    :slices [{:name "Facebook" :value facebook :fill (:facebook colors) :percentage (%percentage facebook (+ facebook linkedin pinterest twitter))}
                                                             {:name "Twitter" :value twitter :fill (:twitter colors) :percentage (%percentage twitter (+ facebook linkedin pinterest twitter))}
                                                             {:name "Pinterest" :value pinterest :fill (:pinterest colors) :percentage (%percentage pinterest (+ facebook linkedin pinterest twitter))}
-                                                            {:name "Linkedin" :value linkedin :fill (:linkedin colors) :percentage (%percentage linkedin (+ facebook linkedin pinterest twitter))}]}]})]]]])))
+                                                            {:name "Linkedin" :value linkedin :fill (:linkedin colors) :percentage (%percentage linkedin (+ facebook linkedin pinterest twitter))}]}]})]]]]))
      :component-did-mount
-     (fn [] (init-social-media-stats data-atom nil state))
+     (fn []
+      (js/window.setTimeout
+        #(init-social-media-stats data-atom nil state)
+         300))
 
      :component-did-update
      (fn []
       (js/window.setTimeout
-       #(let [space-id @(cursor state [:space-id])
+       #(let [space-id (or @(cursor state [:space-id]) 0)
               ts (if (string? @(cursor data-atom [:ctime])) (iso8601-to-unix-time @(cursor data-atom [:ctime])) @(cursor data-atom [:ctime]))
-              url (if ts (str "/obpv1/stats/social_media/" ts "/" space-id) "/obpv1/stats/social_media")]
+              url (if ts (str "/obpv1/stats/social_media/" ts "/" space-id) (str "/obpv1/stats/social_media/" space-id))]
              (js/setTimeout
               (fn []
                 (ajax/GET

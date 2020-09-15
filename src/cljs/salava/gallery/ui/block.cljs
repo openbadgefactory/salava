@@ -359,7 +359,7 @@
                                                             :email ""
                                                             :page_count 0} $
                                                             (if (some #(= context %) ["report_space"])
-                                                              (merge $ {:space-id space})
+                                                              (merge $ {:space-id space :country "all"})
                                                               (merge $ {})))
                                              :handler (fn [{:keys [users countries users_count]} data]
                                                         (swap! data-atom assoc :users users #_(if (= context "space_members_modal") (remove (fn [u] (some #(= (:id u) (:id %)) @existing-users-atom)) users) users)

@@ -12,18 +12,19 @@
             :tags ["social_media_stats"]
             :no-doc true
 
-            (GET "/social_media" []
+            (GET "/social_media/:space_id" []
                  :summary "Get latest social media stats"
                  :auth-rules access/space-admin
+                 :path-params [space_id :- s/Int]
                  :current-user current-user
-                 (ok (stats/social-media-stats-latest ctx)))
+                 (ok (stats/social-media-stats-latest ctx space_id)))
 
-            (GET "/social_media/:timestamp" []
-                 :summary "Get social media stats since timestamp"
-                 :path-params [timestamp :- s/Int]
-                 :auth-rules access/space-admin
-                 :current-user current-user
-                 (ok (stats/social-media-stats-ts ctx timestamp)))
+            #_(GET "/social_media/:timestamp" []
+                   :summary "Get social media stats since timestamp"
+                   :path-params [timestamp :- s/Int]
+                   :auth-rules access/space-admin
+                   :current-user current-user
+                   (ok (stats/social-media-stats-ts ctx timestamp)))
 
             (GET "/social_media/:timestamp/:space_id" []
                  :summary "Get space's social media stats since timestamp"

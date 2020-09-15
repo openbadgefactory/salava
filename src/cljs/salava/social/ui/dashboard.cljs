@@ -621,7 +621,7 @@
     [:div [layout/space-info-banner]]]
    (if @(cursor state [:initializing])
      [:div
-      [:span [:i.fa.fa-cog.fa-spin.fa.lg] "Preparing you dashboard"]]
+      [:span [:i.fa.fa-cog.fa-spin.fa-lg.fa-fw] (t :core/Loading)]]
      [:div
       [:div.row.flip
        [notifications-block state]

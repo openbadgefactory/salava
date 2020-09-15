@@ -45,4 +45,6 @@ GROUP BY ub.id, ub.visibility, ub.status, ub.issued_on
 ORDER BY ub.issued_on DESC
 
 --name: select-user-ids-space-report
-SELECT DISTINCT(us.user_id) FROM user_space us WHERE us.space_id = :space_id
+SELECT DISTINCT(us.user_id) FROM user_space us
+JOIN user u ON us.user_id = u.id
+WHERE us.space_id = :space_id

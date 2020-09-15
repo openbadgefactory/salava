@@ -46,12 +46,12 @@
     (assoc filters :badges badges :users users+)))
 
 (defn- select-users [ctx user-ids page_count]
-  (let [limit 10
+  (let [limit 50
         offset (* limit page_count)]
     (select-users-for-report-limit {:ids user-ids :limit limit :offset offset} (u/get-db ctx))))
 
 (defn- user-count [remaining page_count]
- (let [limit 10
+ (let [limit 50
        users-left (- remaining (* limit (inc page_count)))]
     (if (pos? users-left)
       users-left

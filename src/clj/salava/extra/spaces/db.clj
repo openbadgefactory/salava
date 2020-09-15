@@ -250,15 +250,16 @@
   (let [{:keys [users badges space-id]} filters
         ;badges+ (if (seq badges) badges (all-gallery-badges {} (u/get-db-col ctx :id)))
         users+  (if (seq users) users (select-user-ids-space-report {:space_id space-id} (u/get-db-col ctx :user_id)))]
+
     (assoc filters :badges badges :users users+)))
-    
+
 (defn- select-users [ctx user-ids page_count]
-  (let [limit 10
+  (let [limit 50
         offset (* limit page_count)]
     (select-users-for-report-limit {:ids user-ids :limit limit :offset offset} (u/get-db ctx))))
 
 (defn- user-count [remaining page_count]
- (let [limit 10
+ (let [limit 50
        users-left (- remaining (* limit (inc page_count)))]
     (if (pos? users-left)
       users-left
@@ -278,15 +279,15 @@
                                                             (get-badges ctx)))))
                             []
                             users)
-       users-with-customfields (when (seq enabled-custom-fields)(some->> users-with-badges (mapv #(merge % (reduce
-                                                                                                             (fn [r field]
-                                                                                                               (assoc r (keyword field) (or (custom-field-value ctx field (:id %)) (t :admin/notset))))
-                                                                                                             {}
-                                                                                                             enabled-custom-fields)))))]
+        users-with-customfields (when (seq enabled-custom-fields)(some->> users-with-badges (mapv #(merge % (reduce
+                                                                                                              (fn [r field]
+                                                                                                                (assoc r (keyword field) (or (custom-field-value ctx field (:id %)) (t :admin/notset))))
+                                                                                                              {}
+                                                                                                              enabled-custom-fields)))))]
       (if (empty? enabled-custom-fields)
           {:users users-with-badges :user_count (user-count (count user-ids) (:page_count filters)) :total (count user-ids)}
           {:users users-with-customfields :total (count user-ids) :user_count (user-count (count user-ids) (:page_count filters))})))
-          
+
 (defn report-for-export!
   [ctx filters admin-id]
   (let [enabled-custom-fields (mapv :name (get-in ctx [:config :extra/customField :fields] nil))
@@ -336,7 +337,7 @@
   (or (some-> (select-space-property {:id space-id :name "all_issuers_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number)) 0))
 
 (defn message-tool-settings [ctx space-id]
- {:messages_enabled (or (some-> (select-space-property {:id space-id :name "message_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false) 
+ {:messages_enabled (or (some-> (select-space-property {:id space-id :name "message_enabled"} (into {:result-set-fn first :row-fn :value} (u/get-db ctx))) (string->number) (pos?)) false)
   :issuers    (if (pos? (all-issuers-enabled? ctx space-id))
                 (mapv #(assoc % :enabled true) (select-issuer-list {} (u/get-db ctx)))
                 (some->> (select-issuer-list {} (u/get-db ctx))

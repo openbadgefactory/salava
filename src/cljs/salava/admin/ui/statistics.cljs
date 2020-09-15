@@ -49,16 +49,17 @@
   (fn [r k v]
     (conj r
      [:div.row
-      (when v [:h2.sectionheading (t (keyword (str "admin/" (name k))))])
-      (when (map? v)
-        (reduce-kv
-           (fn [x y z]
-             (conj x
-              [:div
-               [:span._label.stats (t (keyword (str "admin/" (name y))))] z]))
+      [:div.col-md-12
+       (when v [:h2.sectionheading (t (keyword (str "admin/" (name k))))])
+       (when (map? v)
+         (reduce-kv
+            (fn [x y z]
+              (conj x
+               [:div
+                [:span._label.stats (t (keyword (str "admin/" (name y))))] z]))
 
-           [:div]
-           v))]))
+            [:div]
+            v))]]))
   [:div.admin-stats]
   (-> @state (dissoc :user-badge-correlation :visible :space-id))))
 

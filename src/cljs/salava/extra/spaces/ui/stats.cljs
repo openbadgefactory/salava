@@ -174,11 +174,11 @@
 
 (defn handler [site-navi]
   (let [id (session/get-in [:user :current-space :id])
-         t (atom {})]
+         t (atom {:space-id id})]
    (ajax/POST
     (path-for (str "/obpv1/space/stats/" id))
     {:handler (fn [data]
-                (reset! t (assoc data :visible "graphic")))})
+                (reset! t (assoc data :visible "graphic" :space-id id)))})
 
    (fn []
      (layout/default site-navi [content t]))))

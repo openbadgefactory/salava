@@ -187,7 +187,7 @@
                                  ;(init-data state)
                                  (.preventDefault %))}
 
-                 (str (t :social/Loadmore) " (" @(cursor state [:results :user_count])) " " (t :admin/rowsleft) ")"]])]))
+                 (str (t :social/Loadmore) " (" @(cursor state [:results :user_count])) " " (t :admin/rowleft) ")"]])]))
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)]
