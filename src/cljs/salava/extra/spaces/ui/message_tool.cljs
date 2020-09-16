@@ -92,7 +92,7 @@
     [:input.pull-right
      {:id (str "checkbox-"id)
       :type "checkbox"
-      :default-checked (some #(= (:id %) id) @(cursor state [:selected-badges]))
+      :checked (true? (some #(= (:id %) id) @(cursor state [:selected-badges])))
       :on-change #(add-or-remove badge (cursor state [:selected-badges]))}]
     [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id id})
          :title badge_name}
@@ -122,52 +122,108 @@
                  -1)))
     true false))
 
+(defn fetch-more [state]
+  (ajax/POST
+   (path-for (str "/obpv1/space/message_tool/badges/" @(cursor state [:space-id]) "/" @(cursor state [:page_count])))
+   {:params {:params {:name @(cursor state [:search]) :issuer @(cursor state [:selected-issuer])}}
+    :handler (fn [data]
+               (swap! state assoc :badges (into (:badges @state) (:badges data)) :badge_count (:badge_count data))
+               (swap! (cursor state [:page_count]) inc))
+    :finally (fn [] (reset! (cursor state [:fetching-more]) false))}))
+
+
+
+(defn fetch-badges [state]
+  (reset! (cursor state [:page_count]) 0)
+  (reset! (cursor state [:fetching]) true)
+  (ajax/POST
+   (path-for (str "/obpv1/space/message_tool/badges/" @(cursor state [:space-id]) "/" @(cursor state [:page_count])))
+   {:params {:params {:name @(cursor state [:search]) :issuer @(cursor state [:selected-issuer])}}
+    :handler (fn [data]
+               (swap! state assoc :badges (:badges data) :badge_count (:badge_count data))
+               (swap! (cursor state [:page_count]) inc))
+    :finally (fn [] (reset! (cursor state [:fetching]) false))}))
+
+
+(defn search-timer [state]
+  (let [timer-atom (cursor state [:timer])]
+    (if @timer-atom
+      (js/clearTimeout @timer-atom))
+    (reset! timer-atom (js/setTimeout (fn []
+                                        (fetch-badges state)) 500))))
+
+(defn load-more [state]
+  (if (pos? @(cursor state [:badge_count]))
+     [:div {:style {:margin "10px 0"}}
+      (if @(cursor state [:fetching-more])
+        [:span [:i.fa.fa-cog.fa-spin.fa-lg.fa-fw] (str (t :core/Loading) "...")]
+        [:span [:a {:href     "#"
+                    :id    "loadmore"
+                    :on-click #(do
+                                 (reset! (cursor state [:fetching-more]) true)
+                                 (fetch-more state)
+                                 (.preventDefault %))}
+
+                 (str (t :social/Loadmore) " (" (:badge_count @state) " " (t :gallery/Badgesleft) ")")]])]))
+
 (defn badge-modal [state]
   (let [badges @(cursor state [:badges])]
    (fn []
-    [:div#badge-gallery
-     [:div.col-md-12
-      [:div.well.well-sm
-       [:div.form-group
-        [:input#namesearch.form-control
-         {:style {:max-width "300px"}
-          :type "text"
-          :name "search"
-          :on-change #(reset! (cursor state [:search]) (.-target.value %))
-          :placeholder "Filter by badge name"}]]
-       [:div.form-group
-        [:select#issuerselect.form-control
-         {:name "selectissuer"
-          :style {:max-width "300px"}
-          :on-change #(reset! (cursor state [:selected-issuer]) (.-target.value %))
-          :default-value ""}
-         [:option {:value "" } "All"]
-         (for [option (filter :enabled @(cursor state [:message_setting :issuers]))]
-           ^{:key (:issuer_name option)}[:option {:value (:issuer_name option)} (:issuer_name option)])]]
-       [:div.form-group
-        [:label
-          [:input
-           {:style {:margin "0 5px"}
-            :type "checkbox"
-            :default-checked @(cursor state [:select-all])
+    (let [badges @(cursor state [:badges])]
+      [:div#badge-gallery
+       [:div.col-md-12
+        [:div.well.well-sm
+         [:div.form-group
+          [:input#namesearch.form-control
+           {:style {:max-width "300px"}
+            :type "text"
+            :name "search"
             :on-change #(do
-                          (reset! (cursor state [:selected-badges]) [])
-                          (reset! (cursor state [:select-all]) (not @(cursor state [:select-all])))
-                          (when @(cursor state [:select-all])
+                          (reset! (cursor state [:search]) (.-target.value %))
+                          (search-timer state))
 
-                            (reset! (cursor state [:selected-badges])  (filter (fn [b] (element-visible? b state)) badges))))}]
-          [:b (t :extra-spaces/Selectall)]]]]
+            :placeholder "Filter by badge name"}]]
+         [:div.form-group
+          [:select#issuerselect.form-control
+           {:name "selectissuer"
+            :style {:max-width "300px"}
+            :on-change #(do
+                          (reset! (cursor state [:selected-issuer]) (.-target.value %))
+                          (fetch-badges state))
+            :default-value ""}
+           [:option {:value "" } "All"]
+           (for [option (filter :enabled @(cursor state [:message_setting :issuers]))]
+             ^{:key (:issuer_name option)}[:option {:value (:issuer_name option)} (:issuer_name option)])]]
+         [:div.form-group
+          [:label
+            [:input
+             {:style {:margin "0 5px"}
+              :type "checkbox"
+              :checked (true? @(cursor state [:select-all]))
+              :on-change #(do
+                            (reset! (cursor state [:selected-badges]) [])
+                            (reset! (cursor state [:select-all]) (not @(cursor state [:select-all])))
+                            (when @(cursor state [:select-all])
 
-      [:div#badges (into [:div {:class "row wrap-grid"
-                                :id    "grid"
-                                :style {:max-height "700px" :overflow "auto"}}]
-                         (for [badge badges]
-                           (when (element-visible? badge state)
-                            (badge-grid-element badge state))))]
-      [:div.well.well-sm.text-center
-       [:button.btn.btn-primary.btn-bulky
-        {:data-dismiss "modal" :aria-label (t :core/Continue)}
-        (t :core/Continue)]]]])))
+                              (reset! (cursor state [:selected-badges])  (filter (fn [b] (element-visible? b state)) badges))))}]
+            [:b (t :extra-spaces/Selectall)]]]]
+
+        [:div#badges
+         (if @(cursor state [:fetching])
+          [:span [:i.fa.fa-cog.fa-spin.fa-lg.fa-fw] (str (t :core/Loading) "...")]
+          (into [:div {:class "row wrap-grid"
+                       :id    "grid"
+                       :style {:max-height "700px" :overflow "auto"}}]
+                (for [badge badges]
+                  (when (element-visible? badge state)
+                   (badge-grid-element badge state)))))]
+        [:div.well.well-sm
+         [:div
+          (load-more state)]
+         [:div.text-center
+          [:button.btn.btn-primary.btn-bulky
+           {:data-dismiss "modal" :aria-label (t :core/Continue)}
+           (t :core/Continue)]]]]]))))
 
 (defn content [space-id state]
   [:div#space
@@ -305,9 +361,12 @@
 
 (defn init-badges [space-id state]
   (ajax/POST
-   (path-for (str "/obpv1/space/message_tool/badges/" space-id))
-   {:handler (fn [data]
-               (reset! (cursor state [:badges]) data))}))
+   (path-for (str "/obpv1/space/message_tool/badges/" space-id"/" 0))
+   {:params {:params {:name "" :issuer ""}}
+    :handler (fn [data]
+               (swap! state assoc :badges (:badges data) :badge_count (:badge_count data))
+               (swap! (cursor state [:page_count]) inc))}))
+               ;(reset! (cursor state [:badges]) data))}))
 
 (defn init-data [space-id state]
   (init-message-tool-settings space-id state)
@@ -326,7 +385,10 @@
                      :sending_messages false
                      :message_alert false
                      :allbadgesreceived false
-                     :message_language (session/get-in [:user :language] "en")})]
+                     :message_language (session/get-in [:user :language] "en")
+                     :page_count 0
+                     :fetching false})]
+                     ;:params {:name "" :issuer " "}})]
    (init-data space-id state)
    (fn []
     (layout/default site-navi [content space-id state]))))

@@ -11,12 +11,33 @@
   [salava.core.ui.grid :as g]
   [salava.core.ui.ajax-utils :as ajax]
   [salava.user.ui.helper :refer [profile-picture]]
-  [salava.core.time :refer [iso8601-to-unix-time date-from-unix-time]]))
+  [salava.core.time :refer [iso8601-to-unix-time date-from-unix-time]]
+  [clojure.core.reducers :as r]))
   ;[salava.core.ui.badge-grid :refer [badge-grid-element]]))
+
+(defn fetch-user-badges [data state]
+  (let [{:keys [users badges from to space-id]} @(cursor state [:filters])]
+    (reset! (cursor state [:fetching-badges]) true)
+    (ajax/POST
+     (path-for (str "/obpv1/space/report/badges"))
+     {:params {:users (mapv :id (:users data))
+               :badges (mapv :gallery_id badges)
+               :to (if (number? to) to nil)
+               :from (if (number? from) from nil)}
+               ;:page_count @page-count-atom}
+
+      :handler (fn [data]
+                 (reset! (cursor state [:results :users])
+                   (->> @(cursor state [:results :users])
+                         ;(r/reduce #(conj %1 (assoc %2 :badges (some (fn [u] (if (= (:id %2) (:user_id u)) (:badges u) (:badges %2))) data)))))))
+                         (r/map #(assoc % :badges (some (fn [u] (if (= (:id %) (:user_id u)) (:badges u) (:badges %))) data)))
+                         (into []))))
+      :finally (fn [] (reset! (cursor state [:fetching-badges]) false))})))
 
 (defn fetch-more [state]
   (let [{:keys [users badges from to space-id]} @(cursor state [:filters])
         page-count-atom (cursor state [:filters :page_count])]
+   (reset! (cursor state [:fetching-badges]) true)
    (ajax/POST
     (path-for (str "/obpv1/space/report") true)
     {:params {:users (mapv :id users)
@@ -29,7 +50,8 @@
      :handler (fn [data]
                 (swap! state assoc-in [:results :users] (into @(cursor state [:results :users]) (:users data)))
                 (swap! page-count-atom inc)
-                (swap! state assoc-in [:results :user_count] (:user_count data)))
+                (swap! state assoc-in [:results :user_count] (:user_count data))
+                (fetch-user-badges data state))
      :finally (fn [] (reset! (cursor state [:fetching-more]) false))})))
 
 (defn fetch-report [state]
@@ -37,6 +59,7 @@
        page-count-atom (cursor state [:filters :page_count])]
   (reset! page-count-atom 0)
   (reset! (cursor state [:fetching]) true)
+  (reset! (cursor state [:fetching-badges]) true)
   (reset! (cursor state [:preview]) false)
   (reset! (cursor state [:results]) {})
   (ajax/POST
@@ -50,7 +73,8 @@
     :handler (fn [data]
                (reset! (cursor state [:results]) data)
                (swap! page-count-atom inc)
-               (swap! state assoc-in [:results :user_count] (:user_count data)))
+               (swap! state assoc-in [:results :user_count] (:user_count data))
+               (fetch-user-badges data state))
 
     :finally (fn [] (reset! (cursor state [:fetching]) false))})))
 
@@ -382,7 +406,9 @@
           [:div.row
            [:div.col-md-12
              [:div.col-md-6.panel-title
-              (str (t :admin/Results) " (" (count results) ")")]
+              (if @(cursor state [:fetching-badges])
+                [:span [:i.fa.fa-lg.fa-cog.fa-spin] (str " " (t :core/Loading) " ...")]
+                (str (t :admin/Results) " (" (count results) ")"))]
              [:div.col-md-6
                [:a.pull-right {:href "#"
                                :role "button"
@@ -528,7 +554,8 @@
                      :preview false
                      :select-all-badges false
                      :fetching false
-                     :fetching-more false})]
+                     :fetching-more false
+                     :fetching-badges false})]
 
    (init-data params state)
    (fn []

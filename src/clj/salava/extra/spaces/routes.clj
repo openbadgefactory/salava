@@ -100,6 +100,17 @@
                    :current-user current-user
                    (ok (db/report! ctx filters (:id current-user))))
 
+            (POST "/report/badges" []
+                  :auth-rules access/space-admin
+                  :summary "get user badges for report"
+                  :body [filters {:users [(s/maybe s/Int)]
+                                  :badges [(s/maybe s/Int)]
+                                  :to (s/maybe s/Int)
+                                  :from (s/maybe s/Int)}]
+                                  ;:page_count s/Int}])
+                  :current-user current-user
+                  (ok (db/badges-for-report ctx filters)))
+
             (GET "/report/export/:id" [users badges to from space_id]
                    :summary "Export report to csv format"
                    :auth-rules access/space-admin
@@ -127,12 +138,14 @@
                   :current-user current-user
                   (ok (db/update-message-tool-setting ctx space-id (:messages_enabled settings) (:issuers settings) (:all_issuers_enabled settings))))
 
-            (POST "/message_tool/badges/:space-id" []
+            (POST "/message_tool/badges/:space-id/:page_count" []
                    :auth-rules access/space-admin
                    :summary "Get badges"
-                   :path-params [space-id :- s/Int]
+                   :path-params [space-id :- s/Int
+                                 page_count :- s/Int]
+                   :body-params [params :- {:name s/Str :issuer s/Str}]
                    :current-user current-user
-                   (ok (db/message-tool-badges ctx space-id)))
+                   (ok (db/message-tool-badges ctx space-id page_count params)))
 
             (POST "/message_tool/badge_earners" []
                    :auth-rules access/space-admin

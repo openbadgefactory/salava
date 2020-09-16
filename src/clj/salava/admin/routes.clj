@@ -45,6 +45,17 @@
               :current-user current-user
               (ok (report/report! ctx filters (:id current-user))))
 
+             (POST "/report/badges" []
+              :auth-rules access/admin
+              :summary "get user badges for report"
+              :body [filters {:users [(s/maybe s/Int)]
+                              :badges [(s/maybe s/Int)]
+                              :to (s/maybe s/Int)
+                              :from (s/maybe s/Int)}]
+                              ;:page_count s/Int}])
+              :current-user current-user
+              (ok (report/badges-for-report ctx filters)))
+
              (GET "/report/export/:id" [users badges to from]
               :summary "Export report to csv format"
               :auth-rules access/admin

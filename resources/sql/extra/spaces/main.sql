@@ -204,6 +204,14 @@ INSERT INTO space_message_issuers (space_id, issuer_name) VALUES (:space_id, :is
 SELECT * FROM gallery WHERE issuer_name IN (:issuers)
 GROUP BY id
 
+--name: select-message-tool-badges-limit
+SELECT * FROM gallery WHERE issuer_name IN (:issuers) AND issuer_name LIKE :issuer AND badge_name LIKE :name
+GROUP BY id
+LIMIT :limit OFFSET :offset
+
+--name: select-message-tool-badges-count
+SELECT COUNT(DISTINCT id) AS total FROM gallery WHERE issuer_name IN (:issuers) AND issuer_name LIKE :issuer AND badge_name LIKE :name
+
 --name: select-assertions-from-galleryids
 SELECT DISTINCT(assertion_url) FROM user_badge WHERE gallery_id IN (:ids)
 

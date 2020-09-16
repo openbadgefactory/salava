@@ -11,11 +11,33 @@
   [salava.core.ui.layout :as layout]
   [salava.gallery.ui.badges :as gallery]
   [salava.core.ui.grid :as g]
-  [salava.user.ui.helper :refer [profile-picture]]))
+  [salava.user.ui.helper :refer [profile-picture]]
+  [clojure.core.reducers :as r]))
+
+(defn fetch-user-badges [data state]
+  (let [{:keys [users badges from to space-id]} @(cursor state [:filters])]
+    (reset! (cursor state [:fetching-badges]) true)
+    (ajax/POST
+     (path-for (str "/obpv1/admin/report/badges"))
+     {:params {:users (mapv :id (:users data))
+               :badges (mapv :gallery_id badges)
+               :to (if (number? to) to nil)
+               :from (if (number? from) from nil)}
+               ;:page_count @page-count-atom}
+
+      :handler (fn [data]
+                 (reset! (cursor state [:results :users])
+                   (->> @(cursor state [:results :users])
+                         ;(r/reduce #(conj %1 (assoc %2 :badges (some (fn [u] (if (= (:id %2) (:user_id u)) (:badges u) (:badges %2))) data)))))))
+                         (r/map #(assoc % :badges (some (fn [u] (if (= (:id %) (:user_id u)) (:badges u) (:badges %))) data)))
+                         (into []))))
+
+      :finally (fn [] (reset! (cursor state [:fetching-badges]) false))})))
 
 (defn fetch-more [state]
   (let [{:keys [users badges from to space-id]} @(cursor state [:filters])
         page-count-atom (cursor state [:filters :page_count])]
+   (reset! (cursor state [:fetching-badges]) true)
    (ajax/POST
     (path-for (str "/obpv1/admin/report") true)
     {:params {:users (mapv :id users)
@@ -27,7 +49,8 @@
      :handler (fn [data]
                 (swap! state assoc-in [:results :users] (into @(cursor state [:results :users]) (:users data)))
                 (swap! page-count-atom inc)
-                (swap! state assoc-in [:results :user_count] (:user_count data)))
+                (swap! state assoc-in [:results :user_count] (:user_count data))
+                (fetch-user-badges data state))
      :finally (fn [] (reset! (cursor state [:fetching-more]) false))})))
 
 (defn fetch-report [state]
@@ -35,6 +58,7 @@
        page-count-atom (cursor state [:filters :page_count])]
   (reset! page-count-atom 0)
   (reset! (cursor state [:fetching]) true)
+  (reset! (cursor state [:fetching-badges]) true)
   (reset! (cursor state [:preview]) false)
   (reset! (cursor state [:results]) {})
   (ajax/POST
@@ -48,8 +72,8 @@
     :handler (fn [data]
                (reset! (cursor state [:results]) data)
                (swap! page-count-atom inc)
-               (swap! state assoc-in [:results :user_count] (:user_count data)))
-               ;(prn @page-count-atom))
+               (swap! state assoc-in [:results :user_count] (:user_count data))
+               (fetch-user-badges data state))
 
     :finally (fn [] (reset! (cursor state [:fetching]) false))})))
 
@@ -79,6 +103,7 @@
 
 (defn init-data [params state]
   (reset! (cursor state [:ajax-message]) (str (t :core/Loading) "..."))
+  (reset! (cursor state [:fetching]) true)
 
   (ajax/GET
    (path-for "/obpv1/gallery/badge_countries")
@@ -365,59 +390,65 @@
 (defn badge-list [state]
   (let [results (remove #(zero? (count (:badges %))) @(cursor state [:results :users]))
         user-filter (cursor state [:filters :users])]
-     (when (seq results)
       [:div {:style {:max-height "500px" :overflow "auto"}}
        [:div.panel.panel-default
         [:div.panel-heading
           [:div.row
            [:div
              [:div.col-md-6.panel-title
-              (str (t :admin/Results) " (" (count results) ")")]
+               (if @(cursor state [:fetching-badges])
+                 [:span [:i.fa.fa-lg.fa-cog.fa-spin] (str " " (t :core/Loading) " ...")]
+                 (str (t :admin/Results) " (" (count results) ")"))]
              [:div.col-md-6
                [:a.pull-right {:href "#"
                                :role "button"
                                :on-click #(reset! (cursor state [:find]) "users")
                                :class (if (= "users" @(cursor state [:find])) "btn-primary")}
                   [:span [:i.fa.fa-users.fa-fw.fa-lg] (t :admin/Showuserlist)]]]]]]
-        (reduce
-         (fn [r user]
-          (let [{:keys [name profile_picture badge_count badges]} user]
+        (if (seq results)
+          (reduce
+           (fn [r user]
+            (let [{:keys [name profile_picture badge_count badges]} user]
 
-           (conj r
-            [:div.panel.panel-default
-             [:div.panel.panel-heading
-              [:div.table-item
-               [:img.logo {:src (profile-picture profile_picture) :alt name}]
-               [:span.name name]]]
-             (if (seq badges)
-               [:div.table-responsive
-                [:table.table
-                 [:thead
-                  [:tr
-                   [:th (t :admin/id)]
-                   [:th (t :admin/name)]
-                   [:th (t :user/Status)]
-                   [:th (t :admin/badgeVisibility)]
-                   [:th (t :badge/Issuedon)]
-                   [:th (t :badge/Expireson)]]]
-                 (reduce
-                  (fn [v b]
-                   (let [{:keys [badge_name badge_image status visibility id issued_on expires_on]} b]
-                    (conj v
-                     [:tr.table-item
-                      [:td id]
-                      [:td  [:img.logo {:src (profile-picture badge_image) :alt badge_name}]
-                            [:span.name badge_name]]
-                      [:td status]
-                      [:td visibility]
-                      [:td (when issued_on (date-from-unix-time (* 1000 issued_on)))]
-                      [:td (when expires_on (date-from-unix-time (* 1000 expires_on)))]])))
-                  [:tbody]
-                  badges)]]
-              [:div.row
-               [:div.col-md-12.text-center (str "0 " (t :badge/Badges))]])])))
-         [:div.panel-body]
-         results)]])))
+             (conj r
+              [:div.panel.panel-default
+               [:div.panel.panel-heading
+                [:div.table-item
+                 [:img.logo {:src (profile-picture profile_picture) :alt name}]
+                 [:span.name name]]]
+               (if (seq badges)
+                 [:div.table-responsive
+                  [:table.table
+                   [:thead
+                    [:tr
+                     [:th (t :admin/id)]
+                     [:th (t :admin/name)]
+                     [:th (t :user/Status)]
+                     [:th (t :admin/badgeVisibility)]
+                     [:th (t :badge/Issuedon)]
+                     [:th (t :badge/Expireson)]]]
+                   (reduce
+                    (fn [v b]
+                     (let [{:keys [badge_name badge_image status visibility id issued_on expires_on]} b]
+                      (conj v
+                       [:tr.table-item
+                        [:td id]
+                        [:td  [:img.logo {:src (profile-picture badge_image) :alt badge_name}]
+                              [:span.name badge_name]]
+                        [:td status]
+                        [:td visibility]
+                        [:td (when issued_on (date-from-unix-time (* 1000 issued_on)))]
+                        [:td (when expires_on (date-from-unix-time (* 1000 expires_on)))]])))
+                    [:tbody]
+                    badges)]]
+                [:div.row
+                 [:div.col-md-12.text-center (str "0 " (t :badge/Badges))]])])))
+           [:div.panel-body]
+           results)
+          (if @(cursor state [:fetching-badges])
+            [:span [:i.fa.fa-lg.fa-cog.fa-spin] (str " " (t :core/Loading) " ...")]
+            [:div]))]]))
+
 
 (defn clear-selected-dates [state]
   (reset! (cursor state [:to]) nil)
@@ -523,7 +554,8 @@
                      :select-all-badges false
                      :select-all-users false
                      :fetching false
-                     :fetching-more false})]
+                     :fetching-more false
+                     :fetching-badges false})]
 
    (init-data params state)
    (fn []
