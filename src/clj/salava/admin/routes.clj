@@ -35,6 +35,7 @@
                   (ok (a/get-stats ctx (:last-visited current-user))))
 
              (POST "/report" []
+              :return schemas/report
               :auth-rules access/admin
               :summary "Generate report based on filters"
               :body [filters {:users [(s/maybe s/Int)]
@@ -46,6 +47,7 @@
               (ok (report/report! ctx filters (:id current-user))))
 
              (POST "/report/badges" []
+              :return schemas/badges-for-report
               :auth-rules access/admin
               :summary "get user badges for report"
               :body [filters {:users [(s/maybe s/Int)]

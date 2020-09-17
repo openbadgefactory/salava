@@ -193,3 +193,30 @@
                                                 (and
                                                   (some #(= (first c) %) (keys all-countries))
                                                   (some #(= (second c) %) (vals all-countries))))))
+
+
+(def report_user {:id s/Int
+                  :activated s/Bool
+                  :badgecount s/Int
+                  :sharedbadges s/Int
+                  :name s/Str
+                  :completionPercentage s/Int
+                  :emailaddresses s/Str
+                  :profile_picture (s/maybe s/Str)
+                  :profile_visibility (s/enum "internal" "public")
+                  :ctime s/Int
+                  (s/optional-key :organization) (s/maybe s/Str)
+                  (s/optional-key :gender) (s/maybe s/Str)})
+
+(def report_badges {:id s/Int
+                    :badge_image (s/maybe s/Str)
+                    :badge_name s/Str
+                    :deleted s/Int
+                    :visibility (s/enum "private" "public" "internal")
+                    :status (s/enum "accepted" "pending" "declined")
+                    :expires_on (s/maybe s/Int)
+                    :issued_on s/Int})
+
+(s/defschema report {:total s/Int :user_count s/Int :users (s/maybe [(s/maybe report_user)])})
+
+(s/defschema badges-for-report [(s/maybe {:user_id s/Int :badges (s/maybe [(s/maybe report_badges)])})])

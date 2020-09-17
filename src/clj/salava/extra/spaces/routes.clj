@@ -74,6 +74,7 @@
                         (header "Content-Type" "text/csv"))))
 
             (POST "/stats/:id" []
+                   :return schemas/stats
                    :auth-rules access/space-admin
                    :summary "Get space stats"
                    :path-params [id :- s/Int]
@@ -81,6 +82,7 @@
                    (ok (stats/space-stats ctx id (:last-visited current-user))))
 
             (POST "/populate/:id" []
+                   :return {:status (s/enum "success" "error")}
                    :auth-rules access/admin
                    :summary "Populate space with users"
                    :path-params [id :- s/Int]
@@ -89,6 +91,7 @@
                    (ok (space/populate-space ctx id users (:id current-user))))
 
             (POST "/report" []
+                   :return schemas/report
                    :auth-rules access/space-admin
                    :summary "Generate report based on filters"
                    :body [filters {:users [(s/maybe s/Int)]
@@ -101,6 +104,7 @@
                    (ok (db/report! ctx filters (:id current-user))))
 
             (POST "/report/badges" []
+                  :return schemas/badges-for-report
                   :auth-rules access/space-admin
                   :summary "get user badges for report"
                   :body [filters {:users [(s/maybe s/Int)]
@@ -139,6 +143,7 @@
                   (ok (db/update-message-tool-setting ctx space-id (:messages_enabled settings) (:issuers settings) (:all_issuers_enabled settings))))
 
             (POST "/message_tool/badges/:space-id/:page_count" []
+                   :return schemas/message-tool-badges
                    :auth-rules access/space-admin
                    :summary "Get badges"
                    :path-params [space-id :- s/Int
@@ -148,6 +153,7 @@
                    (ok (db/message-tool-badges ctx space-id page_count params)))
 
             (POST "/message_tool/badge_earners" []
+                   :return [(s/maybe s/Str)]
                    :auth-rules access/space-admin
                    :summary "Get badges"
                    :body-params [ids :- [s/Int]
@@ -172,13 +178,14 @@
             :no-doc true
 
             (GET "/" []
+                  :return schemas/spaces
                   :auth-rules access/admin
                   :summary "Get all spaces"
                   :current-user current-user
-                  ;(tstats/every-hour ctx)
                   (ok (db/all-spaces ctx)))
 
             (GET "/:id" []
+                  :return schemas/space-info
                   :auth-rules access/authenticated
                   :summary "Get space"
                   :path-params [id :- s/Int]
@@ -186,6 +193,7 @@
                   (ok (space/get-space ctx id)))
 
             (GET "/gallery/all" []
+                   :return schemas/gallery-spaces
                    :auth-rules access/authenticated
                    :summary "Get all open and controlled spaces"
                    :query [params {:name s/Str
@@ -221,6 +229,7 @@
                    (ok (space/refresh-token ctx id)))
 
             (POST "/check_membership/:id" []
+                   :return schemas/space-member?
                    :auth-rules access/authenticated
                    :summary "Check if user is a member of the organization"
                    :path-params [id :- s/Int]
@@ -228,6 +237,7 @@
                    (ok (space/is-member? ctx id (:id current-user))))
 
             (POST "/userlist/:id" []
+                   :return schemas/memberlist
                    :auth-rules access/space-admin
                    :summary "Get the members of an organization"
                    :path-params [id :- s/Int]
@@ -241,7 +251,6 @@
                     :path-params [id :- s/Int
                                   user_id :- s/Int]
                     :current-user current-user
-                    ;(when (= user_id (:id current-user)))
                     (ok (space/leave! ctx id user_id)))
 
             (POST "/reset_theme/:id" []
@@ -263,6 +272,7 @@
 
             (POST "/user" []
                    ;:auth-rules access/signed
+                   :return schemas/user-spaces
                    :summary "Get all spaces user belongs to"
                    :current-user current-user
                    (ok (db/get-user-spaces ctx (:id current-user))))

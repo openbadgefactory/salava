@@ -52,7 +52,7 @@ GROUP BY ub.gallery_id
 LIMIT 100000
 
 --name: select-user-badges-report
-SELECT ub.id, ub.visibility, ub.status, ub.expires_on, ub.issued_on, ub.deleted, g.badge_name, g.issuer_name, g.badge_image
+SELECT ub.id, ub.visibility, ub.status, ub.expires_on, ub.issued_on, ub.deleted, g.badge_name, g.badge_image
 FROM user_badge ub
 JOIN gallery g ON g.id = ub.gallery_id
 WHERE ub.deleted = 0 AND ub.revoked = 0 AND g.id IN (:ids) AND ub.user_id = :user_id AND (ub.expires_on IS NULL OR ub.expires_on > unix_timestamp())

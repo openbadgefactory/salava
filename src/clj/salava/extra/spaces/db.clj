@@ -265,17 +265,17 @@
     (if (pos? users-left)
       users-left
       0)))
-
-(defn- map-users-badges-count [ctx users user-ids]
+ 
+(defn- map-users-badges-count [ctx users]
   (let [ids (mapv :id users)
         shared_badgecount_col (count-shared-badges {:ids ids} (u/get-db ctx))
         total_badgecount_col  (count-all-user-badges {:ids ids} (u/get-db ctx))]
     (->> users
-         (r/map #(assoc % :sharedbadges (some (fn [u] (when (= (:id %) (:user_id u)) (or (:count u) 0))) shared_badgecount_col)))
-         (r/map #(assoc % :badgecount (some (fn [u] (when (= (:id %) (:user_id u)) (or (:count u) 0))) total_badgecount_col)))
+         (r/map #(assoc % :sharedbadges (or (some (fn [u] (when (= (:id %) (:user_id u)) (:count u))) shared_badgecount_col) 0)))
+         (r/map #(assoc % :badgecount (or (some (fn [u] (when (= (:id %) (:user_id u))  (:count u) )) total_badgecount_col) 0)))
          (r/foldcat))))
 
-(defn- map-users-completion% [ctx users user-ids]
+(defn- map-users-completion% [ctx users]
   (let [ids (mapv :id users)
         coll (->> ids (r/map #(hash-map :user_id % :c (:completion_percentage (profile-metrics ctx %)))) (r/foldcat))]
     (->> users
@@ -289,36 +289,6 @@
                                               :badges (some->> (badge-ids ctx (assoc filters :users [u]))
                                                                (get-badges ctx u))))) []))))
 
-#_(defn report!
-      [ctx filters admin-id]
-      (let [enabled-custom-fields (mapv :name (get-in ctx [:config :extra/customField :fields] nil))
-            filters (process-filters ctx filters)
-            user-ids (user-ids ctx filters)
-            users (when (seq user-ids) (some->> (select-users ctx user-ids (:page_count filters))
-                                                (r/map #(assoc % :sharedbadges (some (fn [u] (when (= (:id %) (:user_id u)) (:count u))) (count-shared-badges {:ids user-ids} (u/get-db ctx)))))
-                                                (r/map #(assoc % :badgecount (some (fn [u] (when (= (:id %) (:user_id u)) (:count u))) (count-all-user-badges {:ids user-ids} (u/get-db ctx)))))
-                                                (r/map #(assoc % :completionPercentage (:completion_percentage (profile-metrics ctx (:id %)))))
-                                                (r/foldcat)))
-            users-with-badges (reduce
-                                (fn [r user]
-                                  (conj r
-                                   (assoc user :badges (some->> (badge-ids ctx (assoc filters :users [(:id user)]))
-                                                                (get-badges ctx)))))
-                                []
-                                users)
-
-            users-with-customfields (when (seq enabled-custom-fields)
-                                         (some->> users-with-badges
-                                                  (r/map #(merge % (r/reduce
-                                                                     (fn [r field]
-                                                                       (assoc r (keyword field) (or (custom-field-value ctx field (:id %)) (t :admin/notset))))
-                                                                    {}
-                                                                    enabled-custom-fields)))
-                                                  (r/foldcat)))]
-          (if (empty? enabled-custom-fields)
-              {:users users-with-badges :user_count (user-count (count user-ids) (:page_count filters)) :total (count user-ids)}
-              {:users users-with-customfields :total (count user-ids) :user_count (user-count (count user-ids) (:page_count filters))})))
-
 (defn report!
   [ctx filters admin-id]
   (let [enabled-custom-fields (mapv :name (get-in ctx [:config :extra/customField :fields] nil))
@@ -326,8 +296,8 @@
         user-ids (user-ids ctx filters)
 
         users (when (seq user-ids) (select-users ctx user-ids (:page_count filters)))
-        users-with-badge-counts (map-users-badges-count ctx users user-ids)
-        users-with-completion% (map-users-completion% ctx users-with-badge-counts user-ids)
+        users-with-badge-counts (when (seq users) (map-users-badges-count ctx users))
+        users-with-completion% (when (seq users-with-badge-counts) (map-users-completion% ctx users-with-badge-counts))
 
         users-with-customfields (when (seq enabled-custom-fields)
                                      (some->> users-with-completion%
@@ -342,46 +312,15 @@
         {:users users-with-completion% :user_count (user-count (count user-ids) (:page_count filters)) :total (count user-ids)}
         {:users users-with-customfields :total (count user-ids) :user_count (user-count (count user-ids) (:page_count filters))})))
 
-#_(defn report-for-export!
-      [ctx filters admin-id]
-      (let [enabled-custom-fields (mapv :name (get-in ctx [:config :extra/customField :fields] nil))
-            filters (process-filters ctx filters)
-            user-ids (user-ids ctx filters)
-            users (when (seq user-ids) (some->> (select-users-for-report-fix {:ids user-ids} (u/get-db ctx))
-                                                (r/map #(assoc % :sharedbadges (some (fn [u] (when (= (:id %) (:user_id u)) (:count u))) (count-shared-badges {:ids user-ids} (u/get-db ctx)))))
-                                                (r/map #(assoc % :badgecount (some (fn [u] (when (= (:id %) (:user_id u)) (:count u))) (count-all-user-badges {:ids user-ids} (u/get-db ctx)))))
-                                                (r/map #(assoc % :completionPercentage (:completion_percentage (profile-metrics ctx (:id %)))))
-                                                (r/foldcat)))
-            users-with-badges (reduce
-                                (fn [r user]
-                                  (conj r
-                                   (assoc user :badges (filter #(= (:user_id %) (:id user)) (some->> (badge-ids ctx (assoc filters :users [(:id user)]))
-                                                                                                     (get-badges ctx))))))
-                                []
-                                users)
-
-            users-with-customfields (when (seq enabled-custom-fields)
-                                         (some->> users-with-badges
-                                                  (r/map #(merge % (r/reduce
-                                                                     (fn [r field]
-                                                                       (assoc r (keyword field) (or (custom-field-value ctx field (:id %)) (t :admin/notset))))
-                                                                    {}
-                                                                    enabled-custom-fields)))
-                                                  (r/foldcat)))]
-
-        (if (empty? enabled-custom-fields)
-            {:users users-with-badges}
-            {:users users-with-customfields})))
 
 (defn report-for-export!
   [ctx filters admin-id]
   (let [enabled-custom-fields (mapv :name (get-in ctx [:config :extra/customField :fields] nil))
         filters (process-filters ctx filters)
         user-ids (user-ids ctx filters)
-
         users (when (seq user-ids) (select-users-for-report-fix {:ids user-ids} (u/get-db ctx)))
-        users-with-badge-counts (map-users-badges-count ctx users user-ids)
-        users-with-completion% (map-users-completion% ctx users-with-badge-counts user-ids)
+        users-with-badge-counts (when (seq users) (map-users-badges-count ctx users))
+        users-with-completion% (when (seq users-with-badge-counts) (map-users-completion% ctx users-with-badge-counts))
         users-with-customfields (when (seq enabled-custom-fields)
                                      (some->> users-with-completion%
                                               (r/map #(merge % (r/reduce

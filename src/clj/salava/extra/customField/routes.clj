@@ -26,7 +26,7 @@
                  (ok (db/custom-field-value ctx "gender" (:id current-user))))
 
             (POST "/gender/value/:user_id" []
-                 :return schemas/gender #_(s/maybe (s/enum "male" "female" "other"))
+                 :return schemas/gender 
                  :summary "Get user gender"
                  :auth-rules access/signed
                  :path-params [user_id :- s/Int]
@@ -43,7 +43,7 @@
 
             (POST "/gender/register" req
                  :summary "Save new user gender"
-                 :body-params [gender :- schemas/gender #_(s/enum "male" "female" "other")]
+                 :body-params [gender :- schemas/gender]
                  :current-user current-user
                  (-> (ok)
                      (assoc-in [:session] (assoc (get req :session {}) :custom-fields (merge (get-in req [:session :custom-fields] {}) {:gender gender})))))
