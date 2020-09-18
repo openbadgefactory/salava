@@ -17,6 +17,7 @@
 @import '../metabadge';
 @import '../profile';
 @import '../badgeIssuer';
+@import 'spaces';
 
 
 .btn {
@@ -78,7 +79,7 @@
    .logo-image-icon-url {
      //width: 87px;
      //height: 97px;
-     background-image: url("/img/extra/ecampus/logo_icon.png");
+     background-image: url("logo_icon.png");
      background-size: contain;
      background-repeat: no-repeat;
   }
@@ -566,6 +567,54 @@ select.form-control::-ms-expand {
   color: #9D6E04 !important;
   &:hover, &:focus {
     color: $menu-color !important;
+  }
+}
+
+.space-card {
+  a {
+    text-decoration: none;
+  }
+}
+
+#badge-creator .bottom-navigation, .btn-group{
+
+  .btn-danger {
+    color: black !important;
+    &:focus{
+      background-color: white;
+      color: black;
+      border-color: $button-color;
+    }
+  }
+
+  .btn-success {
+    color: black !important;
+      &:focus{
+        background-color: white;
+        color: black;
+        border-color: $button-color;
+      }
+  }
+
+}
+
+.resource-buttons .btn .fa, .btn-toolbar .btn .fa, .confirmusers .fa-remove, .evidence-info .fa-remove, #badge-creator .img-buttons .fa-upload{
+  color: black !important;
+}
+
+
+@media(min-width: 768px){
+  #grid-filter .col-sm-offset-2 {
+    margin-left: 10%;
+  }
+}
+
+#registration-page .input-group .input-group-btn {
+    background-color: transparent;
+   .btn.btn-primary{
+      background-color: $button-color !important;
+      border-color: $button-color !important;
+      color: #000 !important;
   }
 }
 

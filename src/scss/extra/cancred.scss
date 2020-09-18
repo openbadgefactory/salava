@@ -16,6 +16,7 @@
 @import '../metabadge';
 @import '../profile';
 @import '../badgeIssuer';
+@import 'spaces';
 
 .logo-image-url{
   width: 350px;
@@ -362,7 +363,7 @@ p.text-muted {
   color: #372C2C;
 }
 
-#grid-filter .btn {
+#grid-filter .btn, .input-group-btn  {
   background-color: $titlebar-color;
   border-color: $titlebar-color;
 }
@@ -379,6 +380,15 @@ p.text-muted {
   line-height: 0px;
   .logo-image-url {
     width: 160px;
+  }
+}
+
+.input-group .input-group-btn {
+    background-color: transparent;
+   .btn {
+      background-color: $titlebar-color !important;
+      border-color: $titlebar-color !important;
+      color: #FFF;
   }
 }
 

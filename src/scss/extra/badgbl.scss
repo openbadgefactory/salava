@@ -15,6 +15,7 @@
 @import '../metabadge';
 @import '../profile';
 @import '../badgeIssuer';
+@import 'spaces';
 
 /* LOGO */
 .logo-image-url {
@@ -698,4 +699,13 @@ p.help-block {
 
 .selfie-stamp .logo-image-url {
   height: 48px;
+}
+
+#registration-page .input-group .input-group-btn {
+    background-color: transparent;
+   .btn.btn-primary{
+      background-color: $button-color !important;
+      border-color: $button-color !important;
+      color: #000 !important;
+  }
 }

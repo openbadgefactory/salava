@@ -15,6 +15,7 @@
 @import '../metabadge';
 @import '../profile';
 @import '../badgeIssuer';
+@import 'spaces';
 
 /* Fonts */
 @font-face {
@@ -815,4 +816,23 @@ p.help-block {
 
 .selfie-stamp .logo-image-url {
   width: 180px;
+}
+
+#space .manage-members, #space .btn-toolbar{
+  .btn-warning {
+    background-color: black;
+    border-color: black;
+    &:active, &:hover, &:focus {
+      border-color: $third-color;
+    }
+  }
+}
+
+#registration-page .input-group .input-group-btn {
+    background-color: transparent;
+   .btn.btn-primary{
+      background-color: $dark-blue !important;
+      border-color: $main-color !important;
+      color: #FFF !important;
+  }
 }
