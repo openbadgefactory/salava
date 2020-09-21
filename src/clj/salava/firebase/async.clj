@@ -99,12 +99,13 @@
                                                                   (content (:language user)))}}})))
                         (apply str))]
 
-          (http/http-post
-            "https://fcm.googleapis.com/batch"
-            {:headers {"Content-Type" "multipart/mixed; boundary=\"subrequest_boundary\""}
-             :content-type "multipart/mixed; boundary=\"subrequest_boundary\""
-             :body (str body "--subrequest_boundary--" "\r\n")
-             }))))))
+          (when-not (string/blank? body)
+            (http/http-post
+              "https://fcm.googleapis.com/batch"
+              {:headers {"Content-Type" "multipart/mixed; boundary=\"subrequest_boundary\""}
+               :content-type "multipart/mixed; boundary=\"subrequest_boundary\""
+               :body (str body "--subrequest_boundary--" "\r\n")
+               })))))))
 
 
 (defn subscribe [ctx]
