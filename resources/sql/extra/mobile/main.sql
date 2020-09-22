@@ -145,9 +145,10 @@ WHERE ub.id = :user_badge_id AND ub.user_id = :owner;
 SELECT g.id, g.badge_id, bc.name, bc.description, bc.image_file, b.default_language_code,
     ic.id AS issuer_id, ic.name AS issuer_name, ic.email AS issuer_email, ic.url AS issuer_url, ic.image_file AS issuer_image_file, ic.description AS issuer_description,
     cc.id AS creator_id, cc.name AS creator_name, cc.email AS creator_email, cc.url AS creator_url, cc.image_file AS creator_image_file, cc.description AS creator_description,
-    (SELECT COUNT(*) FROM user_badge WHERE deleted = 0 AND status != 'declined' AND visibility != 'private' AND revoked = 0 AND gallery_id = :gallery_id) AS recipient_count
+    (SELECT COUNT(*) FROM user_badge WHERE status = 'accepted' AND deleted = 0 AND revoked = 0
+     AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()) AND gallery_id = :gallery_id) AS recipient_count
 FROM gallery g
-INNER JOIN user_badge ub
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
 INNER JOIN badge b ON g.badge_id = b.id
 INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
 INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
