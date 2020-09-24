@@ -1,4 +1,0 @@
-;; Open Badge Factory API configuration
-{:url "https://openbadgefactory.com"
- :key "obf_api"
- :secret "123456"}

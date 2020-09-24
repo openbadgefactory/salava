@@ -1,1 +1,0 @@
-ALTER TABLE `space` DROP COLUMN `url`;
