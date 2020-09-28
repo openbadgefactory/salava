@@ -335,11 +335,28 @@
            [:div.col-md-6.panel-title
             (str (t :admin/Results) " (" (count @results) "/" @(cursor state [:results :total]) ")")]
            [:div.col-md-6
-             [:a.pull-right {:href "#"
-                             :role "button"
-                             :on-click #(reset! (cursor state [:find]) "badges")
-                             :class (if (= "badges" @(cursor state [:find])) "btn-primary")}
-                [:span [:i.fa-certificate.fa.fa-lg.fa-fw] (t :admin/Findbadges)]]]]]]
+              [:div {:style {:text-align "right"}}
+               [:label.radio-inline
+                [:input
+                 {:type "radio"
+                  :value "users"
+                  :name "usersradio"
+                  :on-change #(reset! (cursor state [:find]) "users")
+                  :checked (= "users" @(cursor state [:find]))
+                  :id "usersRadio"}] (t :admin/Showuserlist)] ;[:span [:i.fa.fa-users.fa-fw.fa-lg] (t :admin/Showuserlist)]]
+               [:label.radio-inline
+                [:input
+                 {:type "radio"
+                  :value "badges"
+                  :name "badgesradio"
+                  :on-change #(reset! (cursor state [:find]) "badges")
+                  :checked (= "badges" @(cursor state [:find]))
+                  :id "badgesRadio"}]  (t :admin/Findbadges)]] ;[:span [:i.fa-certificate.fa.fa-lg.fa-fw] (t :admin/Findbadges)]]]
+             #_[:a.pull-right {:href "#"
+                               :role "button"
+                               :on-click #(reset! (cursor state [:find]) "badges")
+                               :class (if (= "badges" @(cursor state [:find])) "btn-primary")}
+                  [:span [:i.fa-certificate.fa.fa-lg.fa-fw] (t :admin/Findbadges)]]]]]]
        [:div.table-responsive {:style {:max-height "500px" :overflow "auto"}}
         [:table.table
           [:thead
@@ -401,11 +418,28 @@
                  [:span [:i.fa.fa-lg.fa-cog.fa-spin] (str " " (t :core/Loading) " ...")]
                  (str (t :admin/Results) " (" (count results) ")"))]
              [:div.col-md-6
-               [:a.pull-right {:href "#"
-                               :role "button"
-                               :on-click #(reset! (cursor state [:find]) "users")
-                               :class (if (= "users" @(cursor state [:find])) "btn-primary")}
-                  [:span [:i.fa.fa-users.fa-fw.fa-lg] (t :admin/Showuserlist)]]]]]]
+              [:div {:style {:text-align "right"}}
+               [:label.radio-inline
+                [:input
+                 {:type "radio"
+                  :value "users"
+                  :name "usersradio"
+                  :on-change #(reset! (cursor state [:find]) "users")
+                  :checked (= "users" @(cursor state [:find]))
+                  :id "usersRadio"}] (t :admin/Showuserlist)] ;[:span [:i.fa.fa-users.fa-fw.fa-lg] (t :admin/Showuserlist)]]
+               [:label.radio-inline
+                [:input
+                 {:type "radio"
+                  :value "badges"
+                  :name "badgesradio"
+                  :on-change #(reset! (cursor state [:find]) "badges")
+                  :checked (= "badges" @(cursor state [:find]))
+                  :id "badgesRadio"}]  (t :admin/Findbadges)] ;[:span [:i.fa-certificate.fa.fa-lg.fa-fw] (t :admin/Findbadges)]]
+               #_[:a.pull-right {:href "#"
+                                 :role "button"
+                                 :on-click #(reset! (cursor state [:find]) "users")
+                                 :class (if (= "users" @(cursor state [:find])) "btn-primary")}
+                    [:span [:i.fa.fa-users.fa-fw.fa-lg] (t :admin/Showuserlist)]]]]]]]
         (if (seq results)
           (reduce
            (fn [r user]
@@ -483,16 +517,17 @@
                           (reset! (cursor state [:from]) (.-target.value %))
                           (reset! (cursor state [:filters :from]) (iso8601-to-unix-time @(cursor state [:from])))
                           (fetch-report state))}]
-          [:span.mg10hr [:b "-"]]
+          [:span {:style {:margin "10px"}} [:b "-"]]
           [:input#to.form-control
-           {:type "date"
+           {:style {:margin-right "10px"}
+            :type "date"
             :value @(cursor state [:to])
             :on-change #(do
                           (.preventDefault %)
                           (reset! (cursor state [:to]) (.-target.value %))
                           (reset! (cursor state [:filters :to]) (iso8601-to-unix-time @(cursor state [:to])))
                           (fetch-report state))}]
-          [:button.btn.btn-primary.mg10hr
+          [:button.btn.btn-primary
             {:on-click #(do
                           (clear-selected-dates state)
                           (fetch-report state))}
