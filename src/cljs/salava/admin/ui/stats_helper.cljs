@@ -323,6 +323,7 @@
          [:div])]]])))
 
 (defn social-media-box [state]
+ (when (some #(= "extra/stats" %) (session/get :plugins))
   (let [data-atom (atom {:value {} :ctime nil})
         {:keys [id value ctime]} @data-atom
         {:keys [facebook linkedin pinterest twitter]} value
@@ -385,4 +386,4 @@
                  (path-for url true)
                  {:handler (fn [data]
                               (reset! data-atom data))}))))
-       500))})))
+       500))}))))
