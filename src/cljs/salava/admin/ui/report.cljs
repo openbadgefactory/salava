@@ -27,10 +27,11 @@
 
       :handler (fn [data]
                  (reset! (cursor state [:results :users])
-                   (->> @(cursor state [:results :users])
-                         ;(r/reduce #(conj %1 (assoc %2 :badges (some (fn [u] (if (= (:id %2) (:user_id u)) (:badges u) (:badges %2))) data)))))))
-                         (r/map #(assoc % :badges (some (fn [u] (if (= (:id %) (:user_id u)) (:badges u) (:badges %))) data)))
-                         (into []))))
+                   (if (seq @(cursor state [:results :users]))
+                     (->> @(cursor state [:results :users])
+                           (r/map #(assoc % :badges (some (fn [u] (if (= (:id %) (:user_id u)) (:badges u) (:badges %))) data)))
+                           (into []))
+                     [])))
 
       :finally (fn [] (reset! (cursor state [:fetching-badges]) false))})))
 
@@ -146,7 +147,7 @@
    [:input.pull-right
     {:id (str "checkbox-"gallery_id)
      :type "checkbox"
-     :checked (some #(= gallery_id (:gallery_id %))  @badge-filters)
+     :checked (if (some #(= gallery_id (:gallery_id %))  @badge-filters) true false)
      :on-change #(add-or-remove badge badge-filters)}]
    [:a {:href "#"
         :on-click #(do
@@ -225,13 +226,13 @@
          [:input
           {:style {:margin "0 5px"}
            :type "checkbox"
-           :default-checked @(cursor state [:select-all-badges])
+           :default-checked (true? @(cursor state [:select-all-badges]))
            :on-change #(do
                          (reset! (cursor state [:filters :badges]) [])
                          (reset! (cursor state [:select-all-badges]) (not @(cursor state [:select-all-badges])))
                          (when @(cursor state [:select-all-badges])
                            (reset! (cursor state [:filters :badges])  (:badges @state))))}]
-         [:b (t :extra-spaces/Selectall)]]]
+         [:b (t :admin/Selectallvisiblebadges)]]]
 
     (if (:ajax-message @state)
       [:div.ajax-message

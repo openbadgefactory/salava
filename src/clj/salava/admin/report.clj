@@ -6,8 +6,8 @@
    [salava.core.i18n :refer [t]]
    [salava.core.time :refer [date-from-unix-time]]
    [yesql.core :refer [defqueries]]
-   [salava.core.util :as u]
-   [salava.extra.customField.db :refer [custom-field-value]]
+   [salava.core.util :as u :refer [plugin-fun get-plugins]]
+   ;[salava.extra.customField.db :refer [custom-field-value]]
    [clojure.tools.logging :as log]
    [clojure.core.reducers :as r]))
 
@@ -80,6 +80,10 @@
         (r/reduce (fn [r u] (conj r (hash-map :user_id u
                                               :badges (some->> (badge-ids ctx (assoc filters :users [u]))
                                                                (get-badges ctx u))))) []))))
+
+(defn- custom-field-value [ctx field user-id]
+   (as-> (first (plugin-fun (get-plugins ctx) "main" "custom-field-value")) $
+          (if (ifn? $) ($ field user-id) nil)))
 
 
 (defn report!
