@@ -154,4 +154,23 @@
                   :summary "Upload badge image (PNG)"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (util/upload-image ctx current-user file))))))
+                  (ok (util/upload-image ctx current-user file)))
+
+            (POST "/admin_preview/all" []
+                  :no-doc true
+                  :summary "Get all created selfie badges"
+                  :body [params {:country s/Str
+                                 :page_count s/Int
+                                 :order s/Str
+                                 :creator s/Str
+                                 :name s/Str}]
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (ok (bdb/all-created-selfies ctx params)))
+
+            (POST "/admin_preview/selfie_countries" []
+                  :no-doc true
+                  :summary "Get countries of selfie creators"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (ok (bdb/get-selfie-countries ctx))))))

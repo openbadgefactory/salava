@@ -50,7 +50,7 @@
    [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]])
 
 (defn grid-element [element-data state]
-  (let [{:keys [id name image creator_name issuable_from_gallery]} element-data
+  (let [{:keys [id name image creator_name issuable_from_gallery recipients]} element-data
         selected-users (cursor state [:selected-users])]
     [:div.media.grid-container
      [:div.media-content
@@ -66,7 +66,10 @@
         [:div.media-heading
          [:p.heading-link name]]
         [:div.media-issuer
-         [:p creator_name]]]]]]))
+         [:p creator_name]]
+        (when recipients
+         [:div.media-recipients
+          (str recipients " " (t :gallery/recipients))])]]]]))
 
 (defn grid [state]
   (let [badges @(cursor state [:badges])

@@ -3,126 +3,168 @@
    [reagent.core :refer [atom cursor]]
    [reagent.session :as session]
    [salava.core.ui.grid :as g]
-   [salava.core.ui.helper :refer [plugin-fun]]
+   [salava.core.ui.helper :refer [plugin-fun path-for]]
+   [salava.core.ui.ajax-utils :as ajax]
    [salava.core.ui.modal :as mo]
    [salava.gallery.ui.badges :as gallery]
    [salava.core.i18n :refer [t]]
-   [salava.admin.ui.report :as report]))
-   ;[salava.extra.spaces.ui.report :as report]))
+   [salava.admin.ui.report :as report]
+   [salava.badgeIssuer.ui.my :as bmy]))
 
-#_(defn- add-or-remove [x coll]
-     (if (some #(= x %) @coll)
-       (reset! coll (->> @coll (remove #(= x %)) vec))
-       (reset! coll (conj @coll x))))
+(defn query-params [base]
+  {:country (get base :country "all")
+   :order (get base :order "mtime")
+   :page_count 0
+   :name (get base :name "")
+   :creator (get base :creator "")})
 
+(defn fetch-more [state]
+  (let [page-count-atom (cursor state [:params :page_count])]
+    (reset! (cursor state [:fetching-more]) true)
+    (ajax/POST
+     (path-for "/obpv1/selfie/admin_preview/all")
+     {:params  (:params @state)
+      :handler (fn [data]
+                 ;(value-helper state (get-in data [:tags]))
+                 (swap! page-count-atom inc)
+                 (swap! state assoc
+                        :selfies (into (:selfies @state) (:selfies data))
+                        :selfie_count (:selfie_count data)))
+      :finally (fn [] (reset! (cursor state [:fetching-more]) false))})))
 
-#_(defn badge-grid-element [badge state]
-   (let [{:keys [recipients image_file name id selfie_id badge_id gallery_id issuer_content_name description]} badge
-         badge-filters (cursor state [:filters :badges])]
-    [:div {:class "media grid-container" :style {:position "relative"}}
-     [:input.pull-right
-      {:id (str "checkbox-"gallery_id)
-       :type "checkbox"
-       :name (str "input-checkbox-"gallery_id)
-       ;:value (some #(= gallery_id (:gallery_id %))  @badge-filters)
-       :checked (if (some #(= gallery_id (:gallery_id %))  @badge-filters) true false)
-       :on-change #(add-or-remove badge badge-filters)}]
-     [:a {:href "#"
-          :on-click #(do
-                       (.preventDefault %)
-                       (mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id gallery_id} {:hidden (fn [] (reset! (cursor state [:select-all]) false))}))
+(defn fetch-selfies [state]
+  (let [ajax-message-atom (cursor state [:loading])
+        page-count-atom (cursor state [:params :page_count])]
+    (reset! ajax-message-atom true)
+    (reset! page-count-atom 0)
+    (ajax/POST
+     (path-for "/obpv1/selfie/admin_preview/all")
+     {:params  (:params @state)
+      :handler (fn [data]
+                 ;(value-helper state (get-in data [:tags]))
+                 (swap! page-count-atom inc)
+                 (swap! state assoc
+                        :selfies (:selfies data)
+                        :selfie_count (:selfie_count data)))
+      :finally (fn []
+                 (reset! ajax-message-atom false))})))
 
-          :title name}
-      [:div.media-content
-       (if image_file
-         [:div.media-left
-          [:img {:src (str "/" image_file)
-                 :alt (str (t :badge/Badge) " " name)}]])
-       [:div.media-body
-        [:div.media-heading
-         [:p.heading-link name]]
-        [:div.media-issuer
-         [:p (when-not (clojure.string/blank? selfie_id)
-              [:i.fa.fa-user.fa-fw.fa-lg {:title (str (t :badgeIssuer/Createdandissued) " " (session/get :site-name))
-                                          :aria-label (str (t :badgeIssuer/Createdandissued) " " (session/get :site-name))}])
-          issuer_content_name]]]]]]))
+(defn search-timer [state]
+  (let [timer-atom (cursor state [:timer])]
+    (if @timer-atom
+      (js/clearTimeout @timer-atom))
+    (reset! timer-atom (js/setTimeout (fn []
+                                        (fetch-selfies state)) 500))))
 
-#_(defn gallery-grid-form [state]
-    (let [show-advanced-search (cursor state [:advanced-search])]
-      [:div {:id "grid-filter"
-             :class "form-horizontal"}
-       [:div
-        #_[gallery/country-selector state]
-        [:div
-         [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
-              :href "#"}
-          (if @show-advanced-search
-            (t :gallery/Hideadvancedsearch)
-            (t :gallery/Showadvancedsearch))]]
-        (when @show-advanced-search
-          [:div
-           [gallery/autocomplete state]
-           [gallery/text-field :badge-name (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
-           [gallery/text-field :recipient-name (t :gallery/Recipient) (t :gallery/Searchbyrecipient) state]
-           [gallery/text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])]
-       [g/grid-radio-buttons (str (t :core/Order) ":") "order" (gallery/order-radio-values) [:params :order] state gallery/fetch-badges]
-       (into [:div]
-        (for [f (plugin-fun (session/get :plugins) "block" "gallery_checkbox")]
-         (when (ifn? f) [f state (fn [] (gallery/fetch-badges state))])))]))
+(defn country-selector [state]
+  (let [country (cursor state [:params :country])]
+    [:div.form-group
+     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
+     [:div.col-sm-10
+      [:select {:class     "form-control"
+                :id        "country-selector"
+                :name      "country"
+                :value     @country
+                :on-change #(do
+                              (reset! country (.-target.value %))
+                              (swap! state assoc :params (query-params {:country @country}))
+                              (fetch-selfies state))}
+       [:option {:value "all" :key "all"} (t :core/All)]
+       (for [[country-key country-name] (map identity (:countries @state))]
+         [:option {:value country-key
+                   :key country-key} country-name])]]]))
 
-#_(defn load-more [state]
-    (if (pos? @(cursor state [:results :user_count]))
-       [:div {:style {:margin "10px 0"}}
-        (if @(cursor state [:fetching-more])
-          [:span [:i.fa.fa-cog.fa-spin.fa-lg.fa-fw] (str (t :core/Loading) "...")]
-          [:span [:a {:href     "#"
-                      :id    "loadmore"
-                      :on-click #(do
-                                   (reset! (cursor state [:fetching-more]) true)
-                                   (fetch-more state)
-                                   ;(init-data state)
-                                   (.preventDefault %))}
+(defn text-field [key label placeholder state]
+  (let [search-atom (cursor state [:params key])
+        field-id (str key "-field")]
+    [:div.form-group
+     [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
+     [:div.col-sm-10
+      [:input {:class       (str "form-control")
+               :id          field-id
+               :type        "text"
+               :placeholder placeholder
+               :value       @search-atom
+               :on-change   #(do
+                               (reset! search-atom (.-target.value %))
+                               (search-timer state))}]]]))
 
-                   (str (t :social/Loadmore) " (" @(cursor state [:results :user_count])) " " (t :admin/rowleft) ")"]])]))
+(defn order-radio-values []
+  [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
+   {:value "name" :id "radio-name" :label (t :core/byname)}
+   {:value "recipients" :id "radio-recipients" :label (t :core/byrecipients)}
+   {:value "creator" :id "radio-issuer-name" :label (t :badgeIssuer/Badgecreator)}])
 
-#_(defn gallery-grid [state]
-    (let [badges (:badges @state)]
-      [:div#badges (into [:div {:class "row wrap-grid"
-                                :id    "grid"}]
-                         (for [element-data badges]
-                           (badge-grid-element element-data state))) ;"pickable" gallery/fetch-badges)))
-       (gallery/load-more state)]))
+(defn gallery-grid-form [state]
+  (let [show-advanced-search (cursor state [:advanced-search])]
+    [:div {:id "grid-filter"
+           :class "form-horizontal"}
+     [:div
+      [country-selector state]
+      [text-field :name (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
+      [text-field :creator (t :badgeIssuer/Badgecreator) "" state]
+      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) [:params :order] state fetch-selfies]]]))
 
-#_(defn badges-modal [state]
-   (fn []
-    [:div#badge-gallery
-     [:div.col-md-12
-      [gallery-grid-form state]
-      [:div {:style {:background-color "ghostwhite" :margin "10px auto" :padding "8px"}}
-         ;[:p [:b (t :admin/selectallbadgesinstruction)]]
-         [:label
-           [:input
-            {:style {:margin "0 5px"}
-             :type "checkbox"
-             :default-checked @(cursor state [:select-all-badges])
-             :on-change #(do
-                           (reset! (cursor state [:filters :badges]) [])
-                           (reset! (cursor state [:select-all-badges]) (not @(cursor state [:select-all-badges])))
-                           (when @(cursor state [:select-all-badges])
-                             (reset! (cursor state [:filters :badges])  (:badges @state))))}]
-             ;:disabled (pos? @(cursor state [:badge_count]))}]
-           [:b (t :admin/Selectallvisiblebadges)]]]
+(defn load-more [state]
+  (if (pos? @(cursor state [:selfie_count]))
+     [:div {:style {:margin "10px 0"}}
+      (if @(cursor state [:fetching-more])
+        [:span [:i.fa.fa-cog.fa-spin.fa-lg.fa-fw] (str (t :core/Loading) "...")]
+        [:span [:a {:href     "#"
+                    :id    "loadmore"
+                    :on-click #(do
+                                 (reset! (cursor state [:fetching-more]) true)
+                                 (fetch-more state)
+                                 (.preventDefault %))}
+                 (str (t :social/Loadmore) " (" @(cursor state [:selfie_count])) " " (t :gallery/Badgesleft) ")"]])]))
 
-      (if (:ajax-message @state)
-        [:div.ajax-message
-         [:i {:class "fa fa-cog fa-spin fa-2x "}]
-         [:span (:ajax-message @state)]]
-        [gallery-grid state])
+(defn gallery-grid [state]
+  (let [badges (:selfies @state)]
+    [:div#badges (into [:div {:class "row wrap-grid"
+                              :id    "grid"}]
+                       (for [element-data badges]
+                         (bmy/grid-element element-data state))) ;"pickable" gallery/fetch-badges)))
+     (load-more state)]))
 
-      [:div.well.well-sm.text-center
-       [:button.btn.btn-primary.btn-bulky
-        {:aria-label (t :core/Continue) :data-dismiss "modal"}
-        (t :core/Continue)]]]]))
+(defn init-selfie-badges [state]
+  (reset! (cursor state [:loading]) true)
+  (ajax/POST
+   (path-for "/obpv1/selfie/admin_preview/selfie_countries")
+   {:handler (fn [data] (swap! state assoc :countries (:countries data)))})
+
+  (ajax/POST
+   (path-for "/obpv1/selfie/admin_preview/all")
+   {:params (:params @state)
+    :handler (fn [data]
+               (reset! (cursor state [:selfies]) (:selfies data))
+               (reset! (cursor state [:selfie_count]) (:selfie_count data))
+               (swap! (cursor state [:params :page_count]) inc))
+    :finally (fn [] (reset! (cursor state [:loading]) false))}))
+
+(defn selfies-modal [params]
+  (let [params (query-params {:country (session/get-in [:user :country] "all")
+                              :order "mtime"
+                              :page_count 0
+                              :name ""
+                              :creator ""})
+        state (atom {:params params
+                     :selfies []
+                     :selfie_count 0
+                     :advanced-search false
+                     :loading false
+                     :fetching-more false})]
+    (init-selfie-badges state)
+    (fn []
+      [:div#badge-gallery
+       [:div.col-md-12
+        [gallery-grid-form state]
+        (if (:ajax-message @state)
+          [:div.ajax-message
+           [:i {:class "fa fa-cog fa-spin fa-2x "}]
+           [:span (str (t :core/Loading) "...")]]
+          [gallery-grid state])]])))
+
 
 (def ^:export modalroutes
-  {:report {:badges report/badges-modal}})
+  {:report {:badges report/badges-modal}
+   :admin {:selfie selfies-modal}})

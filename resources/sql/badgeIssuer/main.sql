@@ -164,3 +164,62 @@ SELECT COUNT(DISTINCT id) AS count FROM selfie_badge WHERE deleted = 0 AND ctime
 
 --name: issued-badges-count-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND revoked = 0 AND status != 'declined' AND selfie_id IS NOT NULL AND ctime > :time;
+
+--name: select-selfie-ids-badge
+SELECT DISTINCT id FROM selfie_badge WHERE deleted = 0 AND name like :badge
+ORDER BY ctime DESC
+LIMIT 100000;
+
+--name: select-selfie-ids-creator
+SELECT DISTINCT sb.id FROM selfie_badge sb
+INNER JOIN user u ON sb.creator_id = u.id
+WHERE sb.deleted = 0  AND u.deleted = 0 AND CONCAT(u.first_name, ' ', u.last_name) LIKE :creator
+ORDER BY sb.ctime DESC
+LIMIT 100000;
+
+--name: select-total-selfie-count
+SELECT COUNT(DISTINCT sb.id) AS total
+FROM selfie_badge sb
+INNER JOIN user u ON sb.creator_id = u.id
+WHERE (:country = 'all' OR u.country = :country);
+
+--name: select-selfie-badges-all
+SELECT sb.id, sb.name, sb.creator_id, sb.description, sb.criteria, sb.image, sb.tags, CONCAT(u.first_name, ' ', u.last_name)  AS creator_name, sb.ctime, sb.mtime,
+(SELECT CAST(COUNT(DISTINCT ub.id) AS UNSIGNED)
+  FROM user_badge ub
+  WHERE ub.selfie_id = sb.id
+  AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0
+   AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())) AS recipients
+FROM selfie_badge sb
+INNER JOIN user u ON sb.creator_id = u.id
+WHERE (:country = 'all' OR u.country = :country)
+GROUP BY sb.id
+ORDER BY
+ CASE WHEN :order='name'  THEN sb.name END,
+ CASE WHEN :order='creator' THEN creator_name END,
+ CASE WHEN :order='recipients' THEN recipients END DESC,
+ CASE WHEN :order='mtime' THEN MAX(sb.ctime) END DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-selfie-badges-filtered
+SELECT sb.id, sb.name, sb.creator_id, sb.description, sb.criteria, sb.image, sb.tags, CONCAT(u.first_name, ' ', u.last_name)  AS creator_name, sb.ctime, sb.mtime,
+(SELECT CAST(COUNT(DISTINCT ub.id) AS UNSIGNED)
+  FROM user_badge ub WHERE ub.selfie_id = sb.id
+  AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0
+   AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())) AS recipients
+FROM selfie_badge sb
+INNER JOIN user u ON sb.creator_id = u.id
+WHERE (:country = 'all' OR u.country = :country) AND sb.id IN (:selfies)
+GROUP BY sb.id
+ORDER BY
+ CASE WHEN :order='name'  THEN sb.name END,
+ CASE WHEN :order='creator' THEN creator_name END,
+ CASE WHEN :order='recipients' THEN recipients END DESC,
+ CASE WHEN :order='mtime' THEN MAX(sb.ctime) END DESC
+LIMIT :limit OFFSET :offset
+
+-- name: select-selfie-countries
+SELECT country FROM user AS u
+               LEFT JOIN selfie_badge AS sb ON sb.creator_id = u.id
+               GROUP BY country
+               ORDER BY country

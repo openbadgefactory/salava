@@ -281,7 +281,7 @@
 (defn panel-box [data]
  (when data
   (let [
-        {:keys [type heading info icon]} data
+        {:keys [type heading info icon sbutton sfunc]} data
         {:keys [lastlogin lastmonth total]} info]
    [:div.col-md-4.col-sm-6.col-xs-12
     [:div.panel-box.panel-chart
@@ -298,7 +298,11 @@
          (pos? lastmonth)
          [:div [:span.text-success [:i.fa.fa-angle-up.fa-fw] [:b lastmonth]] " " (t :admin/Increasesincelastmonth)]
          :else [:div [:span {:aria-hidden "true"
-                             :dangerouslySetInnerHTML {:__html "&nbsp;"}}]])]]]])))
+                             :dangerouslySetInnerHTML {:__html "&nbsp;"}}]])]
+      (when sbutton
+         [:a.preview-button {:href "#" :on-click #((sfunc))}
+          [:span.label.label-primary [:i.fa.fa-fw.fa-eye] (t :admin/Preview)]])]]])))
+
 
 (defn panel-box-chart [data]
  (when data

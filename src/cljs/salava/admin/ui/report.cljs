@@ -408,7 +408,7 @@
 (defn badge-list [state]
   (let [results (remove #(zero? (count (:badges %))) @(cursor state [:results :users]))
         user-filter (cursor state [:filters :users])]
-      [:div {:style {:max-height "500px" :overflow "auto"}}
+      [:div
        [:div.panel.panel-default
         [:div.panel-heading
           [:div.row
@@ -478,11 +478,11 @@
                     badges)]]
                 [:div.row
                  [:div.col-md-12.text-center (str "0 " (t :badge/Badges))]])])))
-           [:div.panel-body]
+           [:div.panel-body {:style {:max-height "500px" :overflow "auto"}}]
            results)
-          (if @(cursor state [:fetching-badges])
-            [:span [:i.fa.fa-lg.fa-cog.fa-spin] (str " " (t :core/Loading) " ...")]
-            [:div]))]]))
+          #_(if @(cursor state [:fetching-badges])
+              [:span [:i.fa.fa-lg.fa-cog.fa-spin] (str " " (t :core/Loading) " ...")]
+              [:div]))]]))
 
 
 (defn clear-selected-dates [state]

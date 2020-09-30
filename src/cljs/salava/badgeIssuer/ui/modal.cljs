@@ -335,7 +335,7 @@
 (defn selfie-content [state]
   [:div
    ;[m/modal-window]
-   [selfie-navi state]
+   (when (= (session/get-in [:user :id]) (get-in @state [:badge :creator_id] )) [selfie-navi state])
    (if (:tab @state)
      (:tab @state)
      (if (:tab-no @state)

@@ -1,4 +1,10 @@
 # Changelog
+## 3.15.5
+- Admin Report tool
+- Added receive email notifications option in badge settings
+
+
+
 ## 3.11.1
 - Bug fixes
 - Minor ui improvements

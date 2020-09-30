@@ -475,6 +475,14 @@
     text-align: center;
     padding: 1rem;
     position: relative;
+
+    .preview-button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      visibility: hidden;
+      font-size: 12px;
+    }
   }
 
   .panel-chart-content {
