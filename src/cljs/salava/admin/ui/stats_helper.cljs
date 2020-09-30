@@ -300,7 +300,7 @@
          :else [:div [:span {:aria-hidden "true"
                              :dangerouslySetInnerHTML {:__html "&nbsp;"}}]])]
       (when sbutton
-         [:a.preview-button {:href "#" :on-click #((sfunc))}
+         [:a.preview-button {:href "#" :on-click #(sfunc)}
           [:span.label.label-primary [:i.fa.fa-fw.fa-eye] (t :admin/Preview)]])]]])))
 
 

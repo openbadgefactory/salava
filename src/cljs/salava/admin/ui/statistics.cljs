@@ -93,7 +93,7 @@
        [dh/panel-box {:heading (t :admin/Totalbadgesno) :icon "fa-certificate" :info {:total Totalbadgesno :lastlogin badgessincelastlogin :lastmonth badgessincelastmonth}  :type "b-badge"}]
        [dh/panel-box {:heading (t :admin/Totalpagesno) :icon "fa-file-text-o" :info {:total Totalpagesno :lastlogin pagessincelastlogin :lastmonth pagessincelastmonth} :type "b-page"}]
        [dh/panel-box {:heading (t :admin/Totalissuersno) :icon "fa-building-o" :info {:total Totalissuersno :lastlogin issuerssincelastlogin :lastmonth issuerssincelastmonth} :type "b-page"}]
-       (when created [dh/panel-box {:sbutton true :sfunc (fn [] (mo/open-modal [:admin :selfie] {})) :heading (t :badgeIssuer/Selfiebadges) :icon "fa-plus-square" :info {:total Totalcreatedno :lastlogin createdsincelastlogin :lastmonth createdsincelastmonth} :type "b-user"}])
+       (when created [dh/panel-box {:sbutton true :sfunc #(mo/open-modal [:admin :selfie] {}) :heading (t :badgeIssuer/Selfiebadges) :icon "fa-plus-square" :info {:total Totalcreatedno :lastlogin createdsincelastlogin :lastmonth createdsincelastmonth} :type "b-user"}])
        (when spaces [dh/panel-box {:heading (t :extra-spaces/Spaces) :icon "fa-th-large" :info {:total Totalspacesno :lastlogin spacessincelastlogin :lastmonth spacessincelastmonth} :type "b-page"}])]
       [:div.row
        [dh/panel-box-chart {:size :lg
