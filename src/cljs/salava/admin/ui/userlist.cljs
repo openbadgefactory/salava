@@ -110,7 +110,7 @@
     [country-selector state]
     [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
     [text-field :email (t :badge/Email)  (t :admin/Searchbyemail) state]
-    [filter-buttons state]
+    ;[filter-buttons state]
     [custom-field-filters "gender" state]
     [custom-field-filters "organization" state]]])
 

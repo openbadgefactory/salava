@@ -339,8 +339,8 @@
                          accepted-terms-fn (first (plugin-fun (get-plugins ctx) "db" "get-accepted-terms-by-id"))
                          users-with-terms (map #(-> %
                                                     (assoc :terms (:status (accepted-terms-fn ctx (:id %))))) users)
-                         users-with-custom-field-filters (if (empty? (:custom-field-filters search-params))
-                                                             (vec users-with-terms)
-                                                             (a/apply-custom-filters ctx (:custom-field-filters search-params) (vec users-with-terms)))]
-                     (ok {:users     (vec users-with-custom-field-filters)
+                         #_users-with-custom-field-filters #_(if (empty? (:custom-field-filters search-params))
+                                                                 (vec users-with-terms)
+                                                                 (a/apply-custom-filters ctx (:custom-field-filters search-params) (vec users-with-terms)))]
+                     (ok {:users    (vec users-with-terms) ;(vec users-with-custom-field-filters)
                           :countries countries}))))))

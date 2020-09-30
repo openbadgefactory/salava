@@ -4,7 +4,7 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
-            [salava.core.util :as util :refer [get-db get-datasource get-site-url get-base-path get-site-name plugin-fun get-plugins]]
+            [salava.core.util :as util :refer [get-db get-datasource get-site-url get-base-path get-site-name plugin-fun get-plugins get-db-col]]
             [salava.core.time :refer [unix-time get-date-from-today]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.user.db :as u]
@@ -14,7 +14,8 @@
             [salava.mail.mail :as m]
             [salava.gallery.db :as g]
             [salava.admin.helper :refer [make-csv]]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t]]
+            [clojure.string :refer [blank?]]))
 
 (defqueries "sql/admin/queries.sql")
 
@@ -433,44 +434,90 @@
         (sort-countries)
         (seq))))
 
+#_(defn all-profiles
+    "Search all user profiles by user's name, email and country"
+    [ctx search-params user-id]
+    (let [{:keys [name country order_by email filter]} search-params
+          where ""
+          order (case order_by
+                  "ctime" " ORDER BY ctime DESC"
+                  "name" " ORDER BY last_name, first_name"
+                  "")
+          params []
+          [where params] (if-not (or (empty? country) (= country "all"))
+                           [(str where " AND country = ?") (conj params country)]
+                           [where params])
+          [where params] (if-not (empty? name)
+                           [(str where " AND CONCAT(first_name,' ',last_name) LIKE ?") (conj params (str "%" name "%"))]
+                           [where params])
+          [where params] (if-not (empty? email)
+                           [(str where " AND u.id in (SELECT user_id from user_email WHERE email LIKE ?)") (conj params (str "%" email "%"))]
+                           [where params])
+          [where params] (if (pos? filter)
+                           [(str where " AND u.deleted = ?") (conj params filter)]
+                           [where params])
+          [where params] (if (pos? filter)
+                           [(str where " AND u.deleted = ?") (conj params filter)]
+                           [where params])
+          query (str "SELECT u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted, GROUP_CONCAT(ue.email,' ', ue.primary_address) AS email FROM user AS u
+JOIN user_email AS ue ON ue.user_id = u.id
+WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND u.role <> 'deleted' "
+                     where
+                     " GROUP BY u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted "
+                     order
+                     " LIMIT 50")
+          profiles (jdbc/with-db-connection
+                    [conn (:connection (get-db ctx))]
+                    (jdbc/query conn (into [query] params)))]
+
+      (->> profiles
+           (take 50))))
+
+(defn select-profiles [ctx country ids order]
+  (prn order)
+  (prn ids)
+  (let [limit 50]
+    (if (nil? ids)
+       (select-user-profiles-all {:country country :order order :limit limit} (get-db ctx))
+       (if (empty? ids)
+         []
+         (select-user-profiles-filtered {:country country :order order :ids ids :limit limit} (get-db ctx))))))
+
+
+(defn profile-ids-all [ctx search-params]
+ (let [{:keys [name country order_by email filter custom-field-filters]} search-params
+       organization (get search-params "organization" "")
+       gender (get search-params "gender" "")
+
+       filters
+       (cond-> []
+         (not (blank? name))
+         (conj (set (select-all-profile-ids-name {:name (str "%" name "%")} (get-db-col ctx :id))))
+
+         (not (blank? email))
+         (conj (set (select-all-profile-ids-email {:email (str "%" email "%")} (get-db-col ctx :id))))
+
+         (not (blank? organization))
+         (conj (set (select-all-profile-ids-organization {:org (str "%" organization "%")}  (get-db-col ctx :id))))
+
+         (not (blank? gender))
+         (conj (set (select-all-profile-ids-gender {:org (str "%" gender "%")}  (get-db-col ctx :id))))
+
+         (pos? filter)
+         (conj (set (select-all-profile-ids-deleted {} (get-db-col ctx :id)))))]
+
+   (when (seq filters)
+     (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))
+
 (defn all-profiles
   "Search all user profiles by user's name, email and country"
   [ctx search-params user-id]
-  (let [{:keys [name country order_by email filter]} search-params
-        where ""
-        order (case order_by
-                "ctime" " ORDER BY ctime DESC"
-                "name" " ORDER BY last_name, first_name"
-                "")
-        params []
-        [where params] (if-not (or (empty? country) (= country "all"))
-                         [(str where " AND country = ?") (conj params country)]
-                         [where params])
-        [where params] (if-not (empty? name)
-                         [(str where " AND CONCAT(first_name,' ',last_name) LIKE ?") (conj params (str "%" name "%"))]
-                         [where params])
-        [where params] (if-not (empty? email)
-                         [(str where " AND u.id in (SELECT user_id from user_email WHERE email LIKE ?)") (conj params (str "%" email "%"))]
-                         [where params])
-        [where params] (if (pos? filter)
-                         [(str where " AND u.deleted = ?") (conj params filter)]
-                         [where params])
-        [where params] (if (pos? filter)
-                         [(str where " AND u.deleted = ?") (conj params filter)]
-                         [where params])
-        query (str "SELECT u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted, GROUP_CONCAT(ue.email,' ', ue.primary_address) AS email FROM user AS u
-JOIN user_email AS ue ON ue.user_id = u.id
-WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND u.role <> 'deleted' "
-                   where
-                   " GROUP BY u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted "
-                   order
-                   " LIMIT 50")
-        profiles (jdbc/with-db-connection
-                  [conn (:connection (get-db ctx))]
-                  (jdbc/query conn (into [query] params)))]
+  (let [{:keys [name country order_by email filter custom-field-filters]} search-params
+        profile-ids (profile-ids-all ctx search-params)
+        profiles (select-profiles ctx country profile-ids order_by)]
+    profiles))
 
-    (->> profiles
-         (take 50))))
+
 
 (defn delete-no-verified-adress [ctx user-id email]
   (try+

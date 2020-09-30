@@ -237,3 +237,64 @@ SELECT COUNT(*) AS count FROM new_issuer_history WHERE ctime > :time;
 SELECT u.id, COUNT(ub.id) AS badge_count FROM user u
 LEFT JOIN user_badge ub ON u.id=ub.user_id WHERE u.activated = 1 AND ub.status != 'declined' AND ub.revoked = 0 AND ub.deleted = 0
 GROUP BY u.id;
+
+--name:select-all-profile-ids-name
+SELECT DISTINCT u.id FROM user u
+WHERE CONCAT(first_name, ' ', last_name) LIKE :name
+ORDER BY ctime DESC
+LIMIT 100000;
+
+--name:select-all-profile-ids-email
+SELECT DISTINCT u.id FROM user u
+JOIN user_email ue ON u.id= ue.user_id
+WHERE u.id IN (SELECT user_id FROM user_email WHERE email LIKE :email)
+ORDER BY u.ctime DESC
+LIMIT 100000;
+
+--name:select-all-profile-ids-gender
+SELECT DISTINCT u.id FROM user u
+JOIN user_properties up ON u.id= up.user_id
+WHERE up.name = 'gender' AND up.value LIKE :gender
+ORDER BY u.ctime DESC
+LIMIT 100000;
+
+--name:select-all-profile-ids-organization
+SELECT DISTINCT u.id FROM user u
+JOIN user_properties up ON u.id= up.user_id
+WHERE up.name = 'organization' AND up.value LIKE :org
+ORDER BY u.ctime DESC
+LIMIT 100000;
+
+--name:select-all-profile-ids-name
+SELECT DISTINCT u.id FROM user u
+WHERE CONCAT(first_name, ' ', last_name) LIKE :name
+ORDER BY ctime DESC
+LIMIT 100000;
+
+--name: select-user-profiles-all
+SELECT u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted, GROUP_CONCAT(ue.email,' ', ue.primary_address) AS email
+FROM user AS u
+JOIN user_email AS ue ON ue.user_id = u.id
+WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND (:country = 'all' OR u.country= :country)
+GROUP BY u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted
+ORDER BY
+ CASE WHEN :order='name'  THEN u.last_name END,
+ CASE WHEN :order='ctime' THEN MAX(u.ctime) END DESC
+LIMIT :limit
+
+--name: select-user-profiles-filtered
+SELECT u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted, GROUP_CONCAT(ue.email,' ', ue.primary_address) AS email
+FROM user AS u
+JOIN user_email AS ue ON ue.user_id = u.id
+WHERE (:country = 'all' OR u.country= :country) AND (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND u.id IN (:ids)
+GROUP BY u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted
+ORDER BY
+ CASE WHEN :order='name'  THEN u.last_name END,
+ CASE WHEN :order='ctime' THEN MAX(u.ctime) END DESC
+LIMIT :limit
+
+--name:select-all-profile-ids-deleted
+SELECT DISTINCT u.id FROM user u
+WHERE u.deleted = 1
+ORDER BY ctime DESC
+LIMIT 100000;
