@@ -474,8 +474,6 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
            (take 50))))
 
 (defn select-profiles [ctx country ids order]
-  (prn order)
-  (prn ids)
   (let [limit 50]
     (if (nil? ids)
        (select-user-profiles-all {:country country :order order :limit limit} (get-db ctx))
@@ -486,8 +484,8 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
 
 (defn profile-ids-all [ctx search-params]
  (let [{:keys [name country order_by email filter custom-field-filters]} search-params
-       organization (get search-params "organization" "")
-       gender (get search-params "gender" "")
+       organization (get custom-field-filters :organization "")
+       gender (get custom-field-filters :gender "")
 
        filters
        (cond-> []
@@ -497,14 +495,20 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
          (not (blank? email))
          (conj (set (select-all-profile-ids-email {:email (str "%" email "%")} (get-db-col ctx :id))))
 
-         (not (blank? organization))
+         (and (not (blank? organization)) (not= "notset" organization))
          (conj (set (select-all-profile-ids-organization {:org (str "%" organization "%")}  (get-db-col ctx :id))))
 
-         (not (blank? gender))
-         (conj (set (select-all-profile-ids-gender {:org (str "%" gender "%")}  (get-db-col ctx :id))))
+         (and (not (blank? organization)) (= "notset" organization))
+         (conj (set (select-all-profile-ids-organization-not-set {}  (get-db-col ctx :id))))
 
-         (pos? filter)
-         (conj (set (select-all-profile-ids-deleted {} (get-db-col ctx :id)))))]
+         (and (not (blank? gender)) (not= "notset" gender))
+         (conj (set (select-all-profile-ids-gender {:gender (str "%" gender "%")}  (get-db-col ctx :id))))
+
+         (and (not (blank? gender)) (= "notset" gender))
+         (conj (set (select-all-profile-ids-gender-not-set {}  (get-db-col ctx :id))))
+
+         #_(pos? filter)
+         #_(conj (set (select-all-profile-ids-deleted {} (get-db-col ctx :id)))))]
 
    (when (seq filters)
      (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))

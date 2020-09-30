@@ -298,3 +298,15 @@ SELECT DISTINCT u.id FROM user u
 WHERE u.deleted = 1
 ORDER BY ctime DESC
 LIMIT 100000;
+
+--name: select-all-profile-ids-gender-not-set
+SELECT DISTINCT u.id FROM user u
+WHERE u.id NOT IN (SELECT user_id FROM user_properties WHERE name = 'gender')
+ORDER BY u.ctime DESC
+LIMIT 100000;
+
+--name: select-all-profile-ids-organization-not-set
+SELECT DISTINCT u.id FROM user u
+WHERE u.id NOT IN (SELECT user_id FROM user_properties WHERE name = 'organization')
+ORDER BY u.ctime DESC
+LIMIT 100000;
