@@ -158,7 +158,7 @@
       [:div#badge-gallery
        [:div.col-md-12
         [gallery-grid-form state]
-        (if (:ajax-message @state)
+        (if (:loading @state)
           [:div.ajax-message
            [:i {:class "fa fa-cog fa-spin fa-2x "}]
            [:span (str (t :core/Loading) "...")]]

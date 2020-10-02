@@ -184,41 +184,34 @@ INNER JOIN user u ON sb.creator_id = u.id
 WHERE (:country = 'all' OR u.country = :country);
 
 --name: select-selfie-badges-all
-SELECT sb.id, sb.name, sb.creator_id, sb.description, sb.criteria, sb.image, sb.tags, CONCAT(u.first_name, ' ', u.last_name)  AS creator_name, sb.ctime, sb.mtime,
-(SELECT CAST(COUNT(DISTINCT ub.id) AS UNSIGNED)
-  FROM user_badge ub
-  WHERE ub.selfie_id = sb.id
-  AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0
-   AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())) AS recipients
+SELECT sb.id, sb.name, sb.creator_id, sb.description, sb.criteria, sb.image, sb.tags, CONCAT(u.first_name, ' ', u.last_name)  AS creator_name, sb.ctime, sb.mtime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
 FROM selfie_badge sb
 INNER JOIN user u ON sb.creator_id = u.id
-WHERE (:country = 'all' OR u.country = :country)
+INNER JOIN user_badge ub ON ub.selfie_id = sb.id
+WHERE (:country = 'all' OR u.country = :country) AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
 GROUP BY sb.id
 ORDER BY
  CASE WHEN :order='name'  THEN sb.name END,
  CASE WHEN :order='creator' THEN creator_name END,
- CASE WHEN :order='recipients' THEN recipients END DESC,
+ CASE WHEN :order='recipients' THEN COUNT(DISTINCT ub.user_id) END DESC,
  CASE WHEN :order='mtime' THEN MAX(sb.ctime) END DESC
 LIMIT :limit OFFSET :offset
 
 --name: select-selfie-badges-filtered
-SELECT sb.id, sb.name, sb.creator_id, sb.description, sb.criteria, sb.image, sb.tags, CONCAT(u.first_name, ' ', u.last_name)  AS creator_name, sb.ctime, sb.mtime,
-(SELECT CAST(COUNT(DISTINCT ub.id) AS UNSIGNED)
-  FROM user_badge ub WHERE ub.selfie_id = sb.id
-  AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0
-   AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())) AS recipients
+SELECT sb.id, sb.name, sb.creator_id, sb.description, sb.criteria, sb.image, sb.tags, CONCAT(u.first_name, ' ', u.last_name)  AS creator_name, sb.ctime, sb.mtime, COUNT(DISTINCT ub.user_id) AS recipients
 FROM selfie_badge sb
 INNER JOIN user u ON sb.creator_id = u.id
-WHERE (:country = 'all' OR u.country = :country) AND sb.id IN (:selfies)
+INNER JOIN user_badge ub ON ub.selfie_id = sb.id
+WHERE (:country = 'all' OR u.country = :country) AND sb.id IN (:selfies) AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
 GROUP BY sb.id
 ORDER BY
  CASE WHEN :order='name'  THEN sb.name END,
  CASE WHEN :order='creator' THEN creator_name END,
- CASE WHEN :order='recipients' THEN recipients END DESC,
+ CASE WHEN :order='recipients' THEN COUNT(DISTINCT ub.user_id) END DESC,
  CASE WHEN :order='mtime' THEN MAX(sb.ctime) END DESC
 LIMIT :limit OFFSET :offset
 
--- name: select-selfie-countries
+--name: select-selfie-countries
 SELECT country FROM user AS u
                LEFT JOIN selfie_badge AS sb ON sb.creator_id = u.id
                GROUP BY country

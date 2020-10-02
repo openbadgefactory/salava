@@ -1948,3 +1948,39 @@ html[dir="rtl"] .popup-info {
 html[dir="rtl"] .editor-toolbar a.fa-question-circle{
   float: left;
 }
+
+html[dir="rtl"] .title-row #space-list {
+  right: unset !important;
+  left: 10% !important;
+}
+
+html[dir="rtl"] #space-gallery #grid .media.grid-container.space-card span.space-membership-icon {
+  right: unset;
+  left: 5px;
+}
+html[dir="rtl"] #space-gallery #grid .media.grid-container.space-card .media-content .media-profile .status i {
+  margin-right: unset;
+  margin-left: 5px;
+}
+
+html[dir="rtl"] #space .blob, #space-gallery #grid .blob {
+  margin-right: unset;
+  margin-left: 3px;
+}
+
+html[dir="rtl"] #space-gallery .pull-right {
+  float: left !important;
+}
+
+html[dir="rtl"] #space #badge-gallery input[type=checkbox], #admin-report #badge-gallery input[type=checkbox] {
+  margin-right: unset;
+}
+
+html[dir="rtl"] #space-info-banner .banner-container {
+  background-position: left !important;
+}
+
+html[dir="rtl"] #box_1 .notifications-block .notification-div .close, #box_4 .notifications-block .notification-div .close {
+  right: unset;
+  left: 0;
+}

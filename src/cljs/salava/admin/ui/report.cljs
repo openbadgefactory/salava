@@ -332,9 +332,9 @@
        [:div.panel-heading
         [:div.row
          [:div
-           [:div.col-md-6.panel-title
+           [:div.col-md-3.panel-title
             (str (t :admin/Results) " (" (count @results) "/" @(cursor state [:results :total]) ")")]
-           [:div.col-md-6
+           [:div.col-md-9
               [:div {:style {:text-align "right"}}
                [:label.radio-inline
                 [:input
@@ -413,11 +413,11 @@
         [:div.panel-heading
           [:div.row
            [:div
-             [:div.col-md-6.panel-title
+             [:div.col-md-3.panel-title
                (if @(cursor state [:fetching-badges])
                  [:span [:i.fa.fa-lg.fa-cog.fa-spin] (str " " (t :core/Loading) " ...")]
                  (str (t :admin/Results) " (" (count results) ")"))]
-             [:div.col-md-6
+             [:div.col-md-9
               [:div {:style {:text-align "right"}}
                [:label.radio-inline
                 [:input

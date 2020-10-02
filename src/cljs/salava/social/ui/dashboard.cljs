@@ -595,7 +595,7 @@
        [quicklinks]]]]]])
 
 (defn space-list []
-  (into [:div]
+  (into [:div.box.col-md-4.col-sm-12.space-list-block]
     (for [f (plugin-fun (session/get :plugins) "block" "space_list_dashboard")]
       (when (ifn? f) [f]))))
 

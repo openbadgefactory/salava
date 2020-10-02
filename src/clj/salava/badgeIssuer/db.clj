@@ -110,4 +110,3 @@
                              (select-keys countries)
                              (sort-countries)
                              (seq)))))
- 
